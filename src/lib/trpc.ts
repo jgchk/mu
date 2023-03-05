@@ -6,7 +6,7 @@ import { TRPC_ROUTE } from '../server/config'
 import { env } from '../server/env'
 import type { AppRouter } from '../server/routers/_app'
 
-export const trpc = (loadFetch?: LoadEvent['fetch']) =>
+export const trpcClient = (loadFetch?: LoadEvent['fetch']) =>
   createTRPCProxyClient<AppRouter>({
     links: [
       loggerLink({ enabled: () => dev }),
