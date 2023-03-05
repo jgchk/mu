@@ -13,6 +13,14 @@
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "format": "prettier --plugin-search-dir . --write ."
   },
+  "dependencies": {
+    "@prisma/client": "^4.11.0",
+    "@tanstack/svelte-query": "^4.24.10",
+    "@trpc/client": "^10.14.0",
+    "@trpc/server": "^10.14.0",
+    "superjson": "^1.12.2",
+    "zod": "^3.21.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.28.1",
     "@sveltejs/adapter-auto": "^2.0.0",
@@ -24,6 +32,7 @@
     "eslint-plugin-svelte3": "^4.0.0",
     "prettier": "^2.8.0",
     "prettier-plugin-svelte": "^2.8.1",
+    "prisma": "^4.11.0",
     "svelte": "^3.54.0",
     "svelte-check": "^3.0.1",
     "tslib": "^2.4.1",
