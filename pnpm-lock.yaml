@@ -8,6 +8,7 @@ specifiers:
   '@tanstack/svelte-query': ^4.24.10
   '@trpc/client': ^10.14.0
   '@trpc/server': ^10.14.0
+  '@trpc/svelte-query': link:../trpc/packages/svelte-query2
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
   eslint: ^8.28.0
@@ -27,9 +28,10 @@ specifiers:
 
 dependencies:
   '@prisma/client': 4.11.0_prisma@4.11.0
-  '@tanstack/svelte-query': 4.24.10_svelte@3.55.1
+  '@tanstack/svelte-query': 4.26.0_svelte@3.55.1
   '@trpc/client': 10.14.0_@trpc+server@10.14.0
   '@trpc/server': 10.14.0
+  '@trpc/svelte-query': link:../trpc/packages/svelte-query2
   superjson: 1.12.2
   zod: 3.21.0
 
@@ -424,16 +426,16 @@ packages:
       - supports-color
     dev: true
 
-  /@tanstack/query-core/4.24.10:
-    resolution: {integrity: sha512-2QywqXEAGBIUoTdgn1lAB4/C8QEqwXHj2jrCLeYTk2xVGtLiPEUD8jcMoeB2noclbiW2mMt4+Fq7fZStuz3wAQ==}
+  /@tanstack/query-core/4.26.0:
+    resolution: {integrity: sha512-9CRqXmCH82KZDKmezoGU4FOn1Oqbzlp2/zf71n+9nC58e7NSqCIjfSCMpqQWcu9YqUcUykxZEUunOyKHVc6BJA==}
     dev: false
 
-  /@tanstack/svelte-query/4.24.10_svelte@3.55.1:
-    resolution: {integrity: sha512-KwwKzMhxo0EzG7ODPNhjH1uViOR49N4WKa75UGW8PzdJ8TBysy79wkDrP5Ijf32NhI8axfzDALdtv/2jMWa+iQ==}
+  /@tanstack/svelte-query/4.26.0_svelte@3.55.1:
+    resolution: {integrity: sha512-6ntxaXVAKAt/nNTUB49hBaRtEquTa7a5A47G9gHRqIg8bwqJaHW+Hx0DuyTwKMwxMSoV1CEy4oiZbqxK8IWY9Q==}
     peerDependencies:
       svelte: ^3.54.0
     dependencies:
-      '@tanstack/query-core': 4.24.10
+      '@tanstack/query-core': 4.26.0
       svelte: 3.55.1
     dev: false
 

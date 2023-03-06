@@ -1,13 +1,9 @@
 <script lang="ts">
-  import { createQuery } from '@tanstack/svelte-query'
   import type { PageData } from './$types'
 
   export let data: PageData
 
-  const query = createQuery({
-    queryKey: ['ping'],
-    queryFn: () => data.trpc.ping.query(),
-  })
+  const query = data.trpc.ping.query()
 </script>
 
 <h1>Welcome to SvelteKit</h1>

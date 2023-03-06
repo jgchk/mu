@@ -5,6 +5,6 @@
   export let data: LayoutData
 </script>
 
-<QueryClientProvider client={data.queryClient}>
+<QueryClientProvider client={data.trpc.queryClient}>
   <slot />
 </QueryClientProvider>

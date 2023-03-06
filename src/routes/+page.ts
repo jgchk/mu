@@ -1,9 +1,6 @@
 import type { PageLoad } from './$types'
 
 export const load = (async ({ parent }) => {
-  const { queryClient, trpc } = await parent()
-  await queryClient.prefetchQuery({
-    queryKey: ['ping'],
-    queryFn: () => trpc.ping.query(),
-  })
+  const { trpc } = await parent()
+  await trpc.ping.prefetchQuery()
 }) satisfies PageLoad
