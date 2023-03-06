@@ -8,7 +8,7 @@ specifiers:
   '@tanstack/svelte-query': ^4.24.10
   '@trpc/client': ^10.14.0
   '@trpc/server': ^10.14.0
-  '@trpc/svelte-query': link:../trpc/packages/svelte-query2
+  '@trpc/svelte-query': link:../trpc-svelte-query
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
   eslint: ^8.28.0
@@ -31,7 +31,7 @@ dependencies:
   '@tanstack/svelte-query': 4.26.0_svelte@3.55.1
   '@trpc/client': 10.14.0_@trpc+server@10.14.0
   '@trpc/server': 10.14.0
-  '@trpc/svelte-query': link:../trpc/packages/svelte-query2
+  '@trpc/svelte-query': link:../trpc-svelte-query
   superjson: 1.12.2
   zod: 3.21.0
 
