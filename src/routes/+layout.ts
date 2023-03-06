@@ -4,8 +4,7 @@ import { httpBatchLink, loggerLink } from '@trpc/client'
 import { TRPC_ROUTE } from '../server/config'
 import type { LayoutLoad } from './$types'
 import superjson from 'superjson'
-import { createTRPCSvelte } from '@trpc/svelte-query'
-import type { AppRouter } from '../server/routers/_app'
+import { createClient } from '$lib/trpc'
 
 export const load: LayoutLoad = async ({ fetch }) => {
   const queryClient = new QueryClient({
@@ -16,7 +15,7 @@ export const load: LayoutLoad = async ({ fetch }) => {
     },
   })
 
-  const trpc = createTRPCSvelte<AppRouter>({
+  const trpc = createClient({
     queryClient,
     fetch,
     links: [

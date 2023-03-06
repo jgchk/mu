@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { PageData } from './$types'
+  import { getContextClient } from '$lib/trpc'
 
-  export let data: PageData
-
-  const query = data.trpc.ping.query()
+  const trpc = getContextClient()
+  const query = trpc.ping.query()
 </script>
 
 <h1>Welcome to SvelteKit</h1>
