@@ -4,7 +4,6 @@ import { httpBatchLink, loggerLink } from '@trpc/client'
 import type { LayoutLoad } from './$types'
 import superjson from 'superjson'
 import { createClient } from '$lib/trpc'
-import { TRPC_ROUTE } from '$lib/server/config'
 
 export const load: LayoutLoad = async ({ fetch }) => {
   const queryClient = new QueryClient({
@@ -21,7 +20,7 @@ export const load: LayoutLoad = async ({ fetch }) => {
     links: [
       loggerLink({ enabled: () => dev }),
       httpBatchLink({
-        url: TRPC_ROUTE,
+        url: '/api/trpc',
         fetch,
       }),
     ],
