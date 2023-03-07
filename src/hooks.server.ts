@@ -1,8 +1,8 @@
+import { TRPC_ROUTE } from '$lib/server/config'
+import { createContext } from '$lib/server/context'
+import { appRouter } from '$lib/server/routers/_app'
 import type { Handle } from '@sveltejs/kit'
-import { TRPC_ROUTE } from './server/config'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
-import { createContext } from './server/context'
-import { appRouter } from './server/routers/_app'
 
 export const handle = (async ({ event, resolve }) => {
   if (
