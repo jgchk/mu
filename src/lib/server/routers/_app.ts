@@ -27,8 +27,12 @@ export const appRouter = router({
             title: metadata.common.title,
           },
         })
-      } catch (e) {
-        console.error(e)
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('Guessed MIME-type not supported')) {
+          // ignore
+        } else {
+          throw error
+        }
       }
     }
 
