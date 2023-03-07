@@ -3,6 +3,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   MODE: z.enum(['development', 'test', 'production']),
   PUBLIC_PORT: z.coerce.number(),
+  PUBLIC_MUSIC_DIR: z.string(),
 })
 
 const envRes = envSchema.safeParse(import.meta.env)

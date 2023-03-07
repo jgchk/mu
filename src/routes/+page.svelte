@@ -1,10 +1,21 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const query = trpc.ping.query()
+  const pingQuery = trpc.ping.query()
+  let syncMutation = trpc.sync.mutation()
+
+  const handlePing = () => {
+    $pingQuery.refetch()
+  }
+  const handleSync = () => {
+    $syncMutation.mutate()
+  }
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<div>{$query.data}</div>
+<button on:click={handlePing}>Ping</button>
+<button on:click={handleSync}>Sync</button>
+
+<div>{$pingQuery.data}</div>
+<pre>{JSON.stringify($syncMutation.data, null, 2)}</pre>
