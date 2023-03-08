@@ -16,16 +16,16 @@ export const parseFile = async (path: string): Promise<Metadata | undefined> => 
   const fileInfo = lines[0]
   const tags = lines.slice(1)
 
-  if (fileInfo.startsWith('FLAC')) {
-    return parseFlacMetadata(tags)
-  } else if (fileInfo.startsWith('MPEG 1 layer 3')) {
-    return parseMp3Metadata(tags)
+  if (fileInfo.startsWith('MPEG 1 layer 3')) {
+    return parseId3Tags(tags)
+  } else if (fileInfo.startsWith('FLAC') || fileInfo.startsWith('Ogg Vorbis')) {
+    return parseVorbisTags(tags)
   } else {
     return undefined
   }
 }
 
-const parseMp3Metadata = async (lines: string[]) => {
+const parseId3Tags = async (lines: string[]) => {
   const metadata: Metadata = {}
 
   for (const line of lines) {
@@ -38,7 +38,7 @@ const parseMp3Metadata = async (lines: string[]) => {
   return metadata
 }
 
-const parseFlacMetadata = async (lines: string[]) => {
+const parseVorbisTags = async (lines: string[]) => {
   const metadata: Metadata = {}
 
   for (const line of lines) {
