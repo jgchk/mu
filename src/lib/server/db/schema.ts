@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, type InferModel } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, type InferModel, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey(),
@@ -14,10 +14,16 @@ export const albums = sqliteTable('albums', {
 export type Album = InferModel<typeof albums>
 export type InsertAlbum = InferModel<typeof albums, 'insert'>
 
-export const tracks = sqliteTable('tracks', {
-  id: integer('id').primaryKey(),
-  path: text('path').notNull(),
-  title: text('title'),
-})
+export const tracks = sqliteTable(
+  'tracks',
+  {
+    id: integer('id').primaryKey(),
+    path: text('path').notNull(),
+    title: text('title'),
+  },
+  (tracks) => ({
+    pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),
+  })
+)
 export type Track = InferModel<typeof tracks>
 export type InsertTrack = InferModel<typeof tracks, 'insert'>

@@ -1,8 +1,7 @@
-import { walkDir } from '$lib/utils/fs'
-import { isDefined } from '$lib/utils/types'
+import { fileExists, walkDir } from '$lib/utils/fs'
 import { parseFile } from 'music-metadata'
 import untildify from 'untildify'
-import { insertTrack } from '../db/operations'
+import { deleteTrackById, getAllTracks, getTrackByPath, insertTrack } from '../db/operations'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
 
@@ -11,41 +10,34 @@ export const appRouter = router({
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)
 
-    const files: string[] = []
-    for await (const file of walkDir(musicDir)) {
-      files.push(file)
-    }
-
-    const musicFiles = (
-      await Promise.all(
-        files.map(async (file) => {
-          try {
-            const metadata = await parseFile(file)
-            return {
-              path: file,
-              metadata: {
-                title: metadata.common.title,
-              },
-            }
-          } catch (error) {
-            if (
-              error instanceof Error &&
-              error.message.startsWith('Guessed MIME-type not supported')
-            ) {
-              // ignore
-            } else {
-              throw error
-            }
-          }
-        })
-      )
-    ).filter(isDefined)
-
-    const dbTracks = musicFiles.map((musicFile) =>
-      insertTrack({ title: musicFile.metadata.title, path: musicFile.path })
+    const allExistingTracks = getAllTracks()
+    await Promise.all(
+      allExistingTracks.map(async (track) => {
+        const exists = await fileExists(track.path)
+        if (!exists) {
+          deleteTrackById(track.id)
+        }
+      })
     )
 
-    return dbTracks
+    const tracks = []
+    for await (const path of walkDir(musicDir)) {
+      try {
+        // this will throw if the file is not a supported format
+        const metadata = await parseFile(path)
+
+        const track = getTrackByPath(path) ?? insertTrack({ title: metadata.common.title, path })
+        tracks.push(track)
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('Guessed MIME-type not supported')) {
+          // ignore
+        } else {
+          throw error
+        }
+      }
+    }
+
+    return tracks
   }),
 })
 
