@@ -1,9 +1,15 @@
 import { fileExists, walkDir } from '$lib/utils/fs'
-import { parseFile } from 'music-metadata'
 import untildify from 'untildify'
-import { deleteTrackById, getAllTracks, getTrackByPath, insertTrack } from '../db/operations'
+import {
+  deleteTrackById,
+  getAllTracks,
+  getTrackByPath,
+  insertTrack,
+  updateTrack,
+} from '../db/operations'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
+import { isMetadataChanged, parseFile } from '../utils/music-metadata'
 
 export const appRouter = router({
   ping: publicProcedure.query(() => 'pong!'),
@@ -22,18 +28,26 @@ export const appRouter = router({
 
     const tracks = []
     for await (const path of walkDir(musicDir)) {
-      try {
-        // this will throw if the file is not a supported format
-        const metadata = await parseFile(path)
+      const metadata = await parseFile(path)
 
-        const track = getTrackByPath(path) ?? insertTrack({ title: metadata.common.title, path })
-        tracks.push(track)
-      } catch (error) {
-        if (error instanceof Error && error.message.startsWith('Guessed MIME-type not supported')) {
-          // ignore
+      // returns undefined if no metadata available
+      if (!metadata) {
+        continue
+      }
+
+      const existingTrack = getTrackByPath(path)
+      if (existingTrack) {
+        // check metadata for changes
+        if (isMetadataChanged(existingTrack, metadata)) {
+          // update the metadata in the db the file metdata has changed
+          const updatedTrack = updateTrack(existingTrack.id, metadata)
+          tracks.push(updatedTrack)
         } else {
-          throw error
+          tracks.push(existingTrack)
         }
+      } else {
+        // add track to db
+        tracks.push(insertTrack({ title: metadata.title, path }))
       }
     }
 
