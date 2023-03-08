@@ -22,7 +22,7 @@ function getEnvironmentVariables(mode: string) {
 }
 
 function getPort(envVars: Record<string, string | undefined>) {
-  const rawPort = envVars.PUBLIC_PORT
+  const rawPort = envVars.SERVER_PORT
   if (rawPort === undefined) {
     console.error('❌ Missing PORT environment variable')
     process.exit(1)

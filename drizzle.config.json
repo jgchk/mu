@@ -1,0 +1,5 @@
+{
+  "dialect": "sqlite",
+  "out": "./src/lib/server/db/migrations",
+  "schema": "./src/lib/server/db"
+}
