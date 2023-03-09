@@ -2,6 +2,7 @@
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import type { LayoutData } from './$types'
   import { setContextClient } from '$lib/trpc'
+  import '../app.css'
 
   export let data: LayoutData
 
