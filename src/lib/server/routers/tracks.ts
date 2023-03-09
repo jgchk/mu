@@ -1,5 +1,7 @@
-import { ifDefined } from '$lib/utils/types'
 import { z } from 'zod'
+
+import { ifDefined } from '$lib/utils/types'
+
 import { insertArtist } from '../db/operations/artists'
 import {
   getAllTracks,

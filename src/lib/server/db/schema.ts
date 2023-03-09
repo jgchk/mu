@@ -1,10 +1,10 @@
 import {
+  type InferModel,
+  integer,
+  primaryKey,
   sqliteTable,
   text,
-  integer,
-  type InferModel,
   uniqueIndex,
-  primaryKey,
 } from 'drizzle-orm/sqlite-core'
 
 export const artists = sqliteTable('artists', {

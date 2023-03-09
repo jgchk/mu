@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite'
-import { defineConfig } from 'vitest/config'
 import { loadEnv } from 'vite'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig(({ mode }) => {
   const env = getEnvironmentVariables(mode)

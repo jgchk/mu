@@ -1,9 +1,11 @@
-import { browser, dev } from '$app/environment'
 import { QueryClient } from '@tanstack/svelte-query'
 import { httpBatchLink, loggerLink } from '@trpc/client'
-import type { LayoutLoad } from './$types'
 import superjson from 'superjson'
+
+import { browser, dev } from '$app/environment'
 import { createClient } from '$lib/trpc'
+
+import type { LayoutLoad } from './$types'
 
 export const load: LayoutLoad = ({ fetch }) => {
   const queryClient = new QueryClient({

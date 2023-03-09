@@ -1,7 +1,9 @@
-import type { Artist, TrackArtist } from '../db/schema'
 import { execa } from 'execa'
-import type { TrackWithArtists } from '../db/operations/tracks'
+
 import { deepEquals } from '$lib/utils/types'
+
+import type { TrackWithArtists } from '../db/operations/tracks'
+import type { Artist, TrackArtist } from '../db/schema'
 
 type Metadata = {
   title: string | undefined

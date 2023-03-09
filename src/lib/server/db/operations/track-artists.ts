@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm/expressions'
+
 import { db } from '../instance'
-import { artists, trackArtists, type InsertTrackArtist, type TrackArtist } from '../schema'
+import { artists, type InsertTrackArtist, type TrackArtist, trackArtists } from '../schema'
 
 export const insertTrackArtists = (trackArtists_: InsertTrackArtist[]) =>
   db

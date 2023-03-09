@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm/expressions'
+
 import { db } from '../instance'
 import { artists, type InsertArtist } from '../schema'
 

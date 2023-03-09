@@ -1,5 +1,7 @@
-import { numberInString } from '$lib/utils/validators'
 import { error } from '@sveltejs/kit'
+
+import { numberInString } from '$lib/utils/validators'
+
 import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ parent, params }) => {

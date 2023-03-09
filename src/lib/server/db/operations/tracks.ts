@@ -1,6 +1,7 @@
-import { db } from '../instance'
-import { tracks, type InsertTrack, type Track, type TrackArtist } from '../schema'
 import { eq } from 'drizzle-orm/expressions'
+
+import { db } from '../instance'
+import { type InsertTrack, type Track, type TrackArtist, tracks } from '../schema'
 import {
   deleteTrackArtistsByTrackId,
   getArtistsByTrackId,

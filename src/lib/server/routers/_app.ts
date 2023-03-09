@@ -1,5 +1,7 @@
-import { fileExists, walkDir } from '$lib/utils/fs'
 import untildify from 'untildify'
+
+import { fileExists, walkDir } from '$lib/utils/fs'
+
 import { getArtistsByName, insertArtist } from '../db/operations/artists'
 import {
   deleteTrackById,
