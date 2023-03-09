@@ -11,7 +11,7 @@ interface CreateContextOptions {
  * This is useful for testing when we don't want to mock Next.js' request/response
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function createContextInner(_opts: CreateContextOptions) {
+export function createContextInner(_opts: CreateContextOptions) {
   return {}
 }
 
@@ -22,8 +22,8 @@ export type Context = inferAsyncReturnType<typeof createContextInner>
  * @link https://trpc.io/docs/context
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function createContext(_opts: FetchCreateContextFnOptions): Promise<Context> {
+export function createContext(_opts: FetchCreateContextFnOptions): Context {
   // for API-response caching see https://trpc.io/docs/caching
 
-  return await createContextInner({})
+  return createContextInner({})
 }

@@ -5,7 +5,7 @@ import type { LayoutLoad } from './$types'
 import superjson from 'superjson'
 import { createClient } from '$lib/trpc'
 
-export const load: LayoutLoad = async ({ fetch }) => {
+export const load: LayoutLoad = ({ fetch }) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
