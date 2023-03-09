@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()

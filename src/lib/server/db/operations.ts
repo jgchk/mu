@@ -23,4 +23,7 @@ export const getTrackByPath = (path: string) => {
 
 export const getAllTracks = () => db.select().from(tracks).all()
 
+export const getTrackById = (id: Track['id']) =>
+  db.select().from(tracks).where(eq(tracks.id, id)).get()
+
 export const deleteTrackById = (id: number) => db.delete(tracks).where(eq(tracks.id, id)).run()

@@ -3,9 +3,9 @@ import sys
 
 file_path = sys.argv[1]
 
-metadata = mutagen.File(file_path)
+file = mutagen.File(file_path, None, True)
 
-if metadata:
-    print(metadata.pprint())
+if file:
+    print(file.pprint())
 else:
     print("No metadata found")

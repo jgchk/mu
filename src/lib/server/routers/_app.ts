@@ -10,9 +10,11 @@ import {
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
 import { isMetadataChanged, parseFile } from '../utils/music-metadata'
+import { tracksRouter } from './tracks'
 
 export const appRouter = router({
   ping: publicProcedure.query(() => 'pong!'),
+  tracks: tracksRouter,
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)
 

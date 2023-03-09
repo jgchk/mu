@@ -5,6 +5,10 @@ type Metadata = {
   title?: string
 }
 
+export const writeFile = async (path: string, metadata: Metadata) => {
+  await execa('python', ['./scripts/write-metadata.py', path, JSON.stringify(metadata)])
+}
+
 export const parseFile = async (path: string): Promise<Metadata | undefined> => {
   const { stdout } = await execa('python', ['./scripts/read-metadata.py', path])
 
@@ -13,37 +17,14 @@ export const parseFile = async (path: string): Promise<Metadata | undefined> => 
   }
 
   const lines = stdout.split('\n')
-  const fileInfo = lines[0]
+  // const fileInfo = lines[0]
   const tags = lines.slice(1)
 
-  if (fileInfo.startsWith('MPEG 1 layer 3')) {
-    return parseId3Tags(tags)
-  } else if (fileInfo.startsWith('FLAC') || fileInfo.startsWith('Ogg Vorbis')) {
-    return parseVorbisTags(tags)
-  } else {
-    return undefined
-  }
-}
-
-const parseId3Tags = async (lines: string[]) => {
   const metadata: Metadata = {}
 
-  for (const line of lines) {
+  for (const line of tags) {
     const [tag, value] = line.split('=')
-    if (tag === 'TIT2') {
-      metadata.title = value
-    }
-  }
-
-  return metadata
-}
-
-const parseVorbisTags = async (lines: string[]) => {
-  const metadata: Metadata = {}
-
-  for (const line of lines) {
-    const [tag, value] = line.split('=')
-    if (tag === 'TITLE') {
+    if (tag.toLowerCase() === 'title') {
       metadata.title = value
     }
   }
