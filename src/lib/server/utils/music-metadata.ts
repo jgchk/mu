@@ -1,8 +1,11 @@
-import type { Track } from '../db/schema'
+import type { Artist, TrackArtist } from '../db/schema'
 import { execa } from 'execa'
+import type { TrackWithArtists } from '../db/operations/tracks'
+import { deepEquals } from '$lib/utils/types'
 
 type Metadata = {
-  title?: string
+  title: string | undefined
+  artists: string[]
 }
 
 export const writeFile = async (path: string, metadata: Metadata) => {
@@ -20,28 +23,37 @@ export const parseFile = async (path: string): Promise<Metadata | undefined> => 
   // const fileInfo = lines[0]
   const tags = lines.slice(1)
 
-  const metadata: Metadata = {}
+  const metadata: Metadata = {
+    title: undefined,
+    artists: [],
+  }
 
   for (const line of tags) {
     const [tag, value] = line.split('=')
-    if (tag.toLowerCase() === 'title') {
-      metadata.title = value
+    switch (tag.toLowerCase()) {
+      case 'title': {
+        metadata.title = value
+        break
+      }
+      case 'artist': {
+        metadata.artists = [...(metadata.artists ?? []), value]
+      }
     }
   }
 
   return metadata
 }
 
-export const isMetadataChanged = (track: Track, metadata: Metadata) => {
-  if ((track.title ?? undefined) !== metadata.title) {
-    return true
-  }
-
-  return false
+export const isMetadataChanged = (track: TrackWithArtists, metadata: Metadata) => {
+  const trackMetadata = getMetadataFromTrack(track)
+  return !deepEquals(trackMetadata, metadata)
 }
 
-export const getMetadataFromDatabaseTrack = (track: Track): Metadata => {
-  return {
-    title: track.title ?? undefined,
-  }
-}
+export const getMetadataFromTrack = (track: TrackWithArtists): Metadata => ({
+  title: track.title ?? undefined,
+  artists: track.artists.sort(compareArtists).map((artist) => artist.name),
+})
+
+type ComparableArtist = { order: TrackArtist['order']; name: Artist['name'] }
+export const compareArtists = (a: ComparableArtist, b: ComparableArtist) =>
+  a.order - b.order || a.name.localeCompare(b.name)

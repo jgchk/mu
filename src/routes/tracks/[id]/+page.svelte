@@ -13,7 +13,7 @@
 {#if $trackQuery.data}
   <TrackForm
     track={$trackQuery.data}
-    on:submit={(event) => $trackMutation.mutate({ id: data.id, metadata: event.detail })}
+    on:submit={(event) => $trackMutation.mutate({ id: data.id, data: event.detail })}
   />
 {:else if $trackQuery.error}
   <div>{$trackQuery.error.message}</div>

@@ -1,20 +1,23 @@
 import { fileExists, walkDir } from '$lib/utils/fs'
 import untildify from 'untildify'
+import { getArtistsByName, insertArtist } from '../db/operations/artists'
 import {
   deleteTrackById,
   getAllTracks,
-  getTrackByPath,
+  getTrackWithArtistsByPath,
   insertTrack,
-  updateTrack,
-} from '../db/operations'
+  updateTrackWithArtists,
+} from '../db/operations/tracks'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
 import { isMetadataChanged, parseFile } from '../utils/music-metadata'
+import { artistsRouter } from './artists'
 import { tracksRouter } from './tracks'
 
 export const appRouter = router({
   ping: publicProcedure.query(() => 'pong!'),
   tracks: tracksRouter,
+  artists: artistsRouter,
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)
 
@@ -37,12 +40,28 @@ export const appRouter = router({
         continue
       }
 
-      const existingTrack = getTrackByPath(path)
+      const existingTrack = getTrackWithArtistsByPath(path)
       if (existingTrack) {
         // check metadata for changes
         if (isMetadataChanged(existingTrack, metadata)) {
-          // update the metadata in the db the file metdata has changed
-          const updatedTrack = updateTrack(existingTrack.id, metadata)
+          // update the metadata in the db if the file metdata has changed
+
+          // convert artist names to artist ids
+          // - if artist with name exists, use that
+          // - if not, create new artist
+          const artists = metadata.artists.map((name) => {
+            const matchingArtists = getArtistsByName(name)
+            if (matchingArtists.length > 0) {
+              return matchingArtists[0]
+            } else {
+              return insertArtist({ name })
+            }
+          })
+
+          const updatedTrack = updateTrackWithArtists(existingTrack.id, {
+            ...metadata,
+            artists: artists.map((artist) => artist.id),
+          })
           tracks.push(updatedTrack)
         } else {
           tracks.push(existingTrack)

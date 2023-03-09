@@ -13,5 +13,5 @@ if not file:
     exit(1)
 
 file.tags['title'] = metadata_json['title']
-
+file.tags['artist'] = metadata_json['artists']
 file.save()

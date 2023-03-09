@@ -1,0 +1,1 @@
+ALTER TABLE track_artists ADD `order` integer NOT NULL;

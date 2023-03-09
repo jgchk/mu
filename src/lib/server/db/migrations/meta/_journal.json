@@ -13,6 +13,18 @@
       "version": "5",
       "when": 1678242080189,
       "tag": "0001_unique_felicia_hardy"
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1678388175483,
+      "tag": "0002_dry_mandrill"
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1678388981039,
+      "tag": "0003_next_the_order"
     }
   ]
 }
