@@ -16,7 +16,7 @@
   {#if $trackQuery.data}
     {#if $trackQuery.data.length > 0}
       <div class="flex flex-wrap gap-4">
-        {#each $trackQuery.data as track}
+        {#each $trackQuery.data as track (track.id)}
           <SearchResult result={track} />
         {/each}
       </div>
