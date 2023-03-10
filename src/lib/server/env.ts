@@ -7,6 +7,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   SERVER_PORT: z.coerce.number(),
   MUSIC_DIR: z.string(),
+  SOUNDCLOUD_CLIENT_ID: z.string(),
+  SOUNDCLOUD_AUTH_TOKEN: z.string(),
 })
 
 const envRes = envSchema.safeParse(process.env)

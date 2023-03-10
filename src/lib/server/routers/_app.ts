@@ -1,4 +1,5 @@
 import untildify from 'untildify'
+import { z } from 'zod'
 
 import { fileExists, walkDir } from '$lib/utils/fs'
 
@@ -11,6 +12,7 @@ import {
   updateTrackWithArtists,
 } from '../db/operations/tracks'
 import { env } from '../env'
+import { downloadTrack, search } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { isMetadataChanged, parseFile } from '../utils/music-metadata'
 import { artistsRouter } from './artists'
@@ -20,6 +22,15 @@ export const appRouter = router({
   ping: publicProcedure.query(() => 'pong!'),
   tracks: tracksRouter,
   artists: artistsRouter,
+  search: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ input: { query } }) => {
+      const soundcloudResults = await search(query)
+      return soundcloudResults
+    }),
+  download: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id } }) => downloadTrack(id)),
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)
 

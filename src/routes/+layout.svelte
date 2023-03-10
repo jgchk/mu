@@ -3,10 +3,14 @@
   import type { LayoutData } from './$types'
   import { setContextClient } from '$lib/trpc'
   import '../app.css'
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
 
   export let data: LayoutData
 
   setContextClient(data.trpc)
+
+  let query = ($page.url.pathname === '/search' && $page.url.searchParams.get('q')) || ''
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
@@ -16,6 +20,18 @@
     <nav class="rounded bg-black p-1 px-2">
       <a href="/">Home</a>
       <a href="/tracks">Tracks</a>
+
+      <form
+        class="inline text-black"
+        on:submit|preventDefault={() => {
+          if (query.length > 0) {
+            goto(`/search?q=${query}`)
+          }
+        }}
+      >
+        <input type="text" bind:value={query} />
+        <button type="submit">Search</button>
+      </form>
     </nav>
 
     <main class="flex-1 overflow-auto">
