@@ -5,7 +5,7 @@ import { deepEquals } from '$lib/utils/types'
 import type { TrackWithArtists } from '../db/operations/tracks'
 import type { Artist, TrackArtist } from '../db/schema'
 
-type Metadata = {
+export type Metadata = {
   title: string | undefined
   artists: string[]
 }
@@ -59,3 +59,24 @@ export const getMetadataFromTrack = (track: TrackWithArtists): Metadata => ({
 type ComparableArtist = { order: TrackArtist['order']; name: Artist['name'] }
 export const compareArtists = (a: ComparableArtist, b: ComparableArtist) =>
   a.order - b.order || a.name.localeCompare(b.name)
+
+export const parseArtistTitle = (
+  title_: string
+): { title: string; artists: string[] | undefined } => {
+  let artists: string[] | undefined = undefined
+  let title = title_
+
+  const dashes = [' - ', ' − ', ' – ', ' — ', ' ― ']
+  for (const dash of dashes) {
+    if (title.includes(dash)) {
+      const artistTitle = title.split(dash)
+      artists = [artistTitle[0].trim()]
+      title = artistTitle.slice(1).join(dash).trim()
+    }
+  }
+
+  return {
+    title,
+    artists,
+  }
+}
