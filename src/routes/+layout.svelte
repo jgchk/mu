@@ -20,6 +20,7 @@
     <nav class="rounded bg-black p-1 px-2">
       <a href="/">Home</a>
       <a href="/tracks">Tracks</a>
+      <a href="/downloads">Downloads</a>
 
       <form
         class="inline text-black"

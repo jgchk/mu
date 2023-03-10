@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { fileExists, walkDir } from '$lib/utils/fs'
 
 import { getArtistsByName, insertArtist } from '../db/operations/artists'
+import { insertDownload, updateDownloadStatus } from '../db/operations/downloads'
 import {
   deleteTrackById,
   getAllTracks,
@@ -16,12 +17,14 @@ import { downloadTrack, search } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { isMetadataChanged, parseFile } from '../utils/music-metadata'
 import { artistsRouter } from './artists'
+import { downloadsRouter } from './downloads'
 import { tracksRouter } from './tracks'
 
 export const appRouter = router({
   ping: publicProcedure.query(() => 'pong!'),
   tracks: tracksRouter,
   artists: artistsRouter,
+  downloads: downloadsRouter,
   search: publicProcedure
     .input(z.object({ query: z.string() }))
     .query(async ({ input: { query } }) => {
@@ -30,7 +33,12 @@ export const appRouter = router({
     }),
   download: publicProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id } }) => downloadTrack(id)),
+    .mutation(async ({ input: { id } }) => {
+      const download = insertDownload({ ref: id, complete: false })
+      const result = await downloadTrack(id)
+      updateDownloadStatus(download.id, true)
+      return result
+    }),
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)
 
