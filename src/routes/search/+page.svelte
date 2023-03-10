@@ -5,14 +5,14 @@
 
   export let data: PageData
 
-  $: query = data.query ?? ''
-  $: hasQuery = query.length > 0
-
   const trpc = getContextClient()
-  $: trackQuery = trpc.search.query({ query }, { enabled: hasQuery, staleTime: 60 * 1000 })
+  $: trackQuery = trpc.search.query(
+    { query: data.query },
+    { enabled: data.hasQuery, staleTime: 60 * 1000 }
+  )
 </script>
 
-{#if hasQuery}
+{#if data.hasQuery}
   {#if $trackQuery.data}
     {#if $trackQuery.data.length > 0}
       <div class="flex flex-wrap gap-4">
