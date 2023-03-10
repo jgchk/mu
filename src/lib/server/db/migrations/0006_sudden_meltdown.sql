@@ -1,0 +1,1 @@
+ALTER TABLE downloads ADD `path` text;

@@ -57,6 +57,7 @@ export const downloads = sqliteTable('downloads', {
   id: integer('id').primaryKey(),
   ref: integer('ref').notNull(),
   complete: integer('complete').notNull(),
+  path: text('path'),
 })
 export type Download = InferModel<typeof downloads>
 export type InsertDownload = InferModel<typeof downloads, 'insert'>

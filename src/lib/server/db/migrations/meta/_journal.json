@@ -37,6 +37,12 @@
       "version": "5",
       "when": 1678477841786,
       "tag": "0005_flaky_vulture"
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1678480384992,
+      "tag": "0006_sudden_meltdown"
     }
   ]
 }

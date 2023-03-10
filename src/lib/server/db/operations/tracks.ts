@@ -10,6 +10,23 @@ import {
 
 export const insertTrack = (track: InsertTrack) => db.insert(tracks).values(track).returning().get()
 
+export const insertTrackWithArtists = (
+  data: InsertTrack & { artists?: TrackArtist['artistId'][] }
+) => {
+  const { artists: artistsData, ...trackData } = data
+  console.log('data', data)
+  const track = insertTrack(trackData)
+  console.log('track', track)
+  if (artistsData !== undefined) {
+    insertTrackArtists(
+      artistsData.map((artistId, order) => ({ trackId: track.id, artistId, order }))
+    )
+  }
+  const artists = getArtistsByTrackId(track.id)
+  console.log('artists', artists)
+  return { ...track, artists }
+}
+
 export const updateTrack = (id: Track['id'], data: Partial<Omit<InsertTrack, 'id'>>) => {
   const update = {
     ...(data.path !== undefined ? { path: data.path } : {}),

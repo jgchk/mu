@@ -19,12 +19,24 @@ export const convertDownload = (download: Download): DownloadPretty => ({
 export const insertDownload = (download: InsertDownloadPretty) =>
   convertDownload(db.insert(downloads).values(convertInsertDownload(download)).returning().get())
 
-export const updateDownloadStatus = (id: number, complete: boolean) =>
-  db
-    .update(downloads)
-    .set({ complete: complete ? 1 : 0 })
-    .where(eq(downloads.id, id))
-    .returning()
-    .get()
+export const updateDownload = (
+  id: Download['id'],
+  data: Partial<Omit<InsertDownloadPretty, 'id'>>
+) => {
+  const update = {
+    ...(data.ref !== undefined ? { ref: data.ref } : {}),
+    ...(data.complete !== undefined ? { complete: data.complete ? 1 : 0 } : {}),
+    ...(data.path !== undefined ? { path: data.path } : {}),
+  }
+  return convertDownload(
+    db.update(downloads).set(update).where(eq(downloads.id, id)).returning().get()
+  )
+}
 
 export const getAllDownloads = () => db.select().from(downloads).all().map(convertDownload)
+
+export const getDownloadById = (id: Download['id']) =>
+  db.select().from(downloads).where(eq(downloads.id, id)).get()
+
+export const deleteDownloadById = (id: Download['id']) =>
+  db.delete(downloads).where(eq(downloads.id, id)).run()

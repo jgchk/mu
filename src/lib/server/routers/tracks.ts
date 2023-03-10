@@ -41,5 +41,3 @@ export const tracksRouter = router({
       return track
     }),
 })
-
-export type AppRouter = typeof tracksRouter
