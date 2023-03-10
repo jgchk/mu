@@ -9,7 +9,7 @@
   $: hasQuery = query.length > 0
 
   const trpc = getContextClient()
-  $: trackQuery = trpc.search.query({ query }, { enabled: hasQuery, keepPreviousData: true })
+  $: trackQuery = trpc.search.query({ query }, { enabled: hasQuery, staleTime: 60 * 1000 })
 </script>
 
 {#if hasQuery}
