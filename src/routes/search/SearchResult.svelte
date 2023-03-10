@@ -37,7 +37,7 @@
       <div class="center h-full w-full rounded bg-gray-800 italic text-gray-600">No cover art</div>
     {/if}
     <div
-      class="center group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-primary-500 active:bg-opacity-40"
+      class="center group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
     >
       <DownloadIcon
         size={32}
