@@ -7,5 +7,5 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 db.sqlite
-
 .env.local
+downloads

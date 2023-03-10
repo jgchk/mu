@@ -1,6 +1,6 @@
 import contentDisposition from 'content-disposition'
 import { execa } from 'execa'
-import fs from 'fs'
+import fs from 'fs/promises'
 import gotDefault from 'got'
 import mime from 'mime'
 import path from 'path'
@@ -127,9 +127,10 @@ const downloadOriginalFile = async (trackId: number, secretToken?: string) => {
       : ifDefined(res.headers['content-type'], (contentType) => mime.getExtension(contentType))
 
   filename = `${name}${extension ?? ''}`
-  const filepath = path.resolve(path.join('./', filename))
+  const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename))
 
-  await fs.promises.writeFile(filepath, res.rawBody)
+  await fs.mkdir(path.dirname(filepath), { recursive: true })
+  await fs.writeFile(filepath, res.rawBody)
 
   return filepath
 }
@@ -154,10 +155,11 @@ const downloadHls = async (track: SoundcloudTrack) => {
   }
 
   const filename = `${track.title}.${extension}`
-  const filepath = path.resolve(path.join('./', filename))
+  const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename))
 
   const url = await getTranscodingMp3(transcoding)
 
+  await fs.mkdir(path.dirname(filepath), { recursive: true })
   await execa('ffmpeg', [
     '-headers',
     `Authorization: OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`,

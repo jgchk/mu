@@ -1,12 +1,14 @@
 import * as dotenv from 'dotenv'
 import { z } from 'zod'
 
-dotenv.config()
+dotenv.config({ path: '.env' })
+dotenv.config({ path: '.env.local' })
 
 const envSchema = z.object({
   DATABASE_URL: z.string(),
   SERVER_PORT: z.coerce.number(),
   MUSIC_DIR: z.string(),
+  DOWNLOAD_DIR: z.string(),
   SOUNDCLOUD_CLIENT_ID: z.string(),
   SOUNDCLOUD_AUTH_TOKEN: z.string(),
 })
