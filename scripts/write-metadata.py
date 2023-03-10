@@ -8,7 +8,7 @@ metadata_json = json.loads(sys.argv[2])
 
 file = mutagen.File(file_path, None, True)
 
-if not file:
+if file is None:
     print("No metadata found")
     exit(1)
 
