@@ -1,3 +1,5 @@
+@import url('tippy.js/dist/tippy.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,4 +10,24 @@
     align-items: center;
     justify-content: center;
   }
+}
+
+.tippy-box {
+  @apply rounded-lg bg-white px-1 py-0.5 text-black shadow;
+}
+
+.tippy-box[data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: theme(colors.white);
+}
+
+.tippy-box[data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: theme(colors.white);
+}
+
+.tippy-box[data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: theme(colors.white);
+}
+
+.tippy-box[data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: theme(colors.white);
 }
