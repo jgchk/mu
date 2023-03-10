@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { fileExists, walkDir } from '$lib/utils/fs'
 
 import { getArtistsByName, insertArtist } from '../db/operations/artists'
-import { insertDownload, updateDownloadStatus } from '../db/operations/downloads'
 import {
   deleteTrackById,
   getAllTracks,
@@ -13,7 +12,7 @@ import {
   updateTrackWithArtists,
 } from '../db/operations/tracks'
 import { env } from '../env'
-import { downloadTrack, search } from '../services/soundcloud'
+import { search } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { isMetadataChanged, parseFile } from '../utils/music-metadata'
 import { artistsRouter } from './artists'
@@ -30,14 +29,6 @@ export const appRouter = router({
     .query(async ({ input: { query } }) => {
       const soundcloudResults = await search(query)
       return soundcloudResults
-    }),
-  download: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id } }) => {
-      const download = insertDownload({ ref: id, complete: false })
-      const result = await downloadTrack(id)
-      updateDownloadStatus(download.id, true)
-      return result
     }),
   sync: publicProcedure.mutation(async () => {
     const musicDir = untildify(env.MUSIC_DIR)

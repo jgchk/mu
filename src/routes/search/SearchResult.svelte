@@ -9,7 +9,7 @@
   export let result: SearchResult
 
   const trpc = getContextClient()
-  const downloadMutation = trpc.download.mutation()
+  const downloadMutation = trpc.downloads.download.mutation()
 
   const handleDownload = () => {
     $downloadMutation.mutate({ id: result.id })
