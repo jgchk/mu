@@ -2,7 +2,7 @@
   import { getContextClient, type RouterInput } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const downloadsQuery = trpc.downloads.getAll.query()
+  const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 })
   const importDownloadMutation = trpc.import.download.mutation()
 
   const handleImport = (id: RouterInput['import']['download']['id']) =>
