@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { search } from '../services/soundcloud'
+import { searchAlbums, searchTracks } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { artistsRouter } from './artists'
 import { downloadsRouter } from './downloads'
@@ -15,7 +15,13 @@ export const appRouter = router({
   import: importRouter,
   search: publicProcedure
     .input(z.object({ query: z.string() }))
-    .query(({ input: { query } }) => search(query)),
+    .query(async ({ input: { query } }) => {
+      const [tracks, albums] = await Promise.all([searchTracks(query), searchAlbums(query)])
+      return {
+        tracks,
+        albums,
+      }
+    }),
 })
 
 export type AppRouter = typeof appRouter

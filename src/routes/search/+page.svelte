@@ -10,16 +10,32 @@
     { query: data.query },
     { enabled: data.hasQuery, staleTime: 60 * 1000 }
   )
+
+  $: hasTracks = $trackQuery.data && $trackQuery.data.tracks.length > 0
+  $: hasAlbums = $trackQuery.data && $trackQuery.data.albums.length > 0
+  $: hasResults = hasTracks || hasAlbums
 </script>
 
 {#if data.hasQuery}
   {#if $trackQuery.data}
-    {#if $trackQuery.data.length > 0}
-      <div class="flex flex-wrap gap-4">
-        {#each $trackQuery.data as track (track.id)}
-          <SearchResult result={track} />
-        {/each}
-      </div>
+    {#if hasResults}
+      {#if hasAlbums}
+        <h2>Albums</h2>
+        <div class="flex flex-wrap gap-4">
+          {#each $trackQuery.data.albums as album (album.id)}
+            <SearchResult result={album} />
+          {/each}
+        </div>
+      {/if}
+
+      {#if hasTracks}
+        <h2>Tracks</h2>
+        <div class="flex flex-wrap gap-4">
+          {#each $trackQuery.data.tracks as track (track.id)}
+            <SearchResult result={track} />
+          {/each}
+        </div>
+      {/if}
     {:else}
       <div>No results</div>
     {/if}

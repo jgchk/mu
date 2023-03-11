@@ -4,7 +4,7 @@
   import { getContextClient, type RouterOutput } from '$lib/trpc'
   import { followCursor } from 'tippy.js'
 
-  type SearchResult = RouterOutput['search'][number]
+  type SearchResult = RouterOutput['search']['albums'][0] | RouterOutput['search']['tracks'][0]
 
   export let result: SearchResult
 
@@ -12,7 +12,7 @@
   const downloadMutation = trpc.downloads.download.mutation()
 
   const handleDownload = () => {
-    $downloadMutation.mutate({ id: result.id })
+    $downloadMutation.mutate({ id: result.id, kind: result.kind })
   }
 </script>
 

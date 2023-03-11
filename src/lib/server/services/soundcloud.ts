@@ -43,7 +43,7 @@ export const getClientId = async () => {
   return Promise.any(scriptUrls.map((url) => getClientIdFromScript(url)))
 }
 
-export const search = async (query: string) => {
+export const searchTracks = async (query: string) => {
   const result = await got('https://api-v2.soundcloud.com/search/tracks', {
     searchParams: {
       q: query,
@@ -59,6 +59,27 @@ export const search = async (query: string) => {
       track.artwork_url !== null
         ? {
             200: track.artwork_url.replace('large', 't200x200'),
+          }
+        : null,
+  }))
+}
+
+export const searchAlbums = async (query: string) => {
+  const result = await got('https://api-v2.soundcloud.com/search/albums', {
+    searchParams: {
+      q: query,
+      client_id: env.SOUNDCLOUD_CLIENT_ID,
+    },
+  })
+    .json()
+    .then((res) => SoundcloudPager(SoundcloudPlaylist).parse(res))
+
+  return result.collection.map((album) => ({
+    ...album,
+    artwork:
+      album.artwork_url !== null
+        ? {
+            200: album.artwork_url.replace('large', 't200x200'),
           }
         : null,
   }))
@@ -82,6 +103,31 @@ export const getTrack = async (id: number) => {
           }
         : null,
   }
+}
+
+export const getPlaylist = async (id: number) => {
+  const result = await got(`https://api-v2.soundcloud.com/playlists/${id}`, {
+    searchParams: {
+      client_id: env.SOUNDCLOUD_CLIENT_ID,
+    },
+  })
+    .json()
+    .then((res) => SoundcloudPlaylist.parse(res))
+
+  return {
+    ...result,
+    artwork:
+      result.artwork_url !== null
+        ? {
+            200: result.artwork_url.replace('large', 't200x200'),
+          }
+        : null,
+  }
+}
+
+export const downloadPlaylist = async (id: number) => {
+  const playlist = await getPlaylist(id)
+  return Promise.all(playlist.tracks.map((track) => downloadTrack(track.id)))
 }
 
 export const downloadTrack = async (id: number, secretToken?: string) => {
@@ -220,6 +266,10 @@ const getTrackOriginalDownload = async (trackId: number, secretToken?: string) =
   return result.redirectUri
 }
 
+const SoundcloudUser = z.object({
+  username: z.string(),
+})
+
 const SoundcloudPager = <T extends z.ZodTypeAny>(schema: T) =>
   z.object({
     collection: schema.array(),
@@ -240,11 +290,10 @@ type SoundcloudTranscoding = z.infer<typeof SoundcloudTranscoding>
 
 const SoundcloudTrack = z.object({
   id: z.number(),
+  kind: z.literal('track'),
   artwork_url: z.string().nullable(),
   title: z.string(),
-  user: z.object({
-    username: z.string(),
-  }),
+  user: SoundcloudUser,
   streamable: z.boolean(),
   policy: z.string(),
   downloadable: z.boolean(),
@@ -253,6 +302,21 @@ const SoundcloudTrack = z.object({
   }),
 })
 export type SoundcloudTrack = z.infer<typeof SoundcloudTrack>
+
+const SoundcloudTrackSimple = z.object({
+  id: z.number(),
+  kind: z.literal('track'),
+})
+
+const SoundcloudPlaylist = z.object({
+  id: z.number(),
+  kind: z.literal('playlist'),
+  artwork_url: z.string().nullable(),
+  title: z.string(),
+  user: SoundcloudUser,
+  tracks: z.union([SoundcloudTrack, SoundcloudTrackSimple]).array(),
+})
+export type SoundcloudPlaylist = z.infer<typeof SoundcloudPlaylist>
 
 const SoundcloudTrackDownload = z.object({
   redirectUri: z.string(),
