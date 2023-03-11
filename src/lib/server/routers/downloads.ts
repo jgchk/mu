@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { getAllDownloads, insertDownload, updateDownload } from '../db/operations/downloads'
-import { downloadTrack, getPlaylist } from '../services/soundcloud'
+import { downloadTrack, getPlaylist, getTrack } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 
 export const downloadsRouter = router({
@@ -24,8 +24,9 @@ export const downloadsRouter = router({
 })
 
 const handleDownloadTrack = async (id: number) => {
-  let download = insertDownload({ ref: id, complete: false })
-  const filePath = await downloadTrack(id)
+  const track = await getTrack(id)
+  let download = insertDownload({ ref: id, complete: false, name: track.title })
+  const filePath = await downloadTrack(track)
   download = updateDownload(download.id, { complete: true, path: filePath })
   return download
 }

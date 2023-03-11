@@ -27,6 +27,7 @@ export const updateDownload = (
     ...(data.ref !== undefined ? { ref: data.ref } : {}),
     ...(data.complete !== undefined ? { complete: data.complete ? 1 : 0 } : {}),
     ...(data.path !== undefined ? { path: data.path } : {}),
+    ...(data.name !== undefined ? { name: data.name } : {}),
   }
   return convertDownload(
     db.update(downloads).set(update).where(eq(downloads.id, id)).returning().get()

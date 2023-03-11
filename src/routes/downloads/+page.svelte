@@ -22,7 +22,7 @@
       {#each $downloadsQuery.data as download (download.id)}
         <li>
           <button on:click={() => handleImport(download.id)}>
-            {download.ref} ({download.complete ? 'complete' : 'downloading'})
+            {download.name} ({download.complete ? 'complete' : 'downloading'})
           </button>
         </li>
       {/each}

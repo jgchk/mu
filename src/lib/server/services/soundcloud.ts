@@ -125,14 +125,7 @@ export const getPlaylist = async (id: number) => {
   }
 }
 
-export const downloadPlaylist = async (id: number) => {
-  const playlist = await getPlaylist(id)
-  return Promise.all(playlist.tracks.map((track) => downloadTrack(track.id)))
-}
-
-export const downloadTrack = async (id: number, secretToken?: string) => {
-  const track = await getTrack(id)
-
+export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string) => {
   if (!track.streamable) {
     throw new Error('Track is not streamable')
   }
