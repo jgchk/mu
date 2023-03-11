@@ -18,15 +18,25 @@
 
 {#if $downloadsQuery.data}
   {#if $downloadsQuery.data.length > 0}
-    <ul>
+    <div class="grid w-fit grid-cols-3 gap-x-3">
       {#each $downloadsQuery.data as download (download.id)}
-        <li>
-          <button on:click={() => handleImport(download.id)}>
-            {download.name} ({download.complete ? 'complete' : 'downloading'})
-          </button>
-        </li>
+        <div class="contents">
+          <div>{download.name}</div>
+          <div>
+            {#if download.complete}
+              Complete
+            {:else}
+              Downloading...
+            {/if}
+          </div>
+          {#if download.complete}
+            <button on:click={() => handleImport(download.id)}> Import </button>
+          {:else}
+            <div />
+          {/if}
+        </div>
       {/each}
-    </ul>
+    </div>
   {:else}
     <div>No downloads</div>
   {/if}
