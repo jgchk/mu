@@ -14,12 +14,30 @@ export const artists = sqliteTable('artists', {
 export type Artist = InferModel<typeof artists>
 export type InsertArtist = InferModel<typeof artists, 'insert'>
 
-export const albums = sqliteTable('albums', {
+export const releases = sqliteTable('releases', {
   id: integer('id').primaryKey(),
-  title: text('title').notNull(),
+  title: text('title'),
 })
-export type Album = InferModel<typeof albums>
-export type InsertAlbum = InferModel<typeof albums, 'insert'>
+export type Release = InferModel<typeof releases>
+export type InsertRelease = InferModel<typeof releases, 'insert'>
+
+export const releaseArtists = sqliteTable(
+  'release_artists',
+  {
+    releaseId: integer('release_id')
+      .references(() => releases.id)
+      .notNull(),
+    artistId: integer('artist_id')
+      .references(() => artists.id)
+      .notNull(),
+    order: integer('order').notNull(),
+  },
+  (releaseArtists) => ({
+    releaseArtistsPrimaryKey: primaryKey(releaseArtists.releaseId, releaseArtists.artistId),
+  })
+)
+export type ReleaseArtist = InferModel<typeof releaseArtists>
+export type InsertReleaseArtist = InferModel<typeof releaseArtists, 'insert'>
 
 export const tracks = sqliteTable(
   'tracks',
@@ -27,6 +45,7 @@ export const tracks = sqliteTable(
     id: integer('id').primaryKey(),
     path: text('path').notNull(),
     title: text('title'),
+    releaseId: integer('release_id').references(() => releases.id),
   },
   (tracks) => ({
     pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),

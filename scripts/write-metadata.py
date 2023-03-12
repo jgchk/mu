@@ -14,4 +14,7 @@ if file is None:
 
 file.tags['title'] = metadata_json['title']
 file.tags['artist'] = metadata_json['artists']
+file.tags['album'] = metadata_json['album']
+file.tags['albumartist'] = metadata_json['albumArtists']
+
 file.save()

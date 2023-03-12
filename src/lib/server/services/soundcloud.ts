@@ -9,7 +9,6 @@ import { z } from 'zod'
 import { ifDefined, isDefined } from '$lib/utils/types'
 
 import { env } from '../env'
-import { type Metadata, parseArtistTitle, writeFile } from '../utils/music-metadata'
 
 const DEFAULT_HEADERS = {
   Authorization: `OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`,
@@ -138,18 +137,7 @@ export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string
     ? await downloadOriginalFile(track.id, secretToken)
     : await downloadHls(track)
 
-  const metadata = getTrackMetadata(track)
-  await writeFile(filepath, metadata)
-
   return filepath
-}
-
-const getTrackMetadata = (track: SoundcloudTrack): Metadata => {
-  const { artists, title } = parseArtistTitle(track.title)
-  return {
-    title,
-    artists: artists ?? [track.user.username],
-  }
 }
 
 const downloadOriginalFile = async (trackId: number, secretToken?: string) => {

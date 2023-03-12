@@ -4,24 +4,25 @@ import { ifDefined } from '$lib/utils/types'
 
 import { insertArtist } from '../db/operations/artists'
 import {
-  getAllTracks,
-  getTrackWithArtistsById,
-  updateTrackWithArtists,
-} from '../db/operations/tracks'
+  getAllReleases,
+  getReleaseWithArtistsById,
+  updateReleaseWithArtists,
+} from '../db/operations/releases'
+import { getTracksByReleaseId } from '../db/operations/tracks'
 import { publicProcedure, router } from '../trpc'
 import { getMetadataFromTrack, writeFile } from '../utils/music-metadata'
 
-export const tracksRouter = router({
-  getAll: publicProcedure.query(() => getAllTracks()),
+export const releasesRouter = router({
+  getAll: publicProcedure.query(() => getAllReleases()),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ input: { id } }) => getTrackWithArtistsById(id)),
+    .query(({ input: { id } }) => getReleaseWithArtistsById(id)),
   updateMetadata: publicProcedure
     .input(
       z.object({
         id: z.number(),
         data: z.object({
-          title: z.string().nullish(),
+          title: z.string(),
           artists: z.union([z.number(), z.string()]).array().optional(),
         }),
       })
@@ -36,8 +37,14 @@ export const tracksRouter = router({
           }
         })
       )
-      const track = updateTrackWithArtists(id, { ...data, artists })
-      await writeFile(track.path, getMetadataFromTrack(track.id))
-      return track
+
+      const release = updateReleaseWithArtists(id, { ...data, artists })
+      const tracks = getTracksByReleaseId(release.id)
+
+      await Promise.all(
+        tracks.map((track) => writeFile(track.path, getMetadataFromTrack(track.id)))
+      )
+
+      return release
     }),
 })

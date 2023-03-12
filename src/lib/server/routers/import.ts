@@ -10,6 +10,7 @@ import {
   deleteReleaseDownloadById,
   getReleaseDownloadById,
 } from '../db/operations/release-downloads'
+import { insertReleaseWithArtists } from '../db/operations/releases'
 import {
   deleteTrackDownloadById,
   getTrackDownloadById,
@@ -72,22 +73,55 @@ export const importRouter = router({
         throw new Error('Not all downloads have paths')
       }
 
-      const tracks = await Promise.all([
-        trackDownloads.map(async (trackDownload) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const track = await importFile(trackDownload.path!)
-          deleteTrackDownloadById(trackDownload.id)
-          return track
-        }),
-      ])
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const tracks = await importFiles(trackDownloads.map((download) => download.path!))
 
+      trackDownloads.forEach((download) => deleteTrackDownloadById(download.id))
       deleteReleaseDownloadById(download.id)
 
       return tracks
     }),
 })
 
-const importFile = async (filePath: string) => {
+const importFiles = async (filePaths: string[]) => {
+  const trackData = await Promise.all(
+    filePaths.map(async (filePath) => {
+      const metadata = await parseFile(filePath)
+
+      if (!metadata) {
+        throw new Error('No metadata available')
+      }
+
+      return {
+        path: filePath,
+        metadata,
+      }
+    })
+  )
+
+  const albumArtists = trackData[0].metadata.albumArtists.map((name) => {
+    const matchingArtists = getArtistsByName(name)
+    if (matchingArtists.length > 0) {
+      return matchingArtists[0]
+    } else {
+      return insertArtist({ name })
+    }
+  })
+
+  const dbRelease = insertReleaseWithArtists({
+    title: trackData[0].metadata.album,
+    artists: albumArtists.map((artist) => artist.id),
+  })
+
+  const dbTracks = await Promise.all(trackData.map((track) => importFile(track.path, dbRelease.id)))
+
+  return {
+    release: dbRelease,
+    tracks: dbTracks,
+  }
+}
+
+const importFile = async (filePath: string, releaseId?: number) => {
   const metadata = await parseFile(filePath)
 
   // returns undefined if no metadata available
@@ -113,14 +147,16 @@ const importFile = async (filePath: string) => {
   const existingTrack = getTrackWithArtistsByPath(newPath)
   const track = existingTrack
     ? updateTrackWithArtists(existingTrack.id, {
-        ...metadata,
+        title: metadata.title,
         artists: artists.map((artist) => artist.id),
         path: newPath,
+        releaseId,
       })
     : insertTrackWithArtists({
-        ...metadata,
+        title: metadata.title,
         artists: artists.map((artist) => artist.id),
         path: newPath,
+        releaseId,
       })
 
   if (filePath !== newPath) {

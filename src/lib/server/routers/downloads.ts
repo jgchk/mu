@@ -8,23 +8,68 @@ import {
 } from '../db/operations/track-downloads'
 import { downloadTrack, getPlaylist, getTrack } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
+import { parseArtistTitle, writeFile } from '../utils/music-metadata'
 
 export const downloadsRouter = router({
   download: publicProcedure
     .input(z.object({ id: z.number(), kind: z.union([z.literal('track'), z.literal('playlist')]) }))
     .mutation(async ({ input: { id, kind } }) => {
       if (kind === 'track') {
-        return handleDownloadTrack(id)
-      } else {
-        // ???: How to handle playlist downloads?
-        // - Ideally I want an entry on the download page for the playlist, which is expandable to see the download status of each individual track
-        // - Do I need db table for playlist downloads? Or can I just set a column on the track downloads table to indicate that it's part of a playlist download?
-        //    - I think it depends on whether I want to put additional info about the playlist in the db
+        const scTrack = await getTrack(id)
 
-        const playlist = await getPlaylist(id)
-        const downloadGroup = insertReleaseDownload({ name: playlist.title })
+        let dbDownload = insertTrackDownload({
+          ref: id,
+          complete: false,
+          name: scTrack.title,
+        })
+
+        const filePath = await downloadTrack(scTrack)
+
+        const { artists, title } = parseArtistTitle(scTrack.title)
+        await writeFile(filePath, {
+          title,
+          artists: artists ?? [scTrack.user.username],
+          album: undefined,
+          albumArtists: [],
+        })
+
+        dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
+
+        return dbDownload
+      } else {
+        const scPlaylist = await getPlaylist(id)
+
+        const releaseDownload = insertReleaseDownload({ name: scPlaylist.title })
+
+        const playlistArtistTitle = parseArtistTitle(scPlaylist.title)
+        const releaseArtists = playlistArtistTitle.artists ?? [scPlaylist.user.username]
+        const releaseTitle = playlistArtistTitle.title
+
         return Promise.all(
-          playlist.tracks.map((track) => handleDownloadTrack(track.id, downloadGroup.id))
+          scPlaylist.tracks.map(async (track) => {
+            const scTrack = 'title' in track ? track : await getTrack(track.id)
+
+            let dbDownload = insertTrackDownload({
+              ref: id,
+              complete: false,
+              name: scTrack.title,
+              releaseDownloadId: releaseDownload.id,
+            })
+
+            const filePath = await downloadTrack(scTrack)
+
+            const { artists, title } = parseArtistTitle(scTrack.title)
+            await writeFile(filePath, {
+              title,
+              artists: artists ?? [scTrack.user.username],
+              album: releaseTitle,
+              albumArtists: releaseArtists,
+            })
+
+            dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
+
+            return dbDownload
+          })
         )
       }
     }),
@@ -33,16 +78,3 @@ export const downloadsRouter = router({
     return { tracks, releases }
   }),
 })
-
-const handleDownloadTrack = async (id: number, releaseDownloadId?: number) => {
-  const track = await getTrack(id)
-  let download = insertTrackDownload({
-    ref: id,
-    complete: false,
-    name: track.title,
-    releaseDownloadId,
-  })
-  const filePath = await downloadTrack(track)
-  download = updateTrackDownload(download.id, { complete: true, path: filePath })
-  return download
-}

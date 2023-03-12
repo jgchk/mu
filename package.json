@@ -12,7 +12,8 @@
     "test:unit": "vitest",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "format": "prettier --plugin-search-dir . --write .",
-    "db:push": "drizzle-kit generate:sqlite"
+    "db:push": "drizzle-kit generate:sqlite",
+    "db:drop": "rm db.sqlite && rm -r ./downloads && rm -r ./src/lib/server/db/migrations"
   },
   "dependencies": {
     "@tanstack/svelte-query": "^4.24.10",

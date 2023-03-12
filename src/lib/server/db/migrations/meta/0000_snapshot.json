@@ -1,30 +1,9 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "84257cb9-49ae-4323-92eb-ff67179b4e9b",
+  "id": "3a6b65ed-969a-4283-9983-c62571b84b49",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "albums": {
-      "name": "albums",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {}
-    },
     "artists": {
       "name": "artists",
       "columns": {
@@ -46,6 +25,65 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {}
     },
+    "release_artists": {
+      "name": "release_artists",
+      "columns": {
+        "release_id": {
+          "name": "release_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "release_artists_release_id_releases_id_fk": {
+          "name": "release_artists_release_id_releases_id_fk",
+          "tableFrom": "release_artists",
+          "tableTo": "releases",
+          "columnsFrom": [
+            "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        },
+        "release_artists_artist_id_artists_id_fk": {
+          "name": "release_artists_artist_id_artists_id_fk",
+          "tableFrom": "release_artists",
+          "tableTo": "artists",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
+      "compositePrimaryKeys": {
+        "release_artists_release_id_artist_id_pk": {
+          "columns": [
+            "release_id",
+            "artist_id"
+          ]
+        }
+      }
+    },
     "release_downloads": {
       "name": "release_downloads",
       "columns": {
@@ -61,6 +99,27 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "releases": {
+      "name": "releases",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -207,6 +266,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "release_id": {
+          "name": "release_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -218,7 +284,19 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "tracks_release_id_releases_id_fk": {
+          "name": "tracks_release_id_releases_id_fk",
+          "tableFrom": "tracks",
+          "tableTo": "releases",
+          "columnsFrom": [
+            "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
       "compositePrimaryKeys": {}
     }
   },

@@ -14,16 +14,13 @@ export const insertTrackWithArtists = (
   data: InsertTrack & { artists?: TrackArtist['artistId'][] }
 ) => {
   const { artists: artistsData, ...trackData } = data
-  console.log('data', data)
   const track = insertTrack(trackData)
-  console.log('track', track)
   if (artistsData !== undefined) {
     insertTrackArtists(
       artistsData.map((artistId, order) => ({ trackId: track.id, artistId, order }))
     )
   }
   const artists = getArtistsByTrackId(track.id)
-  console.log('artists', artists)
   return { ...track, artists }
 }
 
@@ -31,6 +28,7 @@ export const updateTrack = (id: Track['id'], data: Partial<Omit<InsertTrack, 'id
   const update = {
     ...(data.path !== undefined ? { path: data.path } : {}),
     ...(data.title !== undefined ? { title: data.title } : {}),
+    ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
   }
   return db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
 }
@@ -67,6 +65,9 @@ export const getTrackWithArtistsByPath = (path: Track['path']) => {
 }
 
 export const getAllTracks = () => db.select().from(tracks).all()
+
+export const getTracksByReleaseId = (releaseId: NonNullable<Track['releaseId']>) =>
+  db.select().from(tracks).where(eq(tracks.releaseId, releaseId)).all()
 
 export const getTrackById = (id: Track['id']) =>
   db.select().from(tracks).where(eq(tracks.id, id)).get()
