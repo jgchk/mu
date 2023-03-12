@@ -23,7 +23,7 @@ import {
 } from '../db/operations/tracks'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
-import { parseFile } from '../utils/music-metadata'
+import { type Metadata, parseFile } from '../utils/music-metadata'
 
 export const importRouter = router({
   file: publicProcedure
@@ -36,7 +36,7 @@ export const importRouter = router({
       for await (const filePath of walkDir(dirPath)) {
         filePaths.push(filePath)
       }
-      return Promise.all(filePaths.map(importFile))
+      return Promise.all(filePaths.map((filePath) => importFile(filePath)))
     }),
   trackDownload: publicProcedure
     .input(z.object({ id: z.number() }))
@@ -113,7 +113,9 @@ const importFiles = async (filePaths: string[]) => {
     artists: albumArtists.map((artist) => artist.id),
   })
 
-  const dbTracks = await Promise.all(trackData.map((track) => importFile(track.path, dbRelease.id)))
+  const dbTracks = await Promise.all(
+    trackData.map((track) => importFile(track.path, track.metadata, dbRelease.id))
+  )
 
   return {
     release: dbRelease,
@@ -121,8 +123,8 @@ const importFiles = async (filePaths: string[]) => {
   }
 }
 
-const importFile = async (filePath: string, releaseId?: number) => {
-  const metadata = await parseFile(filePath)
+const importFile = async (filePath: string, metadata_?: Metadata, releaseId?: number) => {
+  const metadata = metadata_ ?? (await parseFile(filePath))
 
   // returns undefined if no metadata available
   if (!metadata) {
