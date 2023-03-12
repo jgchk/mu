@@ -6,7 +6,15 @@ import { z } from 'zod'
 import { walkDir } from '$lib/utils/fs'
 
 import { getArtistsByName, insertArtist } from '../db/operations/artists'
-import { deleteDownloadById, getDownloadById } from '../db/operations/downloads'
+import {
+  deleteReleaseDownloadById,
+  getReleaseDownloadById,
+} from '../db/operations/release-downloads'
+import {
+  deleteTrackDownloadById,
+  getTrackDownloadById,
+  getTrackDownloadsByReleaseDownloadId,
+} from '../db/operations/track-downloads'
 import {
   getTrackWithArtistsByPath,
   insertTrackWithArtists,
@@ -29,10 +37,10 @@ export const importRouter = router({
       }
       return Promise.all(filePaths.map(importFile))
     }),
-  download: publicProcedure
+  trackDownload: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input: { id } }) => {
-      const download = getDownloadById(id)
+      const download = getTrackDownloadById(id)
 
       if (!download.complete) {
         throw new Error('Download is not complete')
@@ -41,11 +49,41 @@ export const importRouter = router({
         throw new Error('Download has no path')
       }
 
-      const track = importFile(download.path)
+      const track = await importFile(download.path)
 
-      deleteDownloadById(download.id)
+      deleteTrackDownloadById(download.id)
 
       return track
+    }),
+  releaseDownload: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id } }) => {
+      const download = getReleaseDownloadById(id)
+
+      const trackDownloads = getTrackDownloadsByReleaseDownloadId(download.id)
+
+      const allTrackDownloadsComplete = trackDownloads.every((download) => download.complete)
+      if (!allTrackDownloadsComplete) {
+        throw new Error('Not all downloads are complete')
+      }
+
+      const allTrackDownloadsHavePaths = trackDownloads.every((download) => download.path)
+      if (!allTrackDownloadsHavePaths) {
+        throw new Error('Not all downloads have paths')
+      }
+
+      const tracks = await Promise.all([
+        trackDownloads.map(async (trackDownload) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const track = await importFile(trackDownload.path!)
+          deleteTrackDownloadById(trackDownload.id)
+          return track
+        }),
+      ])
+
+      deleteReleaseDownloadById(download.id)
+
+      return tracks
     }),
 })
 

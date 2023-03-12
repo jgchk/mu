@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX pathUniqueIndex ON tracks (`path`);

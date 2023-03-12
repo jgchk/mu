@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import { getAllDownloads, insertDownload, updateDownload } from '../db/operations/downloads'
+import { getAllReleaseDownloads, insertReleaseDownload } from '../db/operations/release-downloads'
+import {
+  getAllTrackDownloads,
+  insertTrackDownload,
+  updateTrackDownload,
+} from '../db/operations/track-downloads'
 import { downloadTrack, getPlaylist, getTrack } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 
@@ -17,16 +22,27 @@ export const downloadsRouter = router({
         //    - I think it depends on whether I want to put additional info about the playlist in the db
 
         const playlist = await getPlaylist(id)
-        return Promise.all(playlist.tracks.map((track) => handleDownloadTrack(track.id)))
+        const downloadGroup = insertReleaseDownload({ name: playlist.title })
+        return Promise.all(
+          playlist.tracks.map((track) => handleDownloadTrack(track.id, downloadGroup.id))
+        )
       }
     }),
-  getAll: publicProcedure.query(() => getAllDownloads()),
+  getAll: publicProcedure.query(async () => {
+    const [tracks, releases] = await Promise.all([getAllTrackDownloads(), getAllReleaseDownloads()])
+    return { tracks, releases }
+  }),
 })
 
-const handleDownloadTrack = async (id: number) => {
+const handleDownloadTrack = async (id: number, releaseDownloadId?: number) => {
   const track = await getTrack(id)
-  let download = insertDownload({ ref: id, complete: false, name: track.title })
+  let download = insertTrackDownload({
+    ref: id,
+    complete: false,
+    name: track.title,
+    releaseDownloadId,
+  })
   const filePath = await downloadTrack(track)
-  download = updateDownload(download.id, { complete: true, path: filePath })
+  download = updateTrackDownload(download.id, { complete: true, path: filePath })
   return download
 }

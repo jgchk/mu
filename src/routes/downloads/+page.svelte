@@ -1,40 +1,59 @@
 <script lang="ts">
   import { getContextClient, type RouterInput } from '$lib/trpc'
+  import type {
+    ReleaseDownload as ReleaseDownloadType,
+    TrackDownload as TrackDownloadType,
+  } from './types'
+  import ReleaseDownload from './ReleaseDownload.svelte'
+  import TrackDownload from './TrackDownload.svelte'
 
   const trpc = getContextClient()
   const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 })
-  const importDownloadMutation = trpc.import.download.mutation()
 
-  const handleImport = (id: RouterInput['import']['download']['id']) =>
-    $importDownloadMutation.mutate(
-      { id },
-      {
-        onSuccess: () => {
-          $downloadsQuery.refetch()
-        },
+  let downloads:
+    | {
+        releases: (ReleaseDownloadType & { tracks: TrackDownloadType[] })[]
+        tracks: TrackDownloadType[]
       }
-    )
+    | undefined
+  $: {
+    if (!$downloadsQuery.data) {
+      downloads = undefined
+    } else {
+      const data: {
+        releases: { [id: number]: ReleaseDownloadType & { tracks: TrackDownloadType[] } }
+        tracks: TrackDownloadType[]
+      } = {
+        releases: Object.fromEntries(
+          $downloadsQuery.data.releases.map((release) => [release.id, { ...release, tracks: [] }])
+        ),
+        tracks: [],
+      }
+
+      for (const track of $downloadsQuery.data.tracks) {
+        if (track.releaseDownloadId === null) {
+          data.tracks.push(track)
+        } else {
+          data.releases[track.releaseDownloadId].tracks.push(track)
+        }
+      }
+
+      downloads = {
+        releases: Object.values(data.releases),
+        tracks: data.tracks,
+      }
+    }
+  }
 </script>
 
-{#if $downloadsQuery.data}
-  {#if $downloadsQuery.data.length > 0}
-    <div class="grid w-fit grid-cols-3 gap-x-3">
-      {#each $downloadsQuery.data as download (download.id)}
-        <div class="contents">
-          <div>{download.name}</div>
-          <div>
-            {#if download.complete}
-              Complete
-            {:else}
-              Downloading...
-            {/if}
-          </div>
-          {#if download.complete}
-            <button on:click={() => handleImport(download.id)}> Import </button>
-          {:else}
-            <div />
-          {/if}
-        </div>
+{#if downloads}
+  {#if downloads.releases.length > 0 || downloads.tracks.length > 0}
+    <div class="grid w-fit grid-cols-4 gap-x-3">
+      {#each downloads.releases as releaseDownload (releaseDownload.id)}
+        <ReleaseDownload download={releaseDownload} />
+      {/each}
+      {#each downloads.tracks as trackDownload (trackDownload.id)}
+        <TrackDownload download={trackDownload} />
       {/each}
     </div>
   {:else}

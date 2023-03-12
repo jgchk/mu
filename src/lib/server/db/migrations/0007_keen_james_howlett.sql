@@ -1,1 +1,0 @@
-ALTER TABLE downloads ADD `name` text NOT NULL;
