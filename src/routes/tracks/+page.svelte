@@ -10,7 +10,7 @@
     <div class="contents">
       <div>Title</div>
     </div>
-    {#each $tracksQuery.data as track}
+    {#each $tracksQuery.data as track (track.id)}
       <a class="contents" href="/tracks/{track.id}">
         <div>{track.title}</div>
       </a>

@@ -5,6 +5,7 @@ import { ifDefined } from '$lib/utils/types'
 import { insertArtist } from '../db/operations/artists'
 import {
   getAllTracks,
+  getTracksByReleaseId,
   getTrackWithArtistsById,
   updateTrackWithArtists,
 } from '../db/operations/tracks'
@@ -16,6 +17,9 @@ export const tracksRouter = router({
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id } }) => getTrackWithArtistsById(id)),
+  getByReleaseId: publicProcedure
+    .input(z.object({ releaseId: z.number() }))
+    .query(({ input: { releaseId } }) => getTracksByReleaseId(releaseId)),
   updateMetadata: publicProcedure
     .input(
       z.object({
