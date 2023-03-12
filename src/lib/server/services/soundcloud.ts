@@ -158,14 +158,13 @@ const downloadOriginalFile = async (trackId: number, secretToken?: string) => {
     throw new Error(`Could not get filename from content-disposition header: ${String(cdHeader)}`)
   }
 
-  const { name, ext } = path.parse(filename)
-
+  const ext = path.extname(filename)
   const extension =
     ext.length > 0
       ? ext
       : ifDefined(res.headers['content-type'], (contentType) => mime.getExtension(contentType))
 
-  filename = `${name}${extension ?? ''}`
+  filename = `sc-${trackId}${extension ?? ''}`
   const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename))
 
   await fs.mkdir(path.dirname(filepath), { recursive: true })
@@ -193,7 +192,7 @@ const downloadHls = async (track: SoundcloudTrack) => {
     throw new Error(`Unknown extension for preset ${transcoding.preset}`)
   }
 
-  const filename = `${track.title}.${extension}`
+  const filename = `sc-${track.id}.${extension}`
   const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename))
 
   const url = await getTranscodingMp3(transcoding)
