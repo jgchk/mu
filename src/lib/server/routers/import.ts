@@ -47,7 +47,7 @@ export const importRouter = router({
         throw new Error('Download has no path')
       }
 
-      const track = await importFile(download.path)
+      const track = await importFiles([download.path])
 
       deleteTrackDownloadById(download.id)
 

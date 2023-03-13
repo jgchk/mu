@@ -29,9 +29,9 @@ export const downloadsRouter = router({
         await writeFile(filePath, {
           title,
           artists: artists ?? [scTrack.user.username],
-          album: undefined,
-          albumArtists: [],
-          trackNumber: undefined,
+          album: title,
+          albumArtists: artists ?? [scTrack.user.username],
+          trackNumber: '1',
         })
 
         dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
