@@ -9,6 +9,7 @@ import {
   insertTrackDownload,
   updateTrackDownload,
 } from '../db/operations/track-downloads'
+import { download, SoulseekDownload } from '../services/soulseek'
 import { downloadTrack, getPlaylist, getSoundcloudImageUrl, getTrack } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from '../utils/music-metadata'
@@ -102,6 +103,10 @@ export const downloadsRouter = router({
         )
       }
     }),
+  downloadSlsk: publicProcedure.input(SoulseekDownload).mutation(async ({ input }) => {
+    const data = await download(input)
+    return data
+  }),
   getAll: publicProcedure.query(async () => {
     const [tracks, releases] = await Promise.all([getAllTrackDownloads(), getAllReleaseDownloads()])
     return { tracks, releases }

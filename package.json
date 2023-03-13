@@ -34,6 +34,7 @@
     "got": "^12.6.0",
     "mime": "^3.0.0",
     "sharp": "^0.31.3",
+    "slsk-client": "^1.1.0",
     "superjson": "^1.12.2",
     "tippy.js": "^6.3.7",
     "untildify": "^4.0.0",

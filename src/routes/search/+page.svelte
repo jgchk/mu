@@ -13,7 +13,10 @@
 
   $: hasTracks = $trackQuery.data && $trackQuery.data.tracks.length > 0
   $: hasAlbums = $trackQuery.data && $trackQuery.data.albums.length > 0
-  $: hasResults = hasTracks || hasAlbums
+  $: hasSlsk = $trackQuery.data && $trackQuery.data.slsk.length > 0
+  $: hasResults = hasTracks || hasAlbums || hasSlsk
+
+  const downloadSlskMutation = trpc.downloads.downloadSlsk.mutation()
 </script>
 
 {#if data.hasQuery}
@@ -33,6 +36,17 @@
         <div class="flex flex-wrap gap-4">
           {#each $trackQuery.data.tracks as track (track.id)}
             <SearchResult result={track} />
+          {/each}
+        </div>
+      {/if}
+
+      {#if hasSlsk}
+        <h2>Soulseek</h2>
+        <div>
+          {#each $trackQuery.data.slsk.filter((s) => s.slots) as slsk (slsk.file)}
+            <button class="block text-left" on:click={() => $downloadSlskMutation.mutate(slsk)}>
+              <pre>{JSON.stringify(slsk, null, 2)}</pre>
+            </button>
           {/each}
         </div>
       {/if}

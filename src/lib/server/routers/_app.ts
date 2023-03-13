@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { ifNotNull } from '$lib/utils/types'
 
+import { search } from '../services/soulseek'
 import { getSoundcloudImageUrl, searchAlbums, searchTracks } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
 import { artistsRouter } from './artists'
@@ -21,6 +22,7 @@ export const appRouter = router({
     .input(z.object({ query: z.string() }))
     .query(async ({ input: { query } }) => {
       const [tracks, albums] = await Promise.all([searchTracks(query), searchAlbums(query)])
+      const slsk = await search(query)
       return {
         tracks: tracks.map((track) => ({
           ...track,
@@ -34,6 +36,7 @@ export const appRouter = router({
             200: getSoundcloudImageUrl(artworkUrl, 200),
           })),
         })),
+        slsk,
       }
     }),
 })
