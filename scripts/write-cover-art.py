@@ -2,11 +2,9 @@ import mediafile
 import sys
 
 file_path = sys.argv[1]
-image_path = sys.argv[2]
+cover_data = sys.stdin.buffer.read()
 
-with open(image_path, 'rb') as f:
-    cover = f.read()
-    cover = mediafile.Image(data=cover, desc=u'album cover', type=mediafile.ImageType.front)
+cover = mediafile.Image(data=cover_data, desc=u'album cover', type=mediafile.ImageType.front)
 
 f = mediafile.MediaFile(file_path)
 f.images = [cover]

@@ -1,5 +1,4 @@
 import { execa } from 'execa'
-import fs from 'fs/promises'
 
 import { deepEquals, ifNotNull } from '$lib/utils/types'
 
@@ -20,11 +19,8 @@ export const writeTrackMetadata = async (path: string, metadata: Metadata) => {
   await execa('python', ['./scripts/write-metadata.py', path, JSON.stringify(metadata)])
 }
 
-export const writeTrackCoverArt = async (path: string, coverArt: Buffer, extension: string) => {
-  const { stdout: coverArtPath } = await execa('mktemp', ['--suffix', extension])
-  await fs.writeFile(coverArtPath, coverArt)
-  await execa('python', ['./scripts/write-cover-art.py', path, coverArtPath])
-  await fs.rm(coverArtPath)
+export const writeTrackCoverArt = async (path: string, coverArt: Buffer) => {
+  await execa('python', ['./scripts/write-cover-art.py', path], { input: coverArt, encoding: null })
 }
 
 export const readTrackMetadata = async (path: string): Promise<Metadata | undefined> => {

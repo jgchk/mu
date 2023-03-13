@@ -1,5 +1,4 @@
 import got from 'got'
-import path from 'path'
 import { z } from 'zod'
 
 import { ifNotNull } from '$lib/utils/types'
@@ -47,7 +46,7 @@ export const downloadsRouter = router({
           trackNumber: '1',
         })
         if (artwork) {
-          await writeTrackCoverArt(filePath, artwork.data, path.extname(artwork.url))
+          await writeTrackCoverArt(filePath, artwork.data)
         }
 
         dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
@@ -93,7 +92,7 @@ export const downloadsRouter = router({
               trackNumber: (i + 1).toString(),
             })
             if (artwork) {
-              await writeTrackCoverArt(filePath, artwork.data, path.extname(artwork.url))
+              await writeTrackCoverArt(filePath, artwork.data)
             }
 
             dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
