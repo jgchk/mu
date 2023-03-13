@@ -19,10 +19,6 @@ export const writeTrackMetadata = async (path: string, metadata: Metadata) => {
   await execa('python', ['./scripts/write-metadata.py', path, JSON.stringify(metadata)])
 }
 
-export const writeTrackCoverArt = async (path: string, coverArt: Buffer) => {
-  await execa('python', ['./scripts/write-cover-art.py', path], { input: coverArt, encoding: null })
-}
-
 export const readTrackMetadata = async (path: string): Promise<Metadata | undefined> => {
   const { stdout } = await execa('python', ['./scripts/read-metadata.py', path])
 
@@ -69,6 +65,22 @@ export const readTrackMetadata = async (path: string): Promise<Metadata | undefi
   }
 
   return metadata
+}
+
+export const writeTrackCoverArt = async (path: string, coverArt: Buffer) => {
+  await execa('python', ['./scripts/write-cover-art.py', path], { input: coverArt, encoding: null })
+}
+
+export const readTrackCoverArt = async (path: string): Promise<Buffer | undefined> => {
+  const { stdout } = await execa('python', ['./scripts/read-cover-art.py', path], {
+    encoding: null,
+  })
+
+  if (stdout.toString() === 'No cover art found') {
+    return undefined
+  }
+
+  return stdout
 }
 
 export const isMetadataChanged = (trackId: Track['id'], metadata: Metadata) => {

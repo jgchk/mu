@@ -6,13 +6,20 @@
 </script>
 
 {#if $releasesQuery.data}
-  <div class="grid grid-cols-1">
-    <div class="contents">
-      <div>Title</div>
-    </div>
+  <div class="flex flex-wrap gap-4">
     {#each $releasesQuery.data as release (release.id)}
-      <a class="contents" href="/releases/{release.id}">
-        <div>{release.title}</div>
+      <a href="/releases/{release.id}" class="w-[200px]">
+        <div class="relative h-[200px] w-full shadow">
+          <img
+            class="h-full w-full rounded object-cover"
+            src="/api/releases/{release.id}/cover-art"
+            alt={release.title}
+          />
+          <div
+            class="center group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
+          />
+        </div>
+        <div class="truncate text-sm font-bold" title={release.title}>{release.title}</div>
       </a>
     {/each}
   </div>
