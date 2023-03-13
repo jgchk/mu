@@ -9,3 +9,4 @@ vite.config.ts.timestamp-*
 db.sqlite
 .env.local
 /downloads
+/music

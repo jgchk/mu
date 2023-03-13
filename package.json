@@ -13,7 +13,7 @@
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "format": "prettier --plugin-search-dir . --write .",
     "db:push": "drizzle-kit generate:sqlite",
-    "db:drop": "rm db.sqlite && rm -r ./downloads && rm -r ./src/lib/server/db/migrations"
+    "db:drop": "rm db.sqlite || true && rm -r ./downloads || true && rm -r ./music || true && rm -r ./src/lib/server/db/migrations || true"
   },
   "dependencies": {
     "@tanstack/svelte-query": "^4.24.10",
