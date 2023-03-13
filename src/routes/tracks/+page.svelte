@@ -8,7 +8,7 @@
 {#if $tracksQuery.data}
   <div class="flex flex-wrap gap-4">
     {#each $tracksQuery.data as track (track.id)}
-      <a href="/releases/{track.id}" class="w-[200px]">
+      <a href="/tracks/{track.id}" class="w-[200px]">
         <div class="relative h-[200px] w-full shadow">
           <img
             class="h-full w-full rounded object-cover"
