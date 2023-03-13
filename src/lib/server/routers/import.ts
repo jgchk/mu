@@ -20,7 +20,7 @@ import {
 import { insertTrackWithArtists } from '../db/operations/tracks'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
-import { type Metadata, parseFile } from '../utils/music-metadata'
+import { type Metadata, readTrackMetadata } from '../utils/music-metadata'
 
 export const importRouter = router({
   file: publicProcedure
@@ -83,7 +83,7 @@ export const importRouter = router({
 const importFiles = async (filePaths: string[]) => {
   const trackData = await Promise.all(
     filePaths.map(async (filePath) => {
-      const metadata = await parseFile(filePath)
+      const metadata = await readTrackMetadata(filePath)
 
       if (!metadata) {
         throw new Error('No metadata available')
@@ -121,7 +121,7 @@ const importFiles = async (filePaths: string[]) => {
 }
 
 const importFile = async (filePath: string, metadata_?: Metadata, releaseId?: number) => {
-  const metadata = metadata_ ?? (await parseFile(filePath))
+  const metadata = metadata_ ?? (await readTrackMetadata(filePath))
 
   // returns undefined if no metadata available
   if (!metadata) {

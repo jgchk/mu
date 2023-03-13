@@ -42,8 +42,8 @@ export const getClientId = async () => {
   return Promise.any(scriptUrls.map((url) => getClientIdFromScript(url)))
 }
 
-export const searchTracks = async (query: string) => {
-  const result = await got('https://api-v2.soundcloud.com/search/tracks', {
+export const searchTracks = (query: string) =>
+  got('https://api-v2.soundcloud.com/search/tracks', {
     searchParams: {
       q: query,
       client_id: env.SOUNDCLOUD_CLIENT_ID,
@@ -51,20 +51,10 @@ export const searchTracks = async (query: string) => {
   })
     .json()
     .then((res) => SoundcloudPager(SoundcloudTrack).parse(res))
+    .then((res) => res.collection)
 
-  return result.collection.map((track) => ({
-    ...track,
-    artwork:
-      track.artwork_url !== null
-        ? {
-            200: track.artwork_url.replace('large', 't200x200'),
-          }
-        : null,
-  }))
-}
-
-export const searchAlbums = async (query: string) => {
-  const result = await got('https://api-v2.soundcloud.com/search/albums', {
+export const searchAlbums = (query: string) =>
+  got('https://api-v2.soundcloud.com/search/albums', {
     searchParams: {
       q: query,
       client_id: env.SOUNDCLOUD_CLIENT_ID,
@@ -72,20 +62,10 @@ export const searchAlbums = async (query: string) => {
   })
     .json()
     .then((res) => SoundcloudPager(SoundcloudPlaylist).parse(res))
+    .then((res) => res.collection)
 
-  return result.collection.map((album) => ({
-    ...album,
-    artwork:
-      album.artwork_url !== null
-        ? {
-            200: album.artwork_url.replace('large', 't200x200'),
-          }
-        : null,
-  }))
-}
-
-export const getTrack = async (id: number) => {
-  const result = await got(`https://api-v2.soundcloud.com/tracks/${id}`, {
+export const getTrack = (id: number) =>
+  got(`https://api-v2.soundcloud.com/tracks/${id}`, {
     searchParams: {
       client_id: env.SOUNDCLOUD_CLIENT_ID,
     },
@@ -93,19 +73,8 @@ export const getTrack = async (id: number) => {
     .json()
     .then((res) => SoundcloudTrack.parse(res))
 
-  return {
-    ...result,
-    artwork:
-      result.artwork_url !== null
-        ? {
-            200: result.artwork_url.replace('large', 't200x200'),
-          }
-        : null,
-  }
-}
-
-export const getPlaylist = async (id: number) => {
-  const result = await got(`https://api-v2.soundcloud.com/playlists/${id}`, {
+export const getPlaylist = (id: number) =>
+  got(`https://api-v2.soundcloud.com/playlists/${id}`, {
     searchParams: {
       client_id: env.SOUNDCLOUD_CLIENT_ID,
     },
@@ -113,16 +82,8 @@ export const getPlaylist = async (id: number) => {
     .json()
     .then((res) => SoundcloudPlaylist.parse(res))
 
-  return {
-    ...result,
-    artwork:
-      result.artwork_url !== null
-        ? {
-            200: result.artwork_url.replace('large', 't200x200'),
-          }
-        : null,
-  }
-}
+export const getSoundcloudImageUrl = (url: string, size: 100 | 200 | 'original') =>
+  url.replace('large', size === 'original' ? size : `t${size}x${size}`)
 
 export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string) => {
   if (!track.streamable) {

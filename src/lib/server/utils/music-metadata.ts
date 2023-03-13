@@ -1,4 +1,5 @@
 import { execa } from 'execa'
+import fs from 'fs/promises'
 
 import { deepEquals, ifNotNull } from '$lib/utils/types'
 
@@ -15,11 +16,18 @@ export type Metadata = {
   trackNumber: string | undefined
 }
 
-export const writeFile = async (path: string, metadata: Metadata) => {
+export const writeTrackMetadata = async (path: string, metadata: Metadata) => {
   await execa('python', ['./scripts/write-metadata.py', path, JSON.stringify(metadata)])
 }
 
-export const parseFile = async (path: string): Promise<Metadata | undefined> => {
+export const writeTrackCoverArt = async (path: string, coverArt: Buffer, extension: string) => {
+  const { stdout: coverArtPath } = await execa('mktemp', ['--suffix', extension])
+  await fs.writeFile(coverArtPath, coverArt)
+  await execa('python', ['./scripts/write-cover-art.py', path, coverArtPath])
+  await fs.rm(coverArtPath)
+}
+
+export const readTrackMetadata = async (path: string): Promise<Metadata | undefined> => {
   const { stdout } = await execa('python', ['./scripts/read-metadata.py', path])
 
   if (stdout === 'No metadata found') {

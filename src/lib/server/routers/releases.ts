@@ -10,7 +10,7 @@ import {
 } from '../db/operations/releases'
 import { getTracksByReleaseId } from '../db/operations/tracks'
 import { publicProcedure, router } from '../trpc'
-import { getMetadataFromTrack, writeFile } from '../utils/music-metadata'
+import { getMetadataFromTrack, writeTrackMetadata } from '../utils/music-metadata'
 
 export const releasesRouter = router({
   getAll: publicProcedure.query(() => getAllReleases()),
@@ -42,7 +42,7 @@ export const releasesRouter = router({
       const tracks = getTracksByReleaseId(release.id)
 
       await Promise.all(
-        tracks.map((track) => writeFile(track.path, getMetadataFromTrack(track.id)))
+        tracks.map((track) => writeTrackMetadata(track.path, getMetadataFromTrack(track.id)))
       )
 
       return release

@@ -1,4 +1,8 @@
+import got from 'got'
+import path from 'path'
 import { z } from 'zod'
+
+import { ifNotNull } from '$lib/utils/types'
 
 import { getAllReleaseDownloads, insertReleaseDownload } from '../db/operations/release-downloads'
 import {
@@ -6,9 +10,9 @@ import {
   insertTrackDownload,
   updateTrackDownload,
 } from '../db/operations/track-downloads'
-import { downloadTrack, getPlaylist, getTrack } from '../services/soundcloud'
+import { downloadTrack, getPlaylist, getSoundcloudImageUrl, getTrack } from '../services/soundcloud'
 import { publicProcedure, router } from '../trpc'
-import { parseArtistTitle, writeFile } from '../utils/music-metadata'
+import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from '../utils/music-metadata'
 
 export const downloadsRouter = router({
   download: publicProcedure
@@ -25,14 +29,26 @@ export const downloadsRouter = router({
 
         const filePath = await downloadTrack(scTrack)
 
+        const artwork = await ifNotNull(scTrack.artwork_url, async (artworkUrl) => {
+          const originalArtworkUrl = getSoundcloudImageUrl(artworkUrl, 'original')
+          const artwork_ = await got(originalArtworkUrl).buffer()
+          return {
+            data: artwork_,
+            url: originalArtworkUrl,
+          }
+        })
+
         const { artists, title } = parseArtistTitle(scTrack.title)
-        await writeFile(filePath, {
+        await writeTrackMetadata(filePath, {
           title,
           artists: artists ?? [scTrack.user.username],
           album: title,
           albumArtists: artists ?? [scTrack.user.username],
           trackNumber: '1',
         })
+        if (artwork) {
+          await writeTrackCoverArt(filePath, artwork.data, path.extname(artwork.url))
+        }
 
         dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
 
@@ -59,14 +75,26 @@ export const downloadsRouter = router({
 
             const filePath = await downloadTrack(scTrack)
 
+            const artwork = await ifNotNull(scTrack.artwork_url, async (artworkUrl) => {
+              const originalArtworkUrl = getSoundcloudImageUrl(artworkUrl, 'original')
+              const artwork_ = await got(originalArtworkUrl).buffer()
+              return {
+                data: artwork_,
+                url: originalArtworkUrl,
+              }
+            })
+
             const { artists, title } = parseArtistTitle(scTrack.title)
-            await writeFile(filePath, {
+            await writeTrackMetadata(filePath, {
               title,
               artists: artists ?? [scTrack.user.username],
               album: releaseTitle,
               albumArtists: releaseArtists,
               trackNumber: (i + 1).toString(),
             })
+            if (artwork) {
+              await writeTrackCoverArt(filePath, artwork.data, path.extname(artwork.url))
+            }
 
             dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
 

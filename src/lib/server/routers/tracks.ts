@@ -10,7 +10,7 @@ import {
   updateTrackWithArtists,
 } from '../db/operations/tracks'
 import { publicProcedure, router } from '../trpc'
-import { getMetadataFromTrack, writeFile } from '../utils/music-metadata'
+import { getMetadataFromTrack, writeTrackMetadata } from '../utils/music-metadata'
 
 export const tracksRouter = router({
   getAll: publicProcedure.query(() => getAllTracks()),
@@ -41,7 +41,7 @@ export const tracksRouter = router({
         })
       )
       const track = updateTrackWithArtists(id, { ...data, artists })
-      await writeFile(track.path, getMetadataFromTrack(track.id))
+      await writeTrackMetadata(track.path, getMetadataFromTrack(track.id))
       return track
     }),
 })
