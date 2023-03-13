@@ -13,7 +13,12 @@ import { publicProcedure, router } from '../trpc'
 import { getMetadataFromTrack, writeTrackMetadata } from '../utils/music-metadata'
 
 export const releasesRouter = router({
-  getAll: publicProcedure.query(() => getAllReleases()),
+  getAll: publicProcedure.query(() =>
+    getAllReleases().map((release) => ({
+      ...release,
+      hasCoverArt: getTracksByReleaseId(release.id).some((track) => track.hasCoverArt),
+    }))
+  ),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id } }) => getReleaseWithArtistsById(id)),

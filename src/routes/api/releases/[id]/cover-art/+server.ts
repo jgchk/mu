@@ -23,9 +23,11 @@ export const GET: RequestHandler = async ({ params }) => {
   const tracks = getTracksByReleaseId(id)
 
   for (const track of tracks) {
-    const coverArt = await readTrackCoverArt(track.path)
-    if (coverArt !== undefined) {
-      return new Response(coverArt)
+    if (track.hasCoverArt) {
+      const coverArt = await readTrackCoverArt(track.path)
+      if (coverArt !== undefined) {
+        return new Response(coverArt)
+      }
     }
   }
 
