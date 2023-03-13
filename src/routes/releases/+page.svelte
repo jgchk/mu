@@ -13,7 +13,7 @@
           {#if release.hasCoverArt}
             <img
               class="h-full w-full rounded object-cover"
-              src="/api/releases/{release.id}/cover-art"
+              src="/api/releases/{release.id}/cover-art?width=200&height=200"
               alt={release.title}
             />
           {:else}

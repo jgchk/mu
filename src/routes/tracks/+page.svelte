@@ -13,7 +13,7 @@
           {#if track.hasCoverArt}
             <img
               class="h-full w-full rounded object-cover"
-              src="/api/tracks/{track.id}/cover-art"
+              src="/api/tracks/{track.id}/cover-art?width=200&height=200"
               alt={track.title}
             />
           {:else}
