@@ -1,3 +1,4 @@
+import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import path from 'path'
 import untildify from 'untildify'
@@ -16,11 +17,7 @@ import {
   getTrackDownloadById,
   getTrackDownloadsByReleaseDownloadId,
 } from '../db/operations/track-downloads'
-import {
-  getTrackWithArtistsByPath,
-  insertTrackWithArtists,
-  updateTrackWithArtists,
-} from '../db/operations/tracks'
+import { insertTrackWithArtists } from '../db/operations/tracks'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
 import { type Metadata, parseFile } from '../utils/music-metadata'
@@ -93,7 +90,7 @@ const importFiles = async (filePaths: string[]) => {
       }
 
       return {
-        path: filePath,
+        filePath,
         metadata,
       }
     })
@@ -114,7 +111,7 @@ const importFiles = async (filePaths: string[]) => {
   })
 
   const dbTracks = await Promise.all(
-    trackData.map((track) => importFile(track.path, track.metadata, dbRelease.id))
+    trackData.map(({ metadata, filePath }) => importFile(filePath, metadata, dbRelease.id))
   )
 
   return {
@@ -143,25 +140,31 @@ const importFile = async (filePath: string, metadata_?: Metadata, releaseId?: nu
     }
   })
 
-  const musicDir = untildify(env.MUSIC_DIR)
-  const newPath = path.join(musicDir, path.basename(filePath))
+  let filename = ''
+  if (metadata.trackNumber !== undefined) {
+    filename += `${metadata.trackNumber} `
+  }
+  filename += metadata.title
+  filename += path.extname(filePath)
 
-  const existingTrack = getTrackWithArtistsByPath(newPath)
-  const track = existingTrack
-    ? updateTrackWithArtists(existingTrack.id, {
-        title: metadata.title,
-        artists: artists.map((artist) => artist.id),
-        path: newPath,
-        releaseId,
-      })
-    : insertTrackWithArtists({
-        title: metadata.title,
-        artists: artists.map((artist) => artist.id),
-        path: newPath,
-        releaseId,
-      })
+  const musicDir = untildify(env.MUSIC_DIR)
+  const newPath = path.join(
+    musicDir,
+    filenamify(metadata.albumArtists.join(', ')),
+    filenamify(metadata.album || '[untitled]'),
+    filenamify(filename)
+  )
+
+  const track = insertTrackWithArtists({
+    title: metadata.title,
+    artists: artists.map((artist) => artist.id),
+    path: newPath,
+    releaseId,
+    trackNumber: metadata.trackNumber,
+  })
 
   if (filePath !== newPath) {
+    await fs.mkdir(path.dirname(newPath), { recursive: true })
     await fs.rename(filePath, newPath)
   }
 

@@ -31,6 +31,7 @@ export const downloadsRouter = router({
           artists: artists ?? [scTrack.user.username],
           album: undefined,
           albumArtists: [],
+          trackNumber: undefined,
         })
 
         dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })
@@ -46,7 +47,7 @@ export const downloadsRouter = router({
         const releaseTitle = playlistArtistTitle.title
 
         return Promise.all(
-          scPlaylist.tracks.map(async (track) => {
+          scPlaylist.tracks.map(async (track, i) => {
             const scTrack = 'title' in track ? track : await getTrack(track.id)
 
             let dbDownload = insertTrackDownload({
@@ -64,6 +65,7 @@ export const downloadsRouter = router({
               artists: artists ?? [scTrack.user.username],
               album: releaseTitle,
               albumArtists: releaseArtists,
+              trackNumber: (i + 1).toString(),
             })
 
             dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath })

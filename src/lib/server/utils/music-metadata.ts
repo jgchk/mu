@@ -12,6 +12,7 @@ export type Metadata = {
   artists: string[]
   album: string | undefined
   albumArtists: string[]
+  trackNumber: string | undefined
 }
 
 export const writeFile = async (path: string, metadata: Metadata) => {
@@ -34,6 +35,7 @@ export const parseFile = async (path: string): Promise<Metadata | undefined> => 
     artists: [],
     album: undefined,
     albumArtists: [],
+    trackNumber: undefined,
   }
 
   for (const line of tags) {
@@ -53,6 +55,10 @@ export const parseFile = async (path: string): Promise<Metadata | undefined> => 
       }
       case 'albumartist': {
         metadata.albumArtists = [...(metadata.albumArtists ?? []), value]
+        break
+      }
+      case 'tracknumber': {
+        metadata.trackNumber = value
         break
       }
     }
@@ -78,6 +84,7 @@ export const getMetadataFromTrack = (trackId: Track['id']): Metadata => {
           .sort(compareArtists)
           .map((artist) => artist.name)
       ) ?? [],
+    trackNumber: track.trackNumber ?? undefined,
   }
 }
 

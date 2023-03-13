@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "05fa8e8c-bc30-490a-a58d-f00258f988dc",
+  "id": "b8e65645-c3a9-44dd-916e-1a0e19abe3c8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -273,6 +273,12 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "track_number": {
+          "name": "track_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
