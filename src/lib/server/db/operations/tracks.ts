@@ -8,10 +8,23 @@ import {
   insertTrackArtists,
 } from './track-artists'
 
-export const insertTrack = (track: InsertTrack) => db.insert(tracks).values(track).returning().get()
+export type TrackPretty = Omit<Track, 'hasCoverArt'> & { hasCoverArt: boolean }
+export type InsertTrackPretty = Omit<InsertTrack, 'hasCoverArt'> & { hasCoverArt: boolean }
+
+export const convertInsertTrack = (track: InsertTrackPretty): InsertTrack => ({
+  ...track,
+  hasCoverArt: track.hasCoverArt ? 1 : 0,
+})
+export const convertTrack = (track: Track): TrackPretty => ({
+  ...track,
+  hasCoverArt: !!track.hasCoverArt,
+})
+
+export const insertTrack = (track: InsertTrackPretty) =>
+  convertTrack(db.insert(tracks).values(convertInsertTrack(track)).returning().get())
 
 export const insertTrackWithArtists = (
-  data: InsertTrack & { artists?: TrackArtist['artistId'][] }
+  data: InsertTrackPretty & { artists?: TrackArtist['artistId'][] }
 ) => {
   const { artists: artistsData, ...trackData } = data
   const track = insertTrack(trackData)
@@ -24,18 +37,19 @@ export const insertTrackWithArtists = (
   return { ...track, artists }
 }
 
-export const updateTrack = (id: Track['id'], data: Partial<Omit<InsertTrack, 'id'>>) => {
+export const updateTrack = (id: Track['id'], data: Partial<Omit<InsertTrackPretty, 'id'>>) => {
   const update = {
     ...(data.path !== undefined ? { path: data.path } : {}),
     ...(data.title !== undefined ? { title: data.title } : {}),
     ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
+    ...(data.hasCoverArt !== undefined ? { hasCoverArt: data.hasCoverArt ? 1 : 0 } : {}),
   }
-  return db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
+  return convertTrack(db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get())
 }
 
 export const updateTrackWithArtists = (
   id: Track['id'],
-  data: Partial<Omit<InsertTrack, 'id'>> & { artists?: TrackArtist['artistId'][] }
+  data: Partial<Omit<InsertTrackPretty, 'id'>> & { artists?: TrackArtist['artistId'][] }
 ) => {
   const track = updateTrack(id, data)
   if (data.artists !== undefined) {
@@ -51,7 +65,7 @@ export const getTrackByPath = (path: Track['path']) => {
   if (results.length === 0) {
     return undefined
   } else {
-    return results[0]
+    return convertTrack(results[0])
   }
 }
 
@@ -64,13 +78,13 @@ export const getTrackWithArtistsByPath = (path: Track['path']) => {
   return { ...track, artists }
 }
 
-export const getAllTracks = () => db.select().from(tracks).all()
+export const getAllTracks = () => db.select().from(tracks).all().map(convertTrack)
 
 export const getTracksByReleaseId = (releaseId: NonNullable<Track['releaseId']>) =>
-  db.select().from(tracks).where(eq(tracks.releaseId, releaseId)).all()
+  db.select().from(tracks).where(eq(tracks.releaseId, releaseId)).all().map(convertTrack)
 
 export const getTrackById = (id: Track['id']) =>
-  db.select().from(tracks).where(eq(tracks.id, id)).get()
+  convertTrack(db.select().from(tracks).where(eq(tracks.id, id)).get())
 
 export type TrackWithArtists = ReturnType<typeof getTrackWithArtistsById>
 export const getTrackWithArtistsById = (id: Track['id']) => {

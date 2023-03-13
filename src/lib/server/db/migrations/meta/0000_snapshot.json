@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "d44a5b53-fe8c-433f-b451-fe726dffe5df",
+  "id": "c7e09fdf-fad4-4934-95b5-895a071cb18a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -279,6 +279,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "has_cover_art": {
+          "name": "has_cover_art",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {

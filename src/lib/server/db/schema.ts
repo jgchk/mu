@@ -47,6 +47,7 @@ export const tracks = sqliteTable(
     title: text('title'),
     releaseId: integer('release_id').references(() => releases.id),
     trackNumber: text('track_number'),
+    hasCoverArt: integer('has_cover_art').notNull(),
   },
   (tracks) => ({
     pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),

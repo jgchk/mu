@@ -20,7 +20,7 @@ import {
 import { insertTrackWithArtists } from '../db/operations/tracks'
 import { env } from '../env'
 import { publicProcedure, router } from '../trpc'
-import { type Metadata, readTrackMetadata } from '../utils/music-metadata'
+import { type Metadata, readTrackCoverArt, readTrackMetadata } from '../utils/music-metadata'
 
 export const importRouter = router({
   file: publicProcedure
@@ -122,6 +122,7 @@ const importFiles = async (filePaths: string[]) => {
 
 const importFile = async (filePath: string, metadata_?: Metadata, releaseId?: number) => {
   const metadata = metadata_ ?? (await readTrackMetadata(filePath))
+  const coverArt = await readTrackCoverArt(filePath)
 
   // returns undefined if no metadata available
   if (!metadata) {
@@ -161,6 +162,7 @@ const importFile = async (filePath: string, metadata_?: Metadata, releaseId?: nu
     path: newPath,
     releaseId,
     trackNumber: metadata.trackNumber,
+    hasCoverArt: coverArt !== undefined,
   })
 
   if (filePath !== newPath) {

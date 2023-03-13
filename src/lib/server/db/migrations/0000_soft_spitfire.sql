@@ -47,6 +47,7 @@ CREATE TABLE tracks (
 	`title` text,
 	`release_id` integer,
 	`track_number` text,
+	`has_cover_art` integer NOT NULL,
 	FOREIGN KEY (`release_id`) REFERENCES releases(`id`)
 );
 
