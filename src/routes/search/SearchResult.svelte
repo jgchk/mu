@@ -4,7 +4,9 @@
   import { getContextClient, type RouterOutput } from '$lib/trpc'
   import { followCursor } from 'tippy.js'
 
-  type SearchResult = RouterOutput['search']['albums'][0] | RouterOutput['search']['tracks'][0]
+  type SearchResult =
+    | RouterOutput['search']['soundcloud']['albums'][0]
+    | RouterOutput['search']['soundcloud']['tracks'][0]
 
   export let result: SearchResult
 

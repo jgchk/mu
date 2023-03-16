@@ -1,93 +1,70 @@
-import fs from 'fs/promises'
-import path from 'path'
-import slsk from 'slsk-client'
-import untildify from 'untildify'
-import { z } from 'zod'
+import { MemoryCache } from 'memory-cache-node'
+import { type Messages, SlskClient } from 'soulseek-ts'
 
-import { randomInt } from '$lib/utils/random'
+const SLSK_SEARCH_TTL = 60 // seconds
+const SLSK_CACHE_CLEAN_INTERVAL = 60 // seconds
+const SLSK_MAX_CACHED_SEARCHES = 10
 
-import { env } from '../env'
-
-export const search = async (query: string) => {
-  const results = await new Promise((resolve, reject) => {
-    slsk.connect({ user: 'jombo_com__', pass: 'jombo_com__1' }, (err, client) => {
-      if (err) {
-        reject(err)
-        return
-      }
-
-      client.search(
-        {
-          req: query,
-          timeout: 2000,
-        },
-        (err, res) => {
-          if (err) {
-            reject(err)
-            return
-          }
-
-          resolve(res)
-        }
-      )
-    })
-  })
-
-  // slsk.disconnect()
-
-  return SoulseekResult.array().parse(results)
+type SearchData = {
+  startTime: Date
+  results: Messages.From.Peer.FileSearchResponse[]
+  complete: boolean
 }
 
-export const download = async (file: SoulseekDownload) => {
-  const filePath = path.join(untildify(env.DOWNLOAD_DIR), `slsk-${Date.now()}-${randomInt(0, 9)}`)
-  await fs.mkdir(path.dirname(filePath), { recursive: true })
-  console.log('1', filePath)
+let slsk: SlskClient | undefined
+const cache = new MemoryCache<string, SearchData>(
+  SLSK_CACHE_CLEAN_INTERVAL,
+  SLSK_MAX_CACHED_SEARCHES
+)
 
-  const data = await new Promise((resolve, reject) => {
-    slsk.connect({ user: 'jombo_com__', pass: 'jombo_com__1' }, (err, client) => {
-      console.log('2', err, client)
-      if (err) {
-        reject(err)
-        return
-      }
+export async function getSlskClient() {
+  if (!slsk) {
+    slsk = new SlskClient()
+    await slsk.login('gimminy_crick__', 'fejwqi@#$234Fjewi')
+  }
 
-      client.download(
-        {
-          file,
-          path: filePath,
-        },
-        (err, data) => {
-          console.log('3', err, data)
-          if (err) {
-            reject(err)
-            return
-          }
+  return slsk
+}
 
-          resolve(data)
-        }
-      )
+export const initiateSearch = (query: string) => {
+  const data: SearchData = {
+    startTime: new Date(),
+    results: [],
+    complete: false,
+  }
+
+  cache.storeExpiringItem(query, data, SLSK_SEARCH_TTL)
+
+  const doSearch = async () => {
+    const slsk = await getSlskClient()
+
+    await slsk.search(query, {
+      onResult: (result) => {
+        data.results.push(result)
+        cache.storeExpiringItem(query, data, SLSK_SEARCH_TTL)
+      },
     })
-  })
 
-  console.log('4')
-  // slsk.disconnect()
+    data.complete = true
+    cache.storeExpiringItem(query, data, SLSK_SEARCH_TTL)
+  }
 
-  console.log('5')
+  void doSearch()
+
   return data
 }
 
-const SoulseekResult = z.object({
-  user: z.string(),
-  file: z.string(),
-  size: z.number(),
-  slots: z.boolean(),
-  bitrate: z.number().optional(),
-  speed: z.number(),
-})
+export const getSearchData = (query: string) => {
+  const results = cache.retrieveItemValue(query)
+  return results
+}
 
-export const SoulseekDownload = z.object({
-  user: z.string(),
-  file: z.string(),
-  size: z.number(),
-})
-type SoulseekDownload = z.infer<typeof SoulseekDownload>
+export const search = (query: string) => {
+  const existingSearch = getSearchData(query)
+  if (existingSearch !== undefined) {
+    return existingSearch
+  }
+
+  const newSearch = initiateSearch(query)
+  return newSearch
+}
