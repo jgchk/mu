@@ -1,5 +1,7 @@
-import { MemoryCache } from 'memory-cache-node'
+import mcn from 'memory-cache-node'
 import { type Messages, SlskClient } from 'soulseek-ts'
+
+const { MemoryCache } = mcn
 
 const SLSK_SEARCH_TTL = 60 // seconds
 const SLSK_CACHE_CLEAN_INTERVAL = 60 // seconds
