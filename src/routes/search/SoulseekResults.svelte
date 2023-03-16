@@ -150,21 +150,23 @@
   }
 
   const formatSpeed = (bytes: number) => {
+    const gb = bytes / 1000 / 1000 / 1000
+    if (gb >= 1) return `${gb.toFixed(2)} Gb/s`
     const mb = bytes / 1000 / 1000
-    if (mb >= 1) return `${mb.toFixed(2)} mb/s`
+    if (mb >= 1) return `${mb.toFixed(2)} Mb/s`
     const kb = bytes / 1000
-    if (kb >= 1) return `${kb.toFixed(2)} kb/s`
-    return `${bytes} b/s`
+    if (kb >= 1) return `${kb.toFixed(2)} Kb/s`
+    return `${bytes} B/s`
   }
 
   const formatSize = (bytes: bigint) => {
     const gb = Number(bytes) / 1000 / 1000 / 1000
-    if (gb >= 1) return `${gb.toFixed(2)} gb`
+    if (gb >= 1) return `${gb.toFixed(2)} Gb`
     const mb = Number(bytes) / 1000 / 1000
-    if (mb >= 1) return `${mb.toFixed(2)} mb`
+    if (mb >= 1) return `${mb.toFixed(2)} Mb`
     const kb = Number(bytes) / 1000
-    if (kb >= 1) return `${kb.toFixed(2)} kb`
-    return `${bytes} b`
+    if (kb >= 1) return `${kb.toFixed(2)} Kb`
+    return `${bytes} B`
   }
 </script>
 
