@@ -13,7 +13,7 @@
   )
   $: soulseekQuery = trpc.search.soulseek.query(
     { query: data.query },
-    { enabled: data.hasQuery, refetchInterval: 100 * 1000 }
+    { enabled: data.hasQuery, refetchInterval: 5 * 1000 }
   )
 </script>
 
