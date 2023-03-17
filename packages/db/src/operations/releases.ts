@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm/expressions';
-import { db } from '..';
 
+import { db } from '..';
 import { type InsertRelease, type Release, type ReleaseArtist, releases } from '../schema';
 import {
   deleteReleaseArtistsByReleaseId,

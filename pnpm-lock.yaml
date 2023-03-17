@@ -140,6 +140,7 @@ importers:
       '@typescript-eslint/parser': ^5.27.0
       eslint-config-prettier: ^8.3.0
       eslint-config-turbo: latest
+      eslint-plugin-simple-import-sort: ^10.0.0
       eslint-plugin-svelte3: ^4.0.0
       typescript: ^4.7.2
     dependencies:
@@ -147,6 +148,7 @@ importers:
       '@typescript-eslint/parser': 5.44.0_hsf322ms6xhhd4b5ne6lb74y4a
       eslint-config-prettier: 8.5.0_eslint@8.28.0
       eslint-config-turbo: 0.0.9_eslint@8.28.0
+      eslint-plugin-simple-import-sort: 10.0.0_eslint@8.28.0
       eslint-plugin-svelte3: 4.0.0_xgu65rlhscpnxffotiaicv6m5i
     devDependencies:
       typescript: 4.9.3
@@ -1795,6 +1797,14 @@ packages:
     dependencies:
       eslint: 8.28.0
       eslint-plugin-turbo: 0.0.9_eslint@8.28.0
+    dev: false
+
+  /eslint-plugin-simple-import-sort/10.0.0_eslint@8.28.0:
+    resolution: {integrity: sha512-AeTvO9UCMSNzIHRkg8S6c3RPy5YEwKWSQPx3DYghLedo2ZQxowPFLGDN1AZ2evfg6r6mjBSZSLxLFsWSu3acsw==}
+    peerDependencies:
+      eslint: '>=5.0.0'
+    dependencies:
+      eslint: 8.28.0
     dev: false
 
   /eslint-plugin-svelte3/4.0.0_xgu65rlhscpnxffotiaicv6m5i:

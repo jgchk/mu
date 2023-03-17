@@ -1,17 +1,16 @@
-import { z } from 'zod';
-
-import { ifDefined } from '../utils/types';
-
 import {
-  insertArtist,
   getAllTracks,
   getTracksByReleaseId,
   getTrackWithArtistsById,
+  insertArtist,
   updateTrackWithArtists
 } from 'db';
-import { publicProcedure, router } from '../trpc';
-import { getMetadataFromTrack } from '../services/music-metadata';
 import { writeTrackMetadata } from 'music-metadata';
+import { z } from 'zod';
+
+import { getMetadataFromTrack } from '../services/music-metadata';
+import { publicProcedure, router } from '../trpc';
+import { ifDefined } from '../utils/types';
 
 export const tracksRouter = router({
   getAll: publicProcedure.query(() => getAllTracks()),

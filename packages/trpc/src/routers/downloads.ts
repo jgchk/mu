@@ -1,13 +1,14 @@
-import got from 'got';
-import { z } from 'zod';
-
 import {
   getAllReleaseDownloads,
-  insertReleaseDownload,
   getAllTrackDownloads,
+  insertReleaseDownload,
   insertTrackDownload,
   updateTrackDownload
 } from 'db';
+import got from 'got';
+import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
+import { z } from 'zod';
+
 import {
   downloadTrack,
   getPlaylist,
@@ -16,7 +17,6 @@ import {
 } from '../services/soundcloud';
 import { publicProcedure, router } from '../trpc';
 import { ifNotNull } from '../utils/types';
-import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 
 export const downloadsRouter = router({
   download: publicProcedure

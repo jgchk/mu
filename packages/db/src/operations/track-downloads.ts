@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm/expressions';
-import { db } from '..';
 
+import { db } from '..';
 import { type InsertTrackDownload, type TrackDownload, trackDownloads } from '../schema';
 
 export type TrackDownloadPretty = Omit<TrackDownload, 'complete'> & { complete: boolean };

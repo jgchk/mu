@@ -1,14 +1,14 @@
-import { ifNotNull, deepEquals } from '../utils/types';
-
 import {
+  Artist,
   getArtistsByReleaseId,
   getReleaseById,
   getTrackWithArtistsById,
-  Artist,
   Track,
   TrackArtist
 } from 'db';
 import type { Metadata } from 'music-metadata';
+
+import { deepEquals, ifNotNull } from '../utils/types';
 
 export const isMetadataChanged = (trackId: Track['id'], metadata: Metadata) => {
   const trackMetadata = getMetadataFromTrack(trackId);

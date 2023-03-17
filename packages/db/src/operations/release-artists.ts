@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm/expressions';
-import { db } from '..';
 
+import { db } from '..';
 import { artists, type InsertReleaseArtist, type ReleaseArtist, releaseArtists } from '../schema';
 
 export const insertReleaseArtists = (releaseArtists_: InsertReleaseArtist[]) =>
