@@ -1,16 +1,19 @@
 <script lang="ts">
-  import { QueryClientProvider } from '@tanstack/svelte-query'
-  import type { LayoutData } from './$types'
-  import { setContextClient } from '$lib/trpc'
-  import '../app.css'
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
+  import '../app.css';
 
-  export let data: LayoutData
+  import { QueryClientProvider } from '@tanstack/svelte-query';
 
-  setContextClient(data.trpc)
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { setContextClient } from '$lib/trpc';
 
-  let query = ($page.url.pathname === '/search' && $page.url.searchParams.get('q')) || ''
+  import type { LayoutData } from './$types';
+
+  export let data: LayoutData;
+
+  setContextClient(data.trpc);
+
+  let query = ($page.url.pathname === '/search' && $page.url.searchParams.get('q')) || '';
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
@@ -27,7 +30,7 @@
         class="inline text-black"
         on:submit|preventDefault={() => {
           if (query.length > 0) {
-            goto(`/search?q=${query}`)
+            void goto(`/search?q=${query}`);
           }
         }}
       >

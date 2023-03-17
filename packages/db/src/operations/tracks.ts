@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm/expressions';
 
 import { db } from '..';
-import { type InsertTrack, type Track, type TrackArtist, tracks } from '../schema';
+import type { InsertTrack, Track, TrackArtist } from '../schema';
+import { tracks } from '../schema';
 import {
   deleteTrackArtistsByTrackId,
   getArtistsByTrackId,

@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm/expressions';
 
 import { db } from '..';
-import { type InsertReleaseDownload, type ReleaseDownload, releaseDownloads } from '../schema';
+import type { InsertReleaseDownload, ReleaseDownload } from '../schema';
+import { releaseDownloads } from '../schema';
 
 export const insertReleaseDownload = (releaseDownload: InsertReleaseDownload) =>
   db.insert(releaseDownloads).values(releaseDownload).returning().get();

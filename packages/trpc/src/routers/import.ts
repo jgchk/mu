@@ -11,7 +11,8 @@ import {
 } from 'db';
 import filenamify from 'filenamify';
 import fs from 'fs/promises';
-import { Metadata, readTrackCoverArt, readTrackMetadata } from 'music-metadata';
+import type { Metadata } from 'music-metadata';
+import { readTrackCoverArt, readTrackMetadata } from 'music-metadata';
 import path from 'path';
 import untildify from 'untildify';
 import { z } from 'zod';

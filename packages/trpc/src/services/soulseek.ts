@@ -1,5 +1,6 @@
 import { MemoryCache } from 'memory-cache-node';
-import { type Messages, SlskClient } from 'soulseek-ts';
+import type { Messages } from 'soulseek-ts';
+import { SlskClient } from 'soulseek-ts';
 
 const SLSK_SEARCH_TTL = 60; // seconds
 const SLSK_CACHE_CLEAN_INTERVAL = 60; // seconds

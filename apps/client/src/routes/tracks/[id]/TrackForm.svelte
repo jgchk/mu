@@ -1,22 +1,24 @@
 <script lang="ts">
-  import type { RouterOutput } from '$lib/trpc'
-  import { isDefined } from '$lib/utils/types'
-  import { createEventDispatcher } from 'svelte'
-  import ArtistSelect from './ArtistSelect.svelte'
+  import { createEventDispatcher } from 'svelte';
 
-  type Track = RouterOutput['tracks']['getById']
+  import type { RouterOutput } from '$lib/trpc';
+  import { isDefined } from '$lib/utils/types';
 
-  export let track: Track
+  import ArtistSelect from './ArtistSelect.svelte';
 
-  let title = track.title
-  let artists: (number | string | undefined)[] = track.artists.map((artist) => artist.id)
+  type Track = RouterOutput['tracks']['getById'];
 
-  const handleAddArtist = () => (artists = [...artists, undefined])
+  export let track: Track;
+
+  let title = track.title;
+  let artists: (number | string | undefined)[] = track.artists.map((artist) => artist.id);
+
+  const handleAddArtist = () => (artists = [...artists, undefined]);
 
   const dispatch = createEventDispatcher<{
-    submit: { title: string | null; artists: (number | string)[] }
-  }>()
-  const handleSubmit = () => dispatch('submit', { title, artists: artists.filter(isDefined) })
+    submit: { title: string | null; artists: (number | string)[] };
+  }>();
+  const handleSubmit = () => dispatch('submit', { title, artists: artists.filter(isDefined) });
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>

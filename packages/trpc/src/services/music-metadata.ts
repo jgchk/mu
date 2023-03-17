@@ -1,11 +1,5 @@
-import {
-  Artist,
-  getArtistsByReleaseId,
-  getReleaseById,
-  getTrackWithArtistsById,
-  Track,
-  TrackArtist
-} from 'db';
+import type { Artist, Track, TrackArtist } from 'db';
+import { getArtistsByReleaseId, getReleaseById, getTrackWithArtistsById } from 'db';
 import type { Metadata } from 'music-metadata';
 
 import { deepEquals, ifNotNull } from '../utils/types';

@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm/expressions';
 
 import { db } from '..';
-import { artists, type InsertArtist } from '../schema';
+import type { InsertArtist } from '../schema';
+import { artists } from '../schema';
 
 export const insertArtist = (artist: InsertArtist) =>
   db.insert(artists).values(artist).returning().get();

@@ -2,16 +2,31 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
+    'plugin:svelte/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'turbo',
-    'prettier'
+    'prettier',
+    'plugin:svelte/prettier'
   ],
-  plugins: ['svelte3', '@typescript-eslint', 'simple-import-sort', 'import'],
+  plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
   ignorePatterns: ['*.cjs'],
-  overrides: [{ files: ['*.svelte'], processor: 'svelte3/svelte3' }],
+  overrides: [
+    {
+      files: ['*.svelte'],
+      parser: 'svelte-eslint-parser',
+      parserOptions: {
+        parser: '@typescript-eslint/parser'
+      }
+    }
+  ],
   settings: {
-    'svelte3/typescript': () => require('typescript')
+    svelte: {
+      ignoreWarnings: [
+        '@typescript-eslint/no-unsafe-assignment',
+        '@typescript-eslint/no-unsafe-member-access'
+      ]
+    }
   },
   parserOptions: {
     sourceType: 'module',
@@ -27,6 +42,8 @@ module.exports = {
     'simple-import-sort/exports': 'error',
     'import/first': 'error',
     'import/newline-after-import': 'error',
-    'import/no-duplicates': 'error'
+    'import/no-duplicates': 'error',
+    '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
+    'import/consistent-type-specifier-style': ['error', 'prefer-top-level']
   }
 };

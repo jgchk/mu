@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc';
   import { onDestroy } from 'svelte';
   import { derived } from 'svelte/store';
+
+  import { getContextClient } from '$lib/trpc';
+
   import type { PageData } from './$types';
   import SearchResult from './SearchResult.svelte';
-  import SoulseekResults, { type FileSearchResponse } from './SoulseekResults.svelte';
+  import SoulseekResults from './SoulseekResults.svelte';
+  import type { FileSearchResponse } from './types';
 
   export let data: PageData;
   let oldQuery = data.query;

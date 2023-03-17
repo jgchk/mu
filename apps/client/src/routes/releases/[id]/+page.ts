@@ -2,7 +2,7 @@ import { paramNumber } from '$lib/utils/params';
 
 import type { PageLoad } from './$types';
 
-export const load = (async ({ parent, params }) => {
+export const load: PageLoad = async ({ parent, params }) => {
   const id = paramNumber(params.id, 'Release ID must be a number');
 
   const { trpc } = await parent();
@@ -10,4 +10,4 @@ export const load = (async ({ parent, params }) => {
   await trpc.tracks.getByReleaseId.prefetchQuery({ releaseId: id });
 
   return { id };
-}) satisfies PageLoad;
+};

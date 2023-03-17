@@ -1,11 +1,12 @@
 <script lang="ts">
   import { getContextClient } from '$lib/trpc'
+
+  import ReleaseDownload from './ReleaseDownload.svelte'
+  import TrackDownload from './TrackDownload.svelte'
   import type {
     ReleaseDownload as ReleaseDownloadType,
     TrackDownload as TrackDownloadType,
   } from './types'
-  import ReleaseDownload from './ReleaseDownload.svelte'
-  import TrackDownload from './TrackDownload.svelte'
 
   const trpc = getContextClient()
   const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 })

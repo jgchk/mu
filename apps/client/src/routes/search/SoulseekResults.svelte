@@ -1,14 +1,7 @@
-<script lang="ts" context="module">
-  import type { AppSubscriptionData } from 'trpc';
-
-  export type FileSearchResponse = AppSubscriptionData<
-    RouterOutput['search']['soulseekSubscription']
-  >;
-</script>
-
 <script lang="ts">
-  import type { RouterOutput } from '$lib/trpc';
   import { regexLastIndexOf } from '$lib/utils/string';
+
+  import type { FileSearchResponse } from './types';
 
   export let data: FileSearchResponse[];
 

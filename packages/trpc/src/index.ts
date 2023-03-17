@@ -1,5 +1,5 @@
-import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
-import { Observable } from '@trpc/server/observable';
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
+import type { Observable } from '@trpc/server/observable';
 
 import type { AppRouter } from './routers/_app';
 

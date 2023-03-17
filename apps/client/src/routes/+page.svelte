@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc'
+  import { getContextClient } from '$lib/trpc';
 
-  const trpc = getContextClient()
-  const pingQuery = trpc.ping.query()
+  const trpc = getContextClient();
+  const pingQuery = trpc.ping.query();
 
   const handlePing = () => {
-    $pingQuery.refetch()
-  }
+    void $pingQuery.refetch();
+  };
 </script>
 
 <button on:click={handlePing}>Ping</button>

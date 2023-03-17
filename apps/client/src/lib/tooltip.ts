@@ -1,4 +1,5 @@
-import tippy, { type Props as TippyProps } from 'tippy.js';
+import type { Props as TippyProps } from 'tippy.js';
+import tippy from 'tippy.js';
 
 interface ActionReturn<Parameter> {
   update?: (parameter: Parameter) => void;

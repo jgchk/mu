@@ -10,7 +10,7 @@
     "eslint-config-turbo": "latest",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-svelte3": "^4.0.0"
+    "eslint-plugin-svelte": "^2.21.0"
   },
   "publishConfig": {
     "access": "public"

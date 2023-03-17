@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm/expressions';
 
 import { db } from '..';
-import { type InsertRelease, type Release, type ReleaseArtist, releases } from '../schema';
+import type { InsertRelease, Release, ReleaseArtist } from '../schema';
+import { releases } from '../schema';
 import {
   deleteReleaseArtistsByReleaseId,
   getArtistsByReleaseId,

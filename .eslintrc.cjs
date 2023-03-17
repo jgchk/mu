@@ -4,6 +4,7 @@ module.exports = {
   extends: ['custom'],
   parserOptions: {
     tsconfigRootDir: __dirname,
-    project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json']
+    project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+    extraFileExtensions: ['.svelte']
   }
 };
