@@ -44,6 +44,7 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
-    'import/consistent-type-specifier-style': ['error', 'prefer-top-level']
+    'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+    'turbo/no-undeclared-env-vars': 'off'
   }
 };
