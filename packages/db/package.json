@@ -5,7 +5,7 @@
   "types": "./src/index.ts",
   "license": "MIT",
   "scripts": {
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\"",
+    "lint": "prettier --check --ignore-path=../../.prettierignore . && tsc --noEmit && eslint \".\"",
     "format": "prettier --write --ignore-path=../../.prettierignore .",
     "db:push": "drizzle-kit generate:sqlite"
   },

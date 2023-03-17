@@ -215,9 +215,11 @@ importers:
     specifiers:
       eslint-config-custom: workspace:*
       svelte: ^3.9.2
+      typescript: ^4.7.2
     devDependencies:
       eslint-config-custom: link:../eslint-config-custom
       svelte: 3.53.1
+      typescript: 4.9.3
 
 packages:
 
