@@ -1,7 +1,5 @@
 {
-  "css.validate": false,
-  "less.validate": false,
-  "scss.validate": false,
+  "eslint.workingDirectories": ["apps/*", "packages/*"],
 
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

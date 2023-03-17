@@ -1,0 +1,37 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "tsup --config tsup.config.dev.ts",
+    "build": "tsup --config tsup.config.prod.ts",
+    "start": "node dist/server.js",
+    "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \"src\"",
+    "format": "prettier --write --ignore-path=../../.prettierignore ."
+  },
+  "dependencies": {
+    "@trpc/server": "^10.16.0",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/mime-types": "^2.1.1",
+    "@types/sharp": "^0.31.1",
+    "@types/ws": "^8.5.4",
+    "better-sqlite3": "^8.2.0",
+    "client": "workspace:*",
+    "cors": "^2.8.5",
+    "db": "workspace:*",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "file-type": "^18.2.1",
+    "mime-types": "^2.1.35",
+    "music-metadata": "workspace:*",
+    "sharp": "^0.31.3",
+    "trpc": "workspace:*",
+    "ws": "^8.13.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "tsup": "^6.6.3",
+    "typescript": "^4.7.2"
+  },
+  "type": "module"
+}

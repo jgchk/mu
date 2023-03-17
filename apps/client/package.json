@@ -1,0 +1,41 @@
+{
+  "name": "client",
+  "version": "0.0.0",
+  "main": "./build/handler.js",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "package": "vite package",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \"src\"",
+    "format": "prettier --write --ignore-path=../../.prettierignore ."
+  },
+  "dependencies": {
+    "@jgchk/trpc-svelte-query": "^1.0.1",
+    "@tanstack/svelte-query": "^4.26.1",
+    "@trpc/client": "^10.16.0",
+    "isomorphic-ws": "^5.0.0",
+    "superjson": "^1.12.2",
+    "tippy.js": "^6.3.7",
+    "trpc": "workspace:*",
+    "ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "latest",
+    "@sveltejs/adapter-node": "^1.2.2",
+    "@sveltejs/kit": "latest",
+    "autoprefixer": "^10.4.14",
+    "eslint-config-custom": "workspace:*",
+    "postcss": "^8.4.21",
+    "svelte": "^3.44.0",
+    "svelte-check": "^2.7.1",
+    "svelte-preprocess": "^4.10.6",
+    "tailwindcss": "^3.2.7",
+    "tslib": "^2.3.1",
+    "typescript": "^4.7.2",
+    "vite": "^4.0.0"
+  },
+  "type": "module"
+}

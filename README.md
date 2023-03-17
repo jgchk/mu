@@ -1,38 +1,35 @@
-# create-svelte
+# Turborepo Svelte starter
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+This is an official starter Turborepo.
 
-## Creating a project
+## What's inside?
 
-If you're seeing this, you've probably already done this step. Congrats!
+This Turborepo includes the following packages/apps:
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+### Apps and Packages
 
-# create a new project in my-app
-npm create svelte@latest my-app
+- `docs`: a [svelte-kit](https://kit.svelte.dev/) app
+- `web`: another [svelte-kit](https://kit.svelte.dev/) app
+- `ui`: a stub Svelte component library shared by both `web` and `docs` applications
+- `eslint-config-custom`: `eslint` configurations (includes `eslint-plugin-svelte` and `eslint-config-prettier`)
+
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Utilities
+
+This Turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+
+## Using this example
+
+Run the following command:
+
+```sh
+npx degit vercel/turbo/examples/with-svelte with-svelte
+cd with-svelte
+pnpm install
+git init . && git add . && git commit -m "Init"
 ```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
