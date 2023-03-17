@@ -6,6 +6,7 @@ import { getReleaseById, getTrackById, getTracksByReleaseId } from 'db';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { fileTypeFromBuffer } from 'file-type';
+import fs from 'fs';
 import mime from 'mime-types';
 import { readTrackCoverArt } from 'music-metadata';
 import sharp from 'sharp';
@@ -53,6 +54,12 @@ app
   )
   .get('/api/ping', (req, res) => {
     res.send('pong!');
+  })
+  .get('/api/tracks/:id/stream', (req, res) => {
+    const { id } = z.object({ id: z.coerce.number() }).parse(req.params);
+    const track = getTrackById(id);
+    const stream = fs.createReadStream(track.path);
+    stream.pipe(res);
   })
   .get(
     '/api/tracks/:id/cover-art',

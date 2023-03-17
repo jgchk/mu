@@ -5,6 +5,8 @@
 
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import Player from '$lib/components/Player.svelte';
+  import { nowPlaying } from '$lib/now-playing';
   import { setContextClient } from '$lib/trpc';
 
   import type { LayoutData } from './$types';
@@ -42,5 +44,9 @@
     <main class="flex-1 overflow-auto">
       <slot />
     </main>
+
+    {#if $nowPlaying}
+      <Player nowPlaying={$nowPlaying} />
+    {/if}
   </div>
 </QueryClientProvider>
