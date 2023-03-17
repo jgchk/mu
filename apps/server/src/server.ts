@@ -51,8 +51,8 @@ app
       createContext: () => ({})
     })
   )
-  .get('/api/howdy', (req, res) => {
-    return res.send('howdy');
+  .get('/api/ping', (req, res) => {
+    res.send('pong!');
   })
   .get(
     '/api/tracks/:id/cover-art',
