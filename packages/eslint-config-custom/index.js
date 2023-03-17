@@ -7,7 +7,7 @@ module.exports = {
     'turbo',
     'prettier'
   ],
-  plugins: ['svelte3', '@typescript-eslint', 'simple-import-sort'],
+  plugins: ['svelte3', '@typescript-eslint', 'simple-import-sort', 'import'],
   ignorePatterns: ['*.cjs'],
   overrides: [{ files: ['*.svelte'], processor: 'svelte3/svelte3' }],
   settings: {
@@ -24,6 +24,9 @@ module.exports = {
   },
   rules: {
     'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'error'
+    'simple-import-sort/exports': 'error',
+    'import/first': 'error',
+    'import/newline-after-import': 'error',
+    'import/no-duplicates': 'error'
   }
 };
