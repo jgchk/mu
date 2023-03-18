@@ -20,13 +20,10 @@
   }
 </script>
 
-<div bind:clientWidth class="flow-grid" style="grid-template-columns: repeat({numColumns}, 1fr);">
+<div
+  bind:clientWidth
+  class="grid gap-4 p-4"
+  style="grid-template-columns: repeat({numColumns}, 1fr);"
+>
   <slot />
 </div>
-
-<style>
-  .flow-grid {
-    display: grid;
-    grid-gap: 1rem;
-  }
-</style>

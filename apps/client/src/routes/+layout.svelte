@@ -19,10 +19,8 @@
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
-  <div
-    class="absolute top-0 left-0 flex h-screen w-screen flex-col gap-1 bg-gray-800 p-1 text-white"
-  >
-    <nav class="rounded bg-black p-1 px-2">
+  <div class="absolute top-0 left-0 flex h-screen w-screen flex-col bg-gray-800 text-white">
+    <nav class="mx-1 mt-1 rounded bg-black p-1 px-2">
       <a href="/">Home</a>
       <a href="/tracks">Tracks</a>
       <a href="/releases">Releases</a>
@@ -46,7 +44,9 @@
     </main>
 
     {#if $nowPlaying}
-      <Player nowPlaying={$nowPlaying} />
+      <div class="mx-1 mb-1">
+        <Player nowPlaying={$nowPlaying} />
+      </div>
     {/if}
   </div>
 </QueryClientProvider>
