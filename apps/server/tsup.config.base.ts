@@ -1,6 +1,6 @@
-import { defineConfig, Options } from 'tsup';
 import fs from 'fs';
 import path from 'path';
+import type { Options } from 'tsup';
 
 type Plugin = NonNullable<Options['esbuildPlugins']>[number];
 type Loader = NonNullable<
