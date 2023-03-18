@@ -145,7 +145,7 @@
 />
 <div class="relative w-full">
   <div
-    class="relative box-border min-w-full p-2 outline-none"
+    class="range__wrapper relative box-border min-w-full p-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
