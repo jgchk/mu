@@ -4,6 +4,7 @@ use librespot::core::{
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum StreamingClientError {
     #[error(transparent)]
     SessionError(#[from] SessionError),

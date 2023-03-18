@@ -16,7 +16,7 @@
   const downloadMutation = trpc.downloads.download.mutation();
 
   const handleDownload = () => {
-    $downloadMutation.mutate({ id: result.id, kind: result.kind });
+    $downloadMutation.mutate({ service: 'soundcloud', id: result.id, kind: result.kind });
   };
 </script>
 

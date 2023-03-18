@@ -13,5 +13,6 @@
   },
   "prettier.documentSelectors": ["**/*.svelte"],
 
-  "rust-analyzer.linkedProjects": ["packages/spotify/downloader/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["packages/spotify/downloader/Cargo.toml"],
+  "rust-analyzer.check.command": "clippy"
 }

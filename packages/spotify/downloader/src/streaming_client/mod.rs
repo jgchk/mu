@@ -86,7 +86,6 @@ impl StreamingClient {
     }
 
     pub fn audio_decrypt<T: std::io::Read>(key: AudioKey, reader: T) -> AudioDecrypt<T> {
-        let decrypt = AudioDecrypt::new(key, reader);
-        decrypt
+        AudioDecrypt::new(key, reader)
     }
 }

@@ -16,3 +16,4 @@ package-lock.json
 yarn.lock
 
 /packages/spotify/downloader
+/packages/spotify/credentials_cache

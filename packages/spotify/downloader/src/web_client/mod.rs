@@ -60,7 +60,7 @@ impl WebClient {
             "track" => {
                 let track_id = TrackId::from_id(id)?;
                 let track = self.client.track(track_id).await?;
-                Ok(SpotifyItem::Track(track))
+                Ok(SpotifyItem::Track(Box::new(track)))
             }
             "playlist" => {
                 let playlist_id = PlaylistId::from_id(id)?;
@@ -84,7 +84,7 @@ impl WebClient {
 
 #[derive(Debug, Clone)]
 pub enum SpotifyItem {
-    Track(FullTrack),
+    Track(Box<FullTrack>),
     Playlist(FullPlaylist),
     Album(FullAlbum),
     Artist(FullArtist),
