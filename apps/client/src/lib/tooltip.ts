@@ -22,7 +22,7 @@ const injectDefaultParams = (params: Partial<TippyProps>): Partial<TippyProps> =
   delay: params.delay ?? TooltipDefaults.delay
 });
 
-export const tooltipAction: Action<Partial<TippyProps>> = (node, params) => {
+export const tooltip: Action<Partial<TippyProps>> = (node, params) => {
   const tip = tippy(node, injectDefaultParams(params));
   return {
     update: (newParams) => {

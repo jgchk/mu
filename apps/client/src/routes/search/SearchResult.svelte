@@ -2,7 +2,7 @@
   import { followCursor } from 'tippy.js';
 
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte';
-  import { tooltipAction, TooltipDefaults } from '$lib/tooltip';
+  import { tooltip, TooltipDefaults } from '$lib/tooltip';
   import type { RouterOutput } from '$lib/trpc';
   import { getContextClient } from '$lib/trpc';
 
@@ -24,7 +24,7 @@
   <button
     class="relative h-[200px] w-full shadow"
     on:click={handleDownload}
-    use:tooltipAction={{
+    use:tooltip={{
       content: 'Download',
       delay: [TooltipDefaults.delay, 0],
       followCursor: true,
