@@ -67,7 +67,7 @@
     {/if}
   </div>
   <div class="max-w-[722px] flex-[4]">
-    <div class="mb-2 flex w-full justify-center">
+    <div class="flex w-full justify-center">
       <button
         class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
         on:click={togglePlaying}
@@ -80,9 +80,6 @@
       </button>
     </div>
     <Range bind:value={currentTime} min={0} max={duration} />
-    <!-- <div class="h-1 w-full overflow-hidden rounded-full bg-gray-700">
-      <div class="bg-primary-500 h-full rounded-full" style={`width: ${100 * progress}%;`} />
-    </div> -->
   </div>
   <div class="flex flex-[2.25] justify-end">
     <div class="w-[125px]">
