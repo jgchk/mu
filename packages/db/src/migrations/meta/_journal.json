@@ -7,6 +7,12 @@
       "version": "5",
       "when": 1678722687789,
       "tag": "0000_cheerful_chronomancer"
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1679180071555,
+      "tag": "0001_giant_magus"
     }
   ]
 }

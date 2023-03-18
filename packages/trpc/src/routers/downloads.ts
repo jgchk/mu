@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import {
   getAllReleaseDownloads,
   getAllTrackDownloads,
@@ -5,10 +6,14 @@ import {
   insertTrackDownload,
   updateTrackDownload
 } from 'db';
+import fs from 'fs';
 import got from 'got';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
+import path from 'path';
+import { downloadSpotifyTrack } from 'spotify';
 import { z } from 'zod';
 
+import { env } from '../env';
 import {
   downloadTrack,
   getPlaylist,
@@ -18,15 +23,50 @@ import {
 import { publicProcedure, router } from '../trpc';
 import { ifNotNull } from '../utils/types';
 
+const SoundcloudDownload = z.object({
+  service: z.literal('soundcloud'),
+  id: z.number(),
+  kind: z.enum(['track', 'playlist'])
+});
+
+const SpotifyDownload = z.object({
+  service: z.literal('spotify'),
+  url: z.string()
+});
+
+const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload]);
+
 export const downloadsRouter = router({
-  download: publicProcedure
-    .input(z.object({ id: z.number(), kind: z.union([z.literal('track'), z.literal('playlist')]) }))
-    .mutation(async ({ input: { id, kind } }) => {
+  download: publicProcedure.input(DownloadRequest).mutation(async ({ input }) => {
+    if (input.service === 'spotify') {
+      const { url } = input;
+
+      let dbDownload = insertTrackDownload({
+        complete: false,
+        name: url
+      });
+
+      const fileName = `spot-${Date.now()}-${randomInt(0, 10)}.ogg`;
+      const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+      const fsPipe = fs.createWriteStream(filePath);
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+
+      const pipe = downloadSpotifyTrack(url);
+      pipe.pipe(fsPipe);
+
+      await new Promise((resolve) => {
+        pipe.on('close', resolve);
+      });
+
+      dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
+
+      return dbDownload;
+    } else {
+      const { kind, id } = input;
       if (kind === 'track') {
         const scTrack = await getTrack(id);
 
         let dbDownload = insertTrackDownload({
-          ref: id,
           complete: false,
           name: scTrack.title
         });
@@ -71,7 +111,6 @@ export const downloadsRouter = router({
             const scTrack = 'title' in track ? track : await getTrack(track.id);
 
             let dbDownload = insertTrackDownload({
-              ref: id,
               complete: false,
               name: scTrack.title,
               releaseDownloadId: releaseDownload.id
@@ -106,7 +145,8 @@ export const downloadsRouter = router({
           })
         );
       }
-    }),
+    }
+  }),
   getAll: publicProcedure.query(async () => {
     const [tracks, releases] = await Promise.all([
       getAllTrackDownloads(),

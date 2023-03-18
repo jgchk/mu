@@ -1,0 +1,17 @@
+[package]
+name = "spotify-download"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+librespot = "0.4.2"
+rspotify = "0.11.6"
+url = "2.3.1"
+clap = { version = "4.1.10", features = ["derive"] }
+thiserror = "1.0.40"
+anyhow = "1.0.70"
+tokio = { version = "1", features = ["full"] }
+async-stream = "0.3.4"
+futures-util = "0.3.27"

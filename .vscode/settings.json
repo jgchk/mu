@@ -11,5 +11,7 @@
   "[svelte]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "prettier.documentSelectors": ["**/*.svelte"]
+  "prettier.documentSelectors": ["**/*.svelte"],
+
+  "rust-analyzer.linkedProjects": ["packages/spotify/downloader/Cargo.toml"]
 }

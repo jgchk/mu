@@ -1,51 +1,54 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc'
+  import { getContextClient } from '$lib/trpc';
 
-  import ReleaseDownload from './ReleaseDownload.svelte'
-  import TrackDownload from './TrackDownload.svelte'
+  import ReleaseDownload from './ReleaseDownload.svelte';
+  import SpotifyDownloader from './SpotifyDownloader.svelte';
+  import TrackDownload from './TrackDownload.svelte';
   import type {
     ReleaseDownload as ReleaseDownloadType,
-    TrackDownload as TrackDownloadType,
-  } from './types'
+    TrackDownload as TrackDownloadType
+  } from './types';
 
-  const trpc = getContextClient()
-  const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 })
+  const trpc = getContextClient();
+  const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 });
 
   let downloads:
     | {
-        releases: (ReleaseDownloadType & { tracks: TrackDownloadType[] })[]
-        tracks: TrackDownloadType[]
+        releases: (ReleaseDownloadType & { tracks: TrackDownloadType[] })[];
+        tracks: TrackDownloadType[];
       }
-    | undefined
+    | undefined;
   $: {
     if (!$downloadsQuery.data) {
-      downloads = undefined
+      downloads = undefined;
     } else {
       const data: {
-        releases: { [id: number]: ReleaseDownloadType & { tracks: TrackDownloadType[] } }
-        tracks: TrackDownloadType[]
+        releases: { [id: number]: ReleaseDownloadType & { tracks: TrackDownloadType[] } };
+        tracks: TrackDownloadType[];
       } = {
         releases: Object.fromEntries(
           $downloadsQuery.data.releases.map((release) => [release.id, { ...release, tracks: [] }])
         ),
-        tracks: [],
-      }
+        tracks: []
+      };
 
       for (const track of $downloadsQuery.data.tracks) {
         if (track.releaseDownloadId === null) {
-          data.tracks.push(track)
+          data.tracks.push(track);
         } else {
-          data.releases[track.releaseDownloadId].tracks.push(track)
+          data.releases[track.releaseDownloadId].tracks.push(track);
         }
       }
 
       downloads = {
         releases: Object.values(data.releases),
-        tracks: data.tracks,
-      }
+        tracks: data.tracks
+      };
     }
   }
 </script>
+
+<SpotifyDownloader />
 
 {#if downloads}
   {#if downloads.releases.length > 0 || downloads.tracks.length > 0}

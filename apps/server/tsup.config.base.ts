@@ -21,8 +21,8 @@ const dirnamePlugin: Plugin = {
       }
       const dirname = path.dirname(filePath);
       contents = contents
-        .replace('__dirname', `"${dirname}"`)
-        .replace('__filename', `"${filePath}"`);
+        .replaceAll('__dirname', `"${dirname}"`)
+        .replaceAll('__filename', `"${filePath}"`);
       return {
         contents,
         loader: loader as Loader

@@ -77,7 +77,6 @@ export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'
 
 export const trackDownloads = sqliteTable('track_downloads', {
   id: integer('id').primaryKey(),
-  ref: integer('ref').notNull(),
   complete: integer('complete').notNull(),
   name: text('name').notNull(),
   path: text('path'),

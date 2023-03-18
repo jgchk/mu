@@ -1,0 +1,1 @@
+ALTER TABLE track_downloads DROP COLUMN `ref`;

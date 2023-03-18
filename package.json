@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "dotenv -e .env -e .env.local -- turbo run dev",
+    "dev": "NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "ci": "turbo run ci",

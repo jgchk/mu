@@ -27,6 +27,7 @@
     "mime": "^3.0.0",
     "music-metadata": "workspace:*",
     "soulseek-ts": "^1.0.2",
+    "spotify": "workspace:*",
     "superjson": "^1.12.2",
     "untildify": "^4.0.0",
     "zod": "^3.21.4"
