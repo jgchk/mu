@@ -46,7 +46,7 @@
         </div>
       {/if}
       <div class="overflow-hidden">
-        <div class="overflow-hidden text-ellipsis whitespace-nowrap">
+        <div class="truncate">
           {$nowPlayingTrack.data.title}
         </div>
         <div class="text-sm text-gray-400">

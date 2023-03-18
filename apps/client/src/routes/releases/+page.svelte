@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FlowGrid from '$lib/components/FlowGrid.svelte';
   import { getContextClient } from '$lib/trpc';
 
   const trpc = getContextClient();
@@ -6,19 +7,19 @@
 </script>
 
 {#if $releasesQuery.data}
-  <div class="flex flex-wrap gap-4">
+  <FlowGrid>
     {#each $releasesQuery.data as release (release.id)}
-      <a href="/releases/{release.id}" class="w-[200px]">
-        <div class="relative h-[200px] w-full shadow">
+      <a href="/releases/{release.id}" class="w-full overflow-hidden">
+        <div class="relative w-full shadow">
           {#if release.hasCoverArt}
             <img
-              class="h-full w-full rounded object-cover"
+              class="w-full rounded object-cover"
               src="/api/releases/{release.id}/cover-art?width=400&height=400"
               alt={release.title}
             />
           {:else}
-            <div class="center h-full w-full rounded bg-gray-800 italic text-gray-600">
-              No cover art
+            <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
+              <div class="center absolute top-0 left-0 h-full w-full">No cover art</div>
             </div>
           {/if}
           <div
@@ -28,7 +29,7 @@
         <div class="truncate text-sm font-bold" title={release.title}>{release.title}</div>
       </a>
     {/each}
-  </div>
+  </FlowGrid>
 {:else if $releasesQuery.error}
   <div>{$releasesQuery.error.message}</div>
 {:else}
