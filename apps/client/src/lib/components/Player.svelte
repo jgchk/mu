@@ -79,7 +79,16 @@
         {/if}
       </button>
     </div>
-    <Range bind:value={currentTime} min={0} max={duration} />
+    <Range
+      bind:value={currentTime}
+      min={0}
+      max={duration}
+      on:change={(e) => {
+        if (player) {
+          player.currentTime = e.detail;
+        }
+      }}
+    />
   </div>
   <div class="flex flex-[2.25] justify-end">
     <div class="w-[125px]">
