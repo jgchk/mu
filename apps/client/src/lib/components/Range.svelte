@@ -83,10 +83,10 @@
 
   function calculateNewValue(clientX: number) {
     // Find distance between cursor and element's left cord (20px / 2 = 10px) - Center of thumb
-    let delta = clientX - ((elementX ?? 0) + 10);
+    let delta = clientX - ((elementX ?? 0) + 7);
 
     // Use width of the container minus (5px * 2 sides) offset for percent calc
-    let percent = (delta * 100) / ((container?.clientWidth ?? 0) - 10);
+    let percent = (delta * 100) / (container?.clientWidth ?? 0);
 
     // Limit percent 0 -> 100
     percent = percent < 0 ? 0 : percent > 100 ? 100 : percent;
@@ -98,7 +98,9 @@
   // Handles both dragging of touch/mouse as well as simple one-off click/touches
   function updateValueOnEvent(e: TouchEvent | MouseEvent) {
     // touchstart && mousedown are one-off updates, otherwise expect a currentPointer node
-    if (!currentThumb && e.type !== 'touchstart' && e.type !== 'mousedown') return false;
+    if (!currentThumb && e.type !== 'touchstart' && e.type !== 'mousedown') {
+      return false;
+    }
 
     if (e.stopPropagation) e.stopPropagation();
     if (e.preventDefault) e.preventDefault();
