@@ -19,7 +19,6 @@
   let currentTime = 0;
   let duration = 1;
   let volume = 1;
-  $: progress = currentTime / duration;
 
   onDestroy(() => {
     player?.pause();
@@ -80,9 +79,10 @@
         {/if}
       </button>
     </div>
-    <div class="h-1 w-full overflow-hidden rounded-full bg-gray-700">
+    <Range bind:value={currentTime} min={0} max={duration} />
+    <!-- <div class="h-1 w-full overflow-hidden rounded-full bg-gray-700">
       <div class="bg-primary-500 h-full rounded-full" style={`width: ${100 * progress}%;`} />
-    </div>
+    </div> -->
   </div>
   <div class="flex flex-[2.25] justify-end">
     <div class="w-[125px]">
