@@ -164,7 +164,9 @@
       <div
         class={cn(
           'range__thumb absolute -mt-[5px] h-[14px] w-[14px] cursor-pointer select-none rounded-full bg-white',
-          holding ? 'range__thumb--holding' : 'hidden group-hover:block'
+          holding
+            ? 'range__thumb--holding'
+            : 'scale-90 transform opacity-0 group-hover:scale-100 group-hover:opacity-100'
         )}
         bind:this={thumb}
         on:touchstart={onDragStart}
@@ -195,7 +197,7 @@
   }
 
   .range__thumb {
-    transition: box-shadow 100ms;
+    transition: box-shadow 125ms, opacity 125ms, transform 125ms;
     box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 0px 2px 1px rgba(0, 0, 0, 0.2);
   }
 
