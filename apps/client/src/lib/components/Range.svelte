@@ -122,7 +122,7 @@
     value = value < max ? value : max;
 
     let percent = ((value - min) * 100) / (max - min);
-    let offsetLeft = ((container?.clientWidth ?? 0) - 14) * (percent / 100) + 5;
+    let offsetLeft = (container?.clientWidth ?? 0) * (percent / 100);
 
     // Update thumb position + active range track width
     thumb.style.left = `${offsetLeft}px`;
