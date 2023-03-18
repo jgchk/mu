@@ -3,7 +3,10 @@
 
   import PauseIcon from '$lib/icons/PauseIcon.svelte';
   import PlayIcon from '$lib/icons/PlayIcon.svelte';
+  import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte';
+  import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte';
   import type { NowPlaying } from '$lib/now-playing';
+  import { tooltip } from '$lib/tooltip';
   import { getContextClient } from '$lib/trpc';
 
   import PlayerCover from './PlayerCover.svelte';
@@ -19,6 +22,7 @@
   let currentTime = 0;
   let duration = 1;
   let volume = 1;
+  let previousVolume = 1;
 
   onDestroy(() => {
     player?.pause();
@@ -90,8 +94,28 @@
       }}
     />
   </div>
-  <div class="flex flex-[2.25] justify-end">
-    <div class="w-[125px]">
+  <div class="group flex flex-[2.25] items-center justify-end">
+    <button
+      class="center h-8 w-8 text-gray-400 hover:text-white"
+      use:tooltip={{ content: volume === 0 ? 'Unmute' : 'Mute' }}
+      on:click={() => {
+        if (volume === 0) {
+          volume = previousVolume;
+        } else {
+          previousVolume = volume;
+          volume = 0;
+        }
+      }}
+    >
+      <div class="h-4 w-4">
+        {#if volume === 0}
+          <VolumeOffIcon />
+        {:else}
+          <VolumeOnIcon />
+        {/if}
+      </div>
+    </button>
+    <div class="mr-4 w-[125px]">
       <Range bind:value={volume} min={0} max={1} />
     </div>
   </div>

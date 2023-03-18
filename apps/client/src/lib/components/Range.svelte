@@ -83,7 +83,7 @@
 
   function calculateNewValue(clientX: number) {
     // Find distance between cursor and element's left cord (20px / 2 = 10px) - Center of thumb
-    let delta = clientX - ((elementX ?? 0) + 7);
+    let delta = clientX - (elementX ?? 0);
 
     // Use width of the container minus (5px * 2 sides) offset for percent calc
     let percent = (delta * 100) / (container?.clientWidth ?? 0);
@@ -124,11 +124,10 @@
     value = value < max ? value : max;
 
     let percent = ((value - min) * 100) / (max - min);
-    let offsetLeft = (container?.clientWidth ?? 0) * (percent / 100);
 
     // Update thumb position + active range track width
-    thumb.style.left = `${offsetLeft}px`;
-    progressBar.style.width = `${offsetLeft}px`;
+    thumb.style.left = `calc(${percent}% - 7px)`;
+    progressBar.style.width = `${percent}%`;
   }
 
   function isTouchEvent(event: TouchEvent | MouseEvent): event is TouchEvent {
@@ -149,7 +148,7 @@
 />
 <div class="relative w-full">
   <div
-    class="range__wrapper group relative box-border min-w-full p-2 outline-none"
+    class="range__wrapper group relative box-border min-w-full py-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
