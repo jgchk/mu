@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
+  import { cn } from '$lib/utils/classes';
+
   // Props
   export let min = 0;
   export let max = 100;
@@ -120,7 +122,7 @@
     value = value < max ? value : max;
 
     let percent = ((value - min) * 100) / (max - min);
-    let offsetLeft = ((container?.clientWidth ?? 0) - 10) * (percent / 100) + 5;
+    let offsetLeft = ((container?.clientWidth ?? 0) - 14) * (percent / 100) + 5;
 
     // Update thumb position + active range track width
     thumb.style.left = `${offsetLeft}px`;
@@ -145,7 +147,7 @@
 />
 <div class="relative w-full">
   <div
-    class="range__wrapper relative box-border min-w-full p-2 outline-none"
+    class="range__wrapper group relative box-border min-w-full p-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
@@ -160,8 +162,10 @@
     <div class="range__track h-1 rounded-full bg-gray-700" bind:this={container}>
       <div class="bg-primary-500 absolute h-1 w-0 rounded-full" bind:this={progressBar} />
       <div
-        class="range__thumb absolute -mt-[5px] h-[14px] w-[14px] cursor-pointer select-none rounded-full bg-white"
-        class:range__thumb--holding={holding}
+        class={cn(
+          'range__thumb absolute -mt-[5px] h-[14px] w-[14px] cursor-pointer select-none rounded-full bg-white',
+          holding ? 'range__thumb--holding' : 'hidden group-hover:block'
+        )}
         bind:this={thumb}
         on:touchstart={onDragStart}
         on:mousedown={onDragStart}
@@ -178,7 +182,7 @@
       left: 0px;
       height: 100%;
       width: 100%;
-      background-color: rgba(255, 0, 0, 0);
+      background-color: transparent;
       z-index: 10000;
       cursor: grabbing;
     }
