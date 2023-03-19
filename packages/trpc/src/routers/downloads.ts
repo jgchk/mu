@@ -10,7 +10,12 @@ import fs from 'fs';
 import got from 'got';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
-import { downloadSpotifyTrack, getSpotifyTrack, parseUri } from 'spotify';
+import {
+  downloadSpotifyTrack,
+  getSpotifyAlbum,
+  getSpotifyAlbumTracks,
+  getSpotifyTrack
+} from 'spotify';
 import { z } from 'zod';
 
 import { env } from '../env';
@@ -31,7 +36,8 @@ const SoundcloudDownload = z.object({
 
 const SpotifyDownload = z.object({
   service: z.literal('spotify'),
-  url: z.string()
+  id: z.string(),
+  kind: z.enum(['track', 'album'])
 });
 
 const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload]);
@@ -39,35 +45,61 @@ const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload]);
 export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(async ({ input }) => {
     if (input.service === 'spotify') {
-      const { url } = input;
-      const spotifyId = parseUri(url);
+      const { kind, id } = input;
+      if (kind === 'track') {
+        const track = await getSpotifyTrack(id);
 
-      if (spotifyId.kind !== 'track') {
-        throw new Error('Only Spotify tracks are supported');
+        let dbDownload = insertTrackDownload({
+          complete: false,
+          name: track.name
+        });
+
+        const fileName = `spot-${track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
+        const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+        const fsPipe = fs.createWriteStream(filePath);
+
+        const pipe = downloadSpotifyTrack(id);
+        pipe.pipe(fsPipe);
+
+        await new Promise((resolve) => {
+          pipe.on('close', resolve);
+        });
+
+        dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
+
+        return dbDownload;
+      } else {
+        const [album, tracks] = await Promise.all([getSpotifyAlbum(id), getSpotifyAlbumTracks(id)]);
+
+        const releaseDownload = insertReleaseDownload({ name: album.name });
+
+        return Promise.all(
+          tracks.map(async (track) => {
+            let dbDownload = insertTrackDownload({
+              complete: false,
+              name: track.name,
+              releaseDownloadId: releaseDownload.id
+            });
+
+            const fileName = `spot-${track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
+            const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            const fsPipe = fs.createWriteStream(filePath);
+
+            const pipe = downloadSpotifyTrack(track.id);
+            pipe.pipe(fsPipe);
+
+            await new Promise((resolve) => {
+              pipe.on('close', resolve);
+            });
+
+            dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
+
+            return dbDownload;
+          })
+        );
       }
-
-      const track = await getSpotifyTrack(spotifyId.id);
-
-      let dbDownload = insertTrackDownload({
-        complete: false,
-        name: track.name
-      });
-
-      const fileName = `spot-${track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
-      const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
-      const fsPipe = fs.createWriteStream(filePath);
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-
-      const pipe = downloadSpotifyTrack(spotifyId.id);
-      pipe.pipe(fsPipe);
-
-      await new Promise((resolve) => {
-        pipe.on('close', resolve);
-      });
-
-      dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
-
-      return dbDownload;
     } else {
       const { kind, id } = input;
       if (kind === 'track') {

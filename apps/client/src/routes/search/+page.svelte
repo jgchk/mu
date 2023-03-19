@@ -5,8 +5,9 @@
   import { getContextClient } from '$lib/trpc';
 
   import type { PageData } from './$types';
-  import SearchResult from './SearchResult.svelte';
   import SoulseekResults from './SoulseekResults.svelte';
+  import SoundcloudSearchResult from './SoundcloudSearchResult.svelte';
+  import SpotifySearchResult from './SpotifySearchResult.svelte';
   import type { FileSearchResponse } from './types';
 
   export let data: PageData;
@@ -14,6 +15,10 @@
 
   const trpc = getContextClient();
   $: soundcloudQuery = trpc.search.soundcloud.query(
+    { query: data.query },
+    { enabled: data.hasQuery, staleTime: 60 * 1000 }
+  );
+  $: spotifyQuery = trpc.search.spotify.query(
     { query: data.query },
     { enabled: data.hasQuery, staleTime: 60 * 1000 }
   );
@@ -50,19 +55,40 @@
 </script>
 
 {#if data.hasQuery}
+  <h2>Spotify</h2>
+  {#if $spotifyQuery.data}
+    <h3>Albums</h3>
+    <div class="flex flex-wrap gap-4">
+      {#each $spotifyQuery.data.albums as album (album.id)}
+        <SpotifySearchResult result={album} />
+      {/each}
+    </div>
+
+    <h3>Tracks</h3>
+    <div class="flex flex-wrap gap-4">
+      {#each $spotifyQuery.data.tracks as track (track.id)}
+        <SpotifySearchResult result={track} />
+      {/each}
+    </div>
+  {:else if $spotifyQuery.error}
+    <div>{$spotifyQuery.error.message}</div>
+  {:else}
+    <div>Loading...</div>
+  {/if}
+
   <h2>Soundcloud</h2>
   {#if $soundcloudQuery.data}
     <h3>Albums</h3>
     <div class="flex flex-wrap gap-4">
       {#each $soundcloudQuery.data.albums as album (album.id)}
-        <SearchResult result={album} />
+        <SoundcloudSearchResult result={album} />
       {/each}
     </div>
 
     <h3>Tracks</h3>
     <div class="flex flex-wrap gap-4">
       {#each $soundcloudQuery.data.tracks as track (track.id)}
-        <SearchResult result={track} />
+        <SoundcloudSearchResult result={track} />
       {/each}
     </div>
   {:else if $soundcloudQuery.error}
@@ -72,13 +98,6 @@
   {/if}
 
   <h2>Soulseek</h2>
-  <!-- {#if $soulseekQuery.data}
-    <SoulseekResults data={$soulseekQuery.data} />
-  {:else if $soulseekQuery.error}
-    <div>{$soulseekQuery.error.message}</div>
-  {:else}
-    <div>Loading...</div>
-  {/if} -->
   <SoulseekResults data={soulseekData} />
 {:else}
   <div>Enter a search query</div>

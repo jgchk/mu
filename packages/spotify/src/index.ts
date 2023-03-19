@@ -5,6 +5,14 @@ import stream from 'stream';
 import { z } from 'zod';
 
 import { env } from './env';
+import {
+  FullAlbum,
+  FullTrack,
+  Pager,
+  SearchTracks,
+  SearchTracksAndAlbums,
+  SimplifiedTrack
+} from './model';
 
 const SCRIPT_PATH =
   env.NODE_ENV === 'development'
@@ -91,17 +99,6 @@ export const parseUri = (uri: string): SpotifyId => {
   };
 };
 
-const SimplifiedArtist = z.object({
-  id: z.string(),
-  name: z.string()
-});
-
-const FullTrack = z.object({
-  id: z.string(),
-  name: z.string(),
-  artists: SimplifiedArtist.array()
-});
-
 export const getSpotifyTrack = async (trackId: string) => {
   const token = await getAccessToken();
   const res = await got
@@ -112,5 +109,74 @@ export const getSpotifyTrack = async (trackId: string) => {
     })
     .json()
     .then((res) => FullTrack.parse(res));
+  return res;
+};
+
+export const getSpotifyAlbum = async (albumId: string) => {
+  const token = await getAccessToken();
+  const res = await got
+    .get(`https://api.spotify.com/v1/albums/${albumId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .json()
+    .then((res) => FullAlbum.parse(res));
+  return res;
+};
+
+export const getSpotifyAlbumTracks = async (albumId: string) => {
+  const token = await getAccessToken();
+
+  const results: SimplifiedTrack[] = [];
+
+  let next: string | null = `https://api.spotify.com/v1/albums/${albumId}/tracks`;
+  while (next) {
+    const res: Pager<SimplifiedTrack> = await got
+      .get(next, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .json()
+      .then((res) => Pager(SimplifiedTrack).parse(res));
+    results.push(...res.items);
+    next = res.next;
+  }
+
+  return results;
+};
+
+export const searchTracks = async (query: string) => {
+  const token = await getAccessToken();
+  const res = await got
+    .get('https://api.spotify.com/v1/search', {
+      searchParams: {
+        q: query,
+        type: 'track'
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .json()
+    .then((res) => SearchTracks.parse(res));
+  return res.tracks.items;
+};
+
+export const searchTracksAndAlbums = async (query: string) => {
+  const token = await getAccessToken();
+  const res = await got
+    .get('https://api.spotify.com/v1/search', {
+      searchParams: {
+        q: query,
+        type: 'track,album'
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .json()
+    .then((res) => SearchTracksAndAlbums.parse(res));
   return res;
 };

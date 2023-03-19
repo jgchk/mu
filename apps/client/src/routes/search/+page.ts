@@ -9,6 +9,7 @@ export const load: PageLoad = async ({ url, parent }) => {
   if (hasQuery) {
     const { trpc } = await parent();
     await trpc.search.soundcloud.prefetchQuery({ query });
+    await trpc.search.spotify.prefetchQuery({ query });
     await trpc.search.soulseek.prefetchQuery({ query });
   }
 

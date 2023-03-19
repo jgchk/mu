@@ -1,5 +1,6 @@
 import { observable } from '@trpc/server/observable';
 import type { Messages } from 'soulseek-ts';
+import { searchTracksAndAlbums } from 'spotify';
 import { z } from 'zod';
 
 import { search, searchSubscription } from '../services/soulseek';
@@ -25,6 +26,15 @@ export const searchRouter = router({
             200: getSoundcloudImageUrl(artworkUrl, 200)
           }))
         }))
+      };
+    }),
+  spotify: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ input: { query } }) => {
+      const results = await searchTracksAndAlbums(query);
+      return {
+        tracks: results.tracks.items,
+        albums: results.albums.items
       };
     }),
   soulseek: publicProcedure
