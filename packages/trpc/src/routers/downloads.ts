@@ -10,7 +10,7 @@ import fs from 'fs';
 import got from 'got';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
-import { downloadSpotifyTrack, parseUri } from 'spotify';
+import { downloadSpotifyTrack, getSpotifyTrack, parseUri } from 'spotify';
 import { z } from 'zod';
 
 import { env } from '../env';
@@ -40,15 +40,20 @@ export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(async ({ input }) => {
     if (input.service === 'spotify') {
       const { url } = input;
-
       const spotifyId = parseUri(url);
+
+      if (spotifyId.kind !== 'track') {
+        throw new Error('Only Spotify tracks are supported');
+      }
+
+      const track = await getSpotifyTrack(spotifyId.id);
 
       let dbDownload = insertTrackDownload({
         complete: false,
-        name: url
+        name: track.name
       });
 
-      const fileName = `spot-${Date.now()}-${randomInt(0, 10)}.ogg`;
+      const fileName = `spot-${track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
       const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
       const fsPipe = fs.createWriteStream(filePath);
       await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
