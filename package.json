@@ -5,7 +5,7 @@
     "dev": "NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev",
     "lint": "turbo run lint",
     "format": "turbo run format",
-    "ci": "turbo run ci",
+    "ci": "cd apps/client && pnpm build && cd ../.. && turbo run ci",
     "db:drop": "rm apps/server/db.sqlite || true && rm -r apps/server/downloads || true && rm -r apps/server/music || true"
   },
   "devDependencies": {
