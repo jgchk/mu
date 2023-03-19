@@ -90,3 +90,27 @@ export const parseUri = (uri: string): SpotifyId => {
     id: path[2]
   };
 };
+
+const SimplifiedArtist = z.object({
+  id: z.string(),
+  name: z.string()
+});
+
+const FullTrack = z.object({
+  id: z.string(),
+  name: z.string(),
+  artists: SimplifiedArtist.array()
+});
+
+export const getSpotifyTrack = async (trackId: string) => {
+  const token = await getAccessToken();
+  const res = await got
+    .get(`https://api.spotify.com/v1/tracks/${trackId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .json()
+    .then((res) => FullTrack.parse(res));
+  return res;
+};
