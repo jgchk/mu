@@ -12,7 +12,18 @@
 
   export let result: SearchResult;
   $: album = result.type === 'album' ? result : result.album;
-  $: artwork = album.images.at(0);
+  let artwork: string | undefined;
+  $: {
+    const sortedImages = album.images.sort((a, b) => a.width - b.width);
+    const smallestImageAbove400px = sortedImages.find((i) => i.width >= 400);
+    if (smallestImageAbove400px) {
+      artwork = smallestImageAbove400px.url;
+    } else if (sortedImages.length > 0) {
+      artwork = sortedImages[sortedImages.length - 1].url;
+    } else {
+      artwork = undefined;
+    }
+  }
   $: artists = result.artists.map((a) => a.name).join(', ');
 
   const trpc = getContextClient();
@@ -23,9 +34,9 @@
   };
 </script>
 
-<div class="w-[200px]">
+<div class="w-full overflow-hidden">
   <button
-    class="relative h-[200px] w-full shadow"
+    class="relative w-full shadow"
     on:click={handleDownload}
     use:tooltip={{
       content: 'Download',
@@ -35,9 +46,11 @@
     }}
   >
     {#if artwork}
-      <img class="h-full w-full rounded object-cover" src={artwork.url} alt={result.name} />
+      <img class="w-full rounded object-cover" src={artwork} alt={result.name} />
     {:else}
-      <div class="center h-full w-full rounded bg-gray-800 italic text-gray-600">No cover art</div>
+      <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
+        <div class="center absolute top-0 left-0 h-full w-full">No cover art</div>
+      </div>
     {/if}
     <div
       class="center hover:border-primary-500 group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"

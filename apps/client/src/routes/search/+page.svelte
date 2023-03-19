@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import { derived } from 'svelte/store';
 
+  import FlowGrid from '$lib/components/FlowGrid.svelte';
   import { getContextClient } from '$lib/trpc';
 
   import type { PageData } from './$types';
@@ -58,18 +59,18 @@
   <h2>Spotify</h2>
   {#if $spotifyQuery.data}
     <h3>Albums</h3>
-    <div class="flex flex-wrap gap-4">
+    <FlowGrid>
       {#each $spotifyQuery.data.albums as album (album.id)}
         <SpotifySearchResult result={album} />
       {/each}
-    </div>
+    </FlowGrid>
 
     <h3>Tracks</h3>
-    <div class="flex flex-wrap gap-4">
+    <FlowGrid>
       {#each $spotifyQuery.data.tracks as track (track.id)}
         <SpotifySearchResult result={track} />
       {/each}
-    </div>
+    </FlowGrid>
   {:else if $spotifyQuery.error}
     <div>{$spotifyQuery.error.message}</div>
   {:else}
