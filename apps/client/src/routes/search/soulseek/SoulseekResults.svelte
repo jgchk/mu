@@ -16,11 +16,11 @@
   };
 
   type SortedSoulseekResults = SortedSoulseekUserResults[];
-  type SortedSoulseekUserResults = Omit<SoulseekUserResults, 'dirs'> & {
-    dirs: SortedSoulseekDirectories;
+  type SortedSoulseekUserResults = Omit<SoulseekUserResults, 'dirs'> & SortedSoulseekDirectory;
+  type SortedSoulseekDirectory = Omit<SoulseekDirectory, 'files'> & {
+    files: SortedSoulseekFiles;
+    size: bigint;
   };
-  type SortedSoulseekDirectories = SortedSoulseekDirectory[];
-  type SortedSoulseekDirectory = Omit<SoulseekDirectory, 'files'> & { files: SortedSoulseekFiles };
   type SortedSoulseekFiles = SoulseekFile[];
 
   type SortCol =
@@ -34,24 +34,12 @@
   type Sort = { col: SortCol; asc: boolean };
   let sort: Sort | undefined;
 
-  const handleSort = (col: SortCol) => {
-    if (sort && sort.col === col) {
-      if (!sort.asc) {
-        sort = undefined;
-      } else {
-        sort.asc = !sort.asc;
-      }
-    } else {
-      sort = { col, asc: true };
-    }
-  };
-
   let results: SoulseekResults;
   $: {
     results = new Map();
     for (const result of data) {
       const { username, slotsFree, queueLength, avgSpeed, results: files } = result;
-      const dirs = new Map<string, SoulseekDirectory>();
+      const dirs = results.get(username)?.dirs ?? new Map<string, SoulseekDirectory>();
       for (const file of files) {
         const { filename } = file;
         const dirparts = filename.replaceAll('\\', '/').split('/');
@@ -67,7 +55,7 @@
 
   let sortedResults: SortedSoulseekResults;
   $: {
-    const res = [...results.values()].map((user) => {
+    const res = [...results.values()].flatMap((user) => {
       const dirs = [...user.dirs.values()].map((dir) => {
         const files = [...dir.files.values()];
         const sort_ = sort ?? { col: 'basename', asc: true };
@@ -82,7 +70,7 @@
             return sort_.asc ? sortResult : -sortResult;
           });
         }
-        return { ...dir, files };
+        return { ...dir, files, size: files.reduce((acc, file) => acc + file.size, BigInt(0)) };
       });
 
       const dirNameSortDirection = sort?.col === 'dirname' ? sort.asc : true;
@@ -91,7 +79,7 @@
         return dirNameSortDirection ? sortResult : -sortResult;
       });
 
-      return { ...user, dirs };
+      return dirs.map((dir) => ({ ...user, ...dir }));
     });
 
     const compareUsername = (a: SortedSoulseekUserResults, b: SortedSoulseekUserResults) =>
@@ -166,59 +154,49 @@
   };
 </script>
 
-<div class="soulseek-results p-4">
-  <div class="contents">
-    <button on:click={() => handleSort('username')}>
-      Username {sort && sort.col === 'username' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('avgSpeed')}>
-      Avg. Speed {sort && sort.col === 'avgSpeed' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('slotsFree')}>
-      Slots Free {sort && sort.col === 'slotsFree' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('queueLength')}>
-      Queued {sort && sort.col === 'queueLength' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('dirname')}>
-      Folder {sort && sort.col === 'dirname' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('basename')}>
-      File {sort && sort.col === 'basename' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-    <button on:click={() => handleSort('size')}>
-      Size {sort && sort.col === 'size' ? (sort.asc ? '^' : 'v') : ''}
-    </button>
-  </div>
-
-  {#each sortedResults.slice(0, 10) as data (data.username)}
-    <div class="contents">
-      <div class="col-start-1">{data.username}</div>
-      <div>{formatSpeed(data.avgSpeed)}</div>
-      <div>{data.slotsFree}</div>
-      <div>{data.queueLength}</div>
-    </div>
-    {#each data.dirs as dir (dir.dirname)}
-      <div class="contents">
-        <div class="col-start-1" />
-        <div class="col-start-5">{dir.dirname}</div>
-      </div>
-      {#each dir.files as file (file.basename)}
+<div class="space-y-4 p-4">
+  {#each sortedResults.slice(0, 10) as data (`${data.username}-${data.dirname}`)}
+    <div class="max-w-4xl rounded bg-gray-900 p-4 text-gray-200">
+      <div class="files-grid">
         <div class="contents">
-          <div class="col-start-1" />
-          <div class="col-start-6">{file.basename}</div>
-          <div class="col-start-7">{formatSize(file.size)}</div>
+          <div class="mb-2 text-lg">{data.dirname}</div>
+          <div class="mb-2 text-right text-lg">{formatSize(data.size)}</div>
+          <button class="mb-2 text-right text-lg hover:text-white">Download</button>
         </div>
-      {/each}
-    {/each}
+        {#each data.files as file (file.basename)}
+          <div class="contents text-gray-400">
+            <div>{file.basename}</div>
+            <div class="text-right">{formatSize(file.size)}</div>
+            <button class="text-right hover:text-white">Download</button>
+          </div>
+        {/each}
+      </div>
+      <div class="mt-2 flex gap-4 text-sm">
+        <div>{data.username}</div>
+        <div>{formatSpeed(data.avgSpeed)}</div>
+        <div>
+          {#if data.slotsFree}
+            Free Slots
+          {:else}
+            No Slots
+          {/if}
+        </div>
+        <div>
+          {#if data.queueLength === 0}
+            Free Queue
+          {:else}
+            {data.queueLength} Queued
+          {/if}
+        </div>
+      </div>
+    </div>
   {/each}
 </div>
 
 <style lang="postcss">
-  .soulseek-results {
+  .files-grid {
     display: grid;
-    grid-template-columns: repeat(7, auto);
-    row-gap: theme(spacing.1);
-    column-gap: theme(spacing[0.5]);
+    grid-template-columns: auto 1fr auto;
+    column-gap: theme(spacing.4);
   }
 </style>
