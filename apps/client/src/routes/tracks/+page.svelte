@@ -8,7 +8,7 @@
 </script>
 
 {#if $tracksQuery.data}
-  <FlowGrid>
+  <FlowGrid class="p-4">
     {#each $tracksQuery.data as track (track.id)}
       <div class="w-full overflow-hidden">
         <button class="relative w-full shadow" on:click={() => nowPlaying.set({ id: track.id })}>
