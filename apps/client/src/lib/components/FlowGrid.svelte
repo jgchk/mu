@@ -8,7 +8,7 @@
 
 <div
   class={cn('grid gap-4', class_)}
-  style="grid-template-columns: repeat(auto-fit, minmax({minColumnWidth}px, 1fr));"
+  style="grid-template-columns: repeat(auto-fill, minmax({minColumnWidth}px, 1fr));"
 >
   <slot />
 </div>
