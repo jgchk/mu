@@ -16,19 +16,21 @@
 
 {#if data.hasQuery}
   {#if $soundcloudQuery.data}
-    <h3>Albums</h3>
-    <FlowGrid>
-      {#each $soundcloudQuery.data.albums as album (album.id)}
-        <SoundcloudSearchResult result={album} />
-      {/each}
-    </FlowGrid>
+    <div class="p-4 pt-0">
+      <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>
+      <FlowGrid>
+        {#each $soundcloudQuery.data.albums as album (album.id)}
+          <SoundcloudSearchResult result={album} />
+        {/each}
+      </FlowGrid>
 
-    <h3>Tracks</h3>
-    <FlowGrid>
-      {#each $soundcloudQuery.data.tracks as track (track.id)}
-        <SoundcloudSearchResult result={track} />
-      {/each}
-    </FlowGrid>
+      <h2 class="mb-4 mt-16 text-2xl font-bold">Tracks</h2>
+      <FlowGrid>
+        {#each $soundcloudQuery.data.tracks as track (track.id)}
+          <SoundcloudSearchResult result={track} />
+        {/each}
+      </FlowGrid>
+    </div>
   {:else if $soundcloudQuery.error}
     <div>{$soundcloudQuery.error.message}</div>
   {:else}

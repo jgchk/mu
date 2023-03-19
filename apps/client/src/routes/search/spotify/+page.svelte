@@ -16,19 +16,21 @@
 
 {#if data.hasQuery}
   {#if $spotifyQuery.data}
-    <h3>Albums</h3>
-    <FlowGrid>
-      {#each $spotifyQuery.data.albums as album (album.id)}
-        <SpotifySearchResult result={album} />
-      {/each}
-    </FlowGrid>
+    <div class="p-4 pt-0">
+      <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>
+      <FlowGrid>
+        {#each $spotifyQuery.data.albums as album (album.id)}
+          <SpotifySearchResult result={album} />
+        {/each}
+      </FlowGrid>
 
-    <h3>Tracks</h3>
-    <FlowGrid>
-      {#each $spotifyQuery.data.tracks as track (track.id)}
-        <SpotifySearchResult result={track} />
-      {/each}
-    </FlowGrid>
+      <h2 class="mb-4 mt-16 text-2xl font-bold">Tracks</h2>
+      <FlowGrid>
+        {#each $spotifyQuery.data.tracks as track (track.id)}
+          <SpotifySearchResult result={track} />
+        {/each}
+      </FlowGrid>
+    </div>
   {:else if $spotifyQuery.error}
     <div>{$spotifyQuery.error.message}</div>
   {:else}
