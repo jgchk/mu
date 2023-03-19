@@ -2,7 +2,6 @@
   import { getContextClient } from '$lib/trpc';
 
   import ReleaseDownload from './ReleaseDownload.svelte';
-  import SpotifyDownloader from './SpotifyDownloader.svelte';
   import TrackDownload from './TrackDownload.svelte';
   import type {
     ReleaseDownload as ReleaseDownloadType,
@@ -47,8 +46,6 @@
     }
   }
 </script>
-
-<SpotifyDownloader />
 
 {#if downloads}
   {#if downloads.releases.length > 0 || downloads.tracks.length > 0}
