@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { regexLastIndexOf } from '$lib/utils/string';
-
   import type { FileSearchResponse } from './types';
 
   export let data: FileSearchResponse[];
@@ -56,8 +54,9 @@
       const dirs = new Map<string, SoulseekDirectory>();
       for (const file of files) {
         const { filename } = file;
-        const dirname = filename.slice(0, regexLastIndexOf(filename, /[/\\]/) + 1);
-        const basename = filename.slice(dirname.length);
+        const dirparts = filename.replaceAll('\\', '/').split('/');
+        const dirname = dirparts.slice(0, -1).reverse().join('/');
+        const basename = dirparts[dirparts.length - 1];
         const dir = dirs.get(dirname) ?? { dirname, files: new Map() };
         dir.files.set(basename, { ...file, basename });
         dirs.set(dirname, dir);
@@ -167,7 +166,7 @@
   };
 </script>
 
-<div class="soulseek-results">
+<div class="soulseek-results p-4">
   <div class="contents">
     <button on:click={() => handleSort('username')}>
       Username {sort && sort.col === 'username' ? (sort.asc ? '^' : 'v') : ''}
@@ -192,7 +191,7 @@
     </button>
   </div>
 
-  {#each sortedResults.slice(0, 100) as data (data.username)}
+  {#each sortedResults.slice(0, 10) as data (data.username)}
     <div class="contents">
       <div class="col-start-1">{data.username}</div>
       <div>{formatSpeed(data.avgSpeed)}</div>
@@ -218,7 +217,7 @@
 <style lang="postcss">
   .soulseek-results {
     display: grid;
-    grid-template-columns: repeat(7, fit-content);
+    grid-template-columns: repeat(7, auto);
     row-gap: theme(spacing.1);
     column-gap: theme(spacing[0.5]);
   }
