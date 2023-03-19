@@ -31,8 +31,8 @@
       plugins: [followCursor]
     }}
   >
-    {#if result.artwork?.[200]}
-      <img class="w-full rounded object-cover" src={result.artwork[200]} alt={result.title} />
+    {#if result.artwork?.[500]}
+      <img class="w-full rounded object-cover" src={result.artwork[500]} alt={result.title} />
     {:else}
       <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
         <div class="center absolute top-0 left-0 h-full w-full">No cover art</div>

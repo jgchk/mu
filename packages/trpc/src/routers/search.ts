@@ -17,13 +17,13 @@ export const searchRouter = router({
         tracks: tracks.map((track) => ({
           ...track,
           artwork: ifNotNull(track.artwork_url, (artworkUrl) => ({
-            200: getSoundcloudImageUrl(artworkUrl, 200)
+            500: getSoundcloudImageUrl(artworkUrl, 500)
           }))
         })),
         albums: albums.map((album) => ({
           ...album,
           artwork: ifNotNull(album.artwork_url, (artworkUrl) => ({
-            200: getSoundcloudImageUrl(artworkUrl, 200)
+            500: getSoundcloudImageUrl(artworkUrl, 500)
           }))
         }))
       };

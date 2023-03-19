@@ -81,7 +81,9 @@ export const getPlaylist = (id: number) =>
     .json()
     .then((res) => SoundcloudPlaylist.parse(res));
 
-export const getSoundcloudImageUrl = (url: string, size: 100 | 200 | 'original') =>
+export const soundcloudImageSizes = [100, 200, 240, 250, 300, 500, 2480, 3000, 'original'] as const;
+export type SoundcloudImageSize = typeof soundcloudImageSizes[number];
+export const getSoundcloudImageUrl = (url: string, size: SoundcloudImageSize) =>
   url.replace('large', size === 'original' ? size : `t${size}x${size}`);
 
 export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string) => {
