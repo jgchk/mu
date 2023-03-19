@@ -10,7 +10,7 @@ import fs from 'fs';
 import got from 'got';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
-import { downloadSpotifyTrack } from 'spotify';
+import { downloadSpotifyTrack, parseUri } from 'spotify';
 import { z } from 'zod';
 
 import { env } from '../env';
@@ -41,6 +41,8 @@ export const downloadsRouter = router({
     if (input.service === 'spotify') {
       const { url } = input;
 
+      const spotifyId = parseUri(url);
+
       let dbDownload = insertTrackDownload({
         complete: false,
         name: url
@@ -51,7 +53,7 @@ export const downloadsRouter = router({
       const fsPipe = fs.createWriteStream(filePath);
       await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
-      const pipe = downloadSpotifyTrack(url);
+      const pipe = downloadSpotifyTrack(spotifyId.id);
       pipe.pipe(fsPipe);
 
       await new Promise((resolve) => {

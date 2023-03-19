@@ -5,54 +5,33 @@ use async_stream::try_stream;
 use clap::Parser;
 use futures_util::{pin_mut, StreamExt};
 use librespot::core::spotify_id::SpotifyId;
-use rspotify::prelude::Id;
 
-use crate::{
-    streaming_client::{FileFormat, StreamingClient},
-    web_client::{SpotifyItem, WebClient},
-};
+use crate::streaming_client::{FileFormat, StreamingClient};
 
 mod streaming_client;
-mod web_client;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(long)]
-    client_id: String,
-    #[arg(long)]
-    client_secret: String,
     #[arg(short, long)]
     username: String,
     #[arg(short, long)]
     password: String,
     #[arg(long)]
     credentials_cache: String,
-    url: String,
+    track_id: String,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let Args {
-        client_id,
-        client_secret,
         username,
         password,
         credentials_cache,
-        url,
+        track_id,
     } = Args::parse();
 
-    let uri = WebClient::parse_uri(&url)?;
-
-    let web_client = WebClient::new(&client_id, &client_secret).await?;
-    let item = web_client.resolve_uri(&uri).await?;
-    let track = match item {
-        SpotifyItem::Track(track) => track,
-        _ => return Err(anyhow!("Not a track")),
-    };
-
-    let track_id = track.id.ok_or(anyhow!("No track id"))?;
-    let id = SpotifyId::from_base62(track_id.id()).or(Err(anyhow!("Invalid track id")))?;
+    let id = SpotifyId::from_base62(&track_id).or(Err(anyhow!("Invalid track id")))?;
 
     let streaming_client =
         streaming_client::StreamingClient::new(&username, &password, &credentials_cache).await?;
