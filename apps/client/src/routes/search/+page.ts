@@ -1,17 +1,9 @@
+import { redirect } from '@sveltejs/kit';
+
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ url, parent }) => {
-  const queryParam = url.searchParams.get('q');
-
-  const query = queryParam ?? '';
-  const hasQuery = query.length > 0;
-
-  if (hasQuery) {
-    const { trpc } = await parent();
-    await trpc.search.soundcloud.prefetchQuery({ query });
-    await trpc.search.spotify.prefetchQuery({ query });
-    await trpc.search.soulseek.prefetchQuery({ query });
-  }
-
-  return { query, hasQuery };
+export const load: PageLoad = ({ url }) => {
+  const newUrl = new URL(url);
+  newUrl.pathname = '/search/spotify';
+  throw redirect(301, newUrl.toString());
 };
