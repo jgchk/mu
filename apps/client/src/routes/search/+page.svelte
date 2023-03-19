@@ -80,18 +80,18 @@
   <h2>Soundcloud</h2>
   {#if $soundcloudQuery.data}
     <h3>Albums</h3>
-    <div class="flex flex-wrap gap-4">
+    <FlowGrid>
       {#each $soundcloudQuery.data.albums as album (album.id)}
         <SoundcloudSearchResult result={album} />
       {/each}
-    </div>
+    </FlowGrid>
 
     <h3>Tracks</h3>
-    <div class="flex flex-wrap gap-4">
+    <FlowGrid>
       {#each $soundcloudQuery.data.tracks as track (track.id)}
         <SoundcloudSearchResult result={track} />
       {/each}
-    </div>
+    </FlowGrid>
   {:else if $soundcloudQuery.error}
     <div>{$soundcloudQuery.error.message}</div>
   {:else}

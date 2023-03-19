@@ -20,9 +20,9 @@
   };
 </script>
 
-<div class="w-[200px]">
+<div class="w-full overflow-hidden">
   <button
-    class="relative h-[200px] w-full shadow"
+    class="relative w-full shadow"
     on:click={handleDownload}
     use:tooltip={{
       content: 'Download',
@@ -32,13 +32,11 @@
     }}
   >
     {#if result.artwork?.[200]}
-      <img
-        class="h-full w-full rounded object-cover"
-        src={result.artwork[200]}
-        alt={result.title}
-      />
+      <img class="w-full rounded object-cover" src={result.artwork[200]} alt={result.title} />
     {:else}
-      <div class="center h-full w-full rounded bg-gray-800 italic text-gray-600">No cover art</div>
+      <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
+        <div class="center absolute top-0 left-0 h-full w-full">No cover art</div>
+      </div>
     {/if}
     <div
       class="center hover:border-primary-500 group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
