@@ -81,10 +81,54 @@ export const getPlaylist = (id: number) =>
     .json()
     .then((res) => SoundcloudPlaylist.parse(res));
 
-export const soundcloudImageSizes = [100, 200, 240, 250, 300, 500, 2480, 3000, 'original'] as const;
+export const soundcloudImageSizes = [
+  20,
+  40,
+  47,
+  50,
+  60,
+  67,
+  80,
+  120,
+  200,
+  240,
+  250,
+  300,
+  500,
+  2480,
+  3000,
+  'original'
+] as const;
 export type SoundcloudImageSize = typeof soundcloudImageSizes[number];
-export const getSoundcloudImageUrl = (url: string, size: SoundcloudImageSize) =>
-  url.replace('large', size === 'original' ? size : `t${size}x${size}`);
+
+export const soundcloudImageFormats = ['png', 'jpg'] as const;
+export type SoundcloudImageFormat = typeof soundcloudImageFormats[number];
+
+export const getSoundcloudImageUrl = (
+  url: string,
+  size: SoundcloudImageSize,
+  extension?: SoundcloudImageFormat
+) => {
+  let output = url.replace('large', size === 'original' ? size : `t${size}x${size}`);
+  if (extension !== undefined) {
+    output = output.replace('.jpg', `.${extension}`);
+  }
+  return output;
+};
+
+export const getLargestAvailableImage = async (originalUrl: string) => {
+  for (const size of soundcloudImageSizes.slice().reverse()) {
+    for (const extension of soundcloudImageFormats) {
+      try {
+        const url = getSoundcloudImageUrl(originalUrl, size, extension);
+        const res = await got(url).buffer();
+        return res;
+      } catch {
+        // ignore, try next
+      }
+    }
+  }
+};
 
 export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string) => {
   if (!track.streamable) {

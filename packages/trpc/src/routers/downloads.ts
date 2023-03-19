@@ -7,7 +7,6 @@ import {
   updateTrackDownload
 } from 'db';
 import fs from 'fs';
-import got from 'got';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
 import {
@@ -21,8 +20,8 @@ import { z } from 'zod';
 import { env } from '../env';
 import {
   downloadTrack,
+  getLargestAvailableImage,
   getPlaylist,
-  getSoundcloudImageUrl,
   getTrack
 } from '../services/soundcloud';
 import { publicProcedure, router } from '../trpc';
@@ -112,14 +111,9 @@ export const downloadsRouter = router({
 
         const filePath = await downloadTrack(scTrack);
 
-        const artwork = await ifNotNull(scTrack.artwork_url, async (artworkUrl) => {
-          const originalArtworkUrl = getSoundcloudImageUrl(artworkUrl, 'original');
-          const artwork_ = await got(originalArtworkUrl).buffer();
-          return {
-            data: artwork_,
-            url: originalArtworkUrl
-          };
-        });
+        const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
+          getLargestAvailableImage(artworkUrl)
+        );
 
         const { artists, title } = parseArtistTitle(scTrack.title);
         await writeTrackMetadata(filePath, {
@@ -130,7 +124,7 @@ export const downloadsRouter = router({
           trackNumber: '1'
         });
         if (artwork) {
-          await writeTrackCoverArt(filePath, artwork.data);
+          await writeTrackCoverArt(filePath, artwork);
         }
 
         dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
@@ -157,14 +151,9 @@ export const downloadsRouter = router({
 
             const filePath = await downloadTrack(scTrack);
 
-            const artwork = await ifNotNull(scTrack.artwork_url, async (artworkUrl) => {
-              const originalArtworkUrl = getSoundcloudImageUrl(artworkUrl, 'original');
-              const artwork_ = await got(originalArtworkUrl).buffer();
-              return {
-                data: artwork_,
-                url: originalArtworkUrl
-              };
-            });
+            const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
+              getLargestAvailableImage(artworkUrl)
+            );
 
             const { artists, title } = parseArtistTitle(scTrack.title);
             await writeTrackMetadata(filePath, {
@@ -175,7 +164,7 @@ export const downloadsRouter = router({
               trackNumber: (i + 1).toString()
             });
             if (artwork) {
-              await writeTrackCoverArt(filePath, artwork.data);
+              await writeTrackCoverArt(filePath, artwork);
             }
 
             dbDownload = updateTrackDownload(dbDownload.id, { complete: true, path: filePath });
