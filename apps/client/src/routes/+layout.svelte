@@ -30,7 +30,13 @@
         class="inline text-black"
         on:submit|preventDefault={() => {
           if (query.length > 0) {
-            void goto(`/search?q=${query}`);
+            if ($page.url.pathname.startsWith('/search')) {
+              const newUrl = new URL($page.url);
+              newUrl.searchParams.set('q', query);
+              void goto(newUrl);
+            } else {
+              void goto(`/search?q=${query}`);
+            }
           }
         }}
       >
