@@ -17,7 +17,7 @@
       <SoulseekIcon />
     </ServiceLink>
   </div>
-  <div class="h-full flex-1 overflow-auto">
+  <div class="mr-2 h-full flex-1 overflow-auto">
     <slot />
   </div>
 </div>
