@@ -69,7 +69,7 @@
 
 {#if data.hasQuery}
   {#key data.query}
-    <SoulseekResults data={soulseekData} />
+    <SoulseekResults items={soulseekData} />
   {/key}
 {:else}
   <div>Enter a search query</div>
