@@ -16,7 +16,7 @@
 
 <a
   class={cn(
-    'flex h-10 items-center gap-2 px-2 transition hover:text-white',
+    'flex h-10 items-center gap-2 px-4 transition hover:text-white',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   href={url.pathname + url.search}

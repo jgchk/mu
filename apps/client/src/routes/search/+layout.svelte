@@ -6,7 +6,7 @@
 </script>
 
 <div class="flex h-full">
-  <div class="my-1 ml-1 w-48 min-w-fit rounded bg-gray-900 p-1">
+  <div class="my-2 ml-2 w-48 min-w-fit rounded bg-gray-900 py-2">
     <ServiceLink service="Spotify">
       <SpotifyIcon />
     </ServiceLink>

@@ -20,7 +20,7 @@
 
 <QueryClientProvider client={data.trpc.queryClient}>
   <div class="absolute top-0 left-0 flex h-screen w-screen flex-col bg-gray-800 text-white">
-    <nav class="mx-1 mt-1 rounded bg-black p-1 px-2">
+    <nav class="mx-2 mt-2 rounded bg-black p-1 px-2">
       <a href="/">Home</a>
       <a href="/tracks">Tracks</a>
       <a href="/releases">Releases</a>
@@ -50,7 +50,7 @@
     </main>
 
     {#if $nowPlaying}
-      <div class="mx-1 mb-1">
+      <div class="mx-2 mb-2">
         <Player nowPlaying={$nowPlaying} />
       </div>
     {/if}
