@@ -15,7 +15,7 @@
 
   setContextClient(data.trpc);
 
-  let query = ($page.url.pathname === '/search' && $page.url.searchParams.get('q')) || '';
+  let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || '';
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
