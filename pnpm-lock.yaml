@@ -207,7 +207,7 @@ importers:
       memory-cache-node: ^1.4.0
       mime: ^3.0.0
       music-metadata: workspace:*
-      soulseek-ts: ^1.0.2
+      soulseek-ts: ^1.0.3
       spotify: workspace:*
       superjson: ^1.12.2
       typescript: ^4.7.2
@@ -226,7 +226,7 @@ importers:
       memory-cache-node: 1.4.0
       mime: 3.0.0
       music-metadata: link:../music-metadata
-      soulseek-ts: 1.0.2
+      soulseek-ts: 1.0.3
       spotify: link:../spotify
       superjson: 1.12.2
       untildify: 4.0.0
@@ -4435,8 +4435,8 @@ packages:
       sourcemap-codec: 1.4.8
     dev: true
 
-  /soulseek-ts/1.0.2:
-    resolution: {integrity: sha512-isNZj0o18WZOBKboH5dLM+i2YtKCfPaZMV+UyrvktpMQ45I5+L4uDzGXECpJLZbR513yMe5txWec6pOOk9fR8g==}
+  /soulseek-ts/1.0.3:
+    resolution: {integrity: sha512-ciKUCCJrEIUM9ccK24bv8L6IYc0Farvg/EXr1qyn+6YSSGQnqmAKqPq8C4iOpQ7OxiqFdVP8kH6fn5FGN7PHgg==}
     dependencies:
       zlib: 1.0.5
     dev: false
