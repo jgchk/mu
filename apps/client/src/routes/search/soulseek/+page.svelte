@@ -44,6 +44,7 @@
 
   $: {
     if (oldQuery !== data.query) {
+      soulseekData = [];
       sendWorkerMessage({ kind: 'reset' });
       soulseekSubscription.unsubscribe();
       soulseekSubscription = trpc.search.soulseekSubscription.subscription({ query: data.query });
@@ -67,7 +68,9 @@
 </script>
 
 {#if data.hasQuery}
-  <SoulseekResults data={soulseekData} />
+  {#key data.query}
+    <SoulseekResults data={soulseekData} />
+  {/key}
 {:else}
   <div>Enter a search query</div>
 {/if}
