@@ -1,4 +1,7 @@
 <script lang="ts">
+  import VirtualList from '$lib/components/VirtualList.svelte';
+  import { cn } from '$lib/utils/classes';
+
   import type { FileSearchResponse } from './types';
 
   export let data: FileSearchResponse[];
@@ -154,16 +157,21 @@
   };
 </script>
 
-<div class="space-y-4 p-4">
-  {#each sortedResults.slice(0, 10) as data (`${data.username}-${data.dirname}`)}
-    <div class="max-w-4xl rounded bg-gray-900 p-4 text-gray-200">
+<div class="h-full">
+  <VirtualList items={sortedResults} let:item let:index>
+    <div
+      class={cn(
+        'mx-4 mt-4 max-w-4xl rounded bg-gray-900 p-4 text-gray-200',
+        index === sortedResults.length - 1 && 'mb-4'
+      )}
+    >
       <div class="files-grid">
         <div class="contents">
-          <div class="mb-2 text-lg">{data.dirname}</div>
-          <div class="mb-2 text-right text-lg">{formatSize(data.size)}</div>
+          <div class="mb-2 text-lg">{item.dirname}</div>
+          <div class="mb-2 text-right text-lg">{formatSize(item.size)}</div>
           <button class="mb-2 text-right text-lg hover:text-white">Download</button>
         </div>
-        {#each data.files as file (file.basename)}
+        {#each item.files as file (file.basename)}
           <div class="contents text-gray-400">
             <div>{file.basename}</div>
             <div class="text-right">{formatSize(file.size)}</div>
@@ -172,25 +180,25 @@
         {/each}
       </div>
       <div class="mt-2 flex gap-4 text-sm">
-        <div>{data.username}</div>
-        <div>{formatSpeed(data.avgSpeed)}</div>
+        <div>{item.username}</div>
+        <div>{formatSpeed(item.avgSpeed)}</div>
         <div>
-          {#if data.slotsFree}
+          {#if item.slotsFree}
             Free Slots
           {:else}
             No Slots
           {/if}
         </div>
         <div>
-          {#if data.queueLength === 0}
+          {#if item.queueLength === 0}
             Free Queue
           {:else}
-            {data.queueLength} Queued
+            {item.queueLength} Queued
           {/if}
         </div>
       </div>
     </div>
-  {/each}
+  </VirtualList>
 </div>
 
 <style lang="postcss">
