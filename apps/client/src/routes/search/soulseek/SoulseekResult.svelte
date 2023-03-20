@@ -33,7 +33,7 @@
   <div class="files-grid items-center">
     <div class="contents">
       <div class="mb-2 text-lg">{item.dirname}</div>
-      <div class="mb-2 text-right text-lg">{formatSize(item.size)}</div>
+      <div class="mb-2 whitespace-nowrap text-right text-lg">{formatSize(item.size)}</div>
       <button
         class="mb-2 h-5 w-5 text-right text-lg hover:text-white"
         use:tooltip={{ content: 'Download All' }}
@@ -44,7 +44,7 @@
     {#each item.files as file (file.basename)}
       <div class="contents text-gray-400">
         <div>{file.basename}</div>
-        <div class="text-right">{formatSize(file.size)}</div>
+        <div class="whitespace-nowrap text-right">{formatSize(file.size)}</div>
         <button class="h-5 w-5 text-right hover:text-white" use:tooltip={{ content: 'Download' }}>
           <DownloadIcon />
         </button>
