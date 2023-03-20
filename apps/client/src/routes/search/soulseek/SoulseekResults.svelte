@@ -1,5 +1,7 @@
 <script lang="ts">
   import VirtualList from '$lib/components/VirtualList.svelte';
+  import DownloadIcon from '$lib/icons/DownloadIcon.svelte';
+  import { tooltip } from '$lib/tooltip';
   import { cn } from '$lib/utils/classes';
 
   import type { SortedSoulseekResults } from './types';
@@ -35,17 +37,27 @@
         index === data.length - 1 && 'mb-4'
       )}
     >
-      <div class="files-grid">
+      <div class="files-grid items-center">
         <div class="contents">
           <div class="mb-2 text-lg">{item.dirname}</div>
           <div class="mb-2 text-right text-lg">{formatSize(item.size)}</div>
-          <button class="mb-2 text-right text-lg hover:text-white">Download</button>
+          <button
+            class="mb-2 h-5 w-5 text-right text-lg hover:text-white"
+            use:tooltip={{ content: 'Download All' }}
+          >
+            <DownloadIcon />
+          </button>
         </div>
         {#each item.files as file (file.basename)}
           <div class="contents text-gray-400">
             <div>{file.basename}</div>
             <div class="text-right">{formatSize(file.size)}</div>
-            <button class="text-right hover:text-white">Download</button>
+            <button
+              class="h-5 w-5 text-right hover:text-white"
+              use:tooltip={{ content: 'Download' }}
+            >
+              <DownloadIcon />
+            </button>
           </div>
         {/each}
       </div>
