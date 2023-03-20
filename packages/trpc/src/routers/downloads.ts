@@ -9,6 +9,7 @@ import {
 import fs from 'fs';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
+import { downloadTrack, getLargestAvailableImage, getPlaylist, getTrack } from 'soundcloud';
 import {
   downloadSpotifyTrack,
   getSpotifyAlbum,
@@ -18,12 +19,6 @@ import {
 import { z } from 'zod';
 
 import { env } from '../env';
-import {
-  downloadTrack,
-  getLargestAvailableImage,
-  getPlaylist,
-  getTrack
-} from '../services/soundcloud';
 import { publicProcedure, router } from '../trpc';
 import { ifNotNull } from '../utils/types';
 
@@ -109,7 +104,17 @@ export const downloadsRouter = router({
           name: scTrack.title
         });
 
-        const filePath = await downloadTrack(scTrack);
+        const fileName = `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}`;
+        const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+        const fsPipe = fs.createWriteStream(filePath);
+
+        const dlPipe = await downloadTrack(scTrack);
+        dlPipe.pipe(fsPipe);
+
+        await new Promise((resolve) => {
+          dlPipe.on('close', resolve);
+        });
 
         const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
           getLargestAvailableImage(artworkUrl)
@@ -149,7 +154,17 @@ export const downloadsRouter = router({
               releaseDownloadId: releaseDownload.id
             });
 
-            const filePath = await downloadTrack(scTrack);
+            const fileName = `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}`;
+            const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            const fsPipe = fs.createWriteStream(filePath);
+
+            const dlPipe = await downloadTrack(scTrack);
+            dlPipe.pipe(fsPipe);
+
+            await new Promise((resolve) => {
+              dlPipe.on('close', resolve);
+            });
 
             const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
               getLargestAvailableImage(artworkUrl)

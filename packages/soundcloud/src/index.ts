@@ -1,13 +1,11 @@
-import contentDisposition from 'content-disposition';
 import { execa } from 'execa';
-import fs from 'fs/promises';
 import gotDefault from 'got';
-import mime from 'mime';
-import path from 'path';
-import { z } from 'zod';
+import stream from 'stream';
 
-import { env } from '../env';
-import { ifDefined, isDefined } from '../utils/types';
+import { env } from './env';
+import type { Transcoding } from './model';
+import { DownloadResponse, Pager, Playlist, Track, TranscodingResponse } from './model';
+import { isDefined } from './utils/types';
 
 const DEFAULT_HEADERS = {
   Authorization: `OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`
@@ -49,7 +47,7 @@ export const searchTracks = (query: string) =>
     }
   })
     .json()
-    .then((res) => SoundcloudPager(SoundcloudTrack).parse(res))
+    .then((res) => Pager(Track).parse(res))
     .then((res) => res.collection);
 
 export const searchAlbums = (query: string) =>
@@ -60,7 +58,7 @@ export const searchAlbums = (query: string) =>
     }
   })
     .json()
-    .then((res) => SoundcloudPager(SoundcloudPlaylist).parse(res))
+    .then((res) => Pager(Playlist).parse(res))
     .then((res) => res.collection);
 
 export const getTrack = (id: number) =>
@@ -70,7 +68,7 @@ export const getTrack = (id: number) =>
     }
   })
     .json()
-    .then((res) => SoundcloudTrack.parse(res));
+    .then((res) => Track.parse(res));
 
 export const getPlaylist = (id: number) =>
   got(`https://api-v2.soundcloud.com/playlists/${id}`, {
@@ -79,7 +77,7 @@ export const getPlaylist = (id: number) =>
     }
   })
     .json()
-    .then((res) => SoundcloudPlaylist.parse(res));
+    .then((res) => Playlist.parse(res));
 
 export const soundcloudImageSizes = [
   20,
@@ -130,7 +128,7 @@ export const getLargestAvailableImage = async (originalUrl: string) => {
   }
 };
 
-export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string) => {
+export const downloadTrack = async (track: Track, secretToken?: string) => {
   if (!track.streamable) {
     throw new Error('Track is not streamable');
   }
@@ -139,84 +137,57 @@ export const downloadTrack = async (track: SoundcloudTrack, secretToken?: string
     throw new Error('Track is not available in your location');
   }
 
-  const filepath = track.downloadable
+  const pipe = track.downloadable
     ? await downloadOriginalFile(track.id, secretToken)
     : await downloadHls(track);
 
-  return filepath;
+  return pipe;
 };
 
 const downloadOriginalFile = async (trackId: number, secretToken?: string) => {
   const url = await getTrackOriginalDownload(trackId, secretToken);
 
-  const res = await got(url);
-  if (res.statusCode === 401) {
-    throw new Error('The original file has no downloads left');
-  }
-  if (res.statusCode === 404) {
-    throw new Error('The original file was not found');
-  }
+  const output = new stream.PassThrough();
 
-  const cdHeader = res.headers['content-disposition'];
-  const cdValue = ifDefined(cdHeader, (header) => contentDisposition.parse(header));
-  let filename = cdValue?.parameters?.['filename*'] ?? cdValue?.parameters?.filename;
-  if (!filename) {
-    throw new Error(`Could not get filename from content-disposition header: ${String(cdHeader)}`);
-  }
+  const res = got.stream(url);
+  res.pipe(output);
 
-  const ext = path.extname(filename);
-  const extension =
-    ext.length > 0
-      ? ext
-      : ifDefined(res.headers['content-type'], (contentType) => mime.getExtension(contentType));
-
-  filename = `sc-${trackId}${extension ?? ''}`;
-  const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename));
-
-  await fs.mkdir(path.dirname(filepath), { recursive: true });
-  await fs.writeFile(filepath, res.rawBody);
-
-  return filepath;
+  return output;
 };
 
-const downloadHls = async (track: SoundcloudTrack) => {
+const downloadHls = async (track: Track) => {
   if (track.media.transcodings.length === 0) {
     throw new Error(`Track ${track.id} has no transcodings`);
   }
 
   const transcoding = track.media.transcodings.sort(compareTranscodings)[0];
 
-  let extension: string | undefined;
-  if (transcoding.preset.startsWith('aac')) {
-    extension = 'm4a';
-  } else if (transcoding.preset.startsWith('mp3')) {
-    extension = 'mp3';
-  } else if (transcoding.preset.startsWith('opus')) {
-    extension = 'opus';
-  }
-  if (extension === undefined) {
-    throw new Error(`Unknown extension for preset ${transcoding.preset}`);
-  }
-
-  const filename = `sc-${track.id}.${extension}`;
-  const filepath = path.resolve(path.join(env.DOWNLOAD_DIR, filename));
-
   const url = await getTranscodingMp3(transcoding);
 
-  await fs.mkdir(path.dirname(filepath), { recursive: true });
-  await execa('ffmpeg', [
-    '-headers',
-    `Authorization: OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`,
-    '-i',
-    url,
-    '-c',
-    'copy',
-    filepath,
-    '-loglevel',
-    'error'
-  ]);
+  const res = execa(
+    'ffmpeg',
+    [
+      '-headers',
+      `Authorization: OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`,
+      '-i',
+      url,
+      '-c',
+      'copy',
+      '-loglevel',
+      'error',
+      'pipe:1'
+    ],
+    { encoding: null }
+  );
+  const piper = res.pipeStdout?.bind(res);
+  if (!piper) {
+    throw new Error('Could not pipe stdout');
+  }
 
-  return filepath;
+  const pipe = new stream.PassThrough();
+  void piper(pipe);
+
+  return pipe;
 };
 
 /**
@@ -225,17 +196,17 @@ const downloadHls = async (track: SoundcloudTrack) => {
  * mp3_0_0: MP3 128kbps
  * opus_0_0: Opus 65kbps
  */
-const compareTranscodings = (a: SoundcloudTranscoding, b: SoundcloudTranscoding) => {
+const compareTranscodings = (a: Transcoding, b: Transcoding) => {
   const order = ['aac_1_0', 'mp3_1_0', 'mp3_0_0', 'opus_0_0'];
   return order.indexOf(a.preset) - order.indexOf(b.preset);
 };
 
-const getTranscodingMp3 = async (transcoding: SoundcloudTranscoding) => {
+const getTranscodingMp3 = async (transcoding: Transcoding) => {
   const res = await got(transcoding.url, {
     searchParams: { client_id: env.SOUNDCLOUD_CLIENT_ID }
   })
     .json()
-    .then((res) => SoundcloudTranscodingResponse.parse(res));
+    .then((res) => TranscodingResponse.parse(res));
   return res.url;
 };
 
@@ -247,67 +218,7 @@ const getTrackOriginalDownload = async (trackId: number, secretToken?: string) =
     }
   })
     .json()
-    .then((res) => SoundcloudTrackDownload.parse(res));
+    .then((res) => DownloadResponse.parse(res));
 
   return result.redirectUri;
 };
-
-const SoundcloudUser = z.object({
-  username: z.string()
-});
-
-const SoundcloudPager = <T extends z.ZodTypeAny>(schema: T) =>
-  z.object({
-    collection: schema.array()
-  });
-
-const SoundcloudTranscoding = z.object({
-  url: z.string(),
-  preset: z.string(),
-  duration: z.number(),
-  snipped: z.boolean(),
-  format: z.object({
-    protocol: z.string(),
-    mime_type: z.string()
-  }),
-  quality: z.string()
-});
-type SoundcloudTranscoding = z.infer<typeof SoundcloudTranscoding>;
-
-const SoundcloudTrack = z.object({
-  id: z.number(),
-  kind: z.literal('track'),
-  artwork_url: z.string().nullable(),
-  title: z.string(),
-  user: SoundcloudUser,
-  streamable: z.boolean(),
-  policy: z.string(),
-  downloadable: z.boolean(),
-  media: z.object({
-    transcodings: SoundcloudTranscoding.array()
-  })
-});
-export type SoundcloudTrack = z.infer<typeof SoundcloudTrack>;
-
-const SoundcloudTrackSimple = z.object({
-  id: z.number(),
-  kind: z.literal('track')
-});
-
-const SoundcloudPlaylist = z.object({
-  id: z.number(),
-  kind: z.literal('playlist'),
-  artwork_url: z.string().nullable(),
-  title: z.string(),
-  user: SoundcloudUser,
-  tracks: z.union([SoundcloudTrack, SoundcloudTrackSimple]).array()
-});
-export type SoundcloudPlaylist = z.infer<typeof SoundcloudPlaylist>;
-
-const SoundcloudTrackDownload = z.object({
-  redirectUri: z.string()
-});
-
-const SoundcloudTranscodingResponse = z.object({
-  url: z.string()
-});

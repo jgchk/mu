@@ -1,10 +1,10 @@
 import { observable } from '@trpc/server/observable';
 import type { Messages } from 'soulseek-ts';
+import { getSoundcloudImageUrl, searchAlbums, searchTracks } from 'soundcloud';
 import { searchTracksAndAlbums } from 'spotify';
 import { z } from 'zod';
 
 import { search, searchSubscription } from '../services/soulseek';
-import { getSoundcloudImageUrl, searchAlbums, searchTracks } from '../services/soundcloud';
 import { publicProcedure, router } from '../trpc';
 import { ifNotNull } from '../utils/types';
 
