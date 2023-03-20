@@ -1,11 +1,18 @@
+import crypto from 'crypto';
 import { execa } from 'execa';
+import { fileTypeStream } from 'file-type';
+import fs from 'fs';
 import gotDefault from 'got';
+import os from 'os';
+import path from 'path';
 import stream from 'stream';
 
 import { env } from './env';
 import type { Transcoding } from './model';
-import { DownloadResponse, Pager, Playlist, Track, TranscodingResponse } from './model';
+import { DownloadResponse, FullTrack, Pager, Playlist, TranscodingResponse } from './model';
 import { isDefined } from './utils/types';
+
+export * from './model';
 
 const DEFAULT_HEADERS = {
   Authorization: `OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`
@@ -47,7 +54,7 @@ export const searchTracks = (query: string) =>
     }
   })
     .json()
-    .then((res) => Pager(Track).parse(res))
+    .then((res) => Pager(FullTrack).parse(res))
     .then((res) => res.collection);
 
 export const searchAlbums = (query: string) =>
@@ -68,7 +75,7 @@ export const getTrack = (id: number) =>
     }
   })
     .json()
-    .then((res) => Track.parse(res));
+    .then((res) => FullTrack.parse(res));
 
 export const getPlaylist = (id: number) =>
   got(`https://api-v2.soundcloud.com/playlists/${id}`, {
@@ -128,7 +135,12 @@ export const getLargestAvailableImage = async (originalUrl: string) => {
   }
 };
 
-export const downloadTrack = async (track: Track, secretToken?: string) => {
+export type DownloadResult = { pipe: stream.Readable; extension: string };
+
+export const downloadTrack = async (
+  track: FullTrack,
+  secretToken?: string
+): Promise<DownloadResult> => {
   if (!track.streamable) {
     throw new Error('Track is not streamable');
   }
@@ -144,29 +156,55 @@ export const downloadTrack = async (track: Track, secretToken?: string) => {
   return pipe;
 };
 
-const downloadOriginalFile = async (trackId: number, secretToken?: string) => {
+const downloadOriginalFile = async (
+  trackId: number,
+  secretToken?: string
+): Promise<DownloadResult> => {
   const url = await getTrackOriginalDownload(trackId, secretToken);
 
-  const output = new stream.PassThrough();
-
   const res = got.stream(url);
-  res.pipe(output);
+  const fts = await fileTypeStream(res);
+  const extension = fts.fileType?.ext;
+  if (!extension) {
+    throw new Error('Could not determine file extension');
+  }
 
-  return output;
+  const output = new stream.PassThrough();
+  fts.pipe(output);
+
+  return { pipe: output, extension };
 };
 
-const downloadHls = async (track: Track) => {
+const downloadHls = async (track: FullTrack): Promise<DownloadResult> => {
   if (track.media.transcodings.length === 0) {
     throw new Error(`Track ${track.id} has no transcodings`);
   }
 
   const transcoding = track.media.transcodings.sort(compareTranscodings)[0];
 
-  const url = await getTranscodingMp3(transcoding);
+  const url = await getTranscodingData(transcoding);
 
-  const res = execa(
-    'ffmpeg',
-    [
+  const fileTypeMap = {
+    aac_1_0: { muxer: 'mp4', extension: 'm4a' },
+    mp3_1_0: { muxer: 'mp3', extension: 'mp3' },
+    mp3_0_0: { muxer: 'mp3', extension: 'mp3' },
+    opus_0_0: { muxer: 'ogg', extension: 'ogg' }
+  };
+  const fileTypeData = (
+    fileTypeMap as Record<string, typeof fileTypeMap[keyof typeof fileTypeMap] | undefined>
+  )[transcoding.preset];
+  if (!fileTypeData) {
+    throw new Error(`Unsupported preset ${transcoding.preset}`);
+  }
+  const { extension } = fileTypeData;
+
+  const tempFile = path.join(
+    os.tmpdir(),
+    `sc-${track.id}-${Date.now()}-${crypto.randomBytes(4).readUInt32LE(0)}.${extension}`
+  );
+
+  try {
+    await execa('ffmpeg', [
       '-headers',
       `Authorization: OAuth ${env.SOUNDCLOUD_AUTH_TOKEN}`,
       '-i',
@@ -175,33 +213,34 @@ const downloadHls = async (track: Track) => {
       'copy',
       '-loglevel',
       'error',
-      'pipe:1'
-    ],
-    { encoding: null }
-  );
-  const piper = res.pipeStdout?.bind(res);
-  if (!piper) {
-    throw new Error('Could not pipe stdout');
+      tempFile
+    ]);
+  } catch (e) {
+    await fs.promises.rm(tempFile);
+    throw e;
   }
 
-  const pipe = new stream.PassThrough();
-  void piper(pipe);
+  const readPipe = fs.createReadStream(tempFile);
+  readPipe.on('close', () => {
+    void fs.promises.rm(tempFile);
+  });
 
-  return pipe;
+  return { pipe: readPipe, extension };
 };
 
 /**
  * aac_1_0: MP4 257kbps
  * mp3_1_0: MP3 128kbps
+ * mp3_0_1: MP3 128kbps
  * mp3_0_0: MP3 128kbps
  * opus_0_0: Opus 65kbps
  */
 const compareTranscodings = (a: Transcoding, b: Transcoding) => {
-  const order = ['aac_1_0', 'mp3_1_0', 'mp3_0_0', 'opus_0_0'];
+  const order = ['aac_1_0', 'mp3_1_0', 'mp3_0_1', 'mp3_0_0', 'opus_0_0'];
   return order.indexOf(a.preset) - order.indexOf(b.preset);
 };
 
-const getTranscodingMp3 = async (transcoding: Transcoding) => {
+const getTranscodingData = async (transcoding: Transcoding) => {
   const res = await got(transcoding.url, {
     searchParams: { client_id: env.SOUNDCLOUD_CLIENT_ID }
   })

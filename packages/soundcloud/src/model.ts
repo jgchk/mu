@@ -30,8 +30,8 @@ export const SimplifiedTrack = z.object({
   kind: z.literal('track')
 });
 
-export type Track = z.infer<typeof Track>;
-export const Track = SimplifiedTrack.extend({
+export type FullTrack = z.infer<typeof FullTrack>;
+export const FullTrack = SimplifiedTrack.extend({
   artwork_url: z.string().nullable(),
   title: z.string(),
   user: User,
@@ -50,7 +50,7 @@ export const Playlist = z.object({
   artwork_url: z.string().nullable(),
   title: z.string(),
   user: User,
-  tracks: z.union([Track, SimplifiedTrack]).array()
+  tracks: z.union([FullTrack, SimplifiedTrack]).array()
 });
 
 export type DownloadResponse = z.infer<typeof DownloadResponse>;

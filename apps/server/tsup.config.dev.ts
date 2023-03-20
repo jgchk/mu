@@ -7,9 +7,11 @@ export default defineConfig({
   watch: [
     'src',
     '../../packages/trpc',
+    '../../packages/downloader',
     '../../packages/db',
     '../../packages/music-metadata',
-    '../../packages/spotify'
+    '../../packages/spotify',
+    '../../packages/soundcloud'
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',

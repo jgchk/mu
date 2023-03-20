@@ -19,7 +19,7 @@ importers:
       prettier: 2.8.0
       prettier-plugin-svelte: 2.8.1_3ndnxlh52lolrqe4kgjgbxb3xa
       prettier-plugin-tailwindcss: 0.2.4_i56g6qsrmlwlxhfjrfjuhd7sai
-      turbo: 1.8.3
+      turbo: 1.8.4
 
   apps/client:
     specifiers:
@@ -55,9 +55,9 @@ importers:
       trpc: link:../../packages/trpc
       ui: link:../../packages/ui
     devDependencies:
-      '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.12.0
-      '@sveltejs/adapter-node': 1.2.2_@sveltejs+kit@1.12.0
-      '@sveltejs/kit': 1.12.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.13.0
+      '@sveltejs/adapter-node': 1.2.2_@sveltejs+kit@1.13.0
+      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
       autoprefixer: 10.4.14_postcss@8.4.21
       eslint-config-custom: link:../../packages/eslint-config-custom
       postcss: 8.4.21
@@ -142,9 +142,24 @@ importers:
 
   packages/downloader:
     specifiers:
+      '@types/node': ^18.15.3
+      db: workspace:*
       eslint-config-custom: workspace:*
+      fastq: ^1.15.0
+      music-metadata: workspace:*
+      soundcloud: workspace:*
+      spotify: workspace:*
       typescript: ^4.7.2
+      zod: ^3.21.4
+    dependencies:
+      db: link:../db
+      fastq: 1.15.0
+      music-metadata: link:../music-metadata
+      soundcloud: link:../soundcloud
+      spotify: link:../spotify
+      zod: 3.21.4
     devDependencies:
+      '@types/node': 18.15.3
       eslint-config-custom: link:../eslint-config-custom
       typescript: 4.9.3
 
@@ -162,7 +177,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.44.0_fnsv2sbzcckq65bwfk7a5xwslu
       '@typescript-eslint/parser': 5.44.0_hsf322ms6xhhd4b5ne6lb74y4a
       eslint-config-prettier: 8.5.0_eslint@8.28.0
-      eslint-config-turbo: 0.0.9_eslint@8.28.0
+      eslint-config-turbo: 0.0.10_eslint@8.28.0
       eslint-plugin-import: 2.27.5_vfrilbydaxalswvos6uuh4sxs4
       eslint-plugin-simple-import-sort: 10.0.0_eslint@8.28.0
       eslint-plugin-svelte: 2.21.0_eslint@8.28.0
@@ -185,11 +200,13 @@ importers:
   packages/soundcloud:
     specifiers:
       execa: ^7.1.1
+      file-type: ^18.2.1
       got: ^12.6.0
       typescript: ^4.7.2
       zod: ^3.21.4
     dependencies:
       execa: 7.1.1
+      file-type: 18.2.1
       got: 12.6.0
       zod: 3.21.4
     devDependencies:
@@ -220,6 +237,7 @@ importers:
       '@types/node': ^18.15.3
       content-disposition: ^0.5.4
       db: workspace:*
+      downloader: workspace:*
       eslint-config-custom: workspace:*
       execa: ^7.1.1
       fast-deep-equal: ^3.1.3
@@ -241,6 +259,7 @@ importers:
       '@types/mime': 3.0.1
       content-disposition: 0.5.4
       db: link:../db
+      downloader: link:../downloader
       execa: 7.1.1
       fast-deep-equal: 3.1.3
       filenamify: 5.1.1
@@ -764,7 +783,7 @@ packages:
     engines: {node: '>= 8'}
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
-      fastq: 1.13.0
+      fastq: 1.15.0
 
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
@@ -843,16 +862,16 @@ packages:
     engines: {node: '>=14.16'}
     dev: false
 
-  /@sveltejs/adapter-auto/2.0.0_@sveltejs+kit@1.12.0:
+  /@sveltejs/adapter-auto/2.0.0_@sveltejs+kit@1.13.0:
     resolution: {integrity: sha512-b+gkHFZgD771kgV3aO4avHFd7y1zhmMYy9i6xOK7m/rwmwaRO8gnF5zBc0Rgca80B2PMU1bKNxyBTHA14OzUAQ==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
-      '@sveltejs/kit': 1.12.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
       import-meta-resolve: 2.2.0
     dev: true
 
-  /@sveltejs/adapter-node/1.2.2_@sveltejs+kit@1.12.0:
+  /@sveltejs/adapter-node/1.2.2_@sveltejs+kit@1.13.0:
     resolution: {integrity: sha512-HA+QPRve97ZAQfZ0wkHjtoSR9ilyYZV82T7zRgzm2WJ0rIpAgyRYf6K7KNwiCq23KKkN0hZHY5elNyCnVz8zrA==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
@@ -860,12 +879,12 @@ packages:
       '@rollup/plugin-commonjs': 24.0.1_rollup@3.7.3
       '@rollup/plugin-json': 6.0.0_rollup@3.7.3
       '@rollup/plugin-node-resolve': 15.0.1_rollup@3.7.3
-      '@sveltejs/kit': 1.12.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
       rollup: 3.7.3
     dev: true
 
-  /@sveltejs/kit/1.12.0_svelte@3.53.1+vite@4.0.0:
-    resolution: {integrity: sha512-hhOtaL3jS7p4A3O34m8RlM+K5OSyrEyFUIh4iqsv6e8BDvupzNSxGa7J9+Gfjb+Z1yZCxjvxJ8Flb2Cj0g8cLg==}
+  /@sveltejs/kit/1.13.0_svelte@3.53.1+vite@4.0.0:
+    resolution: {integrity: sha512-t44xqlSTn/k+BridiJFTD8dCRPNd9msCSSPLZT+/3P9deNp/al6ed396MSpsskK7r2kevYmmxywK16qtn6Rvjw==}
     engines: {node: ^16.14 || >=18}
     hasBin: true
     requiresBuild: true
@@ -2413,13 +2432,13 @@ packages:
       eslint: 8.28.0
     dev: false
 
-  /eslint-config-turbo/0.0.9_eslint@8.28.0:
-    resolution: {integrity: sha512-j1cTdx3tRmKo0csyfQKhpuT8dynK9oddbK5nmrShoMpXI2qMbxHLYH7MWAid4FmJN8rYympy3VKw5U63Yazycg==}
+  /eslint-config-turbo/0.0.10_eslint@8.28.0:
+    resolution: {integrity: sha512-o4ULFZYM1OihSd63eDGEuy9rt6tW4ma6xnW9grnr44BoJwKaGQko2aka9kfqQs0vtmwD1++Os3ThPHETmzkFzA==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
       eslint: 8.28.0
-      eslint-plugin-turbo: 0.0.9_eslint@8.28.0
+      eslint-plugin-turbo: 0.0.10_eslint@8.28.0
     dev: false
 
   /eslint-import-resolver-node/0.3.7:
@@ -2527,8 +2546,8 @@ packages:
       - ts-node
     dev: false
 
-  /eslint-plugin-turbo/0.0.9_eslint@8.28.0:
-    resolution: {integrity: sha512-fEsuSnYU3GLtT+s66mUuzDL1LaSieIx5uk3tPO0ToGv7hI2XzOfP24aPkQItTBGl7kq2JaVkRzPwcnfz8hkp0w==}
+  /eslint-plugin-turbo/0.0.10_eslint@8.28.0:
+    resolution: {integrity: sha512-T7QRwF4rjBQCJD9AHLHn9ShtHCHNkfIZW5Oio92WtQYhoU5jZCU3ynU+ONFXLuvoUx4dJ19WergIyHL+DwL2+g==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
@@ -2769,8 +2788,8 @@ packages:
   /fast-levenshtein/2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  /fastq/1.13.0:
-    resolution: {integrity: sha512-YpkpUnK8od0o1hmeSc7UUs/eB/vIPWJYjKck2QKIzAf71Vm1AAQ3EbuZB3g2JIy+pg+ERD0vqI79KyZiB2e2Nw==}
+  /fastq/1.15.0:
+    resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
     dependencies:
       reusify: 1.0.4
 
@@ -4941,65 +4960,65 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /turbo-darwin-64/1.8.3:
-    resolution: {integrity: sha512-bLM084Wr17VAAY/EvCWj7+OwYHvI9s/NdsvlqGp8iT5HEYVimcornCHespgJS/yvZDfC+mX9EQkn3V2JmYgGGw==}
+  /turbo-darwin-64/1.8.4:
+    resolution: {integrity: sha512-5fKhrm8Skl5niCcYnmNc1pNDAH48EHS7yio7s06btlTjvSdSsT+Dw+wQiAmGrAmpbqN3Xr7cKZwD749/Q1zS/A==}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-darwin-arm64/1.8.3:
-    resolution: {integrity: sha512-4oZjXtzakopMK110kue3z/hqu3WLv+eDLZOX1NGdo49gqca9BeD8GbH+sXpAp6tqyeuzpss+PIliVYuyt7LgbA==}
+  /turbo-darwin-arm64/1.8.4:
+    resolution: {integrity: sha512-4+5KbJ4msMB8/O5yj1TArfPw8XU0BYwJC35d/fAHb+NcVOg0XbOEOeYUcstMgAbYmD0aOjCKAvdBN85xdsdjGg==}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-linux-64/1.8.3:
-    resolution: {integrity: sha512-uvX2VKotf5PU14FCxJA5iHItPQno2JWzerMd+g3/h/Asay6dvxvtVjc39MQeGT0H5njSvzVKFkT+3/5q8lgOEg==}
+  /turbo-linux-64/1.8.4:
+    resolution: {integrity: sha512-c97Cjgm6aJ0KeivLJVEherImI2FQuQPfajwWgFWo5+WD11Zwy8ZTn7QrLJ7RMJr2dXnSo50yfy+xr/r6D55A0w==}
     cpu: [x64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-linux-arm64/1.8.3:
-    resolution: {integrity: sha512-E1p+oH3XKMaPS4rqWhYsL4j2Pzc0d/9P5KU7Kn1kqVLo2T3iRA7n2KVULEieUNE0nTH+aIJPXYXOpqCI5wFJaA==}
+  /turbo-linux-arm64/1.8.4:
+    resolution: {integrity: sha512-FgA4LaI3CbSxpABxGydRBZWGoj03hiUWNoFo6GLdkDHam3x7Ky85Y9sTHOV59teCEQHjI04OfsjLulOhIsWh3Q==}
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-windows-64/1.8.3:
-    resolution: {integrity: sha512-cnzAytHtoLXd0J7aNzRpZFpL/GTjcBmkvAPlbOdf/Pl1iwS4qzGrudZQ+OM1lmLgLIfBPIavsGHBknTwTNib4A==}
+  /turbo-windows-64/1.8.4:
+    resolution: {integrity: sha512-AO3Wo+uGo0fs5/7fBlp05WjhnjYLoiP5NeZ7Up3PyR64MnkkwPM5a2hks2778ZgE24dTha7/CVGF1sxn4tF7Kw==}
     cpu: [x64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-windows-arm64/1.8.3:
-    resolution: {integrity: sha512-ulIiItNm2w/zYJdD5/oAzjzNns1IjbpweRzpsE8tLXaWwo6+fnXXkyloUug0IUhcd2k6fJXfoiDZfygqpOVuXg==}
+  /turbo-windows-arm64/1.8.4:
+    resolution: {integrity: sha512-BAV8gTcu3q89rcMvTo7AfkSgCEaZvW9dH6SLqpLcDKACA/rdLhnn9WFTchj7DIHJIcs2+Do5KCjLoV4KhrC2YA==}
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo/1.8.3:
-    resolution: {integrity: sha512-zGrkU1EuNFmkq6iky6LcMqD4h0OLE8XysVFxQWRIZbcTNnf0XAycbsbeEyiJpiWeqb7qtg2bVuY9EYcNoNhVuQ==}
+  /turbo/1.8.4:
+    resolution: {integrity: sha512-ziVcsr0zhdmgfEzkaYF7q9h6BhBl4pDo1miRNsxIbEuxXQKaFGmsyW0WBM8/qaAC41by5lRHOdaZo9QMArmEJQ==}
     hasBin: true
     requiresBuild: true
     optionalDependencies:
-      turbo-darwin-64: 1.8.3
-      turbo-darwin-arm64: 1.8.3
-      turbo-linux-64: 1.8.3
-      turbo-linux-arm64: 1.8.3
-      turbo-windows-64: 1.8.3
-      turbo-windows-arm64: 1.8.3
+      turbo-darwin-64: 1.8.4
+      turbo-darwin-arm64: 1.8.4
+      turbo-linux-64: 1.8.4
+      turbo-linux-arm64: 1.8.4
+      turbo-windows-64: 1.8.4
+      turbo-windows-arm64: 1.8.4
     dev: true
 
   /type-check/0.4.0:

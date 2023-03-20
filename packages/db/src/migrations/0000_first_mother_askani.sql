@@ -33,9 +33,8 @@ CREATE TABLE track_artists (
 
 CREATE TABLE track_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
-	`ref` integer NOT NULL,
 	`complete` integer NOT NULL,
-	`name` text NOT NULL,
+	`name` text,
 	`path` text,
 	`release_download_id` integer,
 	FOREIGN KEY (`release_download_id`) REFERENCES release_downloads(`id`)

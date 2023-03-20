@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "7cf69471-5ad8-4d12-9015-4a7548b9fdd9",
-  "prevId": "915318dd-b242-4270-82cb-e5b3707576b7",
+  "id": "1ed5335a-d4d0-4af6-96d2-1bf1d188028a",
+  "prevId": "6d129eb6-1d04-4a6b-bf28-e7f8c319bc9d",
   "tables": {
     "artists": {
       "name": "artists",
@@ -87,7 +87,7 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
@@ -184,7 +184,7 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "path": {
           "name": "path",

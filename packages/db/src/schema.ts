@@ -70,7 +70,7 @@ export type InsertTrackArtist = InferModel<typeof trackArtists, 'insert'>;
 
 export const releaseDownloads = sqliteTable('release_downloads', {
   id: integer('id').primaryKey(),
-  name: text('name').notNull()
+  name: text('name')
 });
 export type ReleaseDownload = InferModel<typeof releaseDownloads>;
 export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'>;
@@ -78,7 +78,7 @@ export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'
 export const trackDownloads = sqliteTable('track_downloads', {
   id: integer('id').primaryKey(),
   complete: integer('complete').notNull(),
-  name: text('name').notNull(),
+  name: text('name'),
   path: text('path'),
   releaseDownloadId: integer('release_download_id').references(() => releaseDownloads.id)
 });

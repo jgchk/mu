@@ -14,6 +14,8 @@ import {
   SimplifiedTrack
 } from './model';
 
+export * from './model';
+
 const SCRIPT_PATH =
   env.NODE_ENV === 'development'
     ? path.join(__dirname, '../downloader/target/debug/spotify-download')
