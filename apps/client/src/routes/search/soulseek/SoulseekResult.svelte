@@ -51,23 +51,37 @@
       </div>
     {/each}
   </div>
-  <div class="mt-2 flex gap-4 text-sm">
-    <div>{item.username}</div>
-    <div>{formatSpeed(item.avgSpeed)}</div>
-    <div>
-      {#if item.slotsFree}
-        Free Slots
-      {:else}
-        No Slots
-      {/if}
+  <div class="mt-3 flex items-center gap-4 text-sm">
+    <div class="rounded bg-gray-500 bg-opacity-40 px-1.5 py-0.5">{item.username}</div>
+    <div
+      class={cn(
+        'rounded bg-opacity-40 px-1.5 py-0.5',
+        item.avgSpeed >= 1000 * 1000
+          ? 'bg-success-500'
+          : item.avgSpeed >= 100 * 1000
+          ? 'bg-warning-500'
+          : 'bg-error-500'
+      )}
+    >
+      {formatSpeed(item.avgSpeed)}
     </div>
-    <div>
-      {#if item.queueLength === 0}
-        Free Queue
-      {:else}
+    {#if item.slotsFree}
+      <div class="bg-success-500 rounded bg-opacity-40 px-1.5 py-0.5">Free Slots</div>
+    {:else}
+      <div class="bg-error-500 rounded bg-opacity-40 px-1.5 py-0.5">No Slots</div>
+    {/if}
+    {#if item.queueLength === 0}
+      <div class="bg-success-500 rounded bg-opacity-40 px-1.5 py-0.5">Free Queue</div>
+    {:else}
+      <div
+        class={cn(
+          'rounded bg-opacity-40 px-1.5 py-0.5',
+          item.queueLength >= 100 ? 'bg-error-500' : 'bg-warning-500'
+        )}
+      >
         {item.queueLength} Queued
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
 </div>
 
