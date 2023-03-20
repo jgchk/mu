@@ -56,9 +56,9 @@
     <div
       class={cn(
         'rounded bg-opacity-40 px-1.5 py-0.5',
-        item.avgSpeed >= 1000 * 1000
+        item.avgSpeed >= 1000 * 1000 // 1 Mb/s
           ? 'bg-success-500'
-          : item.avgSpeed >= 100 * 1000
+          : item.avgSpeed >= 100 * 1000 // 100 Kb/s
           ? 'bg-warning-500'
           : 'bg-error-500'
       )}
