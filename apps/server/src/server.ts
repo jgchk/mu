@@ -11,8 +11,10 @@ import fs from 'fs';
 import mime from 'mime-types';
 import { readTrackCoverArt } from 'music-metadata';
 import sharp from 'sharp';
+import { SlskClient } from 'soulseek-ts';
 import { Soundcloud } from 'soundcloud';
 import { Spotify } from 'spotify';
+import type { Context } from 'trpc';
 import { appRouter } from 'trpc';
 import { WebSocketServer } from 'ws';
 import { z } from 'zod';
@@ -43,7 +45,20 @@ const sp = new Spotify({
   username: env.SPOTIFY_USERNAME,
   password: env.SPOTIFY_PASSWORD
 });
+const slsk = new SlskClient();
 const dl = new DownloadQueue({ db, sc, sp, downloadDir: env.DOWNLOAD_DIR });
+
+let context: Context | undefined;
+
+const createContext = async () => {
+  if (context) {
+    return context;
+  }
+
+  await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD);
+  context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR };
+  return context;
+};
 
 for (const download of db.trackDownloads.getByComplete(false)) {
   switch (download.service) {
@@ -76,8 +91,6 @@ for (const download of db.trackDownloads.getByComplete(false)) {
   }
 }
 
-const context = { db, dl, sc, sp, musicDir: env.MUSIC_DIR };
-
 const handleResize = async (
   buffer: Buffer,
   { width, height }: { width?: number; height?: number }
@@ -101,7 +114,7 @@ app
     '/api/trpc',
     createExpressMiddleware({
       router: appRouter,
-      createContext: () => context
+      createContext
     })
   )
   .get('/api/ping', (req, res) => {
@@ -183,7 +196,7 @@ const wss = new WebSocketServer({ port: 8080 });
 const trpcWsHandler = applyWSSHandler({
   wss,
   router: appRouter,
-  createContext: () => context
+  createContext
 });
 
 wss.on('connection', (ws) => {
@@ -201,4 +214,5 @@ process.on('SIGINT', () => {
   server.close();
   db.close();
   dl.close();
+  slsk.destroy();
 });

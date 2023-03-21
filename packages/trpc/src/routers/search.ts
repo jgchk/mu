@@ -3,7 +3,6 @@ import type { Messages } from 'soulseek-ts';
 import { Soundcloud } from 'soundcloud';
 import { z } from 'zod';
 
-import { search, searchSubscription } from '../services/soulseek';
 import { publicProcedure, router } from '../trpc';
 import { ifNotNull } from '../utils/types';
 
@@ -39,14 +38,11 @@ export const searchRouter = router({
         albums: results.albums.items
       };
     }),
-  soulseek: publicProcedure
-    .input(z.object({ query: z.string() }))
-    .query(({ input: { query } }) => search(query)),
   soulseekSubscription: publicProcedure
     .input(z.object({ query: z.string() }))
-    .subscription(({ input: { query } }) =>
+    .subscription(({ input: { query }, ctx }) =>
       observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        void searchSubscription(query, (result) => emit.next(result));
+        void ctx.slsk.search(query, { onResult: (result) => emit.next(result) });
       })
     )
 });

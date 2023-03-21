@@ -10,6 +10,8 @@ const envSchema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string(),
   SPOTIFY_USERNAME: z.string(),
   SPOTIFY_PASSWORD: z.string(),
+  SOULSEEK_USERNAME: z.string(),
+  SOULSEEK_PASSWORD: z.string(),
   NODE_ENV: z.enum(['development', 'production']).default('production')
 });
 

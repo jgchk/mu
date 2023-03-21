@@ -89,6 +89,7 @@ importers:
       mime-types: ^2.1.35
       music-metadata: workspace:*
       sharp: ^0.31.3
+      soulseek-ts: ^1.0.3
       soundcloud: workspace:*
       spotify: workspace:*
       trpc: workspace:*
@@ -114,6 +115,7 @@ importers:
       mime-types: 2.1.35
       music-metadata: link:../../packages/music-metadata
       sharp: 0.31.3
+      soulseek-ts: 1.0.3
       soundcloud: link:../../packages/soundcloud
       spotify: link:../../packages/spotify
       trpc: link:../../packages/trpc
@@ -249,7 +251,6 @@ importers:
       fast-deep-equal: ^3.1.3
       filenamify: ^5.1.1
       got: ^12.6.0
-      memory-cache-node: ^1.4.0
       mime: ^3.0.0
       music-metadata: workspace:*
       soulseek-ts: ^1.0.3
@@ -269,7 +270,6 @@ importers:
       fast-deep-equal: 3.1.3
       filenamify: 5.1.1
       got: 12.6.0
-      memory-cache-node: 1.4.0
       mime: 3.0.0
       music-metadata: link:../music-metadata
       soulseek-ts: 1.0.3
@@ -3546,11 +3546,6 @@ packages:
       next-tick: 1.1.0
       timers-ext: 0.1.7
     dev: true
-
-  /memory-cache-node/1.4.0:
-    resolution: {integrity: sha512-rieJHT67nfitpZmOWcGSX11zC5G56vT2awgw5jApBhJowuMPl5mAPX36w8byJztAKGSluVK02LSW8LIxlTkXdA==}
-    engines: {node: '>= 12.19'}
-    dev: false
 
   /merge-descriptors/1.0.1:
     resolution: {integrity: sha512-cCi6g3/Zr1iqQi6ySbseM1Xvooa98N0w31jzUYrXPX2xqObmFGHJ0tQ5u74H3mVh7wLouTseZyYIq39g8cNp1w==}

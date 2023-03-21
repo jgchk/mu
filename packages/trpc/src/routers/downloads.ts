@@ -14,7 +14,13 @@ const SpotifyDownload = z.object({
   id: z.string()
 });
 
-const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload]);
+const SoulseekDownload = z.object({
+  service: z.literal('soulseek'),
+  kind: z.enum(['track']),
+  file: z.string()
+});
+
+const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload]);
 
 export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {

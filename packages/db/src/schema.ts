@@ -77,7 +77,7 @@ export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'
 
 export const trackDownloads = sqliteTable('track_downloads', {
   id: integer('id').primaryKey(),
-  service: text<'spotify' | 'soundcloud'>('service').notNull(),
+  service: text<'spotify' | 'soundcloud' | 'soulseek'>('service').notNull(),
   serviceId: blob<number | string>('service_id', { mode: 'json' }).notNull(),
   complete: integer('complete').notNull(),
   name: text('name'),
