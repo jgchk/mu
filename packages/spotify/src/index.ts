@@ -42,7 +42,6 @@ export class Spotify {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.devMode = devMode;
-    console.log({ devMode });
   }
 
   async getAccessToken() {
