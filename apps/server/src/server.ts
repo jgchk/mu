@@ -29,7 +29,7 @@ if (isNaN(PORT)) {
 
 const app = express();
 const db = new Database(env.DATABASE_URL);
-const dl = new DownloadQueue(db);
+const dl = new DownloadQueue(db, env.DOWNLOAD_DIR);
 
 const handleResize = async (
   buffer: Buffer,

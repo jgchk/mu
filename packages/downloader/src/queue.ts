@@ -14,7 +14,6 @@ import {
   getSpotifyTrack
 } from 'spotify';
 
-import { env } from './env';
 import { ifNotNull } from './utils/types';
 
 export type SoundcloudTrackDownload = {
@@ -62,9 +61,11 @@ export type DownloadTrackTask = {
 export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>;
   private db: Database;
+  private downloadDir: string;
 
-  constructor(db: Database) {
+  constructor(db: Database, downloadDir: string) {
     this.db = db;
+    this.downloadDir = downloadDir;
     this.q = fastq.promise(this.worker.bind(this), 1);
     this.q.error((err, task) => {
       if (err) {
@@ -185,7 +186,7 @@ export class DownloadQueue {
         const { pipe: dlPipe, extension } = await downloadTrack(task.input.track);
 
         const fileName = `sc-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`;
-        const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+        const filePath = path.resolve(path.join(this.downloadDir, fileName));
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
         const fsPipe = fs.createWriteStream(filePath);
         dlPipe.pipe(fsPipe);
@@ -216,7 +217,7 @@ export class DownloadQueue {
       }
       case 'spotify': {
         const fileName = `spot-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
-        const filePath = path.resolve(path.join(env.DOWNLOAD_DIR, fileName));
+        const filePath = path.resolve(path.join(this.downloadDir, fileName));
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
         const fsPipe = fs.createWriteStream(filePath);
 

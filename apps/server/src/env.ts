@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  DATABASE_URL: z.string()
+  DATABASE_URL: z.string(),
+  DOWNLOAD_DIR: z.string()
 });
 
 const envRes = envSchema.safeParse(process.env);
