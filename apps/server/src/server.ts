@@ -154,7 +154,7 @@ wss.on('connection', (ws) => {
 console.log('✅ WebSocket Server listening on ws://localhost:8080');
 
 process.on('SIGINT', () => {
-  console.log('SIGTERMOP');
+  console.log('Shutting down...');
   trpcWsHandler.broadcastReconnectNotification();
   wss.close();
   server.close();
