@@ -17,3 +17,4 @@ yarn.lock
 
 /packages/spotify/downloader
 /packages/spotify/credentials_cache
+/packages/db/src/migrations

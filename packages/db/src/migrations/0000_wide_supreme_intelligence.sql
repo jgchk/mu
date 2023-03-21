@@ -14,7 +14,7 @@ CREATE TABLE release_artists (
 
 CREATE TABLE release_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
-	`name` text NOT NULL
+	`name` text
 );
 
 CREATE TABLE releases (

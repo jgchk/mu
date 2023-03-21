@@ -4,7 +4,12 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
   SOUNDCLOUD_AUTH_TOKEN: z.string(),
-  SOUNDCLOUD_CLIENT_ID: z.string()
+  SOUNDCLOUD_CLIENT_ID: z.string(),
+  SPOTIFY_CLIENT_ID: z.string(),
+  SPOTIFY_CLIENT_SECRET: z.string(),
+  SPOTIFY_USERNAME: z.string(),
+  SPOTIFY_PASSWORD: z.string(),
+  NODE_ENV: z.enum(['development', 'production']).default('production')
 });
 
 const envRes = envSchema.safeParse(process.env);

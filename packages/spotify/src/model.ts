@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+export type AuthResponse = z.infer<typeof AuthResponse>;
+export const AuthResponse = z.object({
+  access_token: z.string()
+});
+
 export type SimplifiedArtist = z.infer<typeof SimplifiedArtist>;
 export const SimplifiedArtist = z.object({
   type: z.literal('artist'),
@@ -50,16 +55,3 @@ export const Pager = <T extends z.ZodTypeAny>(itemType: T) =>
     next: z.string().nullable(),
     previous: z.string().nullable()
   });
-
-export type SearchTracks = z.infer<typeof SearchTracks>;
-export const SearchTracks = z.object({
-  tracks: Pager(FullTrack)
-});
-
-export type SearchAlbums = z.infer<typeof SearchAlbums>;
-export const SearchAlbums = z.object({
-  albums: Pager(SimplifiedAlbum)
-});
-
-export type SearchTracksAndAlbums = z.infer<typeof SearchTracksAndAlbums>;
-export const SearchTracksAndAlbums = SearchTracks.and(SearchAlbums);

@@ -6,13 +6,7 @@ import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-
 import path from 'path';
 import type { FullTrack as SoundcloudFullTrack } from 'soundcloud';
 import { Soundcloud } from 'soundcloud';
-import type { SimplifiedTrack as SpotifySimplifiedTrack } from 'spotify';
-import {
-  downloadSpotifyTrack,
-  getSpotifyAlbum,
-  getSpotifyAlbumTracks,
-  getSpotifyTrack
-} from 'spotify';
+import type { SimplifiedTrack as SpotifySimplifiedTrack, Spotify } from 'spotify';
 
 import { ifNotNull } from './utils/types';
 
@@ -62,11 +56,23 @@ export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>;
   private db: Database;
   private sc: Soundcloud;
+  private sp: Spotify;
   private downloadDir: string;
 
-  constructor({ db, sc, downloadDir }: { db: Database; sc: Soundcloud; downloadDir: string }) {
+  constructor({
+    db,
+    sc,
+    sp,
+    downloadDir
+  }: {
+    db: Database;
+    sc: Soundcloud;
+    sp: Spotify;
+    downloadDir: string;
+  }) {
     this.db = db;
     this.sc = sc;
+    this.sp = sp;
     this.downloadDir = downloadDir;
     this.q = fastq.promise(this.worker.bind(this), 1);
     this.q.error((err, task) => {
@@ -150,7 +156,7 @@ export class DownloadQueue {
         switch (task.input.kind) {
           case 'track': {
             const trackDownload = this.db.trackDownloads.insert({ complete: false });
-            const track = await getSpotifyTrack(task.input.id);
+            const track = await this.sp.getTrack(task.input.id);
             this.db.trackDownloads.update(trackDownload.id, { name: track.name });
             return [
               {
@@ -161,10 +167,10 @@ export class DownloadQueue {
           }
           case 'album': {
             const releaseDownload = this.db.releaseDownloads.insert({});
-            const album = await getSpotifyAlbum(task.input.id);
+            const album = await this.sp.getAlbum(task.input.id);
             this.db.releaseDownloads.update(releaseDownload.id, { name: album.name });
 
-            const tracks = await getSpotifyAlbumTracks(task.input.id);
+            const tracks = await this.sp.getAlbumTracks(task.input.id);
             return tracks.map((track) => {
               const trackDownload = this.db.trackDownloads.insert({
                 complete: false,
@@ -223,7 +229,7 @@ export class DownloadQueue {
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
         const fsPipe = fs.createWriteStream(filePath);
 
-        const pipe = downloadSpotifyTrack(task.input.track.id);
+        const pipe = this.sp.downloadTrack(task.input.track.id);
         pipe.pipe(fsPipe);
 
         await new Promise((resolve) => {

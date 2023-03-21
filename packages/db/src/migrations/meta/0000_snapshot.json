@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "6d129eb6-1d04-4a6b-bf28-e7f8c319bc9d",
+  "id": "ac7241b0-bf55-4097-ba7c-6d3cd57674c0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -56,20 +56,31 @@
           "name": "release_artists_release_id_releases_id_fk",
           "tableFrom": "release_artists",
           "tableTo": "releases",
-          "columnsFrom": ["release_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         },
         "release_artists_artist_id_artists_id_fk": {
           "name": "release_artists_artist_id_artists_id_fk",
           "tableFrom": "release_artists",
           "tableTo": "artists",
-          "columnsFrom": ["artist_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         }
       },
       "compositePrimaryKeys": {
         "release_artists_release_id_artist_id_pk": {
-          "columns": ["release_id", "artist_id"]
+          "columns": [
+            "release_id",
+            "artist_id"
+          ]
         }
       }
     },
@@ -87,7 +98,7 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
@@ -146,20 +157,31 @@
           "name": "track_artists_track_id_tracks_id_fk",
           "tableFrom": "track_artists",
           "tableTo": "tracks",
-          "columnsFrom": ["track_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "track_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         },
         "track_artists_artist_id_artists_id_fk": {
           "name": "track_artists_artist_id_artists_id_fk",
           "tableFrom": "track_artists",
           "tableTo": "artists",
-          "columnsFrom": ["artist_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         }
       },
       "compositePrimaryKeys": {
         "track_artists_track_id_artist_id_pk": {
-          "columns": ["track_id", "artist_id"]
+          "columns": [
+            "track_id",
+            "artist_id"
+          ]
         }
       }
     },
@@ -206,8 +228,12 @@
           "name": "track_downloads_release_download_id_release_downloads_id_fk",
           "tableFrom": "track_downloads",
           "tableTo": "release_downloads",
-          "columnsFrom": ["release_download_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "release_download_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         }
       },
       "compositePrimaryKeys": {}
@@ -258,7 +284,9 @@
       "indexes": {
         "pathUniqueIndex": {
           "name": "pathUniqueIndex",
-          "columns": ["path"],
+          "columns": [
+            "path"
+          ],
           "isUnique": true
         }
       },
@@ -267,8 +295,12 @@
           "name": "tracks_release_id_releases_id_fk",
           "tableFrom": "tracks",
           "tableTo": "releases",
-          "columnsFrom": ["release_id"],
-          "columnsTo": ["id"]
+          "columnsFrom": [
+            "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
         }
       },
       "compositePrimaryKeys": {}

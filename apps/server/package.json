@@ -27,6 +27,7 @@
     "music-metadata": "workspace:*",
     "sharp": "^0.31.3",
     "soundcloud": "workspace:*",
+    "spotify": "workspace:*",
     "trpc": "workspace:*",
     "ws": "^8.13.0",
     "zod": "^3.21.4"

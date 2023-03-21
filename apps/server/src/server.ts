@@ -12,6 +12,7 @@ import mime from 'mime-types';
 import { readTrackCoverArt } from 'music-metadata';
 import sharp from 'sharp';
 import { Soundcloud } from 'soundcloud';
+import { Spotify } from 'spotify';
 import { appRouter } from 'trpc';
 import { WebSocketServer } from 'ws';
 import { z } from 'zod';
@@ -35,7 +36,16 @@ const sc = new Soundcloud({
   clientId: env.SOUNDCLOUD_CLIENT_ID,
   authToken: env.SOUNDCLOUD_AUTH_TOKEN
 });
-const dl = new DownloadQueue({ db, sc, downloadDir: env.DOWNLOAD_DIR });
+const sp = new Spotify({
+  devMode: env.NODE_ENV === 'development',
+  clientId: env.SPOTIFY_CLIENT_ID,
+  clientSecret: env.SPOTIFY_CLIENT_SECRET,
+  username: env.SPOTIFY_USERNAME,
+  password: env.SPOTIFY_PASSWORD
+});
+const dl = new DownloadQueue({ db, sc, sp, downloadDir: env.DOWNLOAD_DIR });
+
+const context = { db, dl, sc, sp };
 
 const handleResize = async (
   buffer: Buffer,
@@ -60,7 +70,7 @@ app
     '/api/trpc',
     createExpressMiddleware({
       router: appRouter,
-      createContext: () => ({ db, dl, sc })
+      createContext: () => context
     })
   )
   .get('/api/ping', (req, res) => {
@@ -142,7 +152,7 @@ const wss = new WebSocketServer({ port: 8080 });
 const trpcWsHandler = applyWSSHandler({
   wss,
   router: appRouter,
-  createContext: () => ({ db, dl, sc })
+  createContext: () => context
 });
 
 wss.on('connection', (ws) => {

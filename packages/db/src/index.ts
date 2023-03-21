@@ -107,7 +107,14 @@ export class Database {
 
   releaseDownloads = {
     insert: (releaseDownload: InsertReleaseDownload) => {
-      return this.db.insert(releaseDownloads).values(releaseDownload).returning().get();
+      return (
+        this.db
+          .insert(releaseDownloads)
+          // HACK: This is a temporary fix for a Drizzle error where inserting an empty value errors out
+          .values({ ...releaseDownload, name: releaseDownload.name ?? null })
+          .returning()
+          .get()
+      );
     },
 
     update: (id: ReleaseDownload['id'], data: Partial<Omit<InsertReleaseDownload, 'id'>>) => {

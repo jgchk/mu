@@ -1,7 +1,6 @@
 import { observable } from '@trpc/server/observable';
 import type { Messages } from 'soulseek-ts';
 import { Soundcloud } from 'soundcloud';
-import { searchTracksAndAlbums } from 'spotify';
 import { z } from 'zod';
 
 import { search, searchSubscription } from '../services/soulseek';
@@ -33,8 +32,8 @@ export const searchRouter = router({
     }),
   spotify: publicProcedure
     .input(z.object({ query: z.string() }))
-    .query(async ({ input: { query } }) => {
-      const results = await searchTracksAndAlbums(query);
+    .query(async ({ input: { query }, ctx }) => {
+      const results = await ctx.sp.search(query, ['track', 'album']);
       return {
         tracks: results.tracks.items,
         albums: results.albums.items
