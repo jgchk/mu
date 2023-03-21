@@ -8,12 +8,14 @@ import type { FullTrack as SoundcloudFullTrack } from 'soundcloud';
 import { Soundcloud } from 'soundcloud';
 import type { SimplifiedTrack as SpotifySimplifiedTrack, Spotify } from 'spotify';
 
+import { fileExists } from './utils/fs';
 import { ifNotNull } from './utils/types';
 
 export type SoundcloudTrackDownload = {
   service: 'soundcloud';
   kind: 'track';
   id: number;
+  dbId?: number;
 };
 export type SoundcloudPlaylistDownload = {
   service: 'soundcloud';
@@ -25,6 +27,7 @@ export type SpotifyTrackDownload = {
   service: 'spotify';
   kind: 'track';
   id: string;
+  dbId?: number;
 };
 export type SpotifyAlbumDownload = {
   service: 'spotify';
@@ -111,13 +114,19 @@ export class DownloadQueue {
       case 'soundcloud': {
         switch (task.input.kind) {
           case 'track': {
-            const trackDownload = this.db.trackDownloads.insert({ complete: false });
+            const downloadId =
+              task.input.dbId ??
+              this.db.trackDownloads.insert({
+                service: task.input.service,
+                serviceId: task.input.id,
+                complete: false
+              }).id;
             const track = await this.sc.getTrack(task.input.id);
-            this.db.trackDownloads.update(trackDownload.id, { name: track.title });
+            this.db.trackDownloads.update(downloadId, { name: track.title });
             return [
               {
                 task: 'download-track',
-                input: { service: 'soundcloud', track, dbId: trackDownload.id }
+                input: { service: 'soundcloud', track, dbId: downloadId }
               }
             ];
           }
@@ -129,6 +138,8 @@ export class DownloadQueue {
               playlist.tracks.map(async (track) => {
                 if ('title' in track) {
                   const trackDownload = this.db.trackDownloads.insert({
+                    service: task.input.service,
+                    serviceId: track.id,
                     complete: false,
                     releaseDownloadId: releaseDownload.id,
                     name: track.title
@@ -136,6 +147,8 @@ export class DownloadQueue {
                   return { track, dbId: trackDownload.id };
                 } else {
                   const trackDownload = this.db.trackDownloads.insert({
+                    service: task.input.service,
+                    serviceId: track.id,
                     complete: false,
                     releaseDownloadId: releaseDownload.id
                   });
@@ -155,13 +168,19 @@ export class DownloadQueue {
       case 'spotify': {
         switch (task.input.kind) {
           case 'track': {
-            const trackDownload = this.db.trackDownloads.insert({ complete: false });
+            const downloadId =
+              task.input.dbId ??
+              this.db.trackDownloads.insert({
+                service: task.input.service,
+                serviceId: task.input.id,
+                complete: false
+              }).id;
             const track = await this.sp.getTrack(task.input.id);
-            this.db.trackDownloads.update(trackDownload.id, { name: track.name });
+            this.db.trackDownloads.update(downloadId, { name: track.name });
             return [
               {
                 task: 'download-track',
-                input: { service: 'spotify', track, dbId: trackDownload.id }
+                input: { service: 'spotify', track, dbId: downloadId }
               }
             ];
           }
@@ -173,6 +192,8 @@ export class DownloadQueue {
             const tracks = await this.sp.getAlbumTracks(task.input.id);
             return tracks.map((track) => {
               const trackDownload = this.db.trackDownloads.insert({
+                service: task.input.service,
+                serviceId: track.id,
                 complete: false,
                 releaseDownloadId: releaseDownload.id,
                 name: track.name
@@ -195,7 +216,13 @@ export class DownloadQueue {
 
         const fileName = `sc-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`;
         const filePath = path.resolve(path.join(this.downloadDir, fileName));
+
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+        const alreadyExists = await fileExists(filePath);
+        if (alreadyExists) {
+          await fs.promises.rm(filePath);
+        }
+
         const fsPipe = fs.createWriteStream(filePath);
         dlPipe.pipe(fsPipe);
 
@@ -226,9 +253,14 @@ export class DownloadQueue {
       case 'spotify': {
         const fileName = `spot-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.ogg`;
         const filePath = path.resolve(path.join(this.downloadDir, fileName));
-        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-        const fsPipe = fs.createWriteStream(filePath);
 
+        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+        const alreadyExists = await fileExists(filePath);
+        if (alreadyExists) {
+          await fs.promises.rm(filePath);
+        }
+
+        const fsPipe = fs.createWriteStream(filePath);
         const pipe = this.sp.downloadTrack(task.input.track.id);
         pipe.pipe(fsPipe);
 

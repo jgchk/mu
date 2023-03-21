@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm/sqlite-core';
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { blob, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey(),
@@ -77,6 +77,8 @@ export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'
 
 export const trackDownloads = sqliteTable('track_downloads', {
   id: integer('id').primaryKey(),
+  service: text<'spotify' | 'soundcloud'>('service').notNull(),
+  serviceId: blob<number | string>('service_id', { mode: 'json' }).notNull(),
   complete: integer('complete').notNull(),
   name: text('name'),
   path: text('path'),

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ac7241b0-bf55-4097-ba7c-6d3cd57674c0",
+  "id": "3a0355dc-2a01-47c2-93bb-cafc9df0b96c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -194,6 +194,18 @@
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
+        },
+        "service": {
+          "name": "service",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "service_id": {
+          "name": "service_id",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true
         },
         "complete": {
           "name": "complete",

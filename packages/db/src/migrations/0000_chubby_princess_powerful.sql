@@ -33,6 +33,8 @@ CREATE TABLE track_artists (
 
 CREATE TABLE track_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
+	`service` text NOT NULL,
+	`service_id` blob NOT NULL,
 	`complete` integer NOT NULL,
 	`name` text,
 	`path` text,

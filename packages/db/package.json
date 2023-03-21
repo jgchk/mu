@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "prettier --check --ignore-path=../../.prettierignore . && tsc --noEmit && eslint \".\"",
     "format": "prettier --write --ignore-path=../../.prettierignore .",
-    "db:push": "dotenv -e ../../.env -e ../../.env.local -- drizzle-kit generate:sqlite"
+    "db:push": "dotenv -e ../../.env -e ../../.env.local -- drizzle-kit generate:sqlite",
+    "db:remigrate": "dotenv -e ../../.env -e ../../.env.local -- rm db.sqlite || true && rm -r ./src/migrations || true && pnpm run db:push"
   },
   "devDependencies": {
     "dotenv-cli": "^7.1.0",

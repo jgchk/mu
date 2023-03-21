@@ -272,6 +272,15 @@ export class Database {
         .map(convertTrackDownload);
     },
 
+    getByComplete: (complete: boolean) => {
+      return this.db
+        .select()
+        .from(trackDownloads)
+        .where(eq(trackDownloads.complete, complete ? 1 : 0))
+        .all()
+        .map(convertTrackDownload);
+    },
+
     delete: (id: TrackDownload['id']) => {
       return this.db.delete(trackDownloads).where(eq(trackDownloads.id, id)).run();
     }

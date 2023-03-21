@@ -45,6 +45,37 @@ const sp = new Spotify({
 });
 const dl = new DownloadQueue({ db, sc, sp, downloadDir: env.DOWNLOAD_DIR });
 
+for (const download of db.trackDownloads.getByComplete(false)) {
+  switch (download.service) {
+    case 'spotify': {
+      const id = download.serviceId;
+      if (typeof id !== 'string') {
+        console.error(
+          `Invalid serviceId for Spotify track. Expected: string, Actual: ${typeof id}`
+        );
+        break;
+      }
+      void dl.queue({ id, service: 'spotify', kind: 'track', dbId: download.id });
+      break;
+    }
+    case 'soundcloud': {
+      const id = download.serviceId;
+      if (typeof id !== 'number') {
+        console.error(
+          `Invalid serviceId for Soundcloud track. Expected: number, Actual: ${typeof id}`
+        );
+        break;
+      }
+      void dl.queue({ id, service: 'soundcloud', kind: 'track', dbId: download.id });
+      break;
+    }
+    default: {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      console.error(`Unknown service: ${download.service}`);
+    }
+  }
+}
+
 const context = { db, dl, sc, sp, musicDir: env.MUSIC_DIR };
 
 const handleResize = async (
