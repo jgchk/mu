@@ -17,6 +17,7 @@ const SpotifyDownload = z.object({
 const SoulseekDownload = z.object({
   service: z.literal('soulseek'),
   kind: z.enum(['track']),
+  username: z.string(),
   file: z.string()
 });
 

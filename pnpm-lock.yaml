@@ -155,6 +155,7 @@ importers:
       eslint-config-custom: workspace:*
       fastq: ^1.15.0
       music-metadata: workspace:*
+      soulseek-ts: ^1.0.3
       soundcloud: workspace:*
       spotify: workspace:*
       typescript: ^4.7.2
@@ -163,6 +164,7 @@ importers:
       db: link:../db
       fastq: 1.15.0
       music-metadata: link:../music-metadata
+      soulseek-ts: 1.0.3
       soundcloud: link:../soundcloud
       spotify: link:../spotify
       zod: 3.21.4

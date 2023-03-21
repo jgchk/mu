@@ -17,6 +17,7 @@
     "db": "workspace:*",
     "fastq": "^1.15.0",
     "music-metadata": "workspace:*",
+    "soulseek-ts": "^1.0.3",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "zod": "^3.21.4"

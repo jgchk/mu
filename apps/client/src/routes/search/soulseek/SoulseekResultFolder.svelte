@@ -3,6 +3,7 @@
   import { tooltip } from '$lib/tooltip';
   import { cn } from '$lib/utils/classes';
 
+  import SoulseekResultFile from './SoulseekResultFile.svelte';
   import type { SortedSoulseekUserResults } from './types';
 
   export let item: SortedSoulseekUserResults;
@@ -42,13 +43,7 @@
       </button>
     </div>
     {#each item.files as file (file.basename)}
-      <div class="contents text-gray-400">
-        <div>{file.basename}</div>
-        <div class="whitespace-nowrap text-right">{formatSize(file.size)}</div>
-        <button class="h-5 w-5 text-right hover:text-white" use:tooltip={{ content: 'Download' }}>
-          <DownloadIcon />
-        </button>
-      </div>
+      <SoulseekResultFile {file} username={item.username} />
     {/each}
   </div>
   <div class="mt-3 flex items-center gap-4 text-sm">

@@ -1,7 +1,7 @@
 <script lang="ts">
   import VirtualList from '$lib/components/VirtualList.svelte';
 
-  import SoulseekResult from './SoulseekResult.svelte';
+  import SoulseekResultFolder from './SoulseekResultFolder.svelte';
   import type { SortedSoulseekResults } from './types';
 
   export let items: SortedSoulseekResults;
@@ -9,6 +9,6 @@
 
 <div class="h-full">
   <VirtualList {items} let:item let:index>
-    <SoulseekResult {item} isLast={index === items.length - 1} />
+    <SoulseekResultFolder {item} isLast={index === items.length - 1} />
   </VirtualList>
 </div>
