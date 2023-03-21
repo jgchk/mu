@@ -1,10 +1,3 @@
-import {
-  getAllReleases,
-  getReleaseWithArtistsById,
-  getTracksByReleaseId,
-  insertArtist,
-  updateReleaseWithArtists
-} from 'db';
 import { writeTrackMetadata } from 'music-metadata';
 import { z } from 'zod';
 
@@ -13,15 +6,15 @@ import { publicProcedure, router } from '../trpc';
 import { ifDefined } from '../utils/types';
 
 export const releasesRouter = router({
-  getAll: publicProcedure.query(() =>
-    getAllReleases().map((release) => ({
+  getAll: publicProcedure.query(({ ctx }) =>
+    ctx.db.releases.getAll().map((release) => ({
       ...release,
-      hasCoverArt: getTracksByReleaseId(release.id).some((track) => track.hasCoverArt)
+      hasCoverArt: ctx.db.tracks.getByReleaseId(release.id).some((track) => track.hasCoverArt)
     }))
   ),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ input: { id } }) => getReleaseWithArtistsById(id)),
+    .query(({ input: { id }, ctx }) => ctx.db.releases.getWithArtists(id)),
   updateMetadata: publicProcedure
     .input(
       z.object({
@@ -32,22 +25,24 @@ export const releasesRouter = router({
         })
       })
     )
-    .mutation(async ({ input: { id, data } }) => {
+    .mutation(async ({ input: { id, data }, ctx }) => {
       const artists = ifDefined(data.artists, (artists) =>
         artists.map((artist) => {
           if (typeof artist === 'number') {
             return artist;
           } else {
-            return insertArtist({ name: artist }).id;
+            return ctx.db.artists.insert({ name: artist }).id;
           }
         })
       );
 
-      const release = updateReleaseWithArtists(id, { ...data, artists });
-      const tracks = getTracksByReleaseId(release.id);
+      const release = ctx.db.releases.updateWithArtists(id, { ...data, artists });
+      const tracks = ctx.db.tracks.getByReleaseId(release.id);
 
       await Promise.all(
-        tracks.map((track) => writeTrackMetadata(track.path, getMetadataFromTrack(track.id)))
+        tracks.map((track) =>
+          writeTrackMetadata(track.path, getMetadataFromTrack(ctx.db, track.id))
+        )
       );
 
       return release;

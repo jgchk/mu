@@ -1,5 +1,3 @@
-import { getAllReleaseDownloads, getAllTrackDownloads } from 'db';
-import { queueDownload } from 'downloader';
 import { z } from 'zod';
 
 import { publicProcedure, router } from '../trpc';
@@ -19,13 +17,13 @@ const SpotifyDownload = z.object({
 const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload]);
 
 export const downloadsRouter = router({
-  download: publicProcedure.input(DownloadRequest).mutation(({ input }) => {
-    queueDownload(input);
+  download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
+    void ctx.dl.queue(input);
   }),
-  getAll: publicProcedure.query(async () => {
+  getAll: publicProcedure.query(async ({ ctx }) => {
     const [tracks, releases] = await Promise.all([
-      getAllTrackDownloads(),
-      getAllReleaseDownloads()
+      ctx.db.trackDownloads.getAll(),
+      ctx.db.releaseDownloads.getAll()
     ]);
     return { tracks, releases };
   })

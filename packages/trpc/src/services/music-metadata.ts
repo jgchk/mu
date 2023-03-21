@@ -1,23 +1,23 @@
-import type { Artist, Track, TrackArtist } from 'db';
-import { getArtistsByReleaseId, getReleaseById, getTrackWithArtistsById } from 'db';
+import type { Artist, Database, Track, TrackArtist } from 'db';
 import type { Metadata } from 'music-metadata';
 
 import { deepEquals, ifNotNull } from '../utils/types';
 
-export const isMetadataChanged = (trackId: Track['id'], metadata: Metadata) => {
-  const trackMetadata = getMetadataFromTrack(trackId);
+export const isMetadataChanged = (db: Database, trackId: Track['id'], metadata: Metadata) => {
+  const trackMetadata = getMetadataFromTrack(db, trackId);
   return !deepEquals(trackMetadata, metadata);
 };
 
-export const getMetadataFromTrack = (trackId: Track['id']): Metadata => {
-  const track = getTrackWithArtistsById(trackId);
+export const getMetadataFromTrack = (db: Database, trackId: Track['id']): Metadata => {
+  const track = db.tracks.getWithArtists(trackId);
   return {
     title: track.title ?? undefined,
     artists: track.artists.sort(compareArtists).map((artist) => artist.name),
-    album: ifNotNull(track.releaseId, (releaseId) => getReleaseById(releaseId).title) ?? undefined,
+    album: ifNotNull(track.releaseId, (releaseId) => db.releases.get(releaseId).title) ?? undefined,
     albumArtists:
       ifNotNull(track.releaseId, (releaseId) =>
-        getArtistsByReleaseId(releaseId)
+        db.artists
+          .getByReleaseId(releaseId)
           .sort(compareArtists)
           .map((artist) => artist.name)
       ) ?? [],

@@ -84,3 +84,32 @@ export const trackDownloads = sqliteTable('track_downloads', {
 });
 export type TrackDownload = InferModel<typeof trackDownloads>;
 export type InsertTrackDownload = InferModel<typeof trackDownloads, 'insert'>;
+
+export type TrackDownloadPretty = Omit<TrackDownload, 'complete'> & { complete: boolean };
+export type InsertTrackDownloadPretty = Omit<InsertTrackDownload, 'complete'> & {
+  complete: boolean;
+};
+
+export const convertInsertTrackDownload = (
+  trackDownload: InsertTrackDownloadPretty
+): InsertTrackDownload => ({
+  ...trackDownload,
+  complete: trackDownload.complete ? 1 : 0
+});
+
+export const convertTrackDownload = (trackDownload: TrackDownload): TrackDownloadPretty => ({
+  ...trackDownload,
+  complete: !!trackDownload.complete
+});
+
+export type TrackPretty = Omit<Track, 'hasCoverArt'> & { hasCoverArt: boolean };
+export type InsertTrackPretty = Omit<InsertTrack, 'hasCoverArt'> & { hasCoverArt: boolean };
+
+export const convertInsertTrack = (track: InsertTrackPretty): InsertTrack => ({
+  ...track,
+  hasCoverArt: track.hasCoverArt ? 1 : 0
+});
+export const convertTrack = (track: Track): TrackPretty => ({
+  ...track,
+  hasCoverArt: track.hasCoverArt !== 0
+});

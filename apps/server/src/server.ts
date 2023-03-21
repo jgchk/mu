@@ -2,7 +2,8 @@ import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { applyWSSHandler } from '@trpc/server/adapters/ws';
 import { handler as svelteKitHandler } from 'client';
 import cors from 'cors';
-import { getReleaseById, getTrackById, getTracksByReleaseId } from 'db';
+import { Database } from 'db';
+import { DownloadQueue } from 'downloader';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { fileTypeFromBuffer } from 'file-type';
@@ -13,6 +14,8 @@ import sharp from 'sharp';
 import { appRouter } from 'trpc';
 import { WebSocketServer } from 'ws';
 import { z } from 'zod';
+
+import { env } from './env';
 
 const PORT = process.env.SERVER_PORT ? parseInt(process.env.SERVER_PORT, 10) : undefined;
 if (PORT === undefined) {
@@ -25,6 +28,8 @@ if (isNaN(PORT)) {
 }
 
 const app = express();
+const db = new Database(env.DATABASE_URL);
+const dl = new DownloadQueue(db);
 
 const handleResize = async (
   buffer: Buffer,
@@ -49,7 +54,7 @@ app
     '/api/trpc',
     createExpressMiddleware({
       router: appRouter,
-      createContext: () => ({})
+      createContext: () => ({ db, dl })
     })
   )
   .get('/api/ping', (req, res) => {
@@ -57,7 +62,7 @@ app
   })
   .get('/api/tracks/:id/stream', (req, res) => {
     const { id } = z.object({ id: z.coerce.number() }).parse(req.params);
-    const track = getTrackById(id);
+    const track = db.tracks.get(id);
     const stream = fs.createReadStream(track.path);
     stream.pipe(res);
   })
@@ -72,7 +77,7 @@ app
         })
         .parse(req.query);
 
-      const track = getTrackById(id);
+      const track = db.tracks.get(id);
       if (!track.hasCoverArt) {
         throw new Error('Track does not have cover art');
       }
@@ -101,8 +106,8 @@ app
         })
         .parse(req.query);
 
-      const release = getReleaseById(id);
-      const tracks = getTracksByReleaseId(release.id);
+      const release = db.releases.get(id);
+      const tracks = db.tracks.getByReleaseId(release.id);
 
       for (const track of tracks) {
         if (track.hasCoverArt) {
@@ -128,7 +133,11 @@ const server = app.listen({ port: PORT }, () => {
 });
 
 const wss = new WebSocketServer({ port: 8080 });
-const trpcWsHandler = applyWSSHandler({ wss, router: appRouter, createContext: () => ({}) });
+const trpcWsHandler = applyWSSHandler({
+  wss,
+  router: appRouter,
+  createContext: () => ({ db, dl })
+});
 
 wss.on('connection', (ws) => {
   console.log(`➕➕ Connection (${wss.clients.size})`);
@@ -138,9 +147,11 @@ wss.on('connection', (ws) => {
 });
 console.log('✅ WebSocket Server listening on ws://localhost:8080');
 
-process.on('SIGTERM', () => {
-  console.log('SIGTERM');
+process.on('SIGINT', () => {
+  console.log('SIGTERMOP');
   trpcWsHandler.broadcastReconnectNotification();
   wss.close();
   server.close();
+  db.close();
+  dl.close();
 });

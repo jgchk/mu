@@ -35,7 +35,7 @@ const config: Options = {
   entry: ['src/server.ts'],
   format: ['esm'],
   platform: 'node',
-  noExternal: ['trpc', 'db', 'music-metadata'],
+  noExternal: ['trpc', 'downloader', 'db', 'music-metadata'],
   esbuildOptions(options) {
     options.banner = {
       ...options.banner,

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  MUSIC_DIR: z.string()
+  DATABASE_URL: z.string()
 });
 
 const envRes = envSchema.safeParse(process.env);

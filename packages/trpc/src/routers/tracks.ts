@@ -1,10 +1,3 @@
-import {
-  getAllTracks,
-  getTracksByReleaseId,
-  getTrackWithArtistsById,
-  insertArtist,
-  updateTrackWithArtists
-} from 'db';
 import { writeTrackMetadata } from 'music-metadata';
 import { z } from 'zod';
 
@@ -13,13 +6,13 @@ import { publicProcedure, router } from '../trpc';
 import { ifDefined } from '../utils/types';
 
 export const tracksRouter = router({
-  getAll: publicProcedure.query(() => getAllTracks()),
+  getAll: publicProcedure.query(({ ctx }) => ctx.db.tracks.getAll()),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ input: { id } }) => getTrackWithArtistsById(id)),
+    .query(({ input: { id }, ctx }) => ctx.db.tracks.getWithArtists(id)),
   getByReleaseId: publicProcedure
     .input(z.object({ releaseId: z.number() }))
-    .query(({ input: { releaseId } }) => getTracksByReleaseId(releaseId)),
+    .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
   updateMetadata: publicProcedure
     .input(
       z.object({
@@ -30,18 +23,18 @@ export const tracksRouter = router({
         })
       })
     )
-    .mutation(async ({ input: { id, data } }) => {
+    .mutation(async ({ input: { id, data }, ctx }) => {
       const artists = ifDefined(data.artists, (artists) =>
         artists.map((artist) => {
           if (typeof artist === 'number') {
             return artist;
           } else {
-            return insertArtist({ name: artist }).id;
+            return ctx.db.artists.insert({ name: artist }).id;
           }
         })
       );
-      const track = updateTrackWithArtists(id, { ...data, artists });
-      await writeTrackMetadata(track.path, getMetadataFromTrack(track.id));
+      const track = ctx.db.tracks.updateWithArtists(id, { ...data, artists });
+      await writeTrackMetadata(track.path, getMetadataFromTrack(ctx.db, track.id));
       return track;
     })
 });
