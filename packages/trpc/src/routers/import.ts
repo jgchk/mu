@@ -4,17 +4,15 @@ import fs from 'fs/promises';
 import type { Metadata } from 'music-metadata';
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata';
 import path from 'path';
-import untildify from 'untildify';
 import { z } from 'zod';
 
-import { env } from '../env';
 import { publicProcedure, router } from '../trpc';
 import { walkDir } from '../utils/fs';
 
 export const importRouter = router({
   file: publicProcedure
     .input(z.object({ filePath: z.string() }))
-    .mutation(async ({ input: { filePath }, ctx }) => importFile(ctx.db, filePath)),
+    .mutation(async ({ input: { filePath }, ctx }) => importFile(ctx.db, ctx.musicDir, filePath)),
   dir: publicProcedure
     .input(z.object({ dirPath: z.string() }))
     .mutation(async ({ input: { dirPath }, ctx }) => {
@@ -22,7 +20,7 @@ export const importRouter = router({
       for await (const filePath of walkDir(dirPath)) {
         filePaths.push(filePath);
       }
-      return Promise.all(filePaths.map((filePath) => importFile(ctx.db, filePath)));
+      return Promise.all(filePaths.map((filePath) => importFile(ctx.db, ctx.musicDir, filePath)));
     }),
   trackDownload: publicProcedure
     .input(z.object({ id: z.number() }))
@@ -36,7 +34,7 @@ export const importRouter = router({
         throw new Error('Download has no path');
       }
 
-      const track = await importFiles(ctx.db, [download.path]);
+      const track = await importFiles(ctx.db, ctx.musicDir, [download.path]);
 
       ctx.db.trackDownloads.delete(download.id);
 
@@ -60,6 +58,7 @@ export const importRouter = router({
 
       const tracks = await importFiles(
         ctx.db,
+        ctx.musicDir,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         trackDownloads.map((download) => download.path!)
       );
@@ -71,7 +70,7 @@ export const importRouter = router({
     })
 });
 
-const importFiles = async (db: Database, filePaths: string[]) => {
+const importFiles = async (db: Database, musicDir: string, filePaths: string[]) => {
   const trackData = await Promise.all(
     filePaths.map(async (filePath) => {
       const metadata = await readTrackMetadata(filePath);
@@ -102,7 +101,9 @@ const importFiles = async (db: Database, filePaths: string[]) => {
   });
 
   const dbTracks = await Promise.all(
-    trackData.map(({ metadata, filePath }) => importFile(db, filePath, metadata, dbRelease.id))
+    trackData.map(({ metadata, filePath }) =>
+      importFile(db, musicDir, filePath, metadata, dbRelease.id)
+    )
   );
 
   return {
@@ -113,6 +114,7 @@ const importFiles = async (db: Database, filePaths: string[]) => {
 
 const importFile = async (
   db: Database,
+  musicDir: string,
   filePath: string,
   metadata_?: Metadata,
   releaseId?: number
@@ -144,7 +146,6 @@ const importFile = async (
   filename += metadata.title;
   filename += path.extname(filePath);
 
-  const musicDir = untildify(env.MUSIC_DIR);
   const newPath = path.join(
     musicDir,
     filenamify(metadata.albumArtists.join(', ')),

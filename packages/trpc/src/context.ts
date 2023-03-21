@@ -8,4 +8,5 @@ export type Context = {
   dl: DownloadQueue;
   sc: Soundcloud;
   sp: Spotify;
+  musicDir: string;
 };

@@ -45,7 +45,7 @@ const sp = new Spotify({
 });
 const dl = new DownloadQueue({ db, sc, sp, downloadDir: env.DOWNLOAD_DIR });
 
-const context = { db, dl, sc, sp };
+const context = { db, dl, sc, sp, musicDir: env.MUSIC_DIR };
 
 const handleResize = async (
   buffer: Buffer,

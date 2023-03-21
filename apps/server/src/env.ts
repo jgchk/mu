@@ -3,6 +3,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
+  MUSIC_DIR: z.string(),
   SOUNDCLOUD_AUTH_TOKEN: z.string(),
   SOUNDCLOUD_CLIENT_ID: z.string(),
   SPOTIFY_CLIENT_ID: z.string(),

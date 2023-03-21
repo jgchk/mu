@@ -257,7 +257,6 @@ importers:
       spotify: workspace:*
       superjson: ^1.12.2
       typescript: ^4.7.2
-      untildify: ^4.0.0
       zod: ^3.21.4
     dependencies:
       '@trpc/server': 10.16.0
@@ -277,7 +276,6 @@ importers:
       soundcloud: link:../soundcloud
       spotify: link:../spotify
       superjson: 1.12.2
-      untildify: 4.0.0
       zod: 3.21.4
     devDependencies:
       '@types/node': 18.15.3
@@ -5085,11 +5083,6 @@ packages:
   /unpipe/1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
-    dev: false
-
-  /untildify/4.0.0:
-    resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
-    engines: {node: '>=8'}
     dev: false
 
   /update-browserslist-db/1.0.10_browserslist@4.21.5:
