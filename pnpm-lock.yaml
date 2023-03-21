@@ -89,6 +89,7 @@ importers:
       mime-types: ^2.1.35
       music-metadata: workspace:*
       sharp: ^0.31.3
+      soundcloud: workspace:*
       trpc: workspace:*
       tsup: ^6.6.3
       typescript: ^4.7.2
@@ -112,6 +113,7 @@ importers:
       mime-types: 2.1.35
       music-metadata: link:../../packages/music-metadata
       sharp: 0.31.3
+      soundcloud: link:../../packages/soundcloud
       trpc: link:../../packages/trpc
       ws: 8.13.0
       zod: 3.21.4

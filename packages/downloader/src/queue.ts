@@ -5,7 +5,7 @@ import fs from 'fs';
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
 import type { FullTrack as SoundcloudFullTrack } from 'soundcloud';
-import { downloadTrack, getLargestAvailableImage, getPlaylist, getTrack } from 'soundcloud';
+import { Soundcloud } from 'soundcloud';
 import type { SimplifiedTrack as SpotifySimplifiedTrack } from 'spotify';
 import {
   downloadSpotifyTrack,
@@ -61,10 +61,12 @@ export type DownloadTrackTask = {
 export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>;
   private db: Database;
+  private sc: Soundcloud;
   private downloadDir: string;
 
-  constructor(db: Database, downloadDir: string) {
+  constructor({ db, sc, downloadDir }: { db: Database; sc: Soundcloud; downloadDir: string }) {
     this.db = db;
+    this.sc = sc;
     this.downloadDir = downloadDir;
     this.q = fastq.promise(this.worker.bind(this), 1);
     this.q.error((err, task) => {
@@ -104,7 +106,7 @@ export class DownloadQueue {
         switch (task.input.kind) {
           case 'track': {
             const trackDownload = this.db.trackDownloads.insert({ complete: false });
-            const track = await getTrack(task.input.id);
+            const track = await this.sc.getTrack(task.input.id);
             this.db.trackDownloads.update(trackDownload.id, { name: track.title });
             return [
               {
@@ -115,7 +117,7 @@ export class DownloadQueue {
           }
           case 'playlist': {
             const releaseDownload = this.db.releaseDownloads.insert({ name: 'yo' });
-            const playlist = await getPlaylist(task.input.id);
+            const playlist = await this.sc.getPlaylist(task.input.id);
             this.db.releaseDownloads.update(releaseDownload.id, { name: playlist.title });
             const tracks = await Promise.all(
               playlist.tracks.map(async (track) => {
@@ -131,7 +133,7 @@ export class DownloadQueue {
                     complete: false,
                     releaseDownloadId: releaseDownload.id
                   });
-                  const fullTrack = await getTrack(track.id);
+                  const fullTrack = await this.sc.getTrack(track.id);
                   this.db.trackDownloads.update(trackDownload.id, { name: fullTrack.title });
                   return { track: fullTrack, dbId: trackDownload.id };
                 }
@@ -183,7 +185,7 @@ export class DownloadQueue {
   runDownloadTrack = async (task: DownloadTrackTask): Promise<Task[]> => {
     switch (task.input.service) {
       case 'soundcloud': {
-        const { pipe: dlPipe, extension } = await downloadTrack(task.input.track);
+        const { pipe: dlPipe, extension } = await this.sc.downloadTrack(task.input.track);
 
         const fileName = `sc-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`;
         const filePath = path.resolve(path.join(this.downloadDir, fileName));
@@ -196,7 +198,7 @@ export class DownloadQueue {
         });
 
         const artwork = await ifNotNull(task.input.track.artwork_url, (artworkUrl) =>
-          getLargestAvailableImage(artworkUrl)
+          Soundcloud.getLargestAvailableImage(artworkUrl)
         );
 
         const { artists, title } = parseArtistTitle(task.input.track.title);

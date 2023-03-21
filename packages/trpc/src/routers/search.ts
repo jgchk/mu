@@ -1,6 +1,6 @@
 import { observable } from '@trpc/server/observable';
 import type { Messages } from 'soulseek-ts';
-import { getSoundcloudImageUrl, searchAlbums, searchTracks } from 'soundcloud';
+import { Soundcloud } from 'soundcloud';
 import { searchTracksAndAlbums } from 'spotify';
 import { z } from 'zod';
 
@@ -11,19 +11,22 @@ import { ifNotNull } from '../utils/types';
 export const searchRouter = router({
   soundcloud: publicProcedure
     .input(z.object({ query: z.string() }))
-    .query(async ({ input: { query } }) => {
-      const [tracks, albums] = await Promise.all([searchTracks(query), searchAlbums(query)]);
+    .query(async ({ input: { query }, ctx }) => {
+      const [tracks, albums] = await Promise.all([
+        ctx.sc.searchTracks(query),
+        ctx.sc.searchAlbums(query)
+      ]);
       return {
         tracks: tracks.map((track) => ({
           ...track,
           artwork: ifNotNull(track.artwork_url, (artworkUrl) => ({
-            500: getSoundcloudImageUrl(artworkUrl, 500)
+            500: Soundcloud.getImageUrl(artworkUrl, 500)
           }))
         })),
         albums: albums.map((album) => ({
           ...album,
           artwork: ifNotNull(album.artwork_url, (artworkUrl) => ({
-            500: getSoundcloudImageUrl(artworkUrl, 500)
+            500: Soundcloud.getImageUrl(artworkUrl, 500)
           }))
         }))
       };

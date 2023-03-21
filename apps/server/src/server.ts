@@ -11,6 +11,7 @@ import fs from 'fs';
 import mime from 'mime-types';
 import { readTrackCoverArt } from 'music-metadata';
 import sharp from 'sharp';
+import { Soundcloud } from 'soundcloud';
 import { appRouter } from 'trpc';
 import { WebSocketServer } from 'ws';
 import { z } from 'zod';
@@ -28,8 +29,13 @@ if (isNaN(PORT)) {
 }
 
 const app = express();
+
 const db = new Database(env.DATABASE_URL);
-const dl = new DownloadQueue(db, env.DOWNLOAD_DIR);
+const sc = new Soundcloud({
+  clientId: env.SOUNDCLOUD_CLIENT_ID,
+  authToken: env.SOUNDCLOUD_AUTH_TOKEN
+});
+const dl = new DownloadQueue({ db, sc, downloadDir: env.DOWNLOAD_DIR });
 
 const handleResize = async (
   buffer: Buffer,
@@ -54,7 +60,7 @@ app
     '/api/trpc',
     createExpressMiddleware({
       router: appRouter,
-      createContext: () => ({ db, dl })
+      createContext: () => ({ db, dl, sc })
     })
   )
   .get('/api/ping', (req, res) => {
@@ -136,7 +142,7 @@ const wss = new WebSocketServer({ port: 8080 });
 const trpcWsHandler = applyWSSHandler({
   wss,
   router: appRouter,
-  createContext: () => ({ db, dl })
+  createContext: () => ({ db, dl, sc })
 });
 
 wss.on('connection', (ws) => {
