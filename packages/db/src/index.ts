@@ -150,7 +150,7 @@ export class Database {
     insertWithArtists: (data: InsertRelease & { artists?: ReleaseArtist['artistId'][] }) => {
       const { artists: artistsData, ...releaseData } = data;
       const release = this.releases.insert(releaseData);
-      if (artistsData !== undefined) {
+      if (artistsData?.length) {
         this.releaseArtists.insertMany(
           artistsData.map((artistId, order) => ({ releaseId: release.id, artistId, order }))
         );

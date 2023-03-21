@@ -96,7 +96,7 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
   });
 
   const dbRelease = db.releases.insertWithArtists({
-    title: trackData[0].metadata.album,
+    title: trackData[0].metadata.album ?? trackData[0].metadata.title,
     artists: albumArtists.map((artist) => artist.id)
   });
 
