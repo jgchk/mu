@@ -67,6 +67,54 @@ export const importRouter = router({
       ctx.db.releaseDownloads.delete(download.id);
 
       return tracks;
+    }),
+  scPlaylistDownload: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id }, ctx }) => {
+      const download = ctx.db.soundcloudPlaylistDownloads.get(id);
+      const trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(download.id);
+
+      const allTrackDownloadsComplete = trackDownloads.every(
+        (download) => download.progress === 100
+      );
+      if (!allTrackDownloadsComplete) {
+        throw new Error('Not all downloads are complete');
+      }
+
+      const allTrackDownloadsHavePaths = trackDownloads.every((download) => download.path);
+      if (!allTrackDownloadsHavePaths) {
+        throw new Error('Not all downloads have paths');
+      }
+
+      const tracks = await importFiles(
+        ctx.db,
+        ctx.musicDir,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        trackDownloads.map((download) => download.path!)
+      );
+
+      trackDownloads.forEach((download) => ctx.db.soundcloudTrackDownloads.delete(download.id));
+      ctx.db.soundcloudPlaylistDownloads.delete(download.id);
+
+      return tracks;
+    }),
+  scTrackDownload: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id }, ctx }) => {
+      const download = ctx.db.soundcloudTrackDownloads.get(id);
+
+      if (download.progress !== 100) {
+        throw new Error('Download is not complete');
+      }
+      if (!download.path) {
+        throw new Error('Download has no path');
+      }
+
+      const track = await importFiles(ctx.db, ctx.musicDir, [download.path]);
+
+      ctx.db.soundcloudTrackDownloads.delete(download.id);
+
+      return track;
     })
 });
 

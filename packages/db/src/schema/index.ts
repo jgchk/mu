@@ -1,6 +1,8 @@
 import type { InferModel } from 'drizzle-orm/sqlite-core';
 import { blob, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+export * from './downloads';
+
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey(),
   name: text('name').notNull()

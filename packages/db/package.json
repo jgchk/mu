@@ -21,6 +21,7 @@
     "@types/better-sqlite3": "^7.6.3",
     "better-sqlite3": "^8.2.0",
     "drizzle-orm": "^0.22.0",
-    "superjson": "^1.12.2"
+    "superjson": "^1.12.2",
+    "soundcloud": "workspace:*"
   }
 }

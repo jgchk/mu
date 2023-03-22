@@ -28,10 +28,19 @@ export const downloadsRouter = router({
     void ctx.dl.queue(input);
   }),
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const [tracks, releases] = await Promise.all([
+    const [tracks, releases, scPlaylists, scTracks] = await Promise.all([
       ctx.db.trackDownloads.getAll(),
-      ctx.db.releaseDownloads.getAll()
+      ctx.db.releaseDownloads.getAll(),
+      ctx.db.soundcloudPlaylistDownloads
+        .getAll()
+        .map((playlist) => ({ id: playlist.id, name: playlist.playlist?.title })),
+      ctx.db.soundcloudTrackDownloads.getAll().map((track) => ({
+        id: track.id,
+        playlistDownloadId: track.playlistDownloadId,
+        progress: track.progress,
+        name: track.track?.title
+      }))
     ]);
-    return { tracks, releases };
+    return { tracks, releases, scPlaylists, scTracks };
   })
 });

@@ -1,7 +1,7 @@
 import SqliteDatabase from 'better-sqlite3';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { eq } from 'drizzle-orm/expressions';
+import { and, eq, isNull } from 'drizzle-orm/expressions';
 
 import { migrate } from './migrate';
 import type {
@@ -9,12 +9,16 @@ import type {
   InsertRelease,
   InsertReleaseArtist,
   InsertReleaseDownload,
+  InsertSoundcloudPlaylistDownload,
+  InsertSoundcloudTrackDownload,
   InsertTrackArtist,
   InsertTrackDownloadPretty,
   InsertTrackPretty,
   Release,
   ReleaseArtist,
   ReleaseDownload,
+  SoundcloudPlaylistDownload,
+  SoundcloudTrackDownload,
   Track,
   TrackArtist,
   TrackDownload
@@ -28,6 +32,8 @@ import {
   releaseArtists,
   releaseDownloads,
   releases,
+  soundcloudPlaylistDownloads,
+  soundcloudTrackDownloads,
   trackArtists,
   trackDownloads,
   tracks
@@ -375,6 +381,157 @@ export class Database {
 
     delete: (id: Track['id']) => {
       return this.db.delete(tracks).where(eq(tracks.id, id)).run();
+    }
+  };
+
+  soundcloudPlaylistDownloads = {
+    insert: (soundcloudPlaylistDownload: InsertSoundcloudPlaylistDownload) => {
+      return this.db
+        .insert(soundcloudPlaylistDownloads)
+        .values(soundcloudPlaylistDownload)
+        .returning()
+        .get();
+    },
+
+    update: (
+      id: SoundcloudPlaylistDownload['id'],
+      data: Partial<Omit<InsertSoundcloudPlaylistDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.playlistId !== undefined ? { playlistId: data.playlistId } : {}),
+        ...(data.playlist !== undefined ? { playlist: data.playlist } : {})
+      };
+      return this.db
+        .update(soundcloudPlaylistDownloads)
+        .set(update)
+        .where(eq(soundcloudPlaylistDownloads.id, id))
+        .returning()
+        .get();
+    },
+
+    get: (id: SoundcloudPlaylistDownload['id']) => {
+      return this.db
+        .select()
+        .from(soundcloudPlaylistDownloads)
+        .where(eq(soundcloudPlaylistDownloads.id, id))
+        .get();
+    },
+
+    getByPlaylistId: (playlistId: SoundcloudPlaylistDownload['playlistId']) => {
+      return this.db
+        .select()
+        .from(soundcloudPlaylistDownloads)
+        .where(eq(soundcloudPlaylistDownloads.playlistId, playlistId))
+        .limit(1)
+        .all()
+        .at(0);
+    },
+
+    getAll: () => {
+      return this.db.select().from(soundcloudPlaylistDownloads).all();
+    },
+
+    delete: (id: SoundcloudPlaylistDownload['id']) => {
+      return this.db
+        .delete(soundcloudPlaylistDownloads)
+        .where(eq(soundcloudPlaylistDownloads.id, id))
+        .run();
+    }
+  };
+
+  soundcloudTrackDownloads = {
+    insert: (soundcloudTrackDownload: InsertSoundcloudTrackDownload) => {
+      return this.db
+        .insert(soundcloudTrackDownloads)
+        .values(soundcloudTrackDownload)
+        .returning()
+        .get();
+    },
+
+    update: (
+      id: SoundcloudTrackDownload['id'],
+      data: Partial<Omit<InsertSoundcloudTrackDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
+        ...(data.track !== undefined ? { track: data.track } : {}),
+        ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.progress !== undefined ? { progress: data.progress } : {}),
+        ...(data.playlistDownloadId !== undefined
+          ? { playlistDownloadId: data.playlistDownloadId }
+          : {})
+      };
+      return this.db
+        .update(soundcloudTrackDownloads)
+        .set(update)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .returning()
+        .get();
+    },
+
+    get: (id: SoundcloudTrackDownload['id']) => {
+      return this.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .get();
+    },
+
+    getByPlaylistId: (playlistId: SoundcloudTrackDownload['playlistDownloadId']) => {
+      return this.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(
+          playlistId === null
+            ? isNull(soundcloudTrackDownloads.playlistDownloadId)
+            : eq(soundcloudTrackDownloads.playlistDownloadId, playlistId)
+        )
+        .all();
+    },
+
+    getByPlaylistDownloadId: (
+      playlistDownloadId: SoundcloudTrackDownload['playlistDownloadId']
+    ) => {
+      return this.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(
+          playlistDownloadId === null
+            ? isNull(soundcloudTrackDownloads.playlistDownloadId)
+            : eq(soundcloudTrackDownloads.playlistDownloadId, playlistDownloadId)
+        )
+        .all();
+    },
+
+    getByTrackIdAndPlaylistDownloadId: (
+      trackId: SoundcloudTrackDownload['trackId'],
+      playlistId: SoundcloudTrackDownload['playlistDownloadId']
+    ) => {
+      return this.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(
+          and(
+            eq(soundcloudTrackDownloads.trackId, trackId),
+            playlistId === null
+              ? isNull(soundcloudTrackDownloads.playlistDownloadId)
+              : eq(soundcloudTrackDownloads.playlistDownloadId, playlistId)
+          )
+        )
+        .limit(1)
+        .all()
+        .at(0);
+    },
+
+    getAll: () => {
+      return this.db.select().from(soundcloudTrackDownloads).all();
+    },
+
+    delete: (id: SoundcloudTrackDownload['id']) => {
+      return this.db
+        .delete(soundcloudTrackDownloads)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .run();
     }
   };
 }

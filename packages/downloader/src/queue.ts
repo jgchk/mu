@@ -2,15 +2,13 @@ import { randomInt } from 'crypto';
 import type { Database } from 'db';
 import fastq from 'fastq';
 import fs from 'fs';
-import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata';
 import path from 'path';
 import type { SlskClient } from 'soulseek-ts';
-import type { FullTrack as SoundcloudFullTrack } from 'soundcloud';
-import { Soundcloud } from 'soundcloud';
+import type { FullTrack as SoundcloudFullTrack, Soundcloud } from 'soundcloud';
 import type { SimplifiedTrack as SpotifySimplifiedTrack, Spotify } from 'spotify';
 
+import { SoundcloudQueue } from './soundcloud-queue';
 import { fileExists } from './utils/fs';
-import { ifNotNull } from './utils/types';
 
 export type SoundcloudTrackDownload = {
   service: 'soundcloud';
@@ -68,8 +66,8 @@ export type DownloadTrackTask = {
 
 export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>;
+  private scq: SoundcloudQueue;
   private db: Database;
-  private sc: Soundcloud;
   private sp: Spotify;
   private slsk: SlskClient;
   private downloadDir: string;
@@ -88,10 +86,10 @@ export class DownloadQueue {
     downloadDir: string;
   }) {
     this.db = db;
-    this.sc = sc;
     this.sp = sp;
     this.slsk = slsk;
     this.downloadDir = downloadDir;
+    this.scq = new SoundcloudQueue({ db, sc, downloadDir });
     this.q = fastq.promise(this.worker.bind(this), 1);
     this.q.error((err, task) => {
       if (err) {
@@ -106,6 +104,7 @@ export class DownloadQueue {
 
   close() {
     this.q.kill();
+    this.scq.close();
   }
 
   private async worker(task: Task) {
@@ -128,57 +127,24 @@ export class DownloadQueue {
     switch (task.input.service) {
       case 'soundcloud': {
         switch (task.input.kind) {
-          case 'track': {
-            const downloadId =
-              task.input.dbId ??
-              this.db.trackDownloads.insert({
-                service: task.input.service,
-                serviceId: task.input.id,
-                complete: false
-              }).id;
-            const track = await this.sc.getTrack(task.input.id);
-            this.db.trackDownloads.update(downloadId, { name: track.title });
-            return [
-              {
-                task: 'download-track',
-                input: { service: 'soundcloud', track, dbId: downloadId }
-              }
-            ];
-          }
           case 'playlist': {
-            const releaseDownload = this.db.releaseDownloads.insert({ name: 'yo' });
-            const playlist = await this.sc.getPlaylist(task.input.id);
-            this.db.releaseDownloads.update(releaseDownload.id, { name: playlist.title });
-            const tracks = await Promise.all(
-              playlist.tracks.map(async (track) => {
-                if ('title' in track) {
-                  const trackDownload = this.db.trackDownloads.insert({
-                    service: task.input.service,
-                    serviceId: track.id,
-                    complete: false,
-                    releaseDownloadId: releaseDownload.id,
-                    name: track.title
-                  });
-                  return { track, dbId: trackDownload.id };
-                } else {
-                  const trackDownload = this.db.trackDownloads.insert({
-                    service: task.input.service,
-                    serviceId: track.id,
-                    complete: false,
-                    releaseDownloadId: releaseDownload.id
-                  });
-                  const fullTrack = await this.sc.getTrack(track.id);
-                  this.db.trackDownloads.update(trackDownload.id, { name: fullTrack.title });
-                  return { track: fullTrack, dbId: trackDownload.id };
-                }
-              })
-            );
-            return tracks.map(({ track, dbId }) => ({
-              task: 'download-track',
-              input: { service: 'soundcloud', track, dbId }
-            }));
+            const dbPlaylist =
+              this.db.soundcloudPlaylistDownloads.getByPlaylistId(task.input.id) ??
+              this.db.soundcloudPlaylistDownloads.insert({ playlistId: task.input.id });
+            void this.scq.queue({ type: 'playlist', dbId: dbPlaylist.id });
+            break;
+          }
+          case 'track': {
+            const dbTrack =
+              this.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(
+                task.input.id,
+                null
+              ) ?? this.db.soundcloudTrackDownloads.insert({ trackId: task.input.id });
+            void this.scq.queue({ type: 'track', dbId: dbTrack.id });
+            break;
           }
         }
+        return [];
       }
       case 'spotify': {
         switch (task.input.kind) {
@@ -254,42 +220,6 @@ export class DownloadQueue {
   runDownloadTrack = async (task: DownloadTrackTask): Promise<Task[]> => {
     switch (task.input.service) {
       case 'soundcloud': {
-        const { pipe: dlPipe, extension } = await this.sc.downloadTrack(task.input.track);
-
-        const fileName = `sc-${task.input.track.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`;
-        const filePath = path.resolve(path.join(this.downloadDir, fileName));
-
-        await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-        const alreadyExists = await fileExists(filePath);
-        if (alreadyExists) {
-          await fs.promises.rm(filePath);
-        }
-
-        const fsPipe = fs.createWriteStream(filePath);
-        dlPipe.pipe(fsPipe);
-
-        await new Promise((resolve) => {
-          dlPipe.on('close', resolve);
-        });
-
-        const artwork = await ifNotNull(task.input.track.artwork_url, (artworkUrl) =>
-          Soundcloud.getLargestAvailableImage(artworkUrl)
-        );
-
-        const { artists, title } = parseArtistTitle(task.input.track.title);
-        await writeTrackMetadata(filePath, {
-          title,
-          artists: artists ?? [task.input.track.user.username],
-          album: title,
-          albumArtists: artists ?? [task.input.track.user.username],
-          trackNumber: '1'
-        });
-        if (artwork) {
-          await writeTrackCoverArt(filePath, artwork);
-        }
-
-        this.db.trackDownloads.update(task.input.dbId, { complete: true, path: filePath });
-
         return [];
       }
       case 'spotify': {

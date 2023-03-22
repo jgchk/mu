@@ -53,6 +53,13 @@ const main = async () => {
   const context: Context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR };
   const createContext = (): Context => context;
 
+  for (const download of db.soundcloudPlaylistDownloads.getAll()) {
+    void dl.queue({ id: download.playlistId, service: 'soundcloud', kind: 'playlist' });
+  }
+  for (const download of db.soundcloudTrackDownloads.getByPlaylistId(null)) {
+    void dl.queue({ id: download.trackId, service: 'soundcloud', kind: 'track' });
+  }
+
   for (const download of db.trackDownloads.getByComplete(false)) {
     switch (download.service) {
       case 'spotify': {
@@ -64,17 +71,6 @@ const main = async () => {
           break;
         }
         void dl.queue({ id, service: 'spotify', kind: 'track', dbId: download.id });
-        break;
-      }
-      case 'soundcloud': {
-        const id = download.serviceId;
-        if (typeof id !== 'number') {
-          console.error(
-            `Invalid serviceId for Soundcloud track. Expected: number, Actual: ${typeof id}`
-          );
-          break;
-        }
-        void dl.queue({ id, service: 'soundcloud', kind: 'track', dbId: download.id });
         break;
       }
       default: {
