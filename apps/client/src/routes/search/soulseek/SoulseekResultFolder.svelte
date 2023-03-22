@@ -1,33 +1,44 @@
 <script lang="ts">
-  import DownloadIcon from '$lib/icons/DownloadIcon.svelte';
-  import { tooltip } from '$lib/tooltip';
-  import { cn } from '$lib/utils/classes';
+  import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import { tooltip } from '$lib/tooltip'
+  import { getContextClient } from '$lib/trpc'
+  import { cn } from '$lib/utils/classes'
 
-  import SoulseekResultFile from './SoulseekResultFile.svelte';
-  import type { SortedSoulseekUserResults } from './types';
+  import SoulseekResultFile from './SoulseekResultFile.svelte'
+  import type { SortedSoulseekUserResults } from './types'
 
-  export let item: SortedSoulseekUserResults;
-  export let isLast: boolean;
+  export let item: SortedSoulseekUserResults
+  export let isLast: boolean
 
   const formatSpeed = (bytes: number) => {
-    const gb = bytes / 1000 / 1000 / 1000;
-    if (gb >= 1) return `${gb.toFixed(2)} Gb/s`;
-    const mb = bytes / 1000 / 1000;
-    if (mb >= 1) return `${mb.toFixed(2)} Mb/s`;
-    const kb = bytes / 1000;
-    if (kb >= 1) return `${kb.toFixed(2)} Kb/s`;
-    return `${bytes} B/s`;
-  };
+    const gb = bytes / 1000 / 1000 / 1000
+    if (gb >= 1) return `${gb.toFixed(2)} Gb/s`
+    const mb = bytes / 1000 / 1000
+    if (mb >= 1) return `${mb.toFixed(2)} Mb/s`
+    const kb = bytes / 1000
+    if (kb >= 1) return `${kb.toFixed(2)} Kb/s`
+    return `${bytes} B/s`
+  }
 
   const formatSize = (bytes: bigint) => {
-    const gb = Number(bytes) / 1000 / 1000 / 1000;
-    if (gb >= 1) return `${gb.toFixed(2)} Gb`;
-    const mb = Number(bytes) / 1000 / 1000;
-    if (mb >= 1) return `${mb.toFixed(2)} Mb`;
-    const kb = Number(bytes) / 1000;
-    if (kb >= 1) return `${kb.toFixed(2)} Kb`;
-    return `${bytes} B`;
-  };
+    const gb = Number(bytes) / 1000 / 1000 / 1000
+    if (gb >= 1) return `${gb.toFixed(2)} Gb`
+    const mb = Number(bytes) / 1000 / 1000
+    if (mb >= 1) return `${mb.toFixed(2)} Mb`
+    const kb = Number(bytes) / 1000
+    if (kb >= 1) return `${kb.toFixed(2)} Kb`
+    return `${bytes} B`
+  }
+
+  const trpc = getContextClient()
+  const downloadMutation = trpc.downloads.download.mutation()
+  const handleDownload = () => {
+    $downloadMutation.mutate({
+      service: 'soulseek',
+      kind: 'tracks',
+      tracks: item.files.map((f) => ({ username: item.username, file: f.filename })),
+    })
+  }
 </script>
 
 <div class={cn('mx-4 mt-4 max-w-4xl rounded bg-gray-900 p-4 text-gray-200', isLast && 'mb-4')}>
@@ -38,6 +49,7 @@
       <button
         class="mb-2 h-5 w-5 text-right text-lg hover:text-white"
         use:tooltip={{ content: 'Download All' }}
+        on:click={handleDownload}
       >
         <DownloadIcon />
       </button>

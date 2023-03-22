@@ -1,29 +1,28 @@
 <script lang="ts">
-  import DownloadIcon from '$lib/icons/DownloadIcon.svelte';
-  import { tooltip } from '$lib/tooltip';
-  import { getContextClient } from '$lib/trpc';
+  import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import { tooltip } from '$lib/tooltip'
+  import { getContextClient } from '$lib/trpc'
 
-  import type { SoulseekFile } from './types';
+  import type { SoulseekFile } from './types'
 
-  export let file: SoulseekFile;
-  export let username: string;
+  export let file: SoulseekFile
+  export let username: string
 
   const formatSize = (bytes: bigint) => {
-    const gb = Number(bytes) / 1000 / 1000 / 1000;
-    if (gb >= 1) return `${gb.toFixed(2)} Gb`;
-    const mb = Number(bytes) / 1000 / 1000;
-    if (mb >= 1) return `${mb.toFixed(2)} Mb`;
-    const kb = Number(bytes) / 1000;
-    if (kb >= 1) return `${kb.toFixed(2)} Kb`;
-    return `${bytes} B`;
-  };
+    const gb = Number(bytes) / 1000 / 1000 / 1000
+    if (gb >= 1) return `${gb.toFixed(2)} Gb`
+    const mb = Number(bytes) / 1000 / 1000
+    if (mb >= 1) return `${mb.toFixed(2)} Mb`
+    const kb = Number(bytes) / 1000
+    if (kb >= 1) return `${kb.toFixed(2)} Kb`
+    return `${bytes} B`
+  }
 
-  const trpc = getContextClient();
-  const downloadMutation = trpc.downloads.download.mutation();
-
+  const trpc = getContextClient()
+  const downloadMutation = trpc.downloads.download.mutation()
   const handleDownload = () => {
-    $downloadMutation.mutate({ service: 'soulseek', kind: 'track', username, file: file.filename });
-  };
+    $downloadMutation.mutate({ service: 'soulseek', kind: 'track', username, file: file.filename })
+  }
 </script>
 
 <div class="contents text-gray-400">

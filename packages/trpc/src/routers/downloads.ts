@@ -14,12 +14,25 @@ const SpotifyDownload = z.object({
   id: z.string(),
 })
 
-const SoulseekDownload = z.object({
-  service: z.literal('soulseek'),
-  kind: z.enum(['track']),
-  username: z.string(),
-  file: z.string(),
-})
+const SoulseekDownload = z
+  .object({
+    service: z.literal('soulseek'),
+    kind: z.enum(['track']),
+    username: z.string(),
+    file: z.string(),
+  })
+  .or(
+    z.object({
+      service: z.literal('soulseek'),
+      kind: z.enum(['tracks']),
+      tracks: z
+        .object({
+          username: z.string(),
+          file: z.string(),
+        })
+        .array(),
+    })
+  )
 
 const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload])
 
@@ -74,6 +87,20 @@ export const downloadsRouter = router({
             void ctx.dl.queue({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
+          case 'tracks': {
+            const dbTracks = input.tracks.map(
+              (track) =>
+                ctx.db.soulseekTrackDownloads.getByUsernameAndFile(track.username, track.file) ??
+                ctx.db.soulseekTrackDownloads.insert({
+                  username: track.username,
+                  file: track.file,
+                })
+            )
+            for (const dbTrack of dbTracks) {
+              void ctx.dl.queue({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+            }
+            return dbTracks.map((dbTrack) => ({ id: dbTrack.id }))
+          }
         }
       }
     }
@@ -123,13 +150,33 @@ export const downloadsRouter = router({
             id: track.id,
             parentId: null,
             progress: track.progress,
-            name: track.file,
+            filename: track.file,
+            dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
+            name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
           } as const)
       ),
     ])
+
+    const soulseekDirectories = [...new Set(slskTracks.map((track) => track.dirname))]
+
     return {
-      groups: [...scPlaylists, ...spAlbums],
-      tracks: [...scTracks, ...spTracks, ...slskTracks],
+      groups: [
+        ...scPlaylists,
+        ...spAlbums,
+        ...soulseekDirectories.map(
+          (dirname) =>
+            ({
+              service: 'soulseek',
+              id: dirname,
+              name: dirname,
+            } as const)
+        ),
+      ],
+      tracks: [
+        ...scTracks,
+        ...spTracks,
+        ...slskTracks.map((track) => ({ ...track, parentId: track.dirname })),
+      ],
     }
   }),
 })

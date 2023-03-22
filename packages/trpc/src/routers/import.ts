@@ -1,11 +1,20 @@
 import type { Database } from 'db'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
+import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { isDefined } from '../utils/types'
+
+type Download = { id: number; progress: number | null; path: string | null }
+type CompleteDownload = { id: number; progress: 100; path: string }
+
+const isComplete = (dl: Download): dl is CompleteDownload => {
+  return dl.progress === 100 && dl.path !== null
+}
 
 export const importRouter = router({
   groupDownload: publicProcedure
@@ -16,7 +25,7 @@ export const importRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       let download
-      let trackDownloads: { id: number; progress: number | null; path: string | null }[]
+      let trackDownloads: Download[]
       if (input.service === 'soundcloud') {
         download = ctx.db.soundcloudPlaylistDownloads.get(input.id)
         trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(download.id)
@@ -30,45 +39,41 @@ export const importRouter = router({
         throw new Error(`Invalid service: ${input.service}`)
       }
 
-      const allTrackDownloadsComplete = trackDownloads.every(
-        (download) => download.progress === 100
-      )
-      if (!allTrackDownloadsComplete) {
+      const completeDownloads = trackDownloads.filter(isComplete)
+      if (completeDownloads.length !== trackDownloads.length) {
         throw new Error('Not all downloads are complete')
       }
 
-      const allTrackDownloadsHavePaths = trackDownloads.every((download) => download.path)
-      if (!allTrackDownloadsHavePaths) {
-        throw new Error('Not all downloads have paths')
-      }
+      const result = await importFiles(ctx.db, ctx.musicDir, completeDownloads)
 
-      const tracks = await importFiles(
-        ctx.db,
-        ctx.musicDir,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        trackDownloads.map((download) => download.path!)
-      )
-
-      if (input.service === 'soundcloud') {
-        trackDownloads.forEach((download) => ctx.db.soundcloudTrackDownloads.delete(download.id))
-        if (download) {
-          ctx.db.soundcloudPlaylistDownloads.delete(download.id)
+      trackDownloads.forEach((download) => {
+        const downloadWasIgnored = result.ignoredFiles.some(
+          (ignoredFile) => ignoredFile.dbDownload.id === download.id
+        )
+        if (!downloadWasIgnored) {
+          if (input.service === 'soundcloud') {
+            ctx.db.soundcloudTrackDownloads.delete(download.id)
+          } else if (input.service === 'spotify') {
+            ctx.db.spotifyTrackDownloads.delete(download.id)
+          } else if (input.service === 'soulseek') {
+            ctx.db.soulseekTrackDownloads.delete(download.id)
+          }
         }
-      } else if (input.service === 'spotify') {
-        trackDownloads.forEach((download) => ctx.db.spotifyTrackDownloads.delete(download.id))
-        if (download) {
+      })
+      if (result.ignoredFiles.length === 0 && download) {
+        if (input.service === 'soundcloud') {
+          ctx.db.soundcloudPlaylistDownloads.delete(download.id)
+        } else if (input.service === 'spotify') {
           ctx.db.spotifyAlbumDownloads.delete(download.id)
         }
-      } else if (input.service === 'soulseek') {
-        trackDownloads.forEach((download) => ctx.db.soulseekTrackDownloads.delete(download.id))
       }
 
-      return tracks
+      return result
     }),
   trackDownload: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input: { service, id }, ctx }) => {
-      let download
+      let download: Download
       if (service === 'soundcloud') {
         download = ctx.db.soundcloudTrackDownloads.get(id)
       } else if (service === 'spotify') {
@@ -80,44 +85,68 @@ export const importRouter = router({
         throw new Error(`Invalid service: ${service}`)
       }
 
-      if (download.progress !== 100) {
+      if (!isComplete(download)) {
         throw new Error('Download is not complete')
       }
-      if (!download.path) {
-        throw new Error('Download has no path')
+
+      const result = await importFiles(ctx.db, ctx.musicDir, [download])
+
+      const downloadWasIgnored = result.ignoredFiles.some(
+        (ignoredFile) => ignoredFile.dbDownload.id === download.id
+      )
+
+      if (!downloadWasIgnored) {
+        if (service === 'soundcloud') {
+          ctx.db.soundcloudTrackDownloads.delete(download.id)
+        } else if (service === 'spotify') {
+          ctx.db.spotifyTrackDownloads.delete(download.id)
+        } else if (service === 'soulseek') {
+          ctx.db.soulseekTrackDownloads.delete(download.id)
+        }
       }
 
-      const track = await importFiles(ctx.db, ctx.musicDir, [download.path])
-
-      if (service === 'soundcloud') {
-        ctx.db.soundcloudTrackDownloads.delete(download.id)
-      } else if (service === 'spotify') {
-        ctx.db.spotifyTrackDownloads.delete(download.id)
-      } else if (service === 'soulseek') {
-        ctx.db.soulseekTrackDownloads.delete(download.id)
-      }
-
-      return track
+      return result
     }),
 })
 
-const importFiles = async (db: Database, musicDir: string, filePaths: string[]) => {
-  const trackData = await Promise.all(
-    filePaths.map(async (filePath) => {
-      const metadata = await readTrackMetadata(filePath)
+const importFiles = async (db: Database, musicDir: string, dbDownloads: CompleteDownload[]) => {
+  const filesDataRaw = await Promise.allSettled(
+    dbDownloads.map(async (dbDownload) => {
+      const metadata = await readTrackMetadata(path.resolve(dbDownload.path))
 
       if (!metadata) {
         throw new Error('No metadata available')
       }
 
       return {
-        filePath,
+        dbDownload,
         metadata,
       }
     })
   )
 
-  const albumArtists = trackData[0].metadata.albumArtists.map((name) => {
+  const filesData = filesDataRaw
+    .filter(
+      (
+        result
+      ): result is PromiseFulfilledResult<{
+        dbDownload: CompleteDownload
+        metadata: Metadata
+      }> => result.status === 'fulfilled'
+    )
+    .map((result) => result.value)
+
+  const ignoredFiles = dbDownloads
+    .map((dbDownload, i) => {
+      const result = filesDataRaw[i]
+      if (result.status === 'rejected') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        return { dbDownload, reason: result.reason }
+      }
+    })
+    .filter(isDefined)
+
+  const albumArtists = filesData[0].metadata.albumArtists.map((name) => {
     const matchingArtists = db.artists.getByName(name)
     if (matchingArtists.length > 0) {
       return matchingArtists[0]
@@ -127,13 +156,13 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
   })
 
   const dbRelease = db.releases.insertWithArtists({
-    title: trackData[0].metadata.album ?? trackData[0].metadata.title,
+    title: filesData[0].metadata.album ?? filesData[0].metadata.title,
     artists: albumArtists.map((artist) => artist.id),
   })
 
   const dbTracks = await Promise.all(
-    trackData.map(async ({ metadata, filePath }) => {
-      const coverArt = await readTrackCoverArt(filePath)
+    filesData.map(async ({ metadata, dbDownload }) => {
+      const coverArt = await readTrackCoverArt(path.resolve(dbDownload.path))
 
       // convert artist names to artist ids
       // - if artist with name exists, use that
@@ -149,7 +178,7 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
 
       let filename = ''
       if (metadata.track !== null) {
-        const numDigitsInTrackNumber = Math.ceil(Math.log10(trackData.length + 1))
+        const numDigitsInTrackNumber = Math.ceil(Math.log10(filesData.length + 1))
 
         const trackIsAllDigits = /^\d+$/.test(metadata.track)
         if (trackIsAllDigits) {
@@ -160,7 +189,7 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
         filename += ' '
       }
       filename += metadata.title
-      filename += path.extname(filePath)
+      filename += path.extname(dbDownload.path)
 
       const newPath = path.join(
         musicDir,
@@ -178,9 +207,9 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
         hasCoverArt: coverArt !== undefined,
       })
 
-      if (filePath !== newPath) {
+      if (path.resolve(dbDownload.path) !== path.resolve(newPath)) {
         await fs.mkdir(path.dirname(newPath), { recursive: true })
-        await fs.rename(filePath, newPath)
+        await fs.rename(path.resolve(dbDownload.path), newPath)
       }
 
       return track
@@ -190,5 +219,6 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
   return {
     release: dbRelease,
     tracks: dbTracks,
+    ignoredFiles,
   }
 }

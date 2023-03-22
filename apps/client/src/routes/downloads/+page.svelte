@@ -53,14 +53,14 @@
 {#if downloads}
   <h2 class="mt-2 text-2xl font-bold">Groups</h2>
   <div class="grid w-fit grid-cols-4 gap-x-3">
-    {#each downloads.groups as releaseDownload (releaseDownload.id)}
+    {#each downloads.groups as releaseDownload (`${releaseDownload.service}-${releaseDownload.id}`)}
       <GroupDownload download={releaseDownload} />
     {/each}
   </div>
 
   <h2 class="mt-8 text-2xl font-bold">Tracks</h2>
   <div class="grid w-fit grid-cols-4 gap-x-3">
-    {#each downloads.tracks as trackDownload (trackDownload.id)}
+    {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
       <TrackDownload download={trackDownload} />
     {/each}
   </div>

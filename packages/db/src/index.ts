@@ -92,11 +92,12 @@ export class Database {
 
   releaseArtists = {
     insertMany: (releaseArtists_: InsertReleaseArtist[]) => {
+      if (releaseArtists_.length === 0) return []
       return this.db
         .insert(releaseArtists)
         .values(...releaseArtists_)
         .returning()
-        .get()
+        .all()
     },
 
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => {
@@ -120,7 +121,7 @@ export class Database {
     insertWithArtists: (data: InsertRelease & { artists?: ReleaseArtist['artistId'][] }) => {
       const { artists: artistsData, ...releaseData } = data
       const release = this.releases.insert(releaseData)
-      if (artistsData?.length) {
+      if (artistsData !== undefined) {
         this.releaseArtists.insertMany(
           artistsData.map((artistId, order) => ({ releaseId: release.id, artistId, order }))
         )
@@ -175,11 +176,12 @@ export class Database {
 
   trackArtists = {
     insertMany: (trackArtists_: InsertTrackArtist[]) => {
+      if (trackArtists_.length === 0) return []
       return this.db
         .insert(trackArtists)
         .values(...trackArtists_)
         .returning()
-        .get()
+        .all()
     },
 
     getByTrackId: (trackId: TrackArtist['trackId']) => {

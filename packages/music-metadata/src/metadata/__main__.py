@@ -41,12 +41,31 @@ if __name__ == "__main__":
     if args.operation == "read":
         file_path = args.file
         file = MediaFile(file_path)
+
+        title = file.title
+        artists = file.artists
+        if artists is None:
+            artist = file.artist
+            if artist is not None:
+                artists = [artist]
+            else:
+                artists = []
+        album = file.album
+        album_artists = file.albumartists
+        if album_artists is None:
+            album_artist = file.albumartist
+            if album_artist is not None:
+                album_artists = [album_artist]
+            else:
+                album_artists = []
+        track = file.track
+
         metadata = {
-            "title": file.title,
-            "artists": [] if file.artists is None else file.artists,
-            "album": file.album,
-            "albumArtists": [] if file.albumartists is None else file.albumartists,
-            "track": file.track,
+            "title": title,
+            "artists": artists,
+            "album": album,
+            "albumArtists": album_artists,
+            "track": track,
         }
         print(json.dumps(metadata))
     elif args.operation == "write":

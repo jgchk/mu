@@ -320,6 +320,10 @@ export class DownloadQueue {
     } else if (task.service === 'soulseek') {
       const dbTrack = this.db.soulseekTrackDownloads.get(task.dbId)
 
+      if (dbTrack.progress === 100) {
+        return
+      }
+
       let filePath = dbTrack.path
       if (!filePath) {
         const fileHash = createHash('sha256')
