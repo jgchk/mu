@@ -1,15 +1,17 @@
 import { execa } from 'execa';
 import path from 'path';
+import { z } from 'zod';
 
 const SCRIPTS_DIR = path.join(__dirname, './scripts');
 
-export type Metadata = {
-  title: string | undefined;
-  artists: string[];
-  album: string | undefined;
-  albumArtists: string[];
-  trackNumber: string | undefined;
-};
+export type Metadata = z.infer<typeof Metadata>;
+export const Metadata = z.object({
+  title: z.string().nullable(),
+  artists: z.string().array(),
+  album: z.string().nullable(),
+  albumArtists: z.string().array(),
+  trackNumber: z.string().nullable()
+});
 
 export const writeTrackMetadata = async (filePath: string, metadata: Metadata) => {
   await execa('python3', [
@@ -26,45 +28,7 @@ export const readTrackMetadata = async (filePath: string): Promise<Metadata | un
     return undefined;
   }
 
-  const lines = stdout.split('\n');
-  // const fileInfo = lines[0]
-  const tags = lines.slice(1);
-
-  const metadata: Metadata = {
-    title: undefined,
-    artists: [],
-    album: undefined,
-    albumArtists: [],
-    trackNumber: undefined
-  };
-
-  for (const line of tags) {
-    const [tag, value] = line.split('=');
-    switch (tag.toLowerCase()) {
-      case 'title': {
-        metadata.title = value;
-        break;
-      }
-      case 'artist': {
-        metadata.artists = [...(metadata.artists ?? []), value];
-        break;
-      }
-      case 'album': {
-        metadata.album = value;
-        break;
-      }
-      case 'albumartist': {
-        metadata.albumArtists = [...(metadata.albumArtists ?? []), value];
-        break;
-      }
-      case 'tracknumber': {
-        metadata.trackNumber = value;
-        break;
-      }
-    }
-  }
-
-  return metadata;
+  return Metadata.parse(JSON.parse(stdout));
 };
 
 export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => {

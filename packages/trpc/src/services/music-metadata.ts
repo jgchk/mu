@@ -11,9 +11,9 @@ export const isMetadataChanged = (db: Database, trackId: Track['id'], metadata: 
 export const getMetadataFromTrack = (db: Database, trackId: Track['id']): Metadata => {
   const track = db.tracks.getWithArtists(trackId);
   return {
-    title: track.title ?? undefined,
+    title: track.title ?? null,
     artists: track.artists.sort(compareArtists).map((artist) => artist.name),
-    album: ifNotNull(track.releaseId, (releaseId) => db.releases.get(releaseId).title) ?? undefined,
+    album: ifNotNull(track.releaseId, (releaseId) => db.releases.get(releaseId).title) ?? null,
     albumArtists:
       ifNotNull(track.releaseId, (releaseId) =>
         db.artists
@@ -21,7 +21,7 @@ export const getMetadataFromTrack = (db: Database, trackId: Track['id']): Metada
           .sort(compareArtists)
           .map((artist) => artist.name)
       ) ?? [],
-    trackNumber: track.trackNumber ?? undefined
+    trackNumber: track.trackNumber ?? null
   };
 };
 

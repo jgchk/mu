@@ -188,7 +188,7 @@ const importFile = async (
   });
 
   let filename = '';
-  if (metadata.trackNumber !== undefined) {
+  if (metadata.trackNumber !== null) {
     filename += `${metadata.trackNumber} `;
   }
   filename += metadata.title;
