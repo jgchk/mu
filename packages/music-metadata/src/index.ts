@@ -2,6 +2,8 @@ import { execa } from 'execa'
 import path from 'path'
 import { z } from 'zod'
 
+export * from './utils/dependencies'
+
 const SCRIPTS_DIR = path.join(__dirname, './scripts')
 
 export type Metadata = z.infer<typeof Metadata>

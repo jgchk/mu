@@ -9,7 +9,7 @@ import asyncHandler from 'express-async-handler'
 import { fileTypeFromBuffer } from 'file-type'
 import fs from 'fs'
 import mime from 'mime-types'
-import { readTrackCoverArt } from 'music-metadata'
+import { getMissingPythonDependencies, readTrackCoverArt } from 'music-metadata'
 import sharp from 'sharp'
 import { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
@@ -22,6 +22,12 @@ import { z } from 'zod'
 import { env } from './env'
 
 const main = async () => {
+  const missingPythonDeps = await getMissingPythonDependencies()
+  if (missingPythonDeps.length > 0) {
+    console.error('❌ Missing Python dependencies:', missingPythonDeps)
+    process.exit(1)
+  }
+
   const PORT = process.env.SERVER_PORT ? parseInt(process.env.SERVER_PORT, 10) : undefined
   if (PORT === undefined) {
     console.error('SERVER_PORT is not defined')
