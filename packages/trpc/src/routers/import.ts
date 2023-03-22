@@ -1,27 +1,13 @@
 import type { Database } from 'db'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
-import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { walkDir } from '../utils/fs'
 
 export const importRouter = router({
-  file: publicProcedure
-    .input(z.object({ filePath: z.string() }))
-    .mutation(async ({ input: { filePath }, ctx }) => importFile(ctx.db, ctx.musicDir, filePath)),
-  dir: publicProcedure
-    .input(z.object({ dirPath: z.string() }))
-    .mutation(async ({ input: { dirPath }, ctx }) => {
-      const filePaths = []
-      for await (const filePath of walkDir(dirPath)) {
-        filePaths.push(filePath)
-      }
-      return Promise.all(filePaths.map((filePath) => importFile(ctx.db, ctx.musicDir, filePath)))
-    }),
   groupDownload: publicProcedure
     .input(
       z
@@ -146,71 +132,63 @@ const importFiles = async (db: Database, musicDir: string, filePaths: string[]) 
   })
 
   const dbTracks = await Promise.all(
-    trackData.map(({ metadata, filePath }) =>
-      importFile(db, musicDir, filePath, metadata, dbRelease.id)
-    )
+    trackData.map(async ({ metadata, filePath }) => {
+      const coverArt = await readTrackCoverArt(filePath)
+
+      // convert artist names to artist ids
+      // - if artist with name exists, use that
+      // - if not, create new artist
+      const artists = metadata.artists.map((name) => {
+        const matchingArtists = db.artists.getByName(name)
+        if (matchingArtists.length > 0) {
+          return matchingArtists[0]
+        } else {
+          return db.artists.insert({ name })
+        }
+      })
+
+      let filename = ''
+      if (metadata.track !== null) {
+        const numDigitsInTrackNumber = Math.ceil(Math.log10(trackData.length + 1))
+
+        const trackIsAllDigits = /^\d+$/.test(metadata.track)
+        if (trackIsAllDigits) {
+          filename += metadata.track.padStart(numDigitsInTrackNumber, '0')
+        } else {
+          filename += metadata.track
+        }
+        filename += ' '
+      }
+      filename += metadata.title
+      filename += path.extname(filePath)
+
+      const newPath = path.join(
+        musicDir,
+        filenamify(metadata.albumArtists.join(', ')),
+        filenamify(metadata.album || '[untitled]'),
+        filenamify(filename)
+      )
+
+      const track = db.tracks.insertWithArtists({
+        title: metadata.title,
+        artists: artists.map((artist) => artist.id),
+        path: newPath,
+        releaseId: dbRelease.id,
+        trackNumber: metadata.track,
+        hasCoverArt: coverArt !== undefined,
+      })
+
+      if (filePath !== newPath) {
+        await fs.mkdir(path.dirname(newPath), { recursive: true })
+        await fs.rename(filePath, newPath)
+      }
+
+      return track
+    })
   )
 
   return {
     release: dbRelease,
     tracks: dbTracks,
   }
-}
-
-const importFile = async (
-  db: Database,
-  musicDir: string,
-  filePath: string,
-  metadata_?: Metadata,
-  releaseId?: number
-) => {
-  const metadata = metadata_ ?? (await readTrackMetadata(filePath))
-  const coverArt = await readTrackCoverArt(filePath)
-
-  // returns undefined if no metadata available
-  if (!metadata) {
-    throw new Error('No metadata available')
-  }
-
-  // convert artist names to artist ids
-  // - if artist with name exists, use that
-  // - if not, create new artist
-  const artists = metadata.artists.map((name) => {
-    const matchingArtists = db.artists.getByName(name)
-    if (matchingArtists.length > 0) {
-      return matchingArtists[0]
-    } else {
-      return db.artists.insert({ name })
-    }
-  })
-
-  let filename = ''
-  if (metadata.track !== null) {
-    filename += `${metadata.track} `
-  }
-  filename += metadata.title
-  filename += path.extname(filePath)
-
-  const newPath = path.join(
-    musicDir,
-    filenamify(metadata.albumArtists.join(', ')),
-    filenamify(metadata.album || '[untitled]'),
-    filenamify(filename)
-  )
-
-  const track = db.tracks.insertWithArtists({
-    title: metadata.title,
-    artists: artists.map((artist) => artist.id),
-    path: newPath,
-    releaseId,
-    trackNumber: metadata.track,
-    hasCoverArt: coverArt !== undefined,
-  })
-
-  if (filePath !== newPath) {
-    await fs.mkdir(path.dirname(newPath), { recursive: true })
-    await fs.rename(filePath, newPath)
-  }
-
-  return track
 }
