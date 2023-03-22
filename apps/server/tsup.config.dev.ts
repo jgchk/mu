@@ -18,6 +18,8 @@ export default defineConfig({
     '../../**/.turbo/**/*',
     '../../packages/spotify/downloader/**/*',
     '../../packages/spotify/credentials_cache/**/*',
+    '../../packages/music-metadata/**/__pycache__',
+    '../../packages/music-metadata/**/__pycache__/**/*',
   ],
   onSuccess: 'node dist/server.js',
 })

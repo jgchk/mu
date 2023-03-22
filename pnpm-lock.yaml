@@ -135,6 +135,7 @@ importers:
       drizzle-orm: ^0.22.0
       eslint-config-custom: workspace:*
       soundcloud: workspace:*
+      spotify: workspace:*
       superjson: ^1.12.2
       typescript: ^4.7.2
     dependencies:
@@ -143,6 +144,7 @@ importers:
       better-sqlite3: 8.2.0
       drizzle-orm: 0.22.0_bt4gsn5lapaoikflfkpz27ptty
       soundcloud: link:../soundcloud
+      spotify: link:../spotify
       superjson: 1.12.2
     devDependencies:
       dotenv-cli: 7.1.0
@@ -156,6 +158,7 @@ importers:
       db: workspace:*
       eslint-config-custom: workspace:*
       fastq: ^1.15.0
+      got: ^12.6.0
       music-metadata: workspace:*
       soulseek-ts: ^1.0.3
       soundcloud: workspace:*
@@ -165,6 +168,7 @@ importers:
     dependencies:
       db: link:../db
       fastq: 1.15.0
+      got: 12.6.0
       music-metadata: link:../music-metadata
       soulseek-ts: 1.0.3
       soundcloud: link:../soundcloud

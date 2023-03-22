@@ -10,6 +10,7 @@ import { fileTypeFromBuffer } from 'file-type'
 import fs from 'fs'
 import mime from 'mime-types'
 import { getMissingPythonDependencies, readTrackCoverArt } from 'music-metadata'
+import path from 'path'
 import sharp from 'sharp'
 import { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
@@ -59,31 +60,21 @@ const main = async () => {
   const context: Context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR }
   const createContext = (): Context => context
 
+  // Resume downloads
   for (const download of db.soundcloudPlaylistDownloads.getAll()) {
-    void dl.queue({ id: download.playlistId, service: 'soundcloud', kind: 'playlist' })
+    void dl.queue({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
-  for (const download of db.soundcloudTrackDownloads.getByPlaylistId(null)) {
-    void dl.queue({ id: download.trackId, service: 'soundcloud', kind: 'track' })
+  for (const download of db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
+    void dl.queue({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
-
-  for (const download of db.trackDownloads.getByComplete(false)) {
-    switch (download.service) {
-      case 'spotify': {
-        const id = download.serviceId
-        if (typeof id !== 'string') {
-          console.error(
-            `Invalid serviceId for Spotify track. Expected: string, Actual: ${typeof id}`
-          )
-          break
-        }
-        void dl.queue({ id, service: 'spotify', kind: 'track', dbId: download.id })
-        break
-      }
-      default: {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        console.error(`Unknown service: ${download.service}`)
-      }
-    }
+  for (const download of db.spotifyAlbumDownloads.getAll()) {
+    void dl.queue({ service: 'spotify', type: 'album', dbId: download.id })
+  }
+  for (const download of db.spotifyTrackDownloads.getAll()) {
+    void dl.queue({ service: 'spotify', type: 'track', dbId: download.id })
+  }
+  for (const download of db.soulseekTrackDownloads.getAll()) {
+    void dl.queue({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
   const handleResize = async (
@@ -118,7 +109,7 @@ const main = async () => {
     .get('/api/tracks/:id/stream', (req, res) => {
       const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
       const track = db.tracks.get(id)
-      const stream = fs.createReadStream(track.path)
+      const stream = fs.createReadStream(path.resolve(track.path))
       stream.pipe(res)
     })
     .get(
@@ -137,7 +128,7 @@ const main = async () => {
           throw new Error('Track does not have cover art')
         }
 
-        const coverArt = await readTrackCoverArt(track.path)
+        const coverArt = await readTrackCoverArt(path.resolve(track.path))
 
         if (coverArt === undefined) {
           throw new Error('Track does not have cover art')
@@ -166,7 +157,7 @@ const main = async () => {
 
         for (const track of tracks) {
           if (track.hasCoverArt) {
-            const coverArt = await readTrackCoverArt(track.path)
+            const coverArt = await readTrackCoverArt(path.resolve(track.path))
             if (coverArt !== undefined) {
               const { output, contentType } = await handleResize(coverArt, { width, height })
               if (contentType) {

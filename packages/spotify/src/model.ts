@@ -37,6 +37,7 @@ export const SimplifiedTrack = z.object({
   id: z.string(),
   name: z.string(),
   artists: SimplifiedArtist.array(),
+  track_number: z.number(),
 })
 
 export type FullTrack = z.infer<typeof FullTrack>

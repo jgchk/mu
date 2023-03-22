@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm/sqlite-core'
-import { blob, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export * from './downloads'
 
@@ -69,42 +69,6 @@ export const trackArtists = sqliteTable(
 )
 export type TrackArtist = InferModel<typeof trackArtists>
 export type InsertTrackArtist = InferModel<typeof trackArtists, 'insert'>
-
-export const releaseDownloads = sqliteTable('release_downloads', {
-  id: integer('id').primaryKey(),
-  name: text('name'),
-})
-export type ReleaseDownload = InferModel<typeof releaseDownloads>
-export type InsertReleaseDownload = InferModel<typeof releaseDownloads, 'insert'>
-
-export const trackDownloads = sqliteTable('track_downloads', {
-  id: integer('id').primaryKey(),
-  service: text<'spotify' | 'soundcloud' | 'soulseek'>('service').notNull(),
-  serviceId: blob<number | string>('service_id', { mode: 'json' }).notNull(),
-  complete: integer('complete').notNull(),
-  name: text('name'),
-  path: text('path'),
-  releaseDownloadId: integer('release_download_id').references(() => releaseDownloads.id),
-})
-export type TrackDownload = InferModel<typeof trackDownloads>
-export type InsertTrackDownload = InferModel<typeof trackDownloads, 'insert'>
-
-export type TrackDownloadPretty = Omit<TrackDownload, 'complete'> & { complete: boolean }
-export type InsertTrackDownloadPretty = Omit<InsertTrackDownload, 'complete'> & {
-  complete: boolean
-}
-
-export const convertInsertTrackDownload = (
-  trackDownload: InsertTrackDownloadPretty
-): InsertTrackDownload => ({
-  ...trackDownload,
-  complete: trackDownload.complete ? 1 : 0,
-})
-
-export const convertTrackDownload = (trackDownload: TrackDownload): TrackDownloadPretty => ({
-  ...trackDownload,
-  complete: !!trackDownload.complete,
-})
 
 export type TrackPretty = Omit<Track, 'hasCoverArt'> & { hasCoverArt: boolean }
 export type InsertTrackPretty = Omit<InsertTrack, 'hasCoverArt'> & { hasCoverArt: boolean }

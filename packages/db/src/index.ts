@@ -8,34 +8,35 @@ import type {
   InsertArtist,
   InsertRelease,
   InsertReleaseArtist,
-  InsertReleaseDownload,
+  InsertSoulseekTrackDownload,
   InsertSoundcloudPlaylistDownload,
   InsertSoundcloudTrackDownload,
+  InsertSpotifyAlbumDownload,
+  InsertSpotifyTrackDownload,
   InsertTrackArtist,
-  InsertTrackDownloadPretty,
   InsertTrackPretty,
   Release,
   ReleaseArtist,
-  ReleaseDownload,
+  SoulseekTrackDownload,
   SoundcloudPlaylistDownload,
   SoundcloudTrackDownload,
+  SpotifyAlbumDownload,
+  SpotifyTrackDownload,
   Track,
   TrackArtist,
-  TrackDownload,
 } from './schema'
 import {
   artists,
   convertInsertTrack,
-  convertInsertTrackDownload,
   convertTrack,
-  convertTrackDownload,
   releaseArtists,
-  releaseDownloads,
   releases,
+  soulseekTrackDownloads,
   soundcloudPlaylistDownloads,
   soundcloudTrackDownloads,
+  spotifyAlbumDownloads,
+  spotifyTrackDownloads,
   trackArtists,
-  trackDownloads,
   tracks,
 } from './schema'
 
@@ -108,43 +109,6 @@ export class Database {
 
     deleteByReleaseId: (releaseId: ReleaseArtist['releaseId']) => {
       return this.db.delete(releaseArtists).where(eq(releaseArtists.releaseId, releaseId)).run()
-    },
-  }
-
-  releaseDownloads = {
-    insert: (releaseDownload: InsertReleaseDownload) => {
-      return (
-        this.db
-          .insert(releaseDownloads)
-          // HACK: This is a temporary fix for a Drizzle error where inserting an empty value errors out
-          .values({ ...releaseDownload, name: releaseDownload.name ?? null })
-          .returning()
-          .get()
-      )
-    },
-
-    update: (id: ReleaseDownload['id'], data: Partial<Omit<InsertReleaseDownload, 'id'>>) => {
-      const update = {
-        ...(data.name !== undefined ? { name: data.name } : {}),
-      }
-      return this.db
-        .update(releaseDownloads)
-        .set(update)
-        .where(eq(releaseDownloads.id, id))
-        .returning()
-        .get()
-    },
-
-    getAll: () => {
-      return this.db.select().from(releaseDownloads).all()
-    },
-
-    get: (id: ReleaseDownload['id']) => {
-      return this.db.select().from(releaseDownloads).where(eq(releaseDownloads.id, id)).get()
-    },
-
-    delete: (id: ReleaseDownload['id']) => {
-      return this.db.delete(releaseDownloads).where(eq(releaseDownloads.id, id)).run()
     },
   }
 
@@ -224,71 +188,6 @@ export class Database {
 
     deleteByTrackId: (trackId: TrackArtist['trackId']) => {
       return this.db.delete(trackArtists).where(eq(trackArtists.trackId, trackId)).run()
-    },
-  }
-
-  trackDownloads = {
-    insert: (trackDownload: InsertTrackDownloadPretty) => {
-      return convertTrackDownload(
-        this.db
-          .insert(trackDownloads)
-          .values(convertInsertTrackDownload(trackDownload))
-          .returning()
-          .get()
-      )
-    },
-
-    update: (id: TrackDownload['id'], data: Partial<Omit<InsertTrackDownloadPretty, 'id'>>) => {
-      const update = {
-        ...(data.complete !== undefined ? { complete: data.complete ? 1 : 0 } : {}),
-        ...(data.path !== undefined ? { path: data.path } : {}),
-        ...(data.name !== undefined ? { name: data.name } : {}),
-        ...(data.releaseDownloadId !== undefined
-          ? { releaseDownloadId: data.releaseDownloadId }
-          : {}),
-      }
-      return convertTrackDownload(
-        this.db
-          .update(trackDownloads)
-          .set(update)
-          .where(eq(trackDownloads.id, id))
-          .returning()
-          .get()
-      )
-    },
-
-    getAll: () => {
-      return this.db.select().from(trackDownloads).all().map(convertTrackDownload)
-    },
-
-    get: (id: TrackDownload['id']) => {
-      return convertTrackDownload(
-        this.db.select().from(trackDownloads).where(eq(trackDownloads.id, id)).get()
-      )
-    },
-
-    getByReleaseDownloadId: (
-      releaseDownloadId: NonNullable<TrackDownload['releaseDownloadId']>
-    ) => {
-      return this.db
-        .select()
-        .from(trackDownloads)
-        .where(eq(trackDownloads.releaseDownloadId, releaseDownloadId))
-        .all()
-        .map(convertTrackDownload)
-    },
-
-    getByComplete: (complete: boolean) => {
-      return this.db
-        .select()
-        .from(trackDownloads)
-        .where(eq(trackDownloads.complete, complete ? 1 : 0))
-        .all()
-        .map(convertTrackDownload)
-    },
-
-    delete: (id: TrackDownload['id']) => {
-      return this.db.delete(trackDownloads).where(eq(trackDownloads.id, id)).run()
     },
   }
 
@@ -477,18 +376,6 @@ export class Database {
         .get()
     },
 
-    getByPlaylistId: (playlistId: SoundcloudTrackDownload['playlistDownloadId']) => {
-      return this.db
-        .select()
-        .from(soundcloudTrackDownloads)
-        .where(
-          playlistId === null
-            ? isNull(soundcloudTrackDownloads.playlistDownloadId)
-            : eq(soundcloudTrackDownloads.playlistDownloadId, playlistId)
-        )
-        .all()
-    },
-
     getByPlaylistDownloadId: (
       playlistDownloadId: SoundcloudTrackDownload['playlistDownloadId']
     ) => {
@@ -505,7 +392,7 @@ export class Database {
 
     getByTrackIdAndPlaylistDownloadId: (
       trackId: SoundcloudTrackDownload['trackId'],
-      playlistId: SoundcloudTrackDownload['playlistDownloadId']
+      playlistDownloadId: SoundcloudTrackDownload['playlistDownloadId']
     ) => {
       return this.db
         .select()
@@ -513,9 +400,9 @@ export class Database {
         .where(
           and(
             eq(soundcloudTrackDownloads.trackId, trackId),
-            playlistId === null
+            playlistDownloadId === null
               ? isNull(soundcloudTrackDownloads.playlistDownloadId)
-              : eq(soundcloudTrackDownloads.playlistDownloadId, playlistId)
+              : eq(soundcloudTrackDownloads.playlistDownloadId, playlistDownloadId)
           )
         )
         .limit(1)
@@ -532,6 +419,182 @@ export class Database {
         .delete(soundcloudTrackDownloads)
         .where(eq(soundcloudTrackDownloads.id, id))
         .run()
+    },
+  }
+
+  spotifyAlbumDownloads = {
+    insert: (spotifyAlbumDownload: InsertSpotifyAlbumDownload) => {
+      return this.db.insert(spotifyAlbumDownloads).values(spotifyAlbumDownload).returning().get()
+    },
+
+    update: (
+      id: SpotifyAlbumDownload['id'],
+      data: Partial<Omit<InsertSpotifyAlbumDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.albumId !== undefined ? { albumId: data.albumId } : {}),
+        ...(data.album !== undefined ? { album: data.album } : {}),
+      }
+      return this.db
+        .update(spotifyAlbumDownloads)
+        .set(update)
+        .where(eq(spotifyAlbumDownloads.id, id))
+        .returning()
+        .get()
+    },
+
+    get: (id: SpotifyAlbumDownload['id']) => {
+      return this.db
+        .select()
+        .from(spotifyAlbumDownloads)
+        .where(eq(spotifyAlbumDownloads.id, id))
+        .get()
+    },
+
+    getByAlbumId: (albumId: SpotifyAlbumDownload['albumId']) => {
+      return this.db
+        .select()
+        .from(spotifyAlbumDownloads)
+        .where(eq(spotifyAlbumDownloads.albumId, albumId))
+        .limit(1)
+        .all()
+        .at(0)
+    },
+
+    getAll: () => {
+      return this.db.select().from(spotifyAlbumDownloads).all()
+    },
+
+    delete: (id: SpotifyAlbumDownload['id']) => {
+      return this.db.delete(spotifyAlbumDownloads).where(eq(spotifyAlbumDownloads.id, id)).run()
+    },
+  }
+
+  spotifyTrackDownloads = {
+    insert: (spotifyTrackDownload: InsertSpotifyTrackDownload) => {
+      return this.db.insert(spotifyTrackDownloads).values(spotifyTrackDownload).returning().get()
+    },
+
+    update: (
+      id: SpotifyTrackDownload['id'],
+      data: Partial<Omit<InsertSpotifyTrackDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
+        ...(data.track !== undefined ? { track: data.track } : {}),
+        ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.progress !== undefined ? { progress: data.progress } : {}),
+        ...(data.albumDownloadId !== undefined ? { albumDownloadId: data.albumDownloadId } : {}),
+      }
+      return this.db
+        .update(spotifyTrackDownloads)
+        .set(update)
+        .where(eq(spotifyTrackDownloads.id, id))
+        .returning()
+        .get()
+    },
+
+    get: (id: SpotifyTrackDownload['id']) => {
+      return this.db
+        .select()
+        .from(spotifyTrackDownloads)
+        .where(eq(spotifyTrackDownloads.id, id))
+        .get()
+    },
+
+    getByAlbumDownloadId: (albumDownloadId: SpotifyTrackDownload['albumDownloadId']) => {
+      return this.db
+        .select()
+        .from(spotifyTrackDownloads)
+        .where(
+          albumDownloadId === null
+            ? isNull(spotifyTrackDownloads.albumDownloadId)
+            : eq(spotifyTrackDownloads.albumDownloadId, albumDownloadId)
+        )
+        .all()
+    },
+
+    getByTrackIdAndAlbumDownloadId: (
+      trackId: SpotifyTrackDownload['trackId'],
+      albumDownloadId: SpotifyTrackDownload['albumDownloadId']
+    ) => {
+      return this.db
+        .select()
+        .from(spotifyTrackDownloads)
+        .where(
+          and(
+            eq(spotifyTrackDownloads.trackId, trackId),
+            albumDownloadId === null
+              ? isNull(spotifyTrackDownloads.albumDownloadId)
+              : eq(spotifyTrackDownloads.albumDownloadId, albumDownloadId)
+          )
+        )
+        .limit(1)
+        .all()
+        .at(0)
+    },
+
+    getAll: () => {
+      return this.db.select().from(spotifyTrackDownloads).all()
+    },
+
+    delete: (id: SpotifyTrackDownload['id']) => {
+      return this.db.delete(spotifyTrackDownloads).where(eq(spotifyTrackDownloads.id, id)).run()
+    },
+  }
+
+  soulseekTrackDownloads = {
+    insert: (soulseekTrackDownload: InsertSoulseekTrackDownload) => {
+      return this.db.insert(soulseekTrackDownloads).values(soulseekTrackDownload).returning().get()
+    },
+
+    update: (
+      id: SoulseekTrackDownload['id'],
+      data: Partial<Omit<InsertSoulseekTrackDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.username !== undefined ? { username: data.username } : {}),
+        ...(data.file !== undefined ? { file: data.file } : {}),
+        ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.progress !== undefined ? { progress: data.progress } : {}),
+      }
+      return this.db
+        .update(soulseekTrackDownloads)
+        .set(update)
+        .where(eq(soulseekTrackDownloads.id, id))
+        .returning()
+        .get()
+    },
+
+    get: (id: SoulseekTrackDownload['id']) => {
+      return this.db
+        .select()
+        .from(soulseekTrackDownloads)
+        .where(eq(soulseekTrackDownloads.id, id))
+        .get()
+    },
+
+    getByUsernameAndFile: (
+      username: SoulseekTrackDownload['username'],
+      file: SoulseekTrackDownload['file']
+    ) => {
+      return this.db
+        .select()
+        .from(soulseekTrackDownloads)
+        .where(
+          and(eq(soulseekTrackDownloads.username, username), eq(soulseekTrackDownloads.file, file))
+        )
+        .limit(1)
+        .all()
+        .at(0)
+    },
+
+    getAll: () => {
+      return this.db.select().from(soulseekTrackDownloads).all()
+    },
+
+    delete: (id: SoulseekTrackDownload['id']) => {
+      return this.db.delete(soulseekTrackDownloads).where(eq(soulseekTrackDownloads.id, id)).run()
     },
   }
 }

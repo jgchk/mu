@@ -22,57 +22,27 @@ export const importRouter = router({
       }
       return Promise.all(filePaths.map((filePath) => importFile(ctx.db, ctx.musicDir, filePath)))
     }),
-  trackDownload: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id }, ctx }) => {
-      const download = ctx.db.trackDownloads.get(id)
-
-      if (!download.complete) {
-        throw new Error('Download is not complete')
+  groupDownload: publicProcedure
+    .input(
+      z
+        .object({ service: z.enum(['soundcloud', 'spotify']), id: z.number() })
+        .or(z.object({ service: z.literal('soulseek'), ids: z.number().array() }))
+    )
+    .mutation(async ({ input, ctx }) => {
+      let download
+      let trackDownloads: { id: number; progress: number | null; path: string | null }[]
+      if (input.service === 'soundcloud') {
+        download = ctx.db.soundcloudPlaylistDownloads.get(input.id)
+        trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(download.id)
+      } else if (input.service === 'spotify') {
+        download = ctx.db.spotifyAlbumDownloads.get(input.id)
+        trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(download.id)
+      } else if (input.service === 'soulseek') {
+        trackDownloads = input.ids.map((id) => ctx.db.soulseekTrackDownloads.get(id))
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${input.service}`)
       }
-      if (!download.path) {
-        throw new Error('Download has no path')
-      }
-
-      const track = await importFiles(ctx.db, ctx.musicDir, [download.path])
-
-      ctx.db.trackDownloads.delete(download.id)
-
-      return track
-    }),
-  releaseDownload: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id }, ctx }) => {
-      const download = ctx.db.releaseDownloads.get(id)
-      const trackDownloads = ctx.db.trackDownloads.getByReleaseDownloadId(download.id)
-
-      const allTrackDownloadsComplete = trackDownloads.every((download) => download.complete)
-      if (!allTrackDownloadsComplete) {
-        throw new Error('Not all downloads are complete')
-      }
-
-      const allTrackDownloadsHavePaths = trackDownloads.every((download) => download.path)
-      if (!allTrackDownloadsHavePaths) {
-        throw new Error('Not all downloads have paths')
-      }
-
-      const tracks = await importFiles(
-        ctx.db,
-        ctx.musicDir,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        trackDownloads.map((download) => download.path!)
-      )
-
-      trackDownloads.forEach((download) => ctx.db.trackDownloads.delete(download.id))
-      ctx.db.releaseDownloads.delete(download.id)
-
-      return tracks
-    }),
-  scPlaylistDownload: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id }, ctx }) => {
-      const download = ctx.db.soundcloudPlaylistDownloads.get(id)
-      const trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(download.id)
 
       const allTrackDownloadsComplete = trackDownloads.every(
         (download) => download.progress === 100
@@ -93,15 +63,36 @@ export const importRouter = router({
         trackDownloads.map((download) => download.path!)
       )
 
-      trackDownloads.forEach((download) => ctx.db.soundcloudTrackDownloads.delete(download.id))
-      ctx.db.soundcloudPlaylistDownloads.delete(download.id)
+      if (input.service === 'soundcloud') {
+        trackDownloads.forEach((download) => ctx.db.soundcloudTrackDownloads.delete(download.id))
+        if (download) {
+          ctx.db.soundcloudPlaylistDownloads.delete(download.id)
+        }
+      } else if (input.service === 'spotify') {
+        trackDownloads.forEach((download) => ctx.db.spotifyTrackDownloads.delete(download.id))
+        if (download) {
+          ctx.db.spotifyAlbumDownloads.delete(download.id)
+        }
+      } else if (input.service === 'soulseek') {
+        trackDownloads.forEach((download) => ctx.db.soulseekTrackDownloads.delete(download.id))
+      }
 
       return tracks
     }),
-  scTrackDownload: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input: { id }, ctx }) => {
-      const download = ctx.db.soundcloudTrackDownloads.get(id)
+  trackDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(async ({ input: { service, id }, ctx }) => {
+      let download
+      if (service === 'soundcloud') {
+        download = ctx.db.soundcloudTrackDownloads.get(id)
+      } else if (service === 'spotify') {
+        download = ctx.db.spotifyTrackDownloads.get(id)
+      } else if (service === 'soulseek') {
+        download = ctx.db.soulseekTrackDownloads.get(id)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${service}`)
+      }
 
       if (download.progress !== 100) {
         throw new Error('Download is not complete')
@@ -112,7 +103,13 @@ export const importRouter = router({
 
       const track = await importFiles(ctx.db, ctx.musicDir, [download.path])
 
-      ctx.db.soundcloudTrackDownloads.delete(download.id)
+      if (service === 'soundcloud') {
+        ctx.db.soundcloudTrackDownloads.delete(download.id)
+      } else if (service === 'spotify') {
+        ctx.db.spotifyTrackDownloads.delete(download.id)
+      } else if (service === 'soulseek') {
+        ctx.db.soulseekTrackDownloads.delete(download.id)
+      }
 
       return track
     }),
@@ -188,8 +185,8 @@ const importFile = async (
   })
 
   let filename = ''
-  if (metadata.trackNumber !== null) {
-    filename += `${metadata.trackNumber} `
+  if (metadata.track !== null) {
+    filename += `${metadata.track} `
   }
   filename += metadata.title
   filename += path.extname(filePath)
@@ -206,7 +203,7 @@ const importFile = async (
     artists: artists.map((artist) => artist.id),
     path: newPath,
     releaseId,
-    trackNumber: metadata.trackNumber,
+    trackNumber: metadata.track,
     hasCoverArt: coverArt !== undefined,
   })
 

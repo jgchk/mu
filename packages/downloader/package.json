@@ -16,6 +16,7 @@
   "dependencies": {
     "db": "workspace:*",
     "fastq": "^1.15.0",
+    "got": "^12.6.0",
     "music-metadata": "workspace:*",
     "soulseek-ts": "^1.0.3",
     "soundcloud": "workspace:*",

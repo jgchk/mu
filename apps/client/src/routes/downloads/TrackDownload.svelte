@@ -7,20 +7,21 @@
 
   const trpc = getContextClient()
   const importDownloadMutation = trpc.import.trackDownload.mutation()
-  const handleImport = () => $importDownloadMutation.mutate({ id: download.id })
+  const handleImport = () =>
+    $importDownloadMutation.mutate({ service: download.service, id: download.id })
 </script>
 
 <div class="contents">
   <div />
   <div>{download.name}</div>
   <div>
-    {#if download.complete}
+    {#if download.progress === 100}
       Complete
     {:else}
       Downloading...
     {/if}
   </div>
-  {#if download.complete}
+  {#if download.progress === 100}
     <button on:click={handleImport}>Import</button>
   {:else}
     <div />

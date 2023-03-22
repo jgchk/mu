@@ -21,7 +21,7 @@ export const getMetadataFromTrack = (db: Database, trackId: Track['id']): Metada
           .sort(compareArtists)
           .map((artist) => artist.name)
       ) ?? [],
-    trackNumber: track.trackNumber ?? null,
+    track: track.trackNumber ?? null,
   }
 }
 

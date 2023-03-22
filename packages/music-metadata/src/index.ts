@@ -1,10 +1,7 @@
 import { execa } from 'execa'
-import path from 'path'
 import { z } from 'zod'
 
-export * from './utils/dependencies'
-
-const SCRIPTS_DIR = path.join(__dirname, './scripts')
+export * from './dependencies'
 
 export type Metadata = z.infer<typeof Metadata>
 export const Metadata = z.object({
@@ -12,19 +9,35 @@ export const Metadata = z.object({
   artists: z.string().array(),
   album: z.string().nullable(),
   albumArtists: z.string().array(),
-  trackNumber: z.string().nullable(),
+  track: z.string().nullable(),
 })
 
-export const writeTrackMetadata = async (filePath: string, metadata: Metadata) => {
-  await execa('python3', [
-    path.join(SCRIPTS_DIR, 'write-metadata.py'),
-    filePath,
-    JSON.stringify(metadata),
-  ])
+export const writeTrackMetadata = async (filePath: string, metadata: Partial<Metadata>) => {
+  const metadataArgs = []
+  if (metadata.title !== null && metadata.title !== undefined) {
+    metadataArgs.push('--title', metadata.title)
+  }
+  if (metadata.artists !== undefined && metadata.artists.length > 0) {
+    metadataArgs.push('--artists', ...metadata.artists)
+  }
+  if (metadata.album !== null && metadata.album !== undefined) {
+    metadataArgs.push('--album', metadata.album)
+  }
+  if (metadata.albumArtists !== undefined && metadata.albumArtists.length > 0) {
+    metadataArgs.push('--album-artists', ...metadata.albumArtists)
+  }
+  if (metadata.track !== null && metadata.track !== undefined) {
+    metadataArgs.push('--track', metadata.track)
+  }
+  await execa('python3', ['-m', 'metadata', 'write', filePath, ...metadataArgs], {
+    cwd: __dirname,
+  })
 }
 
 export const readTrackMetadata = async (filePath: string): Promise<Metadata | undefined> => {
-  const { stdout } = await execa('python3', [path.join(SCRIPTS_DIR, 'read-metadata.py'), filePath])
+  const { stdout } = await execa('python3', ['-m', 'metadata', 'read', filePath], {
+    cwd: __dirname,
+  })
 
   if (stdout === 'No metadata found') {
     return undefined
@@ -34,20 +47,18 @@ export const readTrackMetadata = async (filePath: string): Promise<Metadata | un
 }
 
 export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => {
-  await execa('python3', [path.join(SCRIPTS_DIR, 'write-cover-art.py'), filePath], {
+  await execa('python3', ['-m', 'metadata', 'write-cover', filePath], {
+    cwd: __dirname,
     input: coverArt,
     encoding: null,
   })
 }
 
 export const readTrackCoverArt = async (filePath: string): Promise<Buffer | undefined> => {
-  const { stdout } = await execa(
-    'python3',
-    [path.join(SCRIPTS_DIR, 'read-cover-art.py'), filePath],
-    {
-      encoding: null,
-    }
-  )
+  const { stdout } = await execa('python3', ['-m', 'metadata', 'read-cover', filePath], {
+    cwd: __dirname,
+    encoding: null,
+  })
 
   if (stdout.toString() === 'No cover art found') {
     return undefined

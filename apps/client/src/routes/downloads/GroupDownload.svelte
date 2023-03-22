@@ -2,16 +2,20 @@
   import { getContextClient } from '$lib/trpc'
 
   import TrackDownload from './TrackDownload.svelte'
-  import type { ReleaseDownload, TrackDownload as TrackDownloadType } from './types'
+  import type {
+    GroupDownload as GroupDownloadType,
+    TrackDownload as TrackDownloadType,
+  } from './types'
 
-  export let download: ReleaseDownload & { tracks: TrackDownloadType[] }
-  $: complete = download.tracks.every((track) => track.complete)
+  export let download: GroupDownloadType & { tracks: TrackDownloadType[] }
+  $: complete = download.tracks.every((track) => track.progress === 100)
 
   let expanded = false
 
   const trpc = getContextClient()
-  const importDownloadMutation = trpc.import.releaseDownload.mutation()
-  const handleImport = () => $importDownloadMutation.mutate({ id: download.id })
+  const importDownloadMutation = trpc.import.groupDownload.mutation()
+  const handleImport = () =>
+    $importDownloadMutation.mutate({ service: download.service, id: download.id })
 </script>
 
 <div class="contents">

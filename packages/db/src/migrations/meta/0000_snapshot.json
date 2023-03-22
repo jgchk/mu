@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "8409c0d1-9304-4c46-9b17-bf61d62bd20e",
+  "id": "61f9606d-50fd-4050-afa9-1e9c336154c2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -84,27 +84,6 @@
         }
       }
     },
-    "release_downloads": {
-      "name": "release_downloads",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {}
-    },
     "releases": {
       "name": "releases",
       "columns": {
@@ -185,71 +164,6 @@
         }
       }
     },
-    "track_downloads": {
-      "name": "track_downloads",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "service": {
-          "name": "service",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "service_id": {
-          "name": "service_id",
-          "type": "blob",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "complete": {
-          "name": "complete",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "path": {
-          "name": "path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "release_download_id": {
-          "name": "release_download_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "track_downloads_release_download_id_release_downloads_id_fk": {
-          "name": "track_downloads_release_download_id_release_downloads_id_fk",
-          "tableFrom": "track_downloads",
-          "tableTo": "release_downloads",
-          "columnsFrom": [
-            "release_download_id"
-          ],
-          "columnsTo": [
-            "id"
-          ]
-        }
-      },
-      "compositePrimaryKeys": {}
-    },
     "tracks": {
       "name": "tracks",
       "columns": {
@@ -315,6 +229,55 @@
           ]
         }
       },
+      "compositePrimaryKeys": {}
+    },
+    "soulseek_track_downloads": {
+      "name": "soulseek_track_downloads",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file": {
+          "name": "file",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "progress": {
+          "name": "progress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "usernameFileUniqueIndex": {
+          "name": "usernameFileUniqueIndex",
+          "columns": [
+            "username",
+            "file"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {}
     },
     "soundcloud_playlist_downloads": {
@@ -414,6 +377,109 @@
           "tableTo": "soundcloud_playlist_downloads",
           "columnsFrom": [
             "playlist_download_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
+      "compositePrimaryKeys": {}
+    },
+    "spotify_album_downloads": {
+      "name": "spotify_album_downloads",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "album_id": {
+          "name": "album_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "album": {
+          "name": "album",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "albumIdUniqueIndex": {
+          "name": "albumIdUniqueIndex",
+          "columns": [
+            "album_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "spotify_track_downloads": {
+      "name": "spotify_track_downloads",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "track_id": {
+          "name": "track_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "track": {
+          "name": "track",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "progress": {
+          "name": "progress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "album_download_id": {
+          "name": "album_download_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "trackIdAlbumIdUniqueIndex": {
+          "name": "trackIdAlbumIdUniqueIndex",
+          "columns": [
+            "track_id",
+            "album_download_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "spotify_track_downloads_album_download_id_spotify_album_downloads_id_fk": {
+          "name": "spotify_track_downloads_album_download_id_spotify_album_downloads_id_fk",
+          "tableFrom": "spotify_track_downloads",
+          "tableTo": "spotify_album_downloads",
+          "columnsFrom": [
+            "album_download_id"
           ],
           "columnsTo": [
             "id"

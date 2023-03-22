@@ -147,15 +147,22 @@ export class Spotify {
       ],
       { encoding: null }
     )
-    const piper = res.pipeStdout?.bind(res)
-    if (!piper) {
-      throw new Error('No stdout pipe')
+
+    const stdout = res.stdout
+    if (!stdout) {
+      throw new Error('No stdout')
+    }
+    const stderr = res.stderr
+    if (!stderr) {
+      throw new Error('No stderr')
     }
 
-    const pipe = new stream.PassThrough()
-    void piper(pipe)
+    const pipeOut = new stream.PassThrough()
+    stdout.pipe(pipeOut)
 
-    return pipe
+    stdout.on('close', () => pipeOut.end())
+
+    return pipeOut
   }
 
   static parseUri(uri: string): SpotifyId {
