@@ -61,7 +61,7 @@ export class DownloadQueue {
     this.sp = sp
     this.slsk = slsk
     this.downloadDir = downloadDir
-    this.q = fastq.promise(this.worker.bind(this), 1)
+    this.q = fastq.promise(this.worker.bind(this), 10)
     this.q.error((err, task) => {
       if (err) {
         console.error('Error processing task:', task, err)
