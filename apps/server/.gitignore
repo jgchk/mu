@@ -10,3 +10,5 @@ node_modules
 /downloads
 /music
 db.sqlite
+
+tsup.config.*.bundled_*
