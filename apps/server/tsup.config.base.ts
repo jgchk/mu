@@ -1,35 +1,35 @@
-import fs from 'fs';
-import path from 'path';
-import type { Options } from 'tsup';
+import fs from 'fs'
+import path from 'path'
+import type { Options } from 'tsup'
 
-type Plugin = NonNullable<Options['esbuildPlugins']>[number];
+type Plugin = NonNullable<Options['esbuildPlugins']>[number]
 type Loader = NonNullable<
   NonNullable<
     Awaited<ReturnType<Parameters<Parameters<Plugin['setup']>[0]['onLoad']>[1]>>
   >['loader']
->;
+>
 
 const dirnamePlugin: Plugin = {
   name: 'dirname',
 
   setup(build) {
     build.onLoad({ filter: /.*/ }, ({ path: filePath }) => {
-      let contents = fs.readFileSync(filePath, 'utf8');
-      let loader = path.extname(filePath).substring(1);
+      let contents = fs.readFileSync(filePath, 'utf8')
+      let loader = path.extname(filePath).substring(1)
       if (loader === 'mjs') {
-        loader = 'js';
+        loader = 'js'
       }
-      const dirname = path.dirname(filePath);
+      const dirname = path.dirname(filePath)
       contents = contents
         .replaceAll('__dirname', `"${dirname}"`)
-        .replaceAll('__filename', `"${filePath}"`);
+        .replaceAll('__filename', `"${filePath}"`)
       return {
         contents,
-        loader: loader as Loader
-      };
-    });
-  }
-};
+        loader: loader as Loader,
+      }
+    })
+  },
+}
 
 const config: Options = {
   entry: ['src/server.ts'],
@@ -42,10 +42,10 @@ const config: Options = {
       js: `
         import { createRequire } from 'module';
         const require = createRequire(import.meta.url);
-      `
-    };
+      `,
+    }
   },
-  esbuildPlugins: [dirnamePlugin]
-};
+  esbuildPlugins: [dirnamePlugin],
+}
 
-export default config;
+export default config

@@ -1,1 +1,1 @@
-declare module 'client';
+declare module 'client'

@@ -1,6 +1,6 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsup'
 
-import baseConfig from './tsup.config.base';
+import baseConfig from './tsup.config.base'
 
 export default defineConfig({
   ...baseConfig,
@@ -11,13 +11,13 @@ export default defineConfig({
     '../../packages/db',
     '../../packages/music-metadata',
     '../../packages/spotify',
-    '../../packages/soundcloud'
+    '../../packages/soundcloud',
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',
     '../../**/.turbo/**/*',
     '../../packages/spotify/downloader/**/*',
-    '../../packages/spotify/credentials_cache/**/*'
+    '../../packages/spotify/credentials_cache/**/*',
   ],
-  onSuccess: 'node dist/server.js'
-});
+  onSuccess: 'node dist/server.js',
+})

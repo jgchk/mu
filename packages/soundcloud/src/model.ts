@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-export type Pager<T> = { collection: T[] };
+export type Pager<T> = { collection: T[] }
 export const Pager = <T extends z.ZodTypeAny>(item: T) =>
   z.object({
-    collection: item.array()
-  });
+    collection: item.array(),
+  })
 
-export type Transcoding = z.infer<typeof Transcoding>;
+export type Transcoding = z.infer<typeof Transcoding>
 export const Transcoding = z.object({
   url: z.string(),
   preset: z.string(),
@@ -14,23 +14,23 @@ export const Transcoding = z.object({
   snipped: z.boolean(),
   format: z.object({
     protocol: z.string(),
-    mime_type: z.string()
+    mime_type: z.string(),
   }),
-  quality: z.string()
-});
+  quality: z.string(),
+})
 
-export type User = z.infer<typeof User>;
+export type User = z.infer<typeof User>
 export const User = z.object({
-  username: z.string()
-});
+  username: z.string(),
+})
 
-export type SimplifiedTrack = z.infer<typeof SimplifiedTrack>;
+export type SimplifiedTrack = z.infer<typeof SimplifiedTrack>
 export const SimplifiedTrack = z.object({
   id: z.number(),
-  kind: z.literal('track')
-});
+  kind: z.literal('track'),
+})
 
-export type FullTrack = z.infer<typeof FullTrack>;
+export type FullTrack = z.infer<typeof FullTrack>
 export const FullTrack = SimplifiedTrack.extend({
   artwork_url: z.string().nullable(),
   title: z.string(),
@@ -39,26 +39,26 @@ export const FullTrack = SimplifiedTrack.extend({
   policy: z.string(),
   downloadable: z.boolean(),
   media: z.object({
-    transcodings: Transcoding.array()
-  })
-});
+    transcodings: Transcoding.array(),
+  }),
+})
 
-export type Playlist = z.infer<typeof Playlist>;
+export type Playlist = z.infer<typeof Playlist>
 export const Playlist = z.object({
   id: z.number(),
   kind: z.literal('playlist'),
   artwork_url: z.string().nullable(),
   title: z.string(),
   user: User,
-  tracks: z.union([FullTrack, SimplifiedTrack]).array()
-});
+  tracks: z.union([FullTrack, SimplifiedTrack]).array(),
+})
 
-export type DownloadResponse = z.infer<typeof DownloadResponse>;
+export type DownloadResponse = z.infer<typeof DownloadResponse>
 export const DownloadResponse = z.object({
-  redirectUri: z.string()
-});
+  redirectUri: z.string(),
+})
 
-export type TranscodingResponse = z.infer<typeof TranscodingResponse>;
+export type TranscodingResponse = z.infer<typeof TranscodingResponse>
 export const TranscodingResponse = z.object({
-  url: z.string()
-});
+  url: z.string(),
+})

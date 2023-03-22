@@ -1,11 +1,11 @@
 export const uniqBy = <T, O>(array: T[], key: (item: T) => O): T[] => {
-  const seen = new Set<O>();
+  const seen = new Set<O>()
   return array.filter((item) => {
-    const value = key(item);
+    const value = key(item)
     if (seen.has(value)) {
-      return false;
+      return false
     }
-    seen.add(value);
-    return true;
-  });
-};
+    seen.add(value)
+    return true
+  })
+}

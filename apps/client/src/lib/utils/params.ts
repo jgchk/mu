@@ -1,9 +1,9 @@
-import { error } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit'
 
 export const paramNumber = (val: string, errorMessage: string) => {
-  const parsed = parseInt(val);
+  const parsed = parseInt(val)
   if (isNaN(parsed)) {
-    throw error(400, errorMessage);
+    throw error(400, errorMessage)
   }
-  return parsed;
-};
+  return parsed
+}

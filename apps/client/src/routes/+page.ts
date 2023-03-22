@@ -1,6 +1,6 @@
-import type { PageLoad } from './$types';
+import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ parent }) => {
-  const { trpc } = await parent();
-  await trpc.ping.prefetchQuery();
-};
+  const { trpc } = await parent()
+  await trpc.ping.prefetchQuery()
+}

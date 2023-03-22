@@ -1,50 +1,50 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-export type AuthResponse = z.infer<typeof AuthResponse>;
+export type AuthResponse = z.infer<typeof AuthResponse>
 export const AuthResponse = z.object({
-  access_token: z.string()
-});
+  access_token: z.string(),
+})
 
-export type SimplifiedArtist = z.infer<typeof SimplifiedArtist>;
+export type SimplifiedArtist = z.infer<typeof SimplifiedArtist>
 export const SimplifiedArtist = z.object({
   type: z.literal('artist'),
   id: z.string(),
-  name: z.string()
-});
+  name: z.string(),
+})
 
-export type Image = z.infer<typeof Image>;
+export type Image = z.infer<typeof Image>
 export const Image = z.object({
   url: z.string(),
   width: z.number(),
-  height: z.number()
-});
+  height: z.number(),
+})
 
-export type SimplifiedAlbum = z.infer<typeof SimplifiedAlbum>;
+export type SimplifiedAlbum = z.infer<typeof SimplifiedAlbum>
 export const SimplifiedAlbum = z.object({
   type: z.literal('album'),
   id: z.string(),
   name: z.string(),
   artists: SimplifiedArtist.array(),
-  images: Image.array()
-});
+  images: Image.array(),
+})
 
-export type FullAlbum = z.infer<typeof FullAlbum>;
-export const FullAlbum = SimplifiedAlbum;
+export type FullAlbum = z.infer<typeof FullAlbum>
+export const FullAlbum = SimplifiedAlbum
 
-export type SimplifiedTrack = z.infer<typeof SimplifiedTrack>;
+export type SimplifiedTrack = z.infer<typeof SimplifiedTrack>
 export const SimplifiedTrack = z.object({
   type: z.literal('track'),
   id: z.string(),
   name: z.string(),
-  artists: SimplifiedArtist.array()
-});
+  artists: SimplifiedArtist.array(),
+})
 
-export type FullTrack = z.infer<typeof FullTrack>;
+export type FullTrack = z.infer<typeof FullTrack>
 export const FullTrack = SimplifiedTrack.extend({
-  album: SimplifiedAlbum
-});
+  album: SimplifiedAlbum,
+})
 
-export type Pager<T> = Omit<z.infer<ReturnType<typeof Pager>>, 'items'> & { items: T[] };
+export type Pager<T> = Omit<z.infer<ReturnType<typeof Pager>>, 'items'> & { items: T[] }
 export const Pager = <T extends z.ZodTypeAny>(itemType: T) =>
   z.object({
     items: itemType.array(),
@@ -53,5 +53,5 @@ export const Pager = <T extends z.ZodTypeAny>(itemType: T) =>
     offset: z.number(),
     total: z.number(),
     next: z.string().nullable(),
-    previous: z.string().nullable()
-  });
+    previous: z.string().nullable(),
+  })

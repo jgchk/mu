@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 const envSchema = z.object({
   DATABASE_URL: z.string(),
@@ -12,17 +12,14 @@ const envSchema = z.object({
   SPOTIFY_PASSWORD: z.string(),
   SOULSEEK_USERNAME: z.string(),
   SOULSEEK_PASSWORD: z.string(),
-  NODE_ENV: z.enum(['development', 'production']).default('production')
-});
+  NODE_ENV: z.enum(['development', 'production']).default('production'),
+})
 
-const envRes = envSchema.safeParse(process.env);
+const envRes = envSchema.safeParse(process.env)
 
 if (!envRes.success) {
-  console.error(
-    '❌ Invalid environment variables:',
-    JSON.stringify(envRes.error.format(), null, 4)
-  );
-  process.exit(1);
+  console.error('❌ Invalid environment variables:', JSON.stringify(envRes.error.format(), null, 4))
+  process.exit(1)
 }
 
-export const env = envRes.data;
+export const env = envRes.data

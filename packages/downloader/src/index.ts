@@ -1,1 +1,1 @@
-export { DownloadQueue } from './queue';
+export { DownloadQueue } from './queue'

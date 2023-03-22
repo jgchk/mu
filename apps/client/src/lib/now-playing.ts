@@ -1,7 +1,7 @@
-import { writable } from 'svelte/store';
+import { writable } from 'svelte/store'
 
 export type NowPlaying = {
-  id: number;
-};
+  id: number
+}
 
-export const nowPlaying = writable<NowPlaying | undefined>(undefined);
+export const nowPlaying = writable<NowPlaying | undefined>(undefined)

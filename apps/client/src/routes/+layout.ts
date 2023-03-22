@@ -1,21 +1,21 @@
-import { QueryClient } from '@tanstack/svelte-query';
-import { createWSClient, httpBatchLink, loggerLink, splitLink, wsLink } from '@trpc/client';
-import WebSocket from 'isomorphic-ws';
-import superjson from 'superjson';
+import { QueryClient } from '@tanstack/svelte-query'
+import { createWSClient, httpBatchLink, loggerLink, splitLink, wsLink } from '@trpc/client'
+import WebSocket from 'isomorphic-ws'
+import superjson from 'superjson'
 
-import { browser, dev } from '$app/environment';
-import { createClient } from '$lib/trpc';
+import { browser, dev } from '$app/environment'
+import { createClient } from '$lib/trpc'
 
-import type { LayoutLoad } from './$types';
+import type { LayoutLoad } from './$types'
 
 export const load: LayoutLoad = ({ fetch }) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        enabled: browser
-      }
-    }
-  });
+        enabled: browser,
+      },
+    },
+  })
 
   const trpc = createClient({
     queryClient,
@@ -49,21 +49,21 @@ export const load: LayoutLoad = ({ fetch }) => {
                 url: `ws://localhost:8080`,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                WebSocket
-              })
+                WebSocket,
+              }),
             }),
             false: httpBatchLink({
               url: '/api/trpc',
-              fetch
-            })
+              fetch,
+            }),
           })
         : httpBatchLink({
             url: '/api/trpc',
-            fetch
-          })
+            fetch,
+          }),
     ],
-    transformer: superjson
-  });
+    transformer: superjson,
+  })
 
-  return { trpc };
-};
+  return { trpc }
+}

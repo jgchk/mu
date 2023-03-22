@@ -1,31 +1,31 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc';
+import { publicProcedure, router } from '../trpc'
 
 const SoundcloudDownload = z.object({
   service: z.literal('soundcloud'),
   kind: z.enum(['track', 'playlist']),
-  id: z.number()
-});
+  id: z.number(),
+})
 
 const SpotifyDownload = z.object({
   service: z.literal('spotify'),
   kind: z.enum(['track', 'album']),
-  id: z.string()
-});
+  id: z.string(),
+})
 
 const SoulseekDownload = z.object({
   service: z.literal('soulseek'),
   kind: z.enum(['track']),
   username: z.string(),
-  file: z.string()
-});
+  file: z.string(),
+})
 
-const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload]);
+const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload])
 
 export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
-    void ctx.dl.queue(input);
+    void ctx.dl.queue(input)
   }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     const [tracks, releases, scPlaylists, scTracks] = await Promise.all([
@@ -38,9 +38,9 @@ export const downloadsRouter = router({
         id: track.id,
         playlistDownloadId: track.playlistDownloadId,
         progress: track.progress,
-        name: track.track?.title
-      }))
-    ]);
-    return { tracks, releases, scPlaylists, scTracks };
-  })
-});
+        name: track.track?.title,
+      })),
+    ])
+    return { tracks, releases, scPlaylists, scTracks }
+  }),
+})
