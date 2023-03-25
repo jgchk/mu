@@ -5,6 +5,7 @@ import { and, eq, isNull } from 'drizzle-orm/expressions'
 
 import { migrate } from './migrate'
 import type {
+  Artist,
   InsertArtist,
   InsertRelease,
   InsertReleaseArtist,
@@ -24,6 +25,7 @@ import type {
   SpotifyTrackDownload,
   Track,
   TrackArtist,
+  TrackPretty,
 } from './schema'
 import {
   artists,
@@ -259,6 +261,37 @@ export class Database {
 
     getAll: () => {
       return this.db.select().from(tracks).all().map(convertTrack)
+    },
+
+    getAllWithArtistsAndRelease: () => {
+      const res = this.db
+        .select()
+        .from(tracks)
+        .leftJoin(releases, eq(tracks.releaseId, releases.id))
+        .leftJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
+        .leftJoin(artists, eq(trackArtists.artistId, artists.id))
+        .groupBy(tracks.id)
+        .all()
+
+      // group by track id
+      type TrackWithArtistsAndRelease = TrackPretty & { artists: Artist[]; release?: Release }
+      const tracks_: Map<number, TrackWithArtistsAndRelease> = new Map()
+      for (const row of res) {
+        const trackId = row.tracks.id
+        const trackData: TrackWithArtistsAndRelease = tracks_.get(trackId) ?? {
+          ...convertTrack(row.tracks),
+          artists: [],
+          release: undefined,
+        }
+        if (row.artists !== null) {
+          trackData.artists.push(row.artists)
+        }
+        if (row.releases !== null) {
+          trackData.release = row.releases
+        }
+        tracks_.set(trackId, trackData)
+      }
+      return [...tracks_.values()]
     },
 
     getByReleaseId: (releaseId: NonNullable<Track['releaseId']>) => {

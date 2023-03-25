@@ -7,6 +7,9 @@ import { ifDefined } from '../utils/types'
 
 export const tracksRouter = router({
   getAll: publicProcedure.query(({ ctx }) => ctx.db.tracks.getAll()),
+  getAllWithArtistsAndRelease: publicProcedure.query(({ ctx }) =>
+    ctx.db.tracks.getAllWithArtistsAndRelease()
+  ),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => ctx.db.tracks.getWithArtists(id)),
