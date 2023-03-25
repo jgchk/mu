@@ -12,7 +12,7 @@ export type SoulseekUserResults = Pick<
 export type SoulseekDirectories = Map<string, SoulseekDirectory>
 export type SoulseekDirectory = { dirname: string; files: SoulseekFiles }
 export type SoulseekFiles = Map<string, SoulseekFile>
-export type SoulseekFile = Omit<FileSearchResponse['results'][number], 'attrs'> & {
+export type SoulseekFile = Omit<FileSearchResponse['files'][number], 'attrs'> & {
   basename: string
 }
 

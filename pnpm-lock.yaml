@@ -55,9 +55,9 @@ importers:
       trpc: link:../../packages/trpc
       ui: link:../../packages/ui
     devDependencies:
-      '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.13.0
-      '@sveltejs/adapter-node': 1.2.2_@sveltejs+kit@1.13.0
-      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.14.0
+      '@sveltejs/adapter-node': 1.2.2_@sveltejs+kit@1.14.0
+      '@sveltejs/kit': 1.14.0_svelte@3.53.1+vite@4.0.0
       autoprefixer: 10.4.14_postcss@8.4.21
       eslint-config-custom: link:../../packages/eslint-config-custom
       postcss: 8.4.21
@@ -89,7 +89,7 @@ importers:
       mime-types: ^2.1.35
       music-metadata: workspace:*
       sharp: ^0.31.3
-      soulseek-ts: ^1.0.3
+      soulseek-ts: ^2.0.6
       soundcloud: workspace:*
       spotify: workspace:*
       trpc: workspace:*
@@ -115,7 +115,7 @@ importers:
       mime-types: 2.1.35
       music-metadata: link:../../packages/music-metadata
       sharp: 0.31.3
-      soulseek-ts: 1.0.3
+      soulseek-ts: 2.0.6
       soundcloud: link:../../packages/soundcloud
       spotify: link:../../packages/spotify
       trpc: link:../../packages/trpc
@@ -160,7 +160,7 @@ importers:
       fastq: ^1.15.0
       got: ^12.6.0
       music-metadata: workspace:*
-      soulseek-ts: ^1.0.3
+      soulseek-ts: ^2.0.6
       soundcloud: workspace:*
       spotify: workspace:*
       typescript: ^4.7.2
@@ -170,7 +170,7 @@ importers:
       fastq: 1.15.0
       got: 12.6.0
       music-metadata: link:../music-metadata
-      soulseek-ts: 1.0.3
+      soulseek-ts: 2.0.6
       soundcloud: link:../soundcloud
       spotify: link:../spotify
       zod: 3.21.4
@@ -263,7 +263,7 @@ importers:
       got: ^12.6.0
       mime: ^3.0.0
       music-metadata: workspace:*
-      soulseek-ts: ^1.0.3
+      soulseek-ts: ^2.0.6
       soundcloud: workspace:*
       spotify: workspace:*
       superjson: ^1.12.2
@@ -282,7 +282,7 @@ importers:
       got: 12.6.0
       mime: 3.0.0
       music-metadata: link:../music-metadata
-      soulseek-ts: 1.0.3
+      soulseek-ts: 2.0.6
       soundcloud: link:../soundcloud
       spotify: link:../spotify
       superjson: 1.12.2
@@ -876,16 +876,16 @@ packages:
     engines: {node: '>=14.16'}
     dev: false
 
-  /@sveltejs/adapter-auto/2.0.0_@sveltejs+kit@1.13.0:
+  /@sveltejs/adapter-auto/2.0.0_@sveltejs+kit@1.14.0:
     resolution: {integrity: sha512-b+gkHFZgD771kgV3aO4avHFd7y1zhmMYy9i6xOK7m/rwmwaRO8gnF5zBc0Rgca80B2PMU1bKNxyBTHA14OzUAQ==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
-      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/kit': 1.14.0_svelte@3.53.1+vite@4.0.0
       import-meta-resolve: 2.2.0
     dev: true
 
-  /@sveltejs/adapter-node/1.2.2_@sveltejs+kit@1.13.0:
+  /@sveltejs/adapter-node/1.2.2_@sveltejs+kit@1.14.0:
     resolution: {integrity: sha512-HA+QPRve97ZAQfZ0wkHjtoSR9ilyYZV82T7zRgzm2WJ0rIpAgyRYf6K7KNwiCq23KKkN0hZHY5elNyCnVz8zrA==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
@@ -893,12 +893,12 @@ packages:
       '@rollup/plugin-commonjs': 24.0.1_rollup@3.7.3
       '@rollup/plugin-json': 6.0.0_rollup@3.7.3
       '@rollup/plugin-node-resolve': 15.0.1_rollup@3.7.3
-      '@sveltejs/kit': 1.13.0_svelte@3.53.1+vite@4.0.0
+      '@sveltejs/kit': 1.14.0_svelte@3.53.1+vite@4.0.0
       rollup: 3.7.3
     dev: true
 
-  /@sveltejs/kit/1.13.0_svelte@3.53.1+vite@4.0.0:
-    resolution: {integrity: sha512-t44xqlSTn/k+BridiJFTD8dCRPNd9msCSSPLZT+/3P9deNp/al6ed396MSpsskK7r2kevYmmxywK16qtn6Rvjw==}
+  /@sveltejs/kit/1.14.0_svelte@3.53.1+vite@4.0.0:
+    resolution: {integrity: sha512-4e/cZT0z4IppEkqNvMrurGz6VE1gScukFU7XqwTL/yrGJGXHqS9D7RvsOcE1hASsgrMu6w/fKTIhxT5oN0K1Jw==}
     engines: {node: ^16.14 || >=18}
     hasBin: true
     requiresBuild: true
@@ -4315,6 +4315,14 @@ packages:
     dependencies:
       queue-microtask: 1.2.3
 
+  /rxjs/7.8.0:
+    resolution: {integrity: sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==}
+    requiresBuild: true
+    dependencies:
+      tslib: 2.4.1
+    dev: false
+    optional: true
+
   /sade/1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
@@ -4486,9 +4494,11 @@ packages:
       sourcemap-codec: 1.4.8
     dev: true
 
-  /soulseek-ts/1.0.3:
-    resolution: {integrity: sha512-ciKUCCJrEIUM9ccK24bv8L6IYc0Farvg/EXr1qyn+6YSSGQnqmAKqPq8C4iOpQ7OxiqFdVP8kH6fn5FGN7PHgg==}
+  /soulseek-ts/2.0.6:
+    resolution: {integrity: sha512-Gy7VjIqiIEd7m5316BvRb2Dj9sg6a2r4Noikl8g4ZfvJa7UdzNBpN3pXz5U23X977EtVP5peK61yDljFUJPoHA==}
+    engines: {node: '>=16.6.0'}
     dependencies:
+      typed-emitter: 2.1.0
       zlib: 1.0.5
     dev: false
 
@@ -4915,7 +4925,6 @@ packages:
 
   /tslib/2.4.1:
     resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
-    dev: true
 
   /tsup/6.6.3_typescript@4.9.3:
     resolution: {integrity: sha512-OLx/jFllYlVeZQ7sCHBuRVEQBBa1tFbouoc/gbYakyipjVQdWy/iQOvmExUA/ewap9iQ7tbJf9pW0PgcEFfJcQ==}
@@ -5062,6 +5071,12 @@ packages:
       call-bind: 1.0.2
       for-each: 0.3.3
       is-typed-array: 1.1.10
+    dev: false
+
+  /typed-emitter/2.1.0:
+    resolution: {integrity: sha512-g/KzbYKbH5C2vPkaXGu8DJlHrGKHLsM25Zg9WuC9pMGfuvT+X25tZQWo5fK1BjBm8+UrVE9LDCvaY0CQk+fXDA==}
+    optionalDependencies:
+      rxjs: 7.8.0
     dev: false
 
   /typescript/4.9.3:

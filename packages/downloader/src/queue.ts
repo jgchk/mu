@@ -1,4 +1,4 @@
-import { createHash, randomInt } from 'crypto'
+import { randomInt } from 'crypto'
 import type { Database } from 'db'
 import fastq from 'fastq'
 import fs from 'fs'
@@ -6,7 +6,6 @@ import got from 'got'
 import type { Metadata } from 'music-metadata'
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import type { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import type { SimplifiedAlbum as SpotifySimplifiedAlbum, Spotify } from 'spotify'
 import stream from 'stream'
@@ -15,7 +14,7 @@ import { uniqBy } from './utils/array'
 import { fileExists } from './utils/fs'
 import { ifNotNull } from './utils/types'
 
-export type Task = SoundcloudTask | SpotifyTask | SoulseekTask
+export type Task = SoundcloudTask | SpotifyTask
 
 export type SoundcloudTask = {
   service: 'soundcloud'
@@ -29,37 +28,27 @@ export type SpotifyTask = {
   dbId: number
 }
 
-export type SoulseekTask = {
-  service: 'soulseek'
-  type: 'track'
-  dbId: number
-}
-
 export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>
   private db: Database
   private sc: Soundcloud
   private sp: Spotify
-  private slsk: SlskClient
   private downloadDir: string
 
   constructor({
     db,
     sc,
     sp,
-    slsk,
     downloadDir,
   }: {
     db: Database
     sc: Soundcloud
     sp: Spotify
-    slsk: SlskClient
     downloadDir: string
   }) {
     this.db = db
     this.sc = sc
     this.sp = sp
-    this.slsk = slsk
     this.downloadDir = downloadDir
     this.q = fastq.promise(this.worker.bind(this), 10)
     this.q.error((err, task) => {
@@ -317,40 +306,6 @@ export class DownloadQueue {
 
         this.db.spotifyTrackDownloads.update(task.dbId, { progress: 100 })
       }
-    } else if (task.service === 'soulseek') {
-      const dbTrack = this.db.soulseekTrackDownloads.get(task.dbId)
-
-      if (dbTrack.progress === 100) {
-        return
-      }
-
-      let filePath = dbTrack.path
-      if (!filePath) {
-        const fileHash = createHash('sha256')
-        fileHash.update(dbTrack.file)
-        const hashedFile = fileHash.digest('hex').slice(0, 8)
-
-        const extension = path.extname(dbTrack.file)
-        const fileName = `slsk-${hashedFile}-${Date.now()}-${randomInt(0, 10)}${extension}`
-        filePath = path.resolve(path.join(this.downloadDir, fileName))
-        this.db.soulseekTrackDownloads.update(task.dbId, { path: filePath })
-      }
-
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-      const fileAlreadyExists = await fileExists(filePath)
-      if (fileAlreadyExists) {
-        // TODO: pass size to download task
-        await fs.promises.rm(filePath)
-      }
-
-      const fsPipe = fs.createWriteStream(filePath)
-      const dlPipe = await this.slsk.download(dbTrack.username, dbTrack.file)
-      dlPipe.pipe(fsPipe)
-
-      await stream.promises.finished(fsPipe)
-
-      this.db.soulseekTrackDownloads.update(task.dbId, { progress: 100 })
     }
   }
 }

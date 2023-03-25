@@ -17,8 +17,10 @@
   <div>
     {#if download.progress === 100}
       Complete
+    {:else if download.progress !== null}
+      Downloading... ({download.progress}%)
     {:else}
-      Downloading...
+      Queued
     {/if}
   </div>
   {#if download.progress === 100}

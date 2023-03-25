@@ -3,7 +3,7 @@ import { applyWSSHandler } from '@trpc/server/adapters/ws'
 import { handler as svelteKitHandler } from 'client'
 import cors from 'cors'
 import { Database } from 'db'
-import { DownloadQueue } from 'downloader'
+import { Downloader } from 'downloader'
 import express from 'express'
 import asyncHandler from 'express-async-handler'
 import { fileTypeFromBuffer } from 'file-type'
@@ -55,26 +55,26 @@ const main = async () => {
   })
   const slsk = new SlskClient()
   await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
-  const dl = new DownloadQueue({ db, sc, sp, slsk, downloadDir: env.DOWNLOAD_DIR })
+  const dl = new Downloader({ db, sc, sp, slsk, downloadDir: env.DOWNLOAD_DIR })
 
   const context: Context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR }
   const createContext = (): Context => context
 
   // Resume downloads
   for (const download of db.soundcloudPlaylistDownloads.getAll()) {
-    void dl.queue({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+    void dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
   for (const download of db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void dl.queue({ service: 'soundcloud', type: 'track', dbId: download.id })
+    void dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
   for (const download of db.spotifyAlbumDownloads.getAll()) {
-    void dl.queue({ service: 'spotify', type: 'album', dbId: download.id })
+    void dl.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
   for (const download of db.spotifyTrackDownloads.getAll()) {
-    void dl.queue({ service: 'spotify', type: 'track', dbId: download.id })
+    void dl.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
   for (const download of db.soulseekTrackDownloads.getAll()) {
-    void dl.queue({ service: 'soulseek', type: 'track', dbId: download.id })
+    void dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
   const handleResize = async (

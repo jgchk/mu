@@ -15,7 +15,7 @@ let responseTimeout: number | undefined
 const sorty = (data: FileSearchResponse[]) => {
   const results: SoulseekResults = new Map()
   for (const result of data) {
-    const { username, slotsFree, queueLength, avgSpeed, results: files } = result
+    const { username, slotsFree, queueLength, avgSpeed, files } = result
     const dirs = results.get(username)?.dirs ?? new Map<string, SoulseekDirectory>()
     for (const file of files) {
       const { filename } = file
