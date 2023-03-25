@@ -7,7 +7,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'turbo',
     'prettier',
-    'plugin:svelte/prettier'
+    'plugin:svelte/prettier',
   ],
   plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
   ignorePatterns: ['*.cjs'],
@@ -16,27 +16,27 @@ module.exports = {
       files: ['*.svelte'],
       parser: 'svelte-eslint-parser',
       parserOptions: {
-        parser: '@typescript-eslint/parser'
-      }
-    }
+        parser: '@typescript-eslint/parser',
+      },
+    },
   ],
   settings: {
     svelte: {
       ignoreWarnings: [
         '@typescript-eslint/no-unsafe-assignment',
         '@typescript-eslint/no-unsafe-member-access',
-        '@typescript-eslint/no-unsafe-argument'
-      ]
-    }
+        '@typescript-eslint/no-unsafe-argument',
+      ],
+    },
   },
   parserOptions: {
     sourceType: 'module',
-    ecmaVersion: 2020
+    ecmaVersion: 2020,
   },
   env: {
     browser: true,
     es2017: true,
-    node: true
+    node: true,
   },
   rules: {
     'simple-import-sort/imports': 'error',
@@ -47,6 +47,6 @@ module.exports = {
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
     'turbo/no-undeclared-env-vars': 'off',
-    'no-fallthrough': 'off'
-  }
-};
+    'no-fallthrough': 'off',
+  },
+}
