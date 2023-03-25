@@ -29,7 +29,7 @@
           class="center hover:border-primary-500 group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
         />
       </button>
-      <div>
+      <div class="flex-1 truncate">
         {track.title}
         <ul class="comma-list text-sm text-gray-400">
           {#each track.artists as artist (artist.id)}
@@ -40,6 +40,17 @@
             </li>
           {/each}
         </ul>
+      </div>
+      <div class="flex-[2] truncate text-sm text-gray-400">
+        {#if track.release}
+          <a class="hover:underline group-hover:text-white" href="/releases/{track.release.id}"
+            >{#if track.release.title}
+              {track.release.title}
+            {:else}
+              [untitled]
+            {/if}
+          </a>
+        {/if}
       </div>
     </div>
   {/each}
