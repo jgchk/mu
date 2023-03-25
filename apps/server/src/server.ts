@@ -138,6 +138,7 @@ const main = async () => {
         if (contentType) {
           res.set('Content-Type', contentType)
         }
+        res.set('Cache-Control', 'public, max-age=31536000, immutable')
         res.send(output)
       })
     )
@@ -163,6 +164,7 @@ const main = async () => {
               if (contentType) {
                 res.set('Content-Type', contentType)
               }
+              res.set('Cache-Control', 'public, max-age=31536000, immutable')
               res.send(output)
               return
             }
