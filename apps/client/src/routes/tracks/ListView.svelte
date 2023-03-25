@@ -32,7 +32,7 @@
       <div>
         {track.title}
         <ul class="comma-list text-sm text-gray-400">
-          {#each track.artists.concat(track.artists) as artist}
+          {#each track.artists as artist (artist.id)}
             <li class="flex">
               <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
                 >{artist.name}</a
