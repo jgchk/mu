@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "c5bb61e8-100f-4f3c-9b85-30e9c2f3ccd0",
+  "id": "75467411-89cf-4572-a796-1b60713038a3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -195,9 +195,10 @@
         },
         "track_number": {
           "name": "track_number",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "has_cover_art": {
           "name": "has_cover_art",

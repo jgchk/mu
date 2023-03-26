@@ -1870,11 +1870,12 @@ class MediaFile(object):
         ASFStorageStyle("WM/ContentGroupDescription"),
     )
     track = MediaField(
-        MP3StorageStyle("TRCK"),
-        MP4StorageStyle("trkn"),
+        MP3SlashPackStorageStyle("TRCK", pack_pos=0),
+        MP4TupleStorageStyle("trkn", index=0),
         StorageStyle("TRACK"),
         StorageStyle("TRACKNUMBER"),
         ASFStorageStyle("WM/TrackNumber"),
+        out_type=int,
     )
     tracktotal = MediaField(
         MP3SlashPackStorageStyle("TRCK", pack_pos=1),

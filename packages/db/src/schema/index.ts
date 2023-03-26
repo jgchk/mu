@@ -42,7 +42,7 @@ export const tracks = sqliteTable(
     path: text('path').notNull(),
     title: text('title'),
     releaseId: integer('release_id').references(() => releases.id),
-    trackNumber: text('track_number'),
+    trackNumber: integer('track_number'),
     hasCoverArt: integer('has_cover_art').notNull(),
   },
   (tracks) => ({

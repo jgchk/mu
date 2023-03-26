@@ -6,7 +6,7 @@ import { Database } from 'db'
 import { Downloader } from 'downloader'
 import express from 'express'
 import asyncHandler from 'express-async-handler'
-import { fileTypeFromBuffer } from 'file-type'
+import { fileTypeFromBuffer, fileTypeFromFile, fileTypeStream } from 'file-type'
 import fs from 'fs'
 import mime from 'mime-types'
 import { getMissingPythonDependencies, readTrackCoverArt } from 'music-metadata'
@@ -21,6 +21,15 @@ import { WebSocketServer } from 'ws'
 import { z } from 'zod'
 
 import { env } from './env'
+
+type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
+  path: NonNullable<T['path']>
+}
+const isDownloadComplete = <T extends { path: string | null }>(
+  dl: T | Complete<T>
+): dl is Complete<T> => {
+  return dl.path !== null
+}
 
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
@@ -112,6 +121,113 @@ const main = async () => {
       const stream = fs.createReadStream(path.resolve(track.path))
       stream.pipe(res)
     })
+    .get(
+      '/api/downloads/group/:service/:id/cover-art',
+      asyncHandler(async (req, res) => {
+        const { service, id } = z
+          .object({
+            service: z.enum(['soundcloud', 'spotify', 'soulseek']),
+            id: z.coerce.number(),
+          })
+          .parse(req.params)
+
+        if (service !== 'soulseek') {
+          res.status(404).send('Not found')
+          return
+        }
+
+        const fileDownloads = db.soulseekTrackDownloads.getByReleaseDownloadId(id)
+        const completeDownloads = fileDownloads.filter(isDownloadComplete)
+
+        if (completeDownloads.length !== fileDownloads.length) {
+          res.status(400).send('Downloads not complete')
+          return
+        }
+
+        const downloads = await Promise.all(
+          completeDownloads.map(async (dbDownload) => {
+            const fileType = await fileTypeFromFile(dbDownload.path)
+            return {
+              dbDownload,
+              fileType,
+            }
+          })
+        )
+
+        const imageDownloads = downloads.filter((download) =>
+          download.fileType?.mime.startsWith('image/')
+        )
+
+        const albumCover = imageDownloads.find((download) => {
+          const filename = path
+            .parse(download.dbDownload.file.replaceAll('\\', '/'))
+            .name.toLowerCase()
+          return filename === 'front' || filename === 'cover' || filename === 'folder'
+        })
+
+        if (!albumCover) {
+          res.status(404).send('No album cover found')
+          return
+        }
+
+        const stream = fs.createReadStream(path.resolve(albumCover.dbDownload.path))
+        const streamWithFileType = await fileTypeStream(stream)
+
+        if (streamWithFileType.fileType) {
+          const contentType = mime.contentType(streamWithFileType.fileType.mime)
+          if (contentType) {
+            res.setHeader('Content-Type', contentType)
+          }
+        }
+
+        streamWithFileType.pipe(res)
+      })
+    )
+    .get(
+      '/api/downloads/track/:service/:id/cover-art',
+      asyncHandler(async (req, res) => {
+        const { service, id } = z
+          .object({
+            service: z.enum(['soundcloud', 'spotify', 'soulseek']),
+            id: z.coerce.number(),
+          })
+          .parse(req.params)
+
+        let fileDownload
+        if (service === 'soundcloud') {
+          fileDownload = db.soundcloudTrackDownloads.get(id)
+        } else if (service === 'spotify') {
+          fileDownload = db.spotifyTrackDownloads.get(id)
+        } else if (service === 'soulseek') {
+          fileDownload = db.soulseekTrackDownloads.get(id)
+        } else {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          res.status(400).send(`Invalid service: ${service}`)
+          return
+        }
+
+        if (!isDownloadComplete(fileDownload)) {
+          res.status(400).send('Download not complete')
+          return
+        }
+
+        const coverArt = await readTrackCoverArt(path.resolve(fileDownload.path))
+
+        if (coverArt === undefined) {
+          res.status(404).send('Track does not have cover art')
+          return
+        }
+
+        const fileType = await fileTypeFromBuffer(coverArt)
+        if (fileType) {
+          const contentType = mime.contentType(fileType.mime)
+          if (contentType) {
+            res.setHeader('Content-Type', contentType)
+          }
+        }
+        res.send(coverArt)
+      })
+    )
     .get(
       '/api/tracks/:id/cover-art',
       asyncHandler(async (req, res) => {

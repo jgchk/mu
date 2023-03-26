@@ -9,7 +9,7 @@ export const Metadata = z.object({
   artists: z.string().array(),
   album: z.string().nullable(),
   albumArtists: z.string().array(),
-  track: z.string().nullable(),
+  track: z.number().nullable(),
 })
 
 export const writeTrackMetadata = async (filePath: string, metadata: Partial<Metadata>) => {
@@ -27,7 +27,7 @@ export const writeTrackMetadata = async (filePath: string, metadata: Partial<Met
     metadataArgs.push('--album-artists', ...metadata.albumArtists)
   }
   if (metadata.track !== null && metadata.track !== undefined) {
-    metadataArgs.push('--track', metadata.track)
+    metadataArgs.push('--track', metadata.track.toString())
   }
   await execa('python3', ['-m', 'metadata', 'write', filePath, ...metadataArgs], {
     cwd: __dirname,

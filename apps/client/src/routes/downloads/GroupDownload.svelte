@@ -14,7 +14,7 @@
 
   const trpc = getContextClient()
   const importDownloadMutation = trpc.import.groupDownload.mutation()
-  const handleImport = () => {
+  const handleAutoImport = () => {
     $importDownloadMutation.mutate({ service: download.service, id: download.id })
   }
 </script>
@@ -32,7 +32,8 @@
     {/if}
   </div>
   {#if complete}
-    <button on:click={handleImport}>Import</button>
+    <a href="/downloads/{download.service}/{download.id}/import">Import</a>
+    <button on:click={handleAutoImport}>Auto-Import</button>
   {:else}
     <div />
   {/if}

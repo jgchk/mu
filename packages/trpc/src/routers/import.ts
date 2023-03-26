@@ -17,6 +17,15 @@ const isComplete = (dl: Download): dl is CompleteDownload => {
   return dl.progress === 100 && dl.path !== null
 }
 
+type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
+  path: NonNullable<T['path']>
+}
+const isDownloadComplete = <T extends { path: string | null }>(
+  dl: T | Complete<T>
+): dl is Complete<T> => {
+  return dl.path !== null
+}
+
 type SoulseekCompleteDownload = Omit<SoulseekTrackDownload, 'path'> & {
   path: NonNullable<SoulseekTrackDownload['path']>
 }
@@ -97,6 +106,76 @@ export const importRouter = router({
       }
 
       return result
+    }),
+  groupDownloadData: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .query(async ({ input, ctx }) => {
+      let releaseDownload
+      let trackDownloads
+      let completeDownloads
+
+      if (input.service === 'soulseek') {
+        releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
+        trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else if (input.service === 'soundcloud') {
+        releaseDownload = ctx.db.soundcloudPlaylistDownloads.get(input.id)
+        trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else if (input.service === 'spotify') {
+        releaseDownload = ctx.db.spotifyAlbumDownloads.get(input.id)
+        trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${input.service}`)
+      }
+
+      if (completeDownloads.length !== trackDownloads.length) {
+        throw new Error('Not all downloads are complete')
+      }
+
+      const downloads = await Promise.all(
+        completeDownloads.map(async (dbDownload) => {
+          const fileType = await fileTypeFromFile(dbDownload.path)
+          return {
+            dbDownload,
+            fileType,
+          }
+        })
+      )
+
+      const audioDownloads = downloads.filter(
+        (download) =>
+          download.fileType?.mime.startsWith('audio/') || download.fileType?.mime === 'video/mp4'
+      )
+
+      const tracks = await Promise.all(
+        audioDownloads.map(async (download) => {
+          const metadata = await readTrackMetadata(path.resolve(download.dbDownload.path))
+          return {
+            id: download.dbDownload.id,
+            metadata,
+          }
+        })
+      )
+
+      const albumArtists =
+        tracks.find((track) => track.metadata && track.metadata.albumArtists.length > 0)?.metadata
+          ?.albumArtists ?? []
+      const albumTitle =
+        tracks.find((track) => track.metadata && track.metadata.album)?.metadata?.album ?? null
+
+      return {
+        album: {
+          title: albumTitle,
+          artists: albumArtists,
+        },
+        tracks: tracks.map((track) => ({
+          id: track.id,
+          metadata: track.metadata,
+        })),
+      }
     }),
   trackDownload: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
@@ -212,13 +291,7 @@ const importSoulseek = async (
       let filename = ''
       if (download.metadata.track !== null) {
         const numDigitsInTrackNumber = Math.ceil(Math.log10(audioDownloadsWithMetadata.length + 1))
-
-        const trackIsAllDigits = /^\d+$/.test(download.metadata.track)
-        if (trackIsAllDigits) {
-          filename += download.metadata.track.padStart(numDigitsInTrackNumber, '0')
-        } else {
-          filename += download.metadata.track
-        }
+        filename += download.metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
         filename += ' '
       }
       filename += download.metadata.title
@@ -342,13 +415,7 @@ const importFiles = async (db: Database, musicDir: string, dbDownloads: Complete
       let filename = ''
       if (metadata.track !== null) {
         const numDigitsInTrackNumber = Math.ceil(Math.log10(filesData.length + 1))
-
-        const trackIsAllDigits = /^\d+$/.test(metadata.track)
-        if (trackIsAllDigits) {
-          filename += metadata.track.padStart(numDigitsInTrackNumber, '0')
-        } else {
-          filename += metadata.track
-        }
+        filename += metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
         filename += ' '
       }
       filename += metadata.title

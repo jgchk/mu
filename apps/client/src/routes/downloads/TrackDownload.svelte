@@ -12,7 +12,7 @@
 </script>
 
 <div class="contents">
-  <div />
+  <div class="col-start-1" />
   <div>{download.name}</div>
   <div>
     {#if download.progress === 100}

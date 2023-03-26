@@ -149,7 +149,7 @@ export class DownloadQueue {
           artists: trackArtists ?? [scTrack.user.username],
           album: trackTitle,
           albumArtists: trackArtists ?? [scTrack.user.username],
-          track: '1',
+          track: 1,
         }
 
         if (dbTrack.playlistDownloadId !== null) {
@@ -172,7 +172,7 @@ export class DownloadQueue {
           const trackIndex = scPlaylist.tracks.findIndex((track) => track.id === scTrack!.id)
 
           if (trackIndex !== -1) {
-            metadata.track = `${trackIndex + 1}`
+            metadata.track = trackIndex + 1
           }
         }
 
@@ -262,7 +262,7 @@ export class DownloadQueue {
           artists: spotTrack.artists.map((artist) => artist.name),
           album: spotTrack.name,
           albumArtists: spotTrack.artists.map((artist) => artist.name),
-          track: '1',
+          track: 1,
         }
 
         let spotAlbum: SpotifySimplifiedAlbum
@@ -278,7 +278,7 @@ export class DownloadQueue {
 
           metadata.album = spotAlbum.name
           metadata.albumArtists = spotAlbum.artists.map((artist) => artist.name)
-          metadata.track = spotTrack.track_number.toString()
+          metadata.track = spotTrack.track_number
         } else {
           const fullSpotTrack = await this.sp.getTrack(spotTrack.id)
           spotAlbum = fullSpotTrack.album
