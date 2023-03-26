@@ -88,12 +88,32 @@ export const downloadsRouter = router({
             return { id: dbTrack.id }
           }
           case 'tracks': {
+            if (input.tracks.length === 0) {
+              return []
+            }
+
+            const dirname = input.tracks[0].file
+              .replaceAll('\\', '/')
+              .split('/')
+              .slice(0, -1)
+              .reverse()
+              .join('/')
+            const dbRelease =
+              ctx.db.soulseekReleaseDownloads.getByUsernameAndDir(
+                input.tracks[0].username,
+                dirname
+              ) ??
+              ctx.db.soulseekReleaseDownloads.insert({
+                username: input.tracks[0].username,
+                dir: dirname,
+              })
             const dbTracks = input.tracks.map(
               (track) =>
                 ctx.db.soulseekTrackDownloads.getByUsernameAndFile(track.username, track.file) ??
                 ctx.db.soulseekTrackDownloads.insert({
                   username: track.username,
                   file: track.file,
+                  releaseDownloadId: dbRelease.id,
                 })
             )
             for (const dbTrack of dbTracks) {
@@ -106,77 +126,70 @@ export const downloadsRouter = router({
     }
   }),
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const [scPlaylists, scTracks, spAlbums, spTracks, slskTracks] = await Promise.all([
-      ctx.db.soundcloudPlaylistDownloads.getAll().map(
-        (playlist) =>
-          ({
-            service: 'soundcloud',
-            id: playlist.id,
-            name: playlist.playlist?.title,
-          } as const)
-      ),
-      ctx.db.soundcloudTrackDownloads.getAll().map(
-        (track) =>
-          ({
-            service: 'soundcloud',
-            id: track.id,
-            parentId: track.playlistDownloadId !== null ? track.playlistDownloadId : null,
-            progress: track.progress,
-            name: track.track?.title,
-          } as const)
-      ),
-      ctx.db.spotifyAlbumDownloads.getAll().map(
-        (album) =>
-          ({
-            service: 'spotify',
-            id: album.id,
-            name: album.album?.name,
-          } as const)
-      ),
-      ctx.db.spotifyTrackDownloads.getAll().map(
-        (track) =>
-          ({
-            service: 'spotify',
-            id: track.id,
-            parentId: track.albumDownloadId !== null ? track.albumDownloadId : null,
-            progress: track.progress,
-            name: track.track?.name,
-          } as const)
-      ),
-      ctx.db.soulseekTrackDownloads.getAll().map(
-        (track) =>
-          ({
-            service: 'soulseek',
-            id: track.id,
-            parentId: null,
-            progress: track.progress,
-            filename: track.file,
-            dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
-            name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
-          } as const)
-      ),
-    ])
-
-    const soulseekDirectories = [...new Set(slskTracks.map((track) => track.dirname))]
-
-    return {
-      groups: [
-        ...scPlaylists,
-        ...spAlbums,
-        ...soulseekDirectories.map(
-          (dirname) =>
+    const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
+      [
+        ctx.db.soundcloudPlaylistDownloads.getAll().map(
+          (playlist) =>
             ({
-              service: 'soulseek',
-              id: dirname,
-              name: dirname,
+              service: 'soundcloud',
+              id: playlist.id,
+              name: playlist.playlist?.title,
             } as const)
         ),
-      ],
-      tracks: [
-        ...scTracks,
-        ...spTracks,
-        ...slskTracks.map((track) => ({ ...track, parentId: track.dirname })),
-      ],
+        ctx.db.soundcloudTrackDownloads.getAll().map(
+          (track) =>
+            ({
+              service: 'soundcloud',
+              id: track.id,
+              parentId: track.playlistDownloadId,
+              progress: track.progress,
+              name: track.track?.title,
+            } as const)
+        ),
+        ctx.db.spotifyAlbumDownloads.getAll().map(
+          (album) =>
+            ({
+              service: 'spotify',
+              id: album.id,
+              name: album.album?.name,
+            } as const)
+        ),
+        ctx.db.spotifyTrackDownloads.getAll().map(
+          (track) =>
+            ({
+              service: 'spotify',
+              id: track.id,
+              parentId: track.albumDownloadId,
+              progress: track.progress,
+              name: track.track?.name,
+            } as const)
+        ),
+        ctx.db.soulseekReleaseDownloads.getAll().map(
+          (release) =>
+            ({
+              service: 'soulseek',
+              id: release.id,
+              name: release.dir,
+            } as const)
+        ),
+        ctx.db.soulseekTrackDownloads.getAll().map(
+          (track) =>
+            ({
+              service: 'soulseek',
+              id: track.id,
+              parentId: track.releaseDownloadId,
+              progress: track.progress,
+              filename: track.file,
+              dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
+              name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
+            } as const)
+        ),
+      ]
+    )
+
+    return {
+      groups: [...scPlaylists, ...spAlbums, ...slskReleases],
+      tracks: [...scTracks, ...spTracks, ...slskTracks],
     }
   }),
 })

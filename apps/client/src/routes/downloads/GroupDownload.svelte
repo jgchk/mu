@@ -15,14 +15,7 @@
   const trpc = getContextClient()
   const importDownloadMutation = trpc.import.groupDownload.mutation()
   const handleImport = () => {
-    if (download.service === 'soulseek') {
-      $importDownloadMutation.mutate({
-        service: download.service,
-        ids: download.tracks.map((track) => track.id),
-      })
-    } else {
-      $importDownloadMutation.mutate({ service: download.service, id: download.id })
-    }
+    $importDownloadMutation.mutate({ service: download.service, id: download.id })
   }
 </script>
 

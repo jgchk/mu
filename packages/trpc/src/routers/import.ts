@@ -26,14 +26,13 @@ const isSoulseekDownloadComplete = (dl: SoulseekTrackDownload): dl is SoulseekCo
 
 export const importRouter = router({
   groupDownload: publicProcedure
-    .input(
-      z
-        .object({ service: z.enum(['soundcloud', 'spotify']), id: z.number() })
-        .or(z.object({ service: z.literal('soulseek'), ids: z.number().array() }))
-    )
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (input.service === 'soulseek') {
-        const trackDownloads = input.ids.map((id) => ctx.db.soulseekTrackDownloads.get(id))
+        const releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
+        const trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(
+          releaseDownload.id
+        )
 
         const completeDownloads = trackDownloads.filter(isSoulseekDownloadComplete)
         if (completeDownloads.length !== trackDownloads.length) {
@@ -49,6 +48,9 @@ export const importRouter = router({
           if (!downloadWasIgnored) {
             ctx.db.soulseekTrackDownloads.delete(trackDownload.id)
           }
+        }
+        if (result.ignoredFiles.length === 0) {
+          ctx.db.soulseekReleaseDownloads.delete(releaseDownload.id)
         }
 
         return result

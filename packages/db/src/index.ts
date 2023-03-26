@@ -9,6 +9,7 @@ import type {
   InsertArtist,
   InsertRelease,
   InsertReleaseArtist,
+  InsertSoulseekReleaseDownload,
   InsertSoulseekTrackDownload,
   InsertSoundcloudPlaylistDownload,
   InsertSoundcloudTrackDownload,
@@ -18,6 +19,7 @@ import type {
   InsertTrackPretty,
   Release,
   ReleaseArtist,
+  SoulseekReleaseDownload,
   SoulseekTrackDownload,
   SoundcloudPlaylistDownload,
   SoundcloudTrackDownload,
@@ -33,6 +35,7 @@ import {
   convertTrack,
   releaseArtists,
   releases,
+  soulseekReleaseDownloads,
   soulseekTrackDownloads,
   soundcloudPlaylistDownloads,
   soundcloudTrackDownloads,
@@ -578,6 +581,69 @@ export class Database {
     },
   }
 
+  soulseekReleaseDownloads = {
+    insert: (soulseekReleaseDownload: InsertSoulseekReleaseDownload) => {
+      return this.db
+        .insert(soulseekReleaseDownloads)
+        .values(soulseekReleaseDownload)
+        .returning()
+        .get()
+    },
+
+    update: (
+      id: SoulseekReleaseDownload['id'],
+      data: Partial<Omit<InsertSoulseekReleaseDownload, 'id'>>
+    ) => {
+      const update = {
+        ...(data.username !== undefined ? { username: data.username } : {}),
+        ...(data.dir !== undefined ? { dir: data.dir } : {}),
+      }
+      return this.db
+        .update(soulseekReleaseDownloads)
+        .set(update)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .returning()
+        .get()
+    },
+
+    get: (id: SoulseekReleaseDownload['id']) => {
+      return this.db
+        .select()
+        .from(soulseekReleaseDownloads)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .get()
+    },
+
+    getByUsernameAndDir: (
+      username: SoulseekReleaseDownload['username'],
+      dir: SoulseekReleaseDownload['dir']
+    ) => {
+      return this.db
+        .select()
+        .from(soulseekReleaseDownloads)
+        .where(
+          and(
+            eq(soulseekReleaseDownloads.username, username),
+            eq(soulseekReleaseDownloads.dir, dir)
+          )
+        )
+        .limit(1)
+        .all()
+        .at(0)
+    },
+
+    getAll: () => {
+      return this.db.select().from(soulseekReleaseDownloads).all()
+    },
+
+    delete: (id: SoulseekReleaseDownload['id']) => {
+      return this.db
+        .delete(soulseekReleaseDownloads)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .run()
+    },
+  }
+
   soulseekTrackDownloads = {
     insert: (soulseekTrackDownload: InsertSoulseekTrackDownload) => {
       return this.db.insert(soulseekTrackDownloads).values(soulseekTrackDownload).returning().get()
@@ -607,6 +673,18 @@ export class Database {
         .from(soulseekTrackDownloads)
         .where(eq(soulseekTrackDownloads.id, id))
         .get()
+    },
+
+    getByReleaseDownloadId: (releaseDownloadId: SoulseekTrackDownload['releaseDownloadId']) => {
+      return this.db
+        .select()
+        .from(soulseekTrackDownloads)
+        .where(
+          releaseDownloadId === null
+            ? isNull(soulseekTrackDownloads.releaseDownloadId)
+            : eq(soulseekTrackDownloads.releaseDownloadId, releaseDownloadId)
+        )
+        .all()
     },
 
     getByUsernameAndFile: (

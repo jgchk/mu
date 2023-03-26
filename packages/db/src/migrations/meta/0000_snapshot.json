@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "61f9606d-50fd-4050-afa9-1e9c336154c2",
+  "id": "c5bb61e8-100f-4f3c-9b85-30e9c2f3ccd0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -231,6 +231,42 @@
       },
       "compositePrimaryKeys": {}
     },
+    "soulseek_release_downloads": {
+      "name": "soulseek_release_downloads",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "usernameDirUniqueIndex": {
+          "name": "usernameDirUniqueIndex",
+          "columns": [
+            "username",
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
     "soulseek_track_downloads": {
       "name": "soulseek_track_downloads",
       "columns": {
@@ -265,6 +301,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "release_download_id": {
+          "name": "release_download_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -275,9 +318,30 @@
             "file"
           ],
           "isUnique": true
+        },
+        "usernameFileReleaseDownloadIdUniqueIndex": {
+          "name": "usernameFileReleaseDownloadIdUniqueIndex",
+          "columns": [
+            "username",
+            "file",
+            "release_download_id"
+          ],
+          "isUnique": true
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "soulseek_track_downloads_release_download_id_soulseek_release_downloads_id_fk": {
+          "name": "soulseek_track_downloads_release_download_id_soulseek_release_downloads_id_fk",
+          "tableFrom": "soulseek_track_downloads",
+          "tableTo": "soulseek_release_downloads",
+          "columnsFrom": [
+            "release_download_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
       "compositePrimaryKeys": {}
     },
     "soundcloud_playlist_downloads": {

@@ -81,6 +81,23 @@ export const spotifyTrackDownloads = sqliteTable(
   })
 )
 
+export type SoulseekReleaseDownload = InferModel<typeof soulseekReleaseDownloads>
+export type InsertSoulseekReleaseDownload = InferModel<typeof soulseekReleaseDownloads, 'insert'>
+export const soulseekReleaseDownloads = sqliteTable(
+  'soulseek_release_downloads',
+  {
+    id: integer('id').primaryKey(),
+    username: text('username').notNull(),
+    dir: text('name').notNull(),
+  },
+  (soulseekReleaseDownloads) => ({
+    usernameDirUniqueIndex: uniqueIndex('usernameDirUniqueIndex').on(
+      soulseekReleaseDownloads.username,
+      soulseekReleaseDownloads.dir
+    ),
+  })
+)
+
 export type SoulseekTrackDownload = InferModel<typeof soulseekTrackDownloads>
 export type InsertSoulseekTrackDownload = InferModel<typeof soulseekTrackDownloads, 'insert'>
 export const soulseekTrackDownloads = sqliteTable(
@@ -91,11 +108,19 @@ export const soulseekTrackDownloads = sqliteTable(
     file: text('file').notNull(),
     path: text('path'),
     progress: integer('progress'),
+    releaseDownloadId: integer('release_download_id').references(() => soulseekReleaseDownloads.id),
   },
   (soulseekTrackDownloads) => ({
     usernameFileUniqueIndex: uniqueIndex('usernameFileUniqueIndex').on(
       soulseekTrackDownloads.username,
       soulseekTrackDownloads.file
+    ),
+    usernameFileReleaseDownloadIdUniqueIndex: uniqueIndex(
+      'usernameFileReleaseDownloadIdUniqueIndex'
+    ).on(
+      soulseekTrackDownloads.username,
+      soulseekTrackDownloads.file,
+      soulseekTrackDownloads.releaseDownloadId
     ),
   })
 )
