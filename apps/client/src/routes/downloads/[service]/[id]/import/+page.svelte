@@ -40,7 +40,7 @@
       Loading Debug...
     </div>
   {:then Debug}
-    <Debug.default data={{ ...$form, artists: Object.fromEntries($form.artists) }} />
+    <Debug.default data={$form} />
   {/await}
 {/if}
 
