@@ -13,30 +13,30 @@ export function dropdown(
   node: Element,
   {
     delay = 0,
-    duration = 150,
+    duration = 200,
     easing = cubicOut,
-    opacitySpeed = 1.5,
+    opacitySpeed = 1,
     startHeight = 0.5,
   }: DropdownProps = {}
 ): TransitionConfig {
-  const style = getComputedStyle(node)
-  const opacity = +style.opacity
-  const primary_dimension_value = parseFloat(style.height)
-  const padding_start_value = parseFloat(style.paddingTop)
-  const padding_end_value = parseFloat(style.paddingBottom)
-  const margin_start_value = parseFloat(style.marginTop)
-  const margin_end_value = parseFloat(style.marginBottom)
-
-  const border_width_start_value = parseFloat(style.borderTopWidth)
-  const border_width_end_value = parseFloat(style.borderBottomWidth)
-
   return {
     delay,
     duration,
     easing,
     css: (t) => {
+      const style = getComputedStyle(node)
+      const opacity = +style.opacity
+      const primary_dimension_value = parseFloat(style.height)
+      const padding_start_value = parseFloat(style.paddingTop)
+      const padding_end_value = parseFloat(style.paddingBottom)
+      const margin_start_value = parseFloat(style.marginTop)
+      const margin_end_value = parseFloat(style.marginBottom)
+      const border_width_start_value = parseFloat(style.borderTopWidth)
+      const border_width_end_value = parseFloat(style.borderBottomWidth)
+
       const opacityT = Math.min(t * opacitySpeed, 1)
       const heightT = t * (1 - startHeight) + startHeight
+
       return (
         'overflow: hidden;' +
         `opacity: ${opacityT * opacity};` +
