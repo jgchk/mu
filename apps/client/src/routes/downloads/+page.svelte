@@ -52,19 +52,27 @@
 
 <div class="p-4">
   {#if downloads}
-    <h2 class="mt-2 text-2xl font-bold">Groups</h2>
-    <div>
-      {#each downloads.groups as releaseDownload (`${releaseDownload.service}-${releaseDownload.id}`)}
-        <GroupDownload download={releaseDownload} />
-      {/each}
-    </div>
+    {#if downloads.groups.length > 0 || downloads.tracks.length > 0}
+      {#if downloads.groups.length > 0}
+        <h2 class="mt-2 mb-4 text-2xl font-bold">Groups</h2>
+        <div class="space-y-4">
+          {#each downloads.groups as releaseDownload (`${releaseDownload.service}-${releaseDownload.id}`)}
+            <GroupDownload download={releaseDownload} />
+          {/each}
+        </div>
+      {/if}
 
-    <h2 class="mt-8 text-2xl font-bold">Tracks</h2>
-    <div class="grid w-fit grid-cols-4 gap-x-3">
-      {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
-        <TrackDownload download={trackDownload} />
-      {/each}
-    </div>
+      {#if downloads.tracks.length > 0}
+        <h2 class="mt-12 text-2xl font-bold">Tracks</h2>
+        <div class="grid w-fit grid-cols-4 gap-x-3">
+          {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
+            <TrackDownload download={trackDownload} />
+          {/each}
+        </div>
+      {/if}
+    {:else}
+      No downloads
+    {/if}
   {:else if $downloadsQuery.error}
     <div>{$downloadsQuery.error.message}</div>
   {:else}
