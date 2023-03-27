@@ -77,16 +77,21 @@
     }}
     on:focus={() => (open = true)}
     on:keydown={(e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        if (filteredArtists.length === 0) {
-          dispatch('create', displayFilter)
-        } else {
-          dispatch(filteredArtists[0].action, filteredArtists[0].id)
+      switch (e.key) {
+        case 'Enter': {
+          e.preventDefault()
+          if (filteredArtists.length === 0) {
+            dispatch('create', displayFilter)
+          } else {
+            dispatch(filteredArtists[0].action, filteredArtists[0].id)
+          }
+          filter = ''
+          break
         }
-        filter = ''
-      } else if (e.key === 'Tab') {
-        open = false
+        case 'Tab': {
+          open = false
+          break
+        }
       }
     }}
   />
