@@ -24,6 +24,7 @@ importers:
   apps/client:
     specifiers:
       '@jgchk/trpc-svelte-query': ^1.1.0
+      '@popperjs/core': ^2.11.7
       '@sveltejs/adapter-auto': latest
       '@sveltejs/adapter-node': ^1.2.2
       '@sveltejs/kit': latest
@@ -49,6 +50,7 @@ importers:
       zod: ^3.21.4
     dependencies:
       '@jgchk/trpc-svelte-query': 1.1.0_n5vzofcvfmq5af36yuexpmefym
+      '@popperjs/core': 2.11.7
       '@tanstack/svelte-query': 4.26.1_svelte@3.53.1
       '@trpc/client': 10.16.0_@trpc+server@10.16.0
       isomorphic-ws: 5.0.0_ws@8.13.0
@@ -786,8 +788,8 @@ packages:
   /@polka/url/1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
-  /@popperjs/core/2.11.6:
-    resolution: {integrity: sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==}
+  /@popperjs/core/2.11.7:
+    resolution: {integrity: sha512-Cr4OjIkipTtcXKjAsm8agyleBuDHvxzeBoa1v543lbv1YaIwQjESsVcmjiWiPEbC1FIeHOG/Op9kdCmAmiS3Kw==}
     dev: false
 
   /@rollup/plugin-commonjs/24.0.1_rollup@3.7.3:
@@ -4834,7 +4836,7 @@ packages:
   /tippy.js/6.3.7:
     resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
     dependencies:
-      '@popperjs/core': 2.11.6
+      '@popperjs/core': 2.11.7
     dev: false
 
   /to-regex-range/5.0.1:

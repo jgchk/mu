@@ -30,10 +30,6 @@
       $form.artists.delete(artist.id)
     }
   }
-
-  $: console.log('form', $form)
-  $: console.log('constraints', $constraints)
-  $: console.log('errors', $errors)
 </script>
 
 {#if dev}
@@ -46,11 +42,16 @@
   {/await}
 {/if}
 
-<form method="POST" use:enhance>
-  <input type="text" bind:value={$form.album.title} data-invalid={$errors.album?.title} />
+<form class="space-y-1 p-4" method="POST" use:enhance>
+  <input
+    type="text"
+    bind:value={$form.album.title}
+    data-invalid={$errors.album?.title}
+    {...$constraints.album?.title}
+  />
   {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
 
-  <div>
+  <div class="space-y-1">
     {#each $form.album.artists as artist}
       <ArtistSelect
         value={artist}

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
+  import { clickOutside } from '$lib/actions/clickOutside'
+  import { createPopperAction } from '$lib/actions/popper'
+  import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
@@ -59,60 +62,76 @@
   }
 
   const dispatch = createEventDispatcher<{ create: string; created: number; connect: number }>()
+
+  const [popperElement, popperTooltip] = createPopperAction()
 </script>
 
-<input
-  type="text"
-  value={displayFilter}
-  on:input={(e) => {
-    filter = e.currentTarget.value
-    displayFilter = e.currentTarget.value
-  }}
-  on:focus={() => (open = true)}
-  on:blur={() => (open = false)}
-  on:keydown={(e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (filteredArtists.length === 0) {
-        dispatch('create', displayFilter)
-      } else {
-        dispatch(filteredArtists[0].action, filteredArtists[0].id)
+<div class="relative w-fit" use:clickOutside={() => (open = false)}>
+  <input
+    type="text"
+    value={displayFilter}
+    use:popperElement
+    on:input={(e) => {
+      filter = e.currentTarget.value
+      displayFilter = e.currentTarget.value
+    }}
+    on:focus={() => (open = true)}
+    on:keydown={(e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (filteredArtists.length === 0) {
+          dispatch('create', displayFilter)
+        } else {
+          dispatch(filteredArtists[0].action, filteredArtists[0].id)
+        }
+        filter = ''
+        open = false
       }
-      filter = ''
-      open = false
-    }
-  }}
-/>
-{#if open}
-  <div>
-    {#if filteredArtists.length > 0}
-      {#each filteredArtists as artist}
+    }}
+  />
+
+  {#if open}
+    <div
+      class="z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
+      transition:dropdown
+      use:popperTooltip={{
+        modifiers: [
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 4],
+            },
+          },
+        ],
+      }}
+    >
+      {#if filteredArtists.length > 0}
+        {#each filteredArtists as artist}
+          <button
+            type="button"
+            class="block w-full py-1 px-2 text-left hover:bg-gray-600"
+            on:click={() => {
+              dispatch(artist.action, artist.id)
+            }}
+          >
+            {artist.name}
+          </button>
+        {/each}
+      {/if}
+
+      {#if displayFilter.length > 0}
         <button
           type="button"
-          class="block"
+          class="block w-full py-1 px-2 text-left hover:bg-gray-600"
           on:click={() => {
-            dispatch(artist.action, artist.id)
-          }}>{artist.name}</button
+            dispatch('create', displayFilter)
+            filter = ''
+            open = false
+          }}
         >
-      {/each}
-    {:else}
-      No artists found
-    {/if}
-
-    {#if displayFilter.length > 0}
-      <button
-        type="button"
-        class="block"
-        on:click={() => {
-          dispatch('create', displayFilter)
-          filter = ''
-          open = false
-        }}
-      >
-        Create new artist: {displayFilter}
-      </button>
-    {/if}
-  </div>
-{/if}
-
-<div>Value: {JSON.stringify(value)}</div>
+          Create new artist: {displayFilter}
+        </button>
+      {/if}
+    </div>
+  {/if}
+</div>

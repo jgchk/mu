@@ -1,42 +1,42 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte'
 
-  import PauseIcon from '$lib/icons/PauseIcon.svelte';
-  import PlayIcon from '$lib/icons/PlayIcon.svelte';
-  import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte';
-  import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte';
-  import { createLocalStorageJson } from '$lib/local-storage';
-  import type { NowPlaying } from '$lib/now-playing';
-  import { tooltip } from '$lib/tooltip';
-  import { getContextClient } from '$lib/trpc';
+  import { tooltip } from '$lib/actions/tooltip'
+  import PauseIcon from '$lib/icons/PauseIcon.svelte'
+  import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
+  import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
+  import { createLocalStorageJson } from '$lib/local-storage'
+  import type { NowPlaying } from '$lib/now-playing'
+  import { getContextClient } from '$lib/trpc'
 
-  import PlayerCover from './PlayerCover.svelte';
-  import Range from './Range.svelte';
+  import PlayerCover from './PlayerCover.svelte'
+  import Range from './Range.svelte'
 
-  export let nowPlaying: NowPlaying;
+  export let nowPlaying: NowPlaying
 
-  const trpc = getContextClient();
-  $: nowPlayingTrack = trpc.tracks.getById.query({ id: nowPlaying.id });
+  const trpc = getContextClient()
+  $: nowPlayingTrack = trpc.tracks.getById.query({ id: nowPlaying.id })
 
-  const volume = createLocalStorageJson('volume', 1);
-  let previousVolume = 1;
+  const volume = createLocalStorageJson('volume', 1)
+  let previousVolume = 1
 
-  let player: HTMLAudioElement | undefined;
-  let paused = false;
-  let currentTime = 0;
-  let duration = 1;
+  let player: HTMLAudioElement | undefined
+  let paused = false
+  let currentTime = 0
+  let duration = 1
 
   onDestroy(() => {
-    player?.pause();
-  });
+    player?.pause()
+  })
 
   const togglePlaying = () => {
     if (player?.paused) {
-      void player?.play();
+      void player?.play()
     } else {
-      player?.pause();
+      player?.pause()
     }
-  };
+  }
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">
@@ -91,7 +91,7 @@
       max={duration}
       on:change={(e) => {
         if (player) {
-          player.currentTime = e.detail;
+          player.currentTime = e.detail
         }
       }}
     />
@@ -102,10 +102,10 @@
       use:tooltip={{ content: $volume === 0 ? 'Unmute' : 'Mute' }}
       on:click={() => {
         if ($volume === 0) {
-          $volume = previousVolume;
+          $volume = previousVolume
         } else {
-          previousVolume = $volume;
-          $volume = 0;
+          previousVolume = $volume
+          $volume = 0
         }
       }}
     >

@@ -1,37 +1,37 @@
 <script lang="ts">
-  import { followCursor } from 'tippy.js';
+  import { followCursor } from 'tippy.js'
 
-  import DownloadIcon from '$lib/icons/DownloadIcon.svelte';
-  import { tooltip, TooltipDefaults } from '$lib/tooltip';
-  import type { RouterOutput } from '$lib/trpc';
-  import { getContextClient } from '$lib/trpc';
+  import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import type { RouterOutput } from '$lib/trpc'
+  import { getContextClient } from '$lib/trpc'
 
   type SearchResult =
     | RouterOutput['search']['spotify']['albums'][0]
-    | RouterOutput['search']['spotify']['tracks'][0];
+    | RouterOutput['search']['spotify']['tracks'][0]
 
-  export let result: SearchResult;
-  $: album = result.type === 'album' ? result : result.album;
-  let artwork: string | undefined;
+  export let result: SearchResult
+  $: album = result.type === 'album' ? result : result.album
+  let artwork: string | undefined
   $: {
-    const sortedImages = album.images.sort((a, b) => a.width - b.width);
-    const smallestImageAbove400px = sortedImages.find((i) => i.width >= 400);
+    const sortedImages = album.images.sort((a, b) => a.width - b.width)
+    const smallestImageAbove400px = sortedImages.find((i) => i.width >= 400)
     if (smallestImageAbove400px) {
-      artwork = smallestImageAbove400px.url;
+      artwork = smallestImageAbove400px.url
     } else if (sortedImages.length > 0) {
-      artwork = sortedImages[sortedImages.length - 1].url;
+      artwork = sortedImages[sortedImages.length - 1].url
     } else {
-      artwork = undefined;
+      artwork = undefined
     }
   }
-  $: artists = result.artists.map((a) => a.name).join(', ');
+  $: artists = result.artists.map((a) => a.name).join(', ')
 
-  const trpc = getContextClient();
-  const downloadMutation = trpc.downloads.download.mutation();
+  const trpc = getContextClient()
+  const downloadMutation = trpc.downloads.download.mutation()
 
   const handleDownload = () => {
-    $downloadMutation.mutate({ service: 'spotify', id: result.id, kind: result.type });
-  };
+    $downloadMutation.mutate({ service: 'spotify', id: result.id, kind: result.type })
+  }
 </script>
 
 <div class="w-full overflow-hidden">
@@ -42,7 +42,7 @@
       content: 'Download',
       delay: [TooltipDefaults.delay, 0],
       followCursor: true,
-      plugins: [followCursor]
+      plugins: [followCursor],
     }}
   >
     {#if artwork}

@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { tooltip } from '$lib/actions/tooltip'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
-  import { tooltip } from '$lib/tooltip'
   import { getContextClient } from '$lib/trpc'
 
   import type { SoulseekFile } from './types'
