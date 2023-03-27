@@ -25,7 +25,10 @@
     } else {
       const totalProgress = download.tracks.length * 100
       const currentProgress = sum(download.tracks.map((track) => track.progress ?? 0))
-      status = { type: 'downloading', progress: (currentProgress / totalProgress) * 100 }
+      status = {
+        type: 'downloading',
+        progress: Math.floor((currentProgress / totalProgress) * 100),
+      }
     }
   }
 
