@@ -85,6 +85,7 @@
           dispatch(filteredArtists[0].action, filteredArtists[0].id)
         }
         filter = ''
+      } else if (e.key === 'Tab') {
         open = false
       }
     }}
@@ -108,10 +109,12 @@
       {#if filteredArtists.length > 0}
         {#each filteredArtists as artist}
           <button
+            tabIndex={-1}
             type="button"
             class="block w-full py-1 px-2 text-left hover:bg-gray-600"
             on:click={() => {
               dispatch(artist.action, artist.id)
+              filter = ''
             }}
           >
             {artist.name}
@@ -121,12 +124,12 @@
 
       {#if displayFilter.length > 0}
         <button
+          tabIndex={-1}
           type="button"
           class="block w-full py-1 px-2 text-left hover:bg-gray-600"
           on:click={() => {
             dispatch('create', displayFilter)
             filter = ''
-            open = false
           }}
         >
           Create new artist: {displayFilter}
