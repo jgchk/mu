@@ -42,7 +42,7 @@
 <div class="rounded bg-gray-900 p-4 text-gray-200">
   <div class="files-grid items-center">
     <div class="contents">
-      <div class="mb-2 truncate text-lg">{download.name}</div>
+      <div class="mb-2 truncate text-lg">{download.name ?? 'Loading...'}</div>
       <div class="mb-2 text-right text-lg">
         {#if status.type === 'complete'}
           <a class="hover:text-white" href="/downloads/{download.service}/{download.id}/import"
@@ -58,7 +58,7 @@
     </div>
     {#each download.tracks as track (track.id)}
       <div class="contents text-gray-400">
-        <div class="truncate">{track.name}</div>
+        <div class="truncate">{track.name ?? 'Loading...'}</div>
         <div class="text-right">
           {#if track.progress === 100}
             Complete
