@@ -7,6 +7,7 @@ type DropdownProps = {
   easing?: EasingFunction
   opacitySpeed?: number
   startHeight?: number
+  slideDownHeight?: number
 }
 
 export function dropdown(
@@ -17,6 +18,7 @@ export function dropdown(
     easing = cubicOut,
     opacitySpeed = 1,
     startHeight = 0.5,
+    slideDownHeight = 4,
   }: DropdownProps = {}
 ): TransitionConfig {
   return {
@@ -40,6 +42,7 @@ export function dropdown(
       return (
         'overflow: hidden;' +
         `opacity: ${opacityT * opacity};` +
+        `top: -${slideDownHeight * (1 - t)}px;` +
         `height: ${heightT * primary_dimension_value}px;` +
         `padding-top: ${heightT * padding_start_value}px;` +
         `padding-bottom: ${heightT * padding_end_value}px;` +
