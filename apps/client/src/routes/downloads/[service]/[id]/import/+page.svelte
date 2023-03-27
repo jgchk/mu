@@ -2,6 +2,8 @@
   import type { Readable } from 'svelte/store'
   import { superForm } from 'sveltekit-superforms/client'
 
+  import { dev } from '$app/environment'
+
   import type { PageServerData } from './$types'
   import ArtistSelect from './ArtistSelect.svelte'
 
@@ -33,6 +35,16 @@
   $: console.log('constraints', $constraints)
   $: console.log('errors', $errors)
 </script>
+
+{#if dev}
+  {#await import('./Debug.svelte')}
+    <div class="absolute left-0 bottom-0 flex w-full justify-center p-1 text-gray-400">
+      Loading Debug...
+    </div>
+  {:then Debug}
+    <Debug.default data={$form} />
+  {/await}
+{/if}
 
 <form method="POST" use:enhance>
   <input type="text" bind:value={$form.album.title} data-invalid={$errors.album?.title} />

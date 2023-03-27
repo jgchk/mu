@@ -46,7 +46,7 @@
       </form>
     </nav>
 
-    <main class="flex-1 overflow-auto">
+    <main class="relative flex-1 overflow-auto">
       <slot />
     </main>
 
