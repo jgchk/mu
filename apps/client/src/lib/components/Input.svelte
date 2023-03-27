@@ -18,6 +18,22 @@
   let class_: string | undefined = undefined
   export { class_ as class }
   export let errors: string[] | undefined = undefined
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface $$Events {
+    input: Event & {
+      currentTarget: EventTarget & HTMLInputElement
+    }
+    focus: FocusEvent & {
+      currentTarget: EventTarget & HTMLInputElement
+    }
+    keydown: KeyboardEvent & {
+      currentTarget: EventTarget & HTMLInputElement
+    }
+    blur: FocusEvent & {
+      currentTarget: EventTarget & HTMLInputElement
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-autofocus -->
