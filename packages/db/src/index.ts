@@ -70,6 +70,10 @@ export class Database {
       return this.db.select().from(artists).all()
     },
 
+    get: (id: Artist['id']) => {
+      return this.db.select().from(artists).where(eq(artists.id, id)).get()
+    },
+
     getByName: (name: string) => {
       return this.db.select().from(artists).where(eq(artists.name, name)).all()
     },

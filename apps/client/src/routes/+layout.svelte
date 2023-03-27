@@ -1,21 +1,21 @@
 <script lang="ts">
-  import '../app.css';
+  import '../app.css'
 
-  import { QueryClientProvider } from '@tanstack/svelte-query';
+  import { QueryClientProvider } from '@tanstack/svelte-query'
 
-  import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import Player from '$lib/components/Player.svelte';
-  import { nowPlaying } from '$lib/now-playing';
-  import { setContextClient } from '$lib/trpc';
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
+  import Player from '$lib/components/Player.svelte'
+  import { nowPlaying } from '$lib/now-playing'
+  import { setContextClient } from '$lib/trpc'
 
-  import type { LayoutData } from './$types';
+  import type { LayoutData } from './$types'
 
-  export let data: LayoutData;
+  export let data: LayoutData
 
-  setContextClient(data.trpc);
+  setContextClient(data.trpc)
 
-  let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || '';
+  let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || ''
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
@@ -24,6 +24,7 @@
       <a href="/">Home</a>
       <a href="/tracks">Tracks</a>
       <a href="/releases">Releases</a>
+      <a href="/artists">Artists</a>
       <a href="/downloads">Downloads</a>
 
       <form
@@ -31,11 +32,11 @@
         on:submit|preventDefault={() => {
           if (query.length > 0) {
             if ($page.url.pathname.startsWith('/search')) {
-              const newUrl = new URL($page.url);
-              newUrl.searchParams.set('q', query);
-              void goto(newUrl);
+              const newUrl = new URL($page.url)
+              newUrl.searchParams.set('q', query)
+              void goto(newUrl)
             } else {
-              void goto(`/search?q=${query}`);
+              void goto(`/search?q=${query}`)
             }
           }
         }}

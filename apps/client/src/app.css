@@ -43,3 +43,7 @@
 .tippy-box[data-placement^='right'] > .tippy-arrow::before {
   border-right-color: theme(colors.white);
 }
+
+input {
+  @apply text-black;
+}

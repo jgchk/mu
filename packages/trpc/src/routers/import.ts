@@ -3,7 +3,12 @@ import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
-import { readTrackCoverArt, readTrackMetadata, writeTrackCoverArt } from 'music-metadata'
+import {
+  readTrackCoverArt,
+  readTrackMetadata,
+  writeTrackCoverArt,
+  writeTrackMetadata,
+} from 'music-metadata'
 import path from 'path'
 import { z } from 'zod'
 
@@ -153,6 +158,9 @@ export const importRouter = router({
       const tracks = await Promise.all(
         audioDownloads.map(async (download) => {
           const metadata = await readTrackMetadata(path.resolve(download.dbDownload.path))
+          if (!metadata) {
+            throw new Error('Could not read metadata')
+          }
           return {
             id: download.dbDownload.id,
             metadata,
@@ -175,6 +183,158 @@ export const importRouter = router({
           id: track.id,
           metadata: track.metadata,
         })),
+      }
+    }),
+  groupDownloadManual: publicProcedure
+    .input(
+      z.object({
+        service: z.enum(['soundcloud', 'spotify', 'soulseek']),
+        id: z.number(),
+        artists: z.map(z.number(), z.string()),
+        album: z.object({
+          title: z.string().optional(),
+          artists: z
+            .union([
+              z.object({ action: z.literal('connect'), id: z.number() }),
+              z.object({ action: z.literal('create'), id: z.number() }),
+            ])
+            .array(),
+        }),
+        tracks: z
+          .object({
+            id: z.number(),
+            title: z.string().optional(),
+            artists: z
+              .union([
+                z.object({ action: z.literal('connect'), id: z.number() }),
+                z.object({ action: z.literal('create'), id: z.number() }),
+              ])
+              .array(),
+            track: z.number().optional(),
+          })
+          .array(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      let releaseDownload
+      let trackDownloads
+      let completeDownloads
+      if (input.service === 'soulseek') {
+        releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
+        trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else if (input.service === 'soundcloud') {
+        releaseDownload = ctx.db.soundcloudPlaylistDownloads.get(input.id)
+        trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else if (input.service === 'spotify') {
+        releaseDownload = ctx.db.spotifyAlbumDownloads.get(input.id)
+        trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(releaseDownload.id)
+        completeDownloads = trackDownloads.filter(isDownloadComplete)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${input.service}`)
+      }
+
+      if (completeDownloads.length !== trackDownloads.length) {
+        throw new Error('Not all downloads are complete')
+      }
+
+      const downloads = completeDownloads.map((download) => {
+        const track = input.tracks.find((track) => track.id === download.id)
+        if (!track) {
+          throw new Error('Track not found')
+        }
+        return {
+          dbDownload: download,
+          metadata: track,
+        }
+      })
+
+      const artistMap = new Map(
+        [...input.artists.entries()].map(([id, name]) => [id, ctx.db.artists.insert({ name })])
+      )
+
+      const albumTitle = input.album.title
+      const albumArtists = input.album.artists.map((artist) => {
+        if (artist.action === 'create') {
+          const dbArtist = artistMap.get(artist.id)
+          if (!dbArtist) {
+            throw new Error(`Artist ${artist.id} missing from input.artists`)
+          }
+          return dbArtist
+        } else {
+          return ctx.db.artists.get(artist.id)
+        }
+      })
+      const dbRelease = ctx.db.releases.insertWithArtists({
+        title: albumTitle,
+        artists: albumArtists.map((artist) => artist.id),
+      })
+
+      const dbTracks = await Promise.all(
+        downloads.map(async (download) => {
+          let filename = ''
+          if (download.metadata.track !== undefined) {
+            const numDigitsInTrackNumber = Math.ceil(Math.log10(downloads.length + 1))
+            filename += download.metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
+            filename += ' '
+          }
+          filename += download.metadata.title
+          filename += path.extname(download.dbDownload.path)
+
+          const newPath = path.join(
+            ctx.musicDir,
+            filenamify(
+              albumArtists.length > 0
+                ? albumArtists.map((artist) => artist.name).join(', ')
+                : '[unknown]'
+            ),
+            filenamify(albumTitle || '[untitled]'),
+            filenamify(filename)
+          )
+
+          if (path.resolve(download.dbDownload.path) !== path.resolve(newPath)) {
+            await fs.mkdir(path.dirname(newPath), { recursive: true })
+            await fs.rename(path.resolve(download.dbDownload.path), newPath)
+          }
+
+          const artists = download.metadata.artists.map((artist) => {
+            if (artist.action === 'create') {
+              const dbArtist = artistMap.get(artist.id)
+              if (!dbArtist) {
+                throw new Error(`Artist ${artist.id} missing from input.artists`)
+              }
+              return dbArtist
+            } else {
+              return ctx.db.artists.get(artist.id)
+            }
+          })
+          const metadata: Metadata = {
+            title: download.metadata.title ?? null,
+            artists: artists.map((artist) => artist.name),
+            track: download.metadata.track ?? null,
+            album: albumTitle ?? null,
+            albumArtists: albumArtists.map((artist) => artist.name),
+          }
+          await writeTrackMetadata(newPath, metadata)
+
+          const dbTrack = ctx.db.tracks.insertWithArtists({
+            title: metadata.title,
+            artists: artists.map((artist) => artist.id),
+            path: newPath,
+            releaseId: dbRelease.id,
+            trackNumber: metadata.track,
+            hasCoverArt: false,
+          })
+
+          return dbTrack
+        })
+      )
+
+      return {
+        release: dbRelease,
+        tracks: dbTracks,
       }
     }),
   trackDownload: publicProcedure
