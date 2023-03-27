@@ -1,10 +1,10 @@
 <script lang="ts">
-  import VirtualList from '$lib/components/VirtualList.svelte';
+  import VirtualList from '$lib/atoms/VirtualList.svelte'
 
-  import SoulseekResultFolder from './SoulseekResultFolder.svelte';
-  import type { SortedSoulseekResults } from './types';
+  import SoulseekResultFolder from './SoulseekResultFolder.svelte'
+  import type { SortedSoulseekResults } from './types'
 
-  export let items: SortedSoulseekResults;
+  export let items: SortedSoulseekResults
 </script>
 
 <div class="h-full">

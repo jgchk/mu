@@ -3,8 +3,8 @@
   import { superForm } from 'sveltekit-superforms/client'
 
   import { dev } from '$app/environment'
-  import Button from '$lib/components/Button.svelte'
-  import Input from '$lib/components/Input.svelte'
+  import Button from '$lib/atoms/Button.svelte'
+  import Input from '$lib/atoms/Input.svelte'
 
   import type { PageServerData } from './$types'
   import ArtistSelect from './ArtistSelect.svelte'

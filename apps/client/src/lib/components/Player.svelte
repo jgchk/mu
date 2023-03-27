@@ -10,8 +10,8 @@
   import type { NowPlaying } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
+  import Range from '../atoms/Range.svelte'
   import PlayerCover from './PlayerCover.svelte'
-  import Range from './Range.svelte'
 
   export let nowPlaying: NowPlaying
 

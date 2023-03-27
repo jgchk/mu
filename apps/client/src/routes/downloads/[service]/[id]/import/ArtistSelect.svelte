@@ -3,7 +3,7 @@
 
   import { clickOutside } from '$lib/actions/clickOutside'
   import { createPopperAction } from '$lib/actions/popper'
-  import Input from '$lib/components/Input.svelte'
+  import Input from '$lib/atoms/Input.svelte'
   import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
 
