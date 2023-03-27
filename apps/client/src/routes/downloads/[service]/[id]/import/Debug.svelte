@@ -2,9 +2,7 @@
   import { slide } from 'svelte/transition'
   import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte'
 
-  import type { PageServerData } from './$types'
-
-  export let data: PageServerData['form']['data']
+  export let data: unknown
   export let show = false
 </script>
 
