@@ -7,6 +7,7 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import { cn } from '$lib/utils/classes'
 
   import type { PageServerData } from './$types'
   import ArtistSelect from './ArtistSelect.svelte'
@@ -36,6 +37,139 @@
   }
 </script>
 
+<div class="mr-2 h-full overflow-auto">
+  <form class={cn('p-4', dev && 'mb-8')} method="POST" use:enhance>
+    <h2 class="mb-2 text-2xl font-bold">Release</h2>
+    <div class="space-y-1">
+      <Input
+        bind:value={$form.album.title}
+        errors={$errors.album?.title}
+        {...$constraints.album?.title}
+      />
+      {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
+
+      <div class="space-y-1">
+        {#each $form.album.artists as artist}
+          <div class="flex gap-1">
+            <ArtistSelect
+              value={artist}
+              artists={$form.artists}
+              on:create={({ detail }) => {
+                const id = $form.artists.size + 1
+                $form.artists.set(id, detail)
+                artist = {
+                  action: 'create',
+                  id,
+                }
+                removeIfUnused(artist)
+              }}
+              on:created={({ detail }) => {
+                artist = {
+                  action: 'create',
+                  id: detail,
+                }
+                removeIfUnused(artist)
+              }}
+              on:connect={({ detail }) => {
+                artist = {
+                  action: 'connect',
+                  id: detail,
+                }
+                removeIfUnused(artist)
+              }}
+            />
+            <IconButton
+              tooltip="Remove"
+              kind="text"
+              on:click={() => {
+                $form.album.artists = $form.album.artists.filter((artist_) => artist_ !== artist)
+                removeIfUnused(artist)
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </div>
+        {/each}
+
+        <Button
+          kind="outline"
+          on:click={() => ($form.album.artists = [...$form.album.artists, undefined])}
+        >
+          Add Artist
+        </Button>
+      </div>
+    </div>
+
+    <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
+    <div class="space-y-2">
+      {#each $form.tracks as track, i}
+        <div class="space-y-1 rounded bg-gray-900 p-4">
+          <Input
+            bind:value={track.title}
+            errors={$errors.tracks?.[i]?.title}
+            {...$constraints.tracks?.title}
+          />
+          {#if $errors.tracks?.[i]?.title}
+            <span class="text-error-500">
+              {$errors.tracks?.[i]?.title}
+            </span>
+          {/if}
+
+          <div class="space-y-1">
+            {#each track.artists as artist}
+              <div class="flex gap-1">
+                <ArtistSelect
+                  value={artist}
+                  artists={$form.artists}
+                  on:create={({ detail }) => {
+                    const id = $form.artists.size + 1
+                    $form.artists.set(id, detail)
+                    artist = {
+                      action: 'create',
+                      id,
+                    }
+                    removeIfUnused(artist)
+                  }}
+                  on:created={({ detail }) => {
+                    artist = {
+                      action: 'create',
+                      id: detail,
+                    }
+                    removeIfUnused(artist)
+                  }}
+                  on:connect={({ detail }) => {
+                    artist = {
+                      action: 'connect',
+                      id: detail,
+                    }
+                    removeIfUnused(artist)
+                  }}
+                />
+                <IconButton
+                  tooltip="Remove"
+                  kind="text"
+                  on:click={() => {
+                    track.artists = track.artists.filter((artist_) => artist_ !== artist)
+                    removeIfUnused(artist)
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </div>
+            {/each}
+
+            <Button kind="outline" on:click={() => (track.artists = [...track.artists, undefined])}>
+              Add Artist
+            </Button>
+          </div>
+        </div>
+      {/each}
+    </div>
+
+    <Button type="submit" kind="solid" loading={$delayed} class="mt-4">Submit</Button>
+  </form>
+</div>
+
 {#if dev}
   {#await import('./Debug.svelte')}
     <div class="absolute left-0 bottom-0 flex w-full justify-center p-1 text-gray-400">
@@ -45,63 +179,3 @@
     <Debug.default data={$form} />
   {/await}
 {/if}
-
-<form class="space-y-1 p-4" method="POST" use:enhance>
-  <Input
-    bind:value={$form.album.title}
-    errors={$errors.album?.title}
-    {...$constraints.album?.title}
-  />
-  {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
-
-  <div class="space-y-1">
-    {#each $form.album.artists as artist}
-      <div class="flex gap-1">
-        <ArtistSelect
-          value={artist}
-          artists={$form.artists}
-          on:create={({ detail }) => {
-            const id = $form.artists.size + 1
-            $form.artists.set(id, detail)
-            artist = {
-              action: 'create',
-              id,
-            }
-            removeIfUnused(artist)
-          }}
-          on:created={({ detail }) => {
-            artist = {
-              action: 'create',
-              id: detail,
-            }
-            removeIfUnused(artist)
-          }}
-          on:connect={({ detail }) => {
-            artist = {
-              action: 'connect',
-              id: detail,
-            }
-            removeIfUnused(artist)
-          }}
-        />
-        <IconButton
-          tooltip="Remove"
-          kind="text"
-          on:click={() => {
-            $form.album.artists = $form.album.artists.filter((artist_) => artist_ !== artist)
-            removeIfUnused(artist)
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </div>
-    {/each}
-    <Button
-      kind="outline"
-      on:click={() => ($form.album.artists = [...$form.album.artists, undefined])}
-    >
-      Add Artist
-    </Button>
-  </div>
-  <Button type="submit" kind="solid" loading={$delayed}>Submit</Button>
-</form>

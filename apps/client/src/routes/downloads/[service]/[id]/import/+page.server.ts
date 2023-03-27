@@ -23,10 +23,8 @@ const schema = z.object({
       id: z.number(),
       title: z.string().optional(),
       artists: z
-        .union([
-          z.object({ action: z.literal('connect'), id: z.number() }),
-          z.object({ action: z.literal('create'), id: z.number() }),
-        ])
+        .object({ action: z.enum(['create', 'connect']), id: z.number() })
+        .optional()
         .array(),
       track: z.number().optional(),
     })
