@@ -103,64 +103,70 @@
     <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
     <div class="space-y-2">
       {#each $form.tracks as track, i}
-        <div class="space-y-1 rounded bg-gray-900 p-4">
-          <Input
-            bind:value={track.title}
-            errors={$errors.tracks?.[i]?.title}
-            {...$constraints.tracks?.title}
-          />
-          {#if $errors.tracks?.[i]?.title}
-            <span class="text-error-500">
-              {$errors.tracks?.[i]?.title}
-            </span>
-          {/if}
+        <div class="flex items-center rounded bg-gray-900 p-4 pl-0">
+          <div class="center w-12 text-gray-500">{track.track}</div>
+          <div class="flex-1 space-y-1">
+            <Input
+              bind:value={track.title}
+              errors={$errors.tracks?.[i]?.title}
+              {...$constraints.tracks?.title}
+            />
+            {#if $errors.tracks?.[i]?.title}
+              <span class="text-error-500">
+                {$errors.tracks?.[i]?.title}
+              </span>
+            {/if}
 
-          <div class="space-y-1">
-            {#each track.artists as artist}
-              <div class="flex gap-1">
-                <ArtistSelect
-                  value={artist}
-                  artists={$form.artists}
-                  on:create={({ detail }) => {
-                    const id = $form.artists.size + 1
-                    $form.artists.set(id, detail)
-                    artist = {
-                      action: 'create',
-                      id,
-                    }
-                    removeIfUnused(artist)
-                  }}
-                  on:created={({ detail }) => {
-                    artist = {
-                      action: 'create',
-                      id: detail,
-                    }
-                    removeIfUnused(artist)
-                  }}
-                  on:connect={({ detail }) => {
-                    artist = {
-                      action: 'connect',
-                      id: detail,
-                    }
-                    removeIfUnused(artist)
-                  }}
-                />
-                <IconButton
-                  tooltip="Remove"
-                  kind="text"
-                  on:click={() => {
-                    track.artists = track.artists.filter((artist_) => artist_ !== artist)
-                    removeIfUnused(artist)
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </div>
-            {/each}
+            <div class="space-y-1">
+              {#each track.artists as artist}
+                <div class="flex gap-1">
+                  <ArtistSelect
+                    value={artist}
+                    artists={$form.artists}
+                    on:create={({ detail }) => {
+                      const id = $form.artists.size + 1
+                      $form.artists.set(id, detail)
+                      artist = {
+                        action: 'create',
+                        id,
+                      }
+                      removeIfUnused(artist)
+                    }}
+                    on:created={({ detail }) => {
+                      artist = {
+                        action: 'create',
+                        id: detail,
+                      }
+                      removeIfUnused(artist)
+                    }}
+                    on:connect={({ detail }) => {
+                      artist = {
+                        action: 'connect',
+                        id: detail,
+                      }
+                      removeIfUnused(artist)
+                    }}
+                  />
+                  <IconButton
+                    tooltip="Remove"
+                    kind="text"
+                    on:click={() => {
+                      track.artists = track.artists.filter((artist_) => artist_ !== artist)
+                      removeIfUnused(artist)
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              {/each}
 
-            <Button kind="outline" on:click={() => (track.artists = [...track.artists, undefined])}>
-              Add Artist
-            </Button>
+              <Button
+                kind="outline"
+                on:click={() => (track.artists = [...track.artists, undefined])}
+              >
+                Add Artist
+              </Button>
+            </div>
           </div>
         </div>
       {/each}

@@ -70,6 +70,7 @@ export const load: PageServerLoad = async (event) => {
       id: track.id,
       title: track.metadata.title ?? undefined,
       artists: trackArtists.map((id) => ({ action: 'create', id } as const)),
+      track: track.metadata.track ?? undefined,
     }
   })
 
