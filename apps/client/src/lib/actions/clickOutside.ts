@@ -21,11 +21,9 @@ export function clickOutside(node: Node, handler_: ClickOutsideHandler) {
 
   return {
     update(handler_: ClickOutsideHandler) {
-      console.log('update', handler_)
       handler = handler_
     },
     destroy() {
-      console.log('destroy')
       document.removeEventListener('click', handleClick, true)
     },
   }
