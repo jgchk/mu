@@ -3,6 +3,7 @@
   import { superForm } from 'sveltekit-superforms/client'
 
   import { dev } from '$app/environment'
+  import Button from '$lib/components/Button.svelte'
   import Input from '$lib/components/Input.svelte'
 
   import type { PageServerData } from './$types'
@@ -81,11 +82,12 @@
         }}
       />
     {/each}
-    <button
-      type="button"
+    <Button
+      kind="outline"
       on:click={() => ($form.album.artists = [...$form.album.artists, undefined])}
-      >Add Artist</button
     >
+      Add Artist
+    </Button>
   </div>
   <button type="submit">Submit</button>
 
