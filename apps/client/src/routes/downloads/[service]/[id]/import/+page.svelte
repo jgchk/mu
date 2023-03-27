@@ -11,7 +11,7 @@
 
   export let data: PageServerData
 
-  const { form, enhance, errors, constraints } = superForm(data.form, { dataType: 'json' })
+  const { form, enhance, errors, constraints, delayed } = superForm(data.form, { dataType: 'json' })
 
   type StoreType<T extends Readable<unknown>> = T extends Readable<infer U> ? U : never
 
@@ -89,5 +89,5 @@
       Add Artist
     </Button>
   </div>
-  <Button type="submit" kind="solid">Submit</Button>
+  <Button type="submit" kind="solid" loading={$delayed}>Submit</Button>
 </form>
