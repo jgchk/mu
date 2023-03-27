@@ -89,9 +89,5 @@
       Add Artist
     </Button>
   </div>
-  <button type="submit">Submit</button>
-
-  {#if $form.artists.size > 0}
-    <pre>{JSON.stringify(Object.fromEntries($form.artists), null, 2)}</pre>
-  {/if}
+  <Button type="submit" kind="solid">Submit</Button>
 </form>
