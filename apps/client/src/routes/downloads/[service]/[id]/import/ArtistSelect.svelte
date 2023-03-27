@@ -3,6 +3,7 @@
 
   import { clickOutside } from '$lib/actions/clickOutside'
   import { createPopperAction } from '$lib/actions/popper'
+  import Input from '$lib/components/Input.svelte'
   import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
 
@@ -67,34 +68,35 @@
 </script>
 
 <div class="relative w-fit" use:clickOutside={() => (open = false)}>
-  <input
-    type="text"
-    value={displayFilter}
-    use:popperElement
-    on:input={(e) => {
-      filter = e.currentTarget.value
-      displayFilter = e.currentTarget.value
-    }}
-    on:focus={() => (open = true)}
-    on:keydown={(e) => {
-      switch (e.key) {
-        case 'Enter': {
-          e.preventDefault()
-          if (filteredArtists.length === 0) {
-            dispatch('create', displayFilter)
-          } else {
-            dispatch(filteredArtists[0].action, filteredArtists[0].id)
+  <div use:popperElement>
+    <Input
+      type="text"
+      value={displayFilter}
+      on:input={(e) => {
+        filter = e.currentTarget.value
+        displayFilter = e.currentTarget.value
+      }}
+      on:focus={() => (open = true)}
+      on:keydown={(e) => {
+        switch (e.key) {
+          case 'Enter': {
+            e.preventDefault()
+            if (filteredArtists.length === 0) {
+              dispatch('create', displayFilter)
+            } else {
+              dispatch(filteredArtists[0].action, filteredArtists[0].id)
+            }
+            filter = ''
+            break
           }
-          filter = ''
-          break
+          case 'Tab': {
+            open = false
+            break
+          }
         }
-        case 'Tab': {
-          open = false
-          break
-        }
-      }
-    }}
-  />
+      }}
+    />
+  </div>
 
   {#if open}
     <div

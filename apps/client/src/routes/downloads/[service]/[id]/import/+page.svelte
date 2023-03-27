@@ -3,6 +3,7 @@
   import { superForm } from 'sveltekit-superforms/client'
 
   import { dev } from '$app/environment'
+  import Input from '$lib/components/Input.svelte'
 
   import type { PageServerData } from './$types'
   import ArtistSelect from './ArtistSelect.svelte'
@@ -43,10 +44,9 @@
 {/if}
 
 <form class="space-y-1 p-4" method="POST" use:enhance>
-  <input
-    type="text"
+  <Input
     bind:value={$form.album.title}
-    data-invalid={$errors.album?.title}
+    errors={$errors.album?.title}
     {...$constraints.album?.title}
   />
   {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
