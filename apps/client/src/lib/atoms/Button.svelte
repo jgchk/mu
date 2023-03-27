@@ -17,13 +17,13 @@
   {disabled}
   {type}
   class={cn(
-    'flex items-center rounded px-2 py-1 text-sm font-medium outline-none transition focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-800',
+    'focus:ring-primary-500 flex items-center rounded border px-2 py-1 text-sm font-medium outline-none transition focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-800',
     kind === 'solid' &&
-      'bg-primary-500 hover:bg-primary-600 focus:ring-primary-500 text-black disabled:bg-gray-500 disabled:text-gray-700',
+      'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&
-      'focus:ring-primary-500 border-primary-500 text-primary-500 border bg-transparent hover:bg-gray-700 disabled:border-gray-500 disabled:bg-transparent disabled:text-gray-500',
+      'border-primary-500 text-primary-500 bg-transparent hover:bg-gray-700 disabled:border-gray-500 disabled:bg-transparent disabled:text-gray-500',
     kind === 'text' &&
-      'focus:ring-primary-500 bg-transparent text-gray-300 hover:bg-gray-700 disabled:bg-transparent disabled:text-gray-500',
+      'border-transparent bg-transparent text-gray-300 hover:bg-gray-700 disabled:bg-transparent disabled:text-gray-500',
     class_
   )}
 >
