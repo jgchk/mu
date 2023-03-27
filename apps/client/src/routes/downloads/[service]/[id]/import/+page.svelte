@@ -4,7 +4,9 @@
 
   import { dev } from '$app/environment'
   import Button from '$lib/atoms/Button.svelte'
+  import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
+  import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 
   import type { PageServerData } from './$types'
   import ArtistSelect from './ArtistSelect.svelte'
@@ -54,33 +56,45 @@
 
   <div class="space-y-1">
     {#each $form.album.artists as artist}
-      <ArtistSelect
-        value={artist}
-        artists={$form.artists}
-        on:create={({ detail }) => {
-          const id = $form.artists.size + 1
-          $form.artists.set(id, detail)
-          artist = {
-            action: 'create',
-            id,
-          }
-          removeIfUnused(artist)
-        }}
-        on:created={({ detail }) => {
-          artist = {
-            action: 'create',
-            id: detail,
-          }
-          removeIfUnused(artist)
-        }}
-        on:connect={({ detail }) => {
-          artist = {
-            action: 'connect',
-            id: detail,
-          }
-          removeIfUnused(artist)
-        }}
-      />
+      <div class="flex gap-1">
+        <ArtistSelect
+          value={artist}
+          artists={$form.artists}
+          on:create={({ detail }) => {
+            const id = $form.artists.size + 1
+            $form.artists.set(id, detail)
+            artist = {
+              action: 'create',
+              id,
+            }
+            removeIfUnused(artist)
+          }}
+          on:created={({ detail }) => {
+            artist = {
+              action: 'create',
+              id: detail,
+            }
+            removeIfUnused(artist)
+          }}
+          on:connect={({ detail }) => {
+            artist = {
+              action: 'connect',
+              id: detail,
+            }
+            removeIfUnused(artist)
+          }}
+        />
+        <IconButton
+          tooltip="Remove"
+          kind="text"
+          on:click={() => {
+            $form.album.artists = $form.album.artists.filter((artist_) => artist_ !== artist)
+            removeIfUnused(artist)
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </div>
     {/each}
     <Button
       kind="outline"
