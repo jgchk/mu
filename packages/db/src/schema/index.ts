@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm/sqlite-core'
+import type { InferModel } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export * from './downloads'

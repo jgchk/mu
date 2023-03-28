@@ -1,4 +1,4 @@
-import type { InferModel } from 'drizzle-orm/sqlite-core'
+import type { InferModel } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { FullTrack as SoundcloudFullTrack, Playlist as SoundcloudPlaylist } from 'soundcloud'
 import type {
@@ -16,7 +16,7 @@ export const soundcloudPlaylistDownloads = sqliteTable(
   {
     id: integer('id').primaryKey(),
     playlistId: integer('playlist_id').notNull(),
-    playlist: blob<SoundcloudPlaylist>('playlist', { mode: 'json' }),
+    playlist: blob('playlist', { mode: 'json' }).$type<SoundcloudPlaylist>(),
   },
   (soundcloudPlaylistDownloads) => ({
     playlistIdUniqueIndex: uniqueIndex('playlistIdUniqueIndex').on(
@@ -32,7 +32,7 @@ export const soundcloudTrackDownloads = sqliteTable(
   {
     id: integer('id').primaryKey(),
     trackId: integer('track_id').notNull(),
-    track: blob<SoundcloudFullTrack>('track', { mode: 'json' }),
+    track: blob('track', { mode: 'json' }).$type<SoundcloudFullTrack>(),
     path: text('path'),
     progress: integer('progress'),
     playlistDownloadId: integer('playlist_download_id').references(
@@ -54,7 +54,7 @@ export const spotifyAlbumDownloads = sqliteTable(
   {
     id: integer('id').primaryKey(),
     albumId: text('album_id').notNull(),
-    album: blob<SpotifyFullAlbum>('album', { mode: 'json' }),
+    album: blob('album', { mode: 'json' }).$type<SpotifyFullAlbum>(),
   },
   (spotifyAlbumDownloads) => ({
     albumIdUniqueIndex: uniqueIndex('albumIdUniqueIndex').on(spotifyAlbumDownloads.albumId),
@@ -68,7 +68,7 @@ export const spotifyTrackDownloads = sqliteTable(
   {
     id: integer('id').primaryKey(),
     trackId: text('track_id').notNull(),
-    track: blob<SpotifySimplifiedTrack>('track', { mode: 'json' }),
+    track: blob('track', { mode: 'json' }).$type<SpotifySimplifiedTrack>(),
     path: text('path'),
     progress: integer('progress'),
     albumDownloadId: integer('album_download_id').references(() => spotifyAlbumDownloads.id),
