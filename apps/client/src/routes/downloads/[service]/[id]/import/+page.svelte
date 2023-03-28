@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Readable } from 'svelte/store'
+  import type { DndEvent } from 'svelte-dnd-action'
+  import { dndzone } from 'svelte-dnd-action'
   import { superForm } from 'sveltekit-superforms/client'
 
   import { dev } from '$app/environment'
@@ -34,6 +36,14 @@
     if (!isUsedElsewhere) {
       $form.artists.delete(artist.id)
     }
+  }
+
+  const handleReorderTracks = (
+    e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
+      target: EventTarget & HTMLDivElement
+    }
+  ) => {
+    $form.tracks = e.detail.items.map((track, i) => ({ ...track, track: i + 1 }))
   }
 </script>
 
@@ -101,8 +111,13 @@
     </div>
 
     <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
-    <div class="space-y-2">
-      {#each $form.tracks as track, i}
+    <div
+      class="space-y-2"
+      use:dndzone={{ items: $form.tracks }}
+      on:consider={(e) => ($form.tracks = e.detail.items)}
+      on:finalize={handleReorderTracks}
+    >
+      {#each $form.tracks as track, i (track.id)}
         <div class="flex items-center rounded bg-gray-900 p-4 pl-0">
           <div class="center w-12 text-gray-500">{track.track}</div>
           <div class="flex-1 space-y-1">

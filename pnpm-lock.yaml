@@ -38,6 +38,7 @@ importers:
       superjson: ^1.12.2
       svelte: ^3.44.0
       svelte-check: ^2.7.1
+      svelte-dnd-action: ^0.9.22
       svelte-preprocess: ^4.10.6
       sveltekit-superforms: ^0.6.3
       tailwindcss: ^3.2.7
@@ -55,6 +56,7 @@ importers:
       '@trpc/client': 10.16.0_@trpc+server@10.16.0
       isomorphic-ws: 5.0.0_ws@8.13.0
       superjson: 1.12.2
+      svelte-dnd-action: 0.9.22_svelte@3.53.1
       sveltekit-superforms: 0.6.3_rmgro2uku4rc47uedxnqrmpoje
       tippy.js: 6.3.7
       trpc: link:../../packages/trpc
@@ -4659,6 +4661,14 @@ packages:
       - stylus
       - sugarss
     dev: true
+
+  /svelte-dnd-action/0.9.22_svelte@3.53.1:
+    resolution: {integrity: sha512-lOQJsNLM1QWv5mdxIkCVtk6k4lHCtLgfE59y8rs7iOM6erchbLC9hMEFYSveZz7biJV0mpg7yDSs4bj/RT/YkA==}
+    peerDependencies:
+      svelte: '>=3.23.0'
+    dependencies:
+      svelte: 3.53.1
+    dev: false
 
   /svelte-eslint-parser/0.24.2:
     resolution: {integrity: sha512-MYZYe8Z7C3eoZxF1VPOeVGe98BrgiX07+roCesACzCxCKpUkFJhi4w5JZwjdw60LGF71rfMJNypwb7AIG1/DYA==}
