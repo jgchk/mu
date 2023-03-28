@@ -7,6 +7,8 @@
   import { page } from '$app/stores'
   import Player from '$lib/components/Player.svelte'
   import { nowPlaying } from '$lib/now-playing'
+  import { createToast, setContextToast } from '$lib/toast/toast'
+  import Toaster from '$lib/toast/Toaster.svelte'
   import { setContextClient } from '$lib/trpc'
 
   import type { LayoutData } from './$types'
@@ -14,6 +16,9 @@
   export let data: LayoutData
 
   setContextClient(data.trpc)
+
+  const toast = createToast()
+  setContextToast(toast)
 
   let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || ''
 </script>
@@ -47,6 +52,7 @@
     </nav>
 
     <main class="relative flex-1 overflow-auto">
+      <Toaster />
       <slot />
     </main>
 
