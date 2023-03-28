@@ -396,9 +396,6 @@ importers:
       svelte:
         specifier: ^3.57.0
         version: 3.57.0
-      typescript:
-        specifier: ^4.7.2
-        version: 4.9.3
 
 packages:
 
@@ -5342,12 +5339,6 @@ packages:
     optionalDependencies:
       rxjs: 7.8.0
     dev: false
-
-  /typescript@4.9.3:
-    resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
-    dev: true
 
   /typescript@4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
