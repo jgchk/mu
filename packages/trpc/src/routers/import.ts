@@ -317,7 +317,7 @@ export const importRouter = router({
             album: albumTitle ?? null,
             albumArtists: albumArtists.map((artist) => artist.name),
           }
-          await writeTrackMetadata(newPath, metadata)
+          await writeTrackMetadata(path.resolve(newPath), metadata)
 
           const dbTrack = ctx.db.tracks.insertWithArtists({
             title: metadata.title,
@@ -328,9 +328,33 @@ export const importRouter = router({
             hasCoverArt: false,
           })
 
+          if (input.service === 'soulseek') {
+            ctx.db.soulseekTrackDownloads.delete(download.dbDownload.id)
+          } else if (input.service === 'soundcloud') {
+            ctx.db.soundcloudTrackDownloads.delete(download.dbDownload.id)
+          } else if (input.service === 'spotify') {
+            ctx.db.spotifyTrackDownloads.delete(download.dbDownload.id)
+          } else {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            throw new Error(`Invalid service: ${input.service}`)
+          }
+
           return dbTrack
         })
       )
+
+      if (trackDownloads.length === downloads.length) {
+        if (input.service === 'soulseek') {
+          ctx.db.soulseekReleaseDownloads.delete(releaseDownload.id)
+        } else if (input.service === 'soundcloud') {
+          ctx.db.soundcloudPlaylistDownloads.delete(releaseDownload.id)
+        } else if (input.service === 'spotify') {
+          ctx.db.spotifyAlbumDownloads.delete(releaseDownload.id)
+        } else {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          throw new Error(`Invalid service: ${input.service}`)
+        }
+      }
 
       return {
         release: dbRelease,

@@ -1,9 +1,10 @@
-import { fail } from '@sveltejs/kit'
+import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { z } from 'zod'
 
 import { createClient } from '$lib/trpc'
 import { paramNumber, paramService } from '$lib/utils/params'
+import { isDefined } from '$lib/utils/types'
 
 import type { Actions, PageServerLoad } from './$types'
 
@@ -95,7 +96,6 @@ export const actions: Actions = {
   default: async (event) => {
     // Same syntax as in the load function
     const form = await superValidate(event, schema)
-    console.log('POST', form)
 
     // Convenient validation check:
     if (!form.valid) {
@@ -104,8 +104,19 @@ export const actions: Actions = {
     }
 
     // TODO: Do something with the validated data
+    const trpc = createClient(event.fetch)
+    const result = await trpc.import.groupDownloadManual.mutate({
+      ...form.data,
+      album: {
+        ...form.data.album,
+        artists: form.data.album.artists.filter(isDefined),
+      },
+      tracks: form.data.tracks.map((track) => ({
+        ...track,
+        artists: track.artists.filter(isDefined),
+      })),
+    })
 
-    // Yep, return { form } here too
-    return { form }
+    throw redirect(303, `/releases/${result.release.id}`)
   },
 }
