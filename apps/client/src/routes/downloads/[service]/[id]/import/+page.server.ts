@@ -103,7 +103,6 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    // TODO: Do something with the validated data
     const trpc = createClient(event.fetch)
     const result = await trpc.import.groupDownloadManual.mutate({
       ...form.data,
