@@ -144,7 +144,7 @@
       {/if}
 
       <div
-        class="pointer-events-none absolute top-0 left-0 h-full w-full rounded border border-black opacity-10"
+        class="pointer-events-none absolute top-0 left-0 h-full w-full rounded border border-white opacity-5"
       />
     </div>
   {/if}
