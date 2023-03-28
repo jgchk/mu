@@ -31,7 +31,7 @@ importers:
     dependencies:
       '@jgchk/trpc-svelte-query':
         specifier: ^1.2.1
-        version: 1.2.1(@tanstack/svelte-query@4.27.0)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0)
+        version: 1.2.1(@tanstack/svelte-query@4.27.0)(@trpc/client@10.18.0)(@trpc/server@10.18.0)(svelte@3.57.0)
       '@popperjs/core':
         specifier: ^2.11.7
         version: 2.11.7
@@ -39,8 +39,8 @@ importers:
         specifier: ^4.27.0
         version: 4.27.0(svelte@3.57.0)
       '@trpc/client':
-        specifier: ^10.16.0
-        version: 10.16.0(@trpc/server@10.16.0)
+        specifier: ^10.18.0
+        version: 10.18.0(@trpc/server@10.18.0)
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
@@ -350,8 +350,8 @@ importers:
   packages/trpc:
     dependencies:
       '@trpc/server':
-        specifier: ^10.16.0
-        version: 10.16.0
+        specifier: ^10.18.0
+        version: 10.18.0
       '@types/content-disposition':
         specifier: ^0.5.5
         version: 0.5.5
@@ -903,7 +903,7 @@ packages:
   /@humanwhocodes/object-schema@1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
 
-  /@jgchk/trpc-svelte-query@1.2.1(@tanstack/svelte-query@4.27.0)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0):
+  /@jgchk/trpc-svelte-query@1.2.1(@tanstack/svelte-query@4.27.0)(@trpc/client@10.18.0)(@trpc/server@10.18.0)(svelte@3.57.0):
     resolution: {integrity: sha512-S4oEd7lhH4geBLlmOl2Hp5+Bjq/pU78pXAAm9tNcBhhc7jkKPvEcQHJ2M5PCkFRIhJUv9RvDW7iDTGq6rtEoFg==}
     peerDependencies:
       '@tanstack/svelte-query': ^4.26.0
@@ -912,8 +912,8 @@ packages:
       svelte: ^3.55.1
     dependencies:
       '@tanstack/svelte-query': 4.27.0(svelte@3.57.0)
-      '@trpc/client': 10.16.0(@trpc/server@10.16.0)
-      '@trpc/server': 10.16.0
+      '@trpc/client': 10.18.0(@trpc/server@10.18.0)
+      '@trpc/server': 10.18.0
       esm-env: 1.0.0
       svelte: 3.57.0
     dev: false
@@ -1108,16 +1108,20 @@ packages:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
     dev: false
 
-  /@trpc/client@10.16.0(@trpc/server@10.16.0):
-    resolution: {integrity: sha512-Hxxi3mOcUyszosj6xpPDIIBV1TOhXKpZ191BW/60r1lXBAfNrDUWHOTol1Dfu+hpcx4bpj3WRyob5cf+6KeCDA==}
+  /@trpc/client@10.18.0(@trpc/server@10.18.0):
+    resolution: {integrity: sha512-2d+6r2C/xygTjDWX9jT66defgHzbQP0Z8vrvyT3XtPjqU6JNlRNuS2ZtB8xDPdOQUUVnndzZ43BMr+Zu49K0OQ==}
     peerDependencies:
-      '@trpc/server': 10.16.0
+      '@trpc/server': 10.18.0
     dependencies:
-      '@trpc/server': 10.16.0
+      '@trpc/server': 10.18.0
     dev: false
 
   /@trpc/server@10.16.0:
     resolution: {integrity: sha512-lCUq7AB7vcgrNbaN+xP/AN62OjKDgrRyG7fTDPv5K633ut7KJ3m57qs60VRBOgp9vow6elAg51pKFFDtPHbTRA==}
+    dev: false
+
+  /@trpc/server@10.18.0:
+    resolution: {integrity: sha512-nVMqdDIF9YLOeC3g6RdAvdCPqkHFjpshSqZGThZ+fyjiWSUXj2ZKCduhJFnY77TjtgODojeaaghmzcnjxb+Onw==}
     dev: false
 
   /@types/better-sqlite3@7.6.3:
