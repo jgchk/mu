@@ -67,8 +67,8 @@ importers:
         version: 3.21.4
     devDependencies:
       '@sveltejs/adapter-node':
-        specifier: ^1.2.2
-        version: 1.2.2(@sveltejs/kit@1.14.0)
+        specifier: ^1.2.3
+        version: 1.2.3(@sveltejs/kit@1.14.0)
       '@sveltejs/kit':
         specifier: latest
         version: 1.14.0(svelte@3.57.0)(vite@4.0.0)
@@ -1027,8 +1027,8 @@ packages:
     engines: {node: '>=14.16'}
     dev: false
 
-  /@sveltejs/adapter-node@1.2.2(@sveltejs/kit@1.14.0):
-    resolution: {integrity: sha512-HA+QPRve97ZAQfZ0wkHjtoSR9ilyYZV82T7zRgzm2WJ0rIpAgyRYf6K7KNwiCq23KKkN0hZHY5elNyCnVz8zrA==}
+  /@sveltejs/adapter-node@1.2.3(@sveltejs/kit@1.14.0):
+    resolution: {integrity: sha512-Fv6NyVpVWYA63KRaV6dDjcU8ytcWFiUr0siJOoHl+oWy5WHNEuRiJOUdiZzYbZo8MmvFaCoxHkTgPrVQhpqaRA==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
     dependencies:
