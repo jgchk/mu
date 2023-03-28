@@ -9,6 +9,7 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
 
   import type { PageServerData } from './$types'
@@ -16,7 +17,19 @@
 
   export let data: PageServerData
 
-  const { form, enhance, errors, constraints, delayed } = superForm(data.form, { dataType: 'json' })
+  const toast = getContextToast()
+  const { form, enhance, errors, constraints, delayed } = superForm(data.form, {
+    dataType: 'json',
+    onResult: ({ result }) => {
+      if (result.type === 'redirect' || result.type === 'success') {
+        toast.success(`Imported ${$form.album.title || 'release'}!`)
+      } else if (result.type === 'failure') {
+        toast.error('Check the form for errors')
+      } else if (result.type === 'error') {
+        toast.error('Failed to import release')
+      }
+    },
+  })
 
   type StoreType<T extends Readable<unknown>> = T extends Readable<infer U> ? U : never
 
