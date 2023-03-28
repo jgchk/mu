@@ -15,7 +15,7 @@
   "dependencies": {
     "@jgchk/trpc-svelte-query": "^1.2.1",
     "@popperjs/core": "^2.11.7",
-    "@tanstack/svelte-query": "^4.26.1",
+    "@tanstack/svelte-query": "^4.27.0",
     "@trpc/client": "^10.16.0",
     "isomorphic-ws": "^5.0.0",
     "superjson": "^1.12.2",
