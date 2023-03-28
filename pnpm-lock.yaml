@@ -218,9 +218,6 @@ importers:
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
-      typescript:
-        specifier: ^4.7.2
-        version: 4.9.3
 
   packages/downloader:
     dependencies:

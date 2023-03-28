@@ -13,16 +13,15 @@
   "devDependencies": {
     "dotenv-cli": "^7.1.0",
     "drizzle-kit": "^0.17.0",
-    "eslint-config-custom": "workspace:*",
-    "typescript": "^4.7.2"
+    "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
     "@trpc/server": "^10.16.0",
     "@types/better-sqlite3": "^7.6.3",
     "better-sqlite3": "^8.2.0",
     "drizzle-orm": "^0.22.0",
-    "superjson": "^1.12.2",
     "soundcloud": "workspace:*",
-    "spotify": "workspace:*"
+    "spotify": "workspace:*",
+    "superjson": "^1.12.2"
   }
 }
