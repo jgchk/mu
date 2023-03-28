@@ -8,9 +8,6 @@
     "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\"",
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
-  "devDependencies": {
-    "typescript": "^4.7.2"
-  },
   "dependencies": {
     "execa": "^7.1.1",
     "file-type": "^18.2.1",
