@@ -9,9 +9,9 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "devDependencies": {
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.15.11",
     "eslint-config-custom": "workspace:*",
-    "typescript": "^4.7.2"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "@trpc/server": "^10.18.0",
