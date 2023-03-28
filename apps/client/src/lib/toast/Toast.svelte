@@ -38,7 +38,7 @@
   <button
     on:click={close}
     class={cn(
-      'grid-center group/button w-10 rounded-l-lg border border-r-0 transition',
+      'center group/button w-10 rounded-l-lg border border-r-0 transition',
       variant === 'info' &&
         'border-info-500 bg-info-600 hover:border-info-600 hover:bg-info-700 text-info-100',
       variant === 'success' &&
@@ -49,7 +49,7 @@
         'border-warning-500 bg-warning-600 hover:border-warning-600 hover:bg-warning-700 text-warning-100'
     )}
   >
-    <div class="grid-center relative h-5 w-5 group-active:top-px">
+    <div class="center relative h-5 w-5 group-active:top-px">
       <div
         class="h-5 w-5 opacity-100 transition-all duration-200 group-hover/container:h-0 group-hover/container:w-0 group-hover/container:opacity-0"
       >
@@ -66,7 +66,7 @@
       <div
         class="absolute top-0 left-0 h-full w-full opacity-0 transition-all duration-300 group-hover/container:opacity-100"
       >
-        <XIcon size={18} />
+        <XIcon size={20} />
       </div>
     </div>
   </button>

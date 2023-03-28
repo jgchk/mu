@@ -6,8 +6,8 @@
 
   export let toast = getContextToast()
 
-  const IN_DURATION = 300
-  const OUT_DURATION = 275
+  const IN_DURATION = 200
+  const OUT_DURATION = 175
   const FLY_SIZE = 50
 </script>
 
