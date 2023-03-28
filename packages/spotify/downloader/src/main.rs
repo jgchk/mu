@@ -31,7 +31,7 @@ async fn main() -> anyhow::Result<()> {
         track_id,
     } = Args::parse();
 
-    let id = SpotifyId::from_base62(&track_id).or(Err(anyhow!("Invalid track id")))?;
+    let id = SpotifyId::from_base62(&track_id).map_err(|_| anyhow!("Invalid track id"))?;
 
     let streaming_client =
         streaming_client::StreamingClient::new(&username, &password, &credentials_cache).await?;
@@ -54,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
     let file_id = streaming_track
         .files
         .get(&format)
-        .ok_or(anyhow!("No file id for format {:?}", format))?;
+        .ok_or_else(|| anyhow!("No file id for format {:?}", format))?;
     let key = streaming_client.audio_key(id, *file_id).await?;
     let audio_file = streaming_client
         .audio_file(*file_id, 1024 * 1024, true)
