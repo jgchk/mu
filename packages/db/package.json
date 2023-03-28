@@ -16,7 +16,6 @@
     "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
-    "@trpc/server": "^10.16.0",
     "@types/better-sqlite3": "^7.6.3",
     "better-sqlite3": "^8.2.0",
     "drizzle-orm": "^0.22.0",

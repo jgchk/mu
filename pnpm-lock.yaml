@@ -187,9 +187,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@trpc/server':
-        specifier: ^10.16.0
-        version: 10.16.0
       '@types/better-sqlite3':
         specifier: ^7.6.3
         version: 7.6.3
