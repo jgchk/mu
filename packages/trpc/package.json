@@ -10,8 +10,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
-    "eslint-config-custom": "workspace:*",
-    "typescript": "^4.9.5"
+    "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
     "@trpc/server": "^10.18.0",
