@@ -100,7 +100,7 @@
 
   {#if open}
     <div
-      class="z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
+      class="relative z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
       transition:dropdown
       use:popperTooltip={{
         modifiers: [
@@ -142,6 +142,10 @@
           Create new artist: {displayFilter}
         </button>
       {/if}
+
+      <div
+        class="pointer-events-none absolute top-0 left-0 h-full w-full rounded border border-black opacity-10"
+      />
     </div>
   {/if}
 </div>
