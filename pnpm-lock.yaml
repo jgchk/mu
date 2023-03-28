@@ -244,14 +244,11 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.3
-        version: 18.15.3
+        specifier: ^18.15.11
+        version: 18.15.11
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
-      typescript:
-        specifier: ^4.7.2
-        version: 4.9.3
 
   packages/eslint-config-custom:
     dependencies:
@@ -1653,8 +1650,8 @@ packages:
     engines: {node: '>=14.16'}
     dev: false
 
-  /cacheable-request@10.2.8:
-    resolution: {integrity: sha512-IDVO5MJ4LItE6HKFQTqT2ocAQsisOoCTUDu1ddCmnhyiwFQjXNPp4081Xj23N4tO+AFEFNzGuNEf/c8Gwwt15A==}
+  /cacheable-request@10.2.9:
+    resolution: {integrity: sha512-CaAMr53AS1Tb9evO1BIWFnZjSr8A4pbXofpsNVWPMDZZj3ZQKHwsQG9BrTqQ4x5ZYJXz1T2b8LLtTZODxSpzbg==}
     engines: {node: '>=14.16'}
     dependencies:
       '@types/http-cache-semantics': 4.0.1
@@ -3271,7 +3268,7 @@ packages:
       '@sindresorhus/is': 5.3.0
       '@szmarczak/http-timer': 5.0.1
       cacheable-lookup: 7.0.0
-      cacheable-request: 10.2.8
+      cacheable-request: 10.2.9
       decompress-response: 6.0.0
       form-data-encoder: 2.1.4
       get-stream: 6.0.1
