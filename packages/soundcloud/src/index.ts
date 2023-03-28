@@ -215,10 +215,10 @@ export const soundcloudImageSizes = [
   3000,
   'original',
 ] as const
-export type SoundcloudImageSize = typeof soundcloudImageSizes[number]
+export type SoundcloudImageSize = (typeof soundcloudImageSizes)[number]
 
 export const soundcloudImageFormats = ['png', 'jpg'] as const
-export type SoundcloudImageFormat = typeof soundcloudImageFormats[number]
+export type SoundcloudImageFormat = (typeof soundcloudImageFormats)[number]
 
 export type DownloadResult = { pipe: stream.Readable; extension: string }
 
