@@ -1,0 +1,118 @@
+<script lang="ts">
+  import { onMount } from 'svelte'
+  import { linear } from 'svelte/easing'
+  import { tweened } from 'svelte/motion'
+
+  import CheckCircleIcon from '$lib/icons/CheckCircleIcon.svelte'
+  import ErrorIcon from '$lib/icons/ErrorIcon.svelte'
+  import InfoIcon from '$lib/icons/InfoIcon.svelte'
+  import WarningIcon from '$lib/icons/WarningIcon.svelte'
+  import XIcon from '$lib/icons/XIcon.svelte'
+  import { cn } from '$lib/utils/classes'
+
+  import type { Toast } from './toast'
+  import { getContextToast, ToastDefaults } from './toast'
+
+  export let item: Toast
+  export let toast = getContextToast()
+  $: duration = item.duration ?? ToastDefaults.duration
+  $: variant = item.variant ?? 'info'
+
+  const progress = tweened(0, { duration, easing: linear })
+
+  const close = () => toast.hide(item.id)
+  $: $progress === 1 && close()
+
+  const pause = () => {
+    void progress.set($progress, { duration: 0 })
+  }
+
+  const resume = () => {
+    void progress.set(1, { duration: duration * (1 - $progress) })
+  }
+
+  onMount(() => resume())
+</script>
+
+<div on:mouseenter={pause} on:mouseleave={resume} class="group/container flex">
+  <button
+    on:click={close}
+    class={cn(
+      'grid-center group/button w-10 rounded-l-lg border border-r-0 transition',
+      variant === 'info' &&
+        'border-info-500 bg-info-600 hover:border-info-600 hover:bg-info-700 text-info-100',
+      variant === 'success' &&
+        'border-success-500 bg-success-600 hover:border-success-600 hover:bg-success-700 text-success-100',
+      variant === 'error' &&
+        'border-error-500 bg-error-600 hover:border-error-600 hover:bg-error-700 text-error-100',
+      variant === 'warning' &&
+        'border-warning-500 bg-warning-600 hover:border-warning-600 hover:bg-warning-700 text-warning-100'
+    )}
+  >
+    <div class="grid-center relative h-5 w-5 group-active:top-px">
+      <div
+        class="h-5 w-5 opacity-100 transition-all duration-200 group-hover/container:h-0 group-hover/container:w-0 group-hover/container:opacity-0"
+      >
+        {#if variant === 'success'}
+          <CheckCircleIcon />
+        {:else if variant === 'error'}
+          <ErrorIcon />
+        {:else if variant === 'warning'}
+          <WarningIcon />
+        {:else}
+          <InfoIcon />
+        {/if}
+      </div>
+      <div
+        class="absolute top-0 left-0 h-full w-full opacity-0 transition-all duration-300 group-hover/container:opacity-100"
+      >
+        <XIcon size={18} />
+      </div>
+    </div>
+  </button>
+
+  <div class="relative flex flex-col rounded-r-lg border border-l-0 border-gray-700 bg-gray-800">
+    <div class="px-3 py-2">
+      {item.msg}
+    </div>
+
+    {#if duration !== Infinity}
+      <progress
+        value={$progress}
+        class={cn('absolute -bottom-px h-px', variant)}
+        style="width: calc(100% - 3px)"
+      />
+    {/if}
+  </div>
+</div>
+
+<style lang="postcss">
+  progress {
+    background: theme(colors.transparent);
+    appearance: none;
+  }
+
+  progress::-webkit-progress-bar {
+    background: theme(colors.transparent);
+  }
+
+  progress.info::-webkit-progress-value,
+  progress.info::-moz-progress-bar {
+    background: theme(colors.info.500);
+  }
+
+  progress.success::-webkit-progress-value,
+  progress.success::-moz-progress-bar {
+    background: theme(colors.success.500);
+  }
+
+  progress.error::-webkit-progress-value,
+  progress.error::-moz-progress-bar {
+    background: theme(colors.error.500);
+  }
+
+  progress.warning::-webkit-progress-value,
+  progress.warning::-moz-progress-bar {
+    background: theme(colors.warning.500);
+  }
+</style>
