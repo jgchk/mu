@@ -284,14 +284,11 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.3
-        version: 18.15.3
+        specifier: ^18.15.11
+        version: 18.15.11
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
-      typescript:
-        specifier: ^4.7.2
-        version: 4.9.3
 
   packages/soundcloud:
     dependencies:
@@ -2911,7 +2908,7 @@ packages:
     dependencies:
       cross-spawn: 7.0.3
       get-stream: 6.0.1
-      human-signals: 4.3.0
+      human-signals: 4.3.1
       is-stream: 3.0.0
       merge-stream: 2.0.0
       npm-run-path: 5.1.0
@@ -3354,8 +3351,8 @@ packages:
     engines: {node: '>=10.17.0'}
     dev: true
 
-  /human-signals@4.3.0:
-    resolution: {integrity: sha512-zyzVyMjpGBX2+6cDVZeFPCdtOtdsxOeseRhB9tkQ6xXmGUNrcnBzdEKPy3VPNYz+4gy1oukVOXcrJCunSyc6QQ==}
+  /human-signals@4.3.1:
+    resolution: {integrity: sha512-nZXjEF2nbo7lIw3mgYjItAfgQXog3OjJogSbKa2CQIIvSGWcKgeJnQlNXip6NglNzYH45nSRiEVimMvYL8DDqQ==}
     engines: {node: '>=14.18.0'}
     dev: false
 
