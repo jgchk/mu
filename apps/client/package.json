@@ -20,7 +20,7 @@
     "isomorphic-ws": "^5.0.0",
     "superjson": "^1.12.2",
     "svelte-dnd-action": "^0.9.22",
-    "sveltekit-superforms": "^0.6.3",
+    "sveltekit-superforms": "^0.6.5",
     "tippy.js": "^6.3.7",
     "trpc": "workspace:*",
     "ui": "workspace:*",
@@ -36,7 +36,7 @@
     "svelte": "^3.57.0",
     "svelte-check": "^2.7.1",
     "svelte-preprocess": "^4.10.6",
-    "tailwindcss": "^3.2.7",
+    "tailwindcss": "^3.3.0",
     "tslib": "^2.5.0",
     "typescript": "^4.9.5",
     "vite": "^4.0.0"
