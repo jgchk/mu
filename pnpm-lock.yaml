@@ -318,14 +318,11 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.3
-        version: 18.15.3
+        specifier: ^18.15.11
+        version: 18.15.11
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
-      typescript:
-        specifier: ^4.7.2
-        version: 4.9.3
 
   packages/trpc:
     dependencies:
@@ -1172,10 +1169,6 @@ packages:
 
   /@types/node@18.15.11:
     resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
-
-  /@types/node@18.15.3:
-    resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
-    dev: true
 
   /@types/pug@2.0.6:
     resolution: {integrity: sha512-SnHmG9wN1UVmagJOnyo/qkk0Z7gejYxOYYmaAwr5u2yFYfsupN3sg10kyzN8Hep/2zbHxCnsumxOoRIRMBwKCg==}
