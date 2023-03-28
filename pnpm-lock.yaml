@@ -30,8 +30,8 @@ importers:
   apps/client:
     dependencies:
       '@jgchk/trpc-svelte-query':
-        specifier: ^1.2.0
-        version: 1.2.0(@tanstack/svelte-query@4.26.1)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0)
+        specifier: ^1.2.1
+        version: 1.2.1(@tanstack/svelte-query@4.26.1)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0)
       '@popperjs/core':
         specifier: ^2.11.7
         version: 2.11.7
@@ -903,12 +903,12 @@ packages:
   /@humanwhocodes/object-schema@1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
 
-  /@jgchk/trpc-svelte-query@1.2.0(@tanstack/svelte-query@4.26.1)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0):
-    resolution: {integrity: sha512-f1XARwRqM42qarytajuEz8NVwOZn+kSbqIcRLkaXjR86a1zOq3/BEJrLPUmAiON10UiuK+wEY5maTusG4BlpRQ==}
+  /@jgchk/trpc-svelte-query@1.2.1(@tanstack/svelte-query@4.26.1)(@trpc/client@10.16.0)(@trpc/server@10.16.0)(svelte@3.57.0):
+    resolution: {integrity: sha512-S4oEd7lhH4geBLlmOl2Hp5+Bjq/pU78pXAAm9tNcBhhc7jkKPvEcQHJ2M5PCkFRIhJUv9RvDW7iDTGq6rtEoFg==}
     peerDependencies:
       '@tanstack/svelte-query': ^4.26.0
-      '@trpc/client': 10.16.0
-      '@trpc/server': 10.16.0
+      '@trpc/client': ^10.16.0
+      '@trpc/server': ^10.16.0
       svelte: ^3.55.1
     dependencies:
       '@tanstack/svelte-query': 4.26.1(svelte@3.57.0)
