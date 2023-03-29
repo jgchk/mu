@@ -5,8 +5,8 @@
   import SpotifyIcon from '$lib/icons/SpotifyIcon.svelte'
 </script>
 
-<div class="flex h-full">
-  <div class="my-2 ml-2 w-48 min-w-fit rounded bg-gray-900 py-2">
+<div class="flex h-full gap-2">
+  <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
     <ServiceLink service="Spotify">
       <SpotifyIcon />
     </ServiceLink>

@@ -1,17 +1,17 @@
 <script lang="ts">
-  import FlowGrid from '$lib/components/FlowGrid.svelte';
-  import { getContextClient } from '$lib/trpc';
+  import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import { getContextClient } from '$lib/trpc'
 
-  import type { PageData } from './$types';
-  import SpotifySearchResult from './SpotifySearchResult.svelte';
+  import type { PageData } from './$types'
+  import SpotifySearchResult from './SpotifySearchResult.svelte'
 
-  export let data: PageData;
+  export let data: PageData
 
-  const trpc = getContextClient();
+  const trpc = getContextClient()
   $: spotifyQuery = trpc.search.spotify.query(
     { query: data.query },
     { enabled: data.hasQuery, staleTime: 60 * 1000 }
-  );
+  )
 </script>
 
 {#if data.hasQuery}
