@@ -280,7 +280,7 @@ export const importRouter = router({
             filename += download.metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
             filename += ' '
           }
-          filename += download.metadata.title
+          filename += download.metadata.title ?? '[untitled]'
           filename += path.extname(download.dbDownload.path)
 
           const newPath = path.join(
@@ -397,6 +397,142 @@ export const importRouter = router({
       }
 
       return result
+    }),
+  trackDownloadData: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .query(async ({ input: { service, id }, ctx }) => {
+      let dbDownload
+      if (service === 'soulseek') {
+        dbDownload = ctx.db.soulseekTrackDownloads.get(id)
+      } else if (service === 'soundcloud') {
+        dbDownload = ctx.db.soundcloudTrackDownloads.get(id)
+      } else if (service === 'spotify') {
+        dbDownload = ctx.db.spotifyTrackDownloads.get(id)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${service}`)
+      }
+
+      if (!isDownloadComplete(dbDownload)) {
+        throw new Error('Download is not complete')
+      }
+
+      const fileType = await fileTypeFromFile(dbDownload.path)
+
+      if (!fileType?.mime.startsWith('audio/') && fileType?.mime !== 'video/mp4') {
+        throw new Error('File is not audio')
+      }
+
+      const metadata = await readTrackMetadata(path.resolve(dbDownload.path))
+      if (!metadata) {
+        throw new Error('Could not read metadata')
+      }
+
+      return {
+        id: dbDownload.id,
+        metadata,
+      }
+    }),
+  trackDownloadManual: publicProcedure
+    .input(
+      z.object({
+        service: z.enum(['soundcloud', 'spotify', 'soulseek']),
+        id: z.number(),
+        createArtists: z.map(z.number(), z.string()),
+        title: z.string().min(1).optional(),
+        artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      let dbDownload
+      if (input.service === 'soulseek') {
+        dbDownload = ctx.db.soulseekTrackDownloads.get(input.id)
+      } else if (input.service === 'soundcloud') {
+        dbDownload = ctx.db.soundcloudTrackDownloads.get(input.id)
+      } else if (input.service === 'spotify') {
+        dbDownload = ctx.db.spotifyTrackDownloads.get(input.id)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${input.service}`)
+      }
+
+      if (!isDownloadComplete(dbDownload)) {
+        throw new Error('Download is not complete')
+      }
+
+      const artistMap = new Map(
+        [...input.createArtists.entries()].map(([id, name]) => [
+          id,
+          ctx.db.artists.insert({ name }),
+        ])
+      )
+
+      const artists = input.artists.map((artist) => {
+        if (artist.action === 'create') {
+          const dbArtist = artistMap.get(artist.id)
+          if (!dbArtist) {
+            throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+          }
+          return dbArtist
+        } else {
+          return ctx.db.artists.get(artist.id)
+        }
+      })
+      const dbRelease = ctx.db.releases.insertWithArtists({
+        title: input.title,
+        artists: artists.map((artist) => artist.id),
+      })
+
+      // track
+      const filename = `1 ${input.title ?? '[untitled]'}${path.extname(dbDownload.path)}`
+
+      const newPath = path.join(
+        ctx.musicDir,
+        filenamify(
+          artists.length > 0 ? artists.map((artist) => artist.name).join(', ') : '[unknown]'
+        ),
+        filenamify(input.title ?? '[unknown]'),
+        filenamify(filename)
+      )
+
+      if (path.resolve(dbDownload.path) !== path.resolve(newPath)) {
+        await fs.mkdir(path.dirname(newPath), { recursive: true })
+        await fs.rename(path.resolve(dbDownload.path), newPath)
+      }
+
+      const metadata: Metadata = {
+        title: input.title ?? null,
+        artists: artists.map((artist) => artist.name),
+        track: 1,
+        album: input.title ?? null,
+        albumArtists: artists.map((artist) => artist.name),
+      }
+      await writeTrackMetadata(path.resolve(newPath), metadata)
+
+      const dbTrack = ctx.db.tracks.insertWithArtists({
+        title: metadata.title,
+        artists: artists.map((artist) => artist.id),
+        path: newPath,
+        releaseId: dbRelease.id,
+        trackNumber: metadata.track,
+        hasCoverArt: false,
+      })
+
+      if (input.service === 'soulseek') {
+        ctx.db.soulseekTrackDownloads.delete(dbDownload.id)
+      } else if (input.service === 'soundcloud') {
+        ctx.db.soundcloudTrackDownloads.delete(dbDownload.id)
+      } else if (input.service === 'spotify') {
+        ctx.db.spotifyTrackDownloads.delete(dbDownload.id)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Invalid service: ${input.service}`)
+      }
+
+      return {
+        release: dbRelease,
+        track: dbTrack,
+      }
     }),
 })
 

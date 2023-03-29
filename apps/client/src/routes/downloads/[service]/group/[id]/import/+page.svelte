@@ -8,12 +8,12 @@
   import Button from '$lib/atoms/Button.svelte'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
+  import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
 
   import type { PageServerData } from './$types'
-  import ArtistSelect from './ArtistSelect.svelte'
 
   export let data: PageServerData
 
@@ -76,7 +76,7 @@
           <div class="flex gap-1">
             <ArtistSelect
               value={artist}
-              artists={$form.artists}
+              createArtists={$form.artists}
               on:create={({ detail }) => {
                 const id = $form.artists.size + 1
                 $form.artists.set(id, detail)
@@ -150,7 +150,7 @@
                 <div class="flex gap-1">
                   <ArtistSelect
                     value={artist}
-                    artists={$form.artists}
+                    createArtists={$form.artists}
                     on:create={({ detail }) => {
                       const id = $form.artists.size + 1
                       $form.artists.set(id, detail)
@@ -205,7 +205,7 @@
 </div>
 
 {#if dev}
-  {#await import('./Debug.svelte')}
+  {#await import('$lib/components/SuperformDebug.svelte')}
     <div class="absolute left-0 bottom-0 flex w-full justify-center p-1 text-gray-400">
       Loading Debug...
     </div>

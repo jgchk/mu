@@ -17,7 +17,7 @@
     <div class="truncate text-lg">{download.name ?? 'Loading...'}</div>
     <div class="text-right text-lg">
       {#if download.progress === 100}
-        <a class="hover:text-white" href="/downloads/{download.service}/{download.id}/import"
+        <a class="hover:text-white" href="/downloads/{download.service}/track/{download.id}/import"
           >Import</a
         >
         <button class="hover:text-white" on:click={handleAutoImport}>Auto-Import</button>

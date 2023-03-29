@@ -20,7 +20,7 @@
         action: 'create'
       }
     | undefined = undefined
-  export let artists: Map<number, string>
+  export let createArtists: Map<number, string>
   export let open = false
 
   export let filter = ''
@@ -31,10 +31,12 @@
           .map((artist) => ({ action: 'connect', ...artist } as const))
       : $artistsQuery.data?.map((artist) => ({ action: 'connect', ...artist } as const))) ?? []),
     ...(filter.length > 0
-      ? [...artists.entries()]
+      ? [...createArtists.entries()]
           .filter(([, name]) => name.toLowerCase().includes(filter.toLowerCase()))
           .map(([id, name]) => ({ action: 'created', id, name } as const))
-      : [...artists.entries()].map(([id, name]) => ({ action: 'created', id, name } as const))),
+      : [...createArtists.entries()].map(
+          ([id, name]) => ({ action: 'created', id, name } as const)
+        )),
   ]
 
   let displayFilter = filter
@@ -57,7 +59,7 @@
         displayFilter = 'Loading...'
       }
     } else {
-      const name = artists.get(value.id)
+      const name = createArtists.get(value.id)
       displayFilter = name ?? 'Unknown'
     }
   }

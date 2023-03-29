@@ -45,8 +45,9 @@
       <div class="mb-2 truncate text-lg">{download.name ?? 'Loading...'}</div>
       <div class="mb-2 text-right text-lg">
         {#if status.type === 'complete'}
-          <a class="hover:text-white" href="/downloads/{download.service}/{download.id}/import"
-            >Import</a
+          <a
+            class="hover:text-white"
+            href="/downloads/{download.service}/group/{download.id}/import">Import</a
           >
           <button class="hover:text-white" on:click={handleAutoImport}>Auto-Import</button>
         {:else if status.type === 'downloading'}
