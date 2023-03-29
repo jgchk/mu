@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc';
+  import { getContextClient } from '$lib/trpc'
 
-  import type { PageData } from './$types';
+  import type { PageData } from './$types'
 
-  export let data: PageData;
+  export let data: PageData
 
-  const trpc = getContextClient();
-  const releaseQuery = trpc.releases.getById.query({ id: data.id });
-  const tracksQuery = trpc.tracks.getByReleaseId.query({ releaseId: data.id });
+  const trpc = getContextClient()
+  const releaseQuery = trpc.releases.getById.query({ id: data.id })
+  const tracksQuery = trpc.tracks.getByReleaseId.query({ releaseId: data.id })
 </script>
 
 {#if $releaseQuery.data && $tracksQuery.data}
