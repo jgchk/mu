@@ -39,7 +39,7 @@
   }
 </script>
 
-<div class="rounded bg-gray-900 p-4 text-gray-200">
+<div class="max-w-4xl rounded bg-gray-900 p-4 text-gray-200">
   <div class="files-grid items-center">
     <div class="contents">
       <div class="mb-2 truncate text-lg">{download.name ?? 'Loading...'}</div>
