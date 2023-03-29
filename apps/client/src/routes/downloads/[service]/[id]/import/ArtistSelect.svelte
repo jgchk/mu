@@ -101,7 +101,7 @@
   {#if open}
     <div
       class="relative z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
-      transition:dropdown
+      transition:dropdown|local
       use:popperTooltip={{
         modifiers: [
           {

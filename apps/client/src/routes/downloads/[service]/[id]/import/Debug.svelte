@@ -22,7 +22,7 @@
     on:click={() => (show = !show)}>{show ? 'Hide Debug' : 'Show Debug'}</button
   >
   {#if show}
-    <div class="h-64 overflow-auto bg-[#222] p-4 pt-0 text-sm" transition:slide>
+    <div class="h-64 overflow-auto bg-[#222] p-4 pt-0 text-sm" transition:slide|local>
       <SuperDebug data={transformedData} />
     </div>
   {/if}
