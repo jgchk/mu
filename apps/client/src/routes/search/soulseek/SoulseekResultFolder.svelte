@@ -47,6 +47,7 @@
       <div class="mb-2 text-lg">{item.dirname}</div>
       <div class="mb-2 whitespace-nowrap text-right text-lg">{formatSize(item.size)}</div>
       <button
+        type="button"
         class="mb-2 h-5 w-5 text-right text-lg hover:text-white"
         use:tooltip={{ content: 'Download All' }}
         on:click={handleDownload}

@@ -75,6 +75,7 @@
   <div class="max-w-[722px] flex-[4]">
     <div class="flex w-full justify-center">
       <button
+        type="button"
         class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
         on:click={togglePlaying}
       >
@@ -98,6 +99,7 @@
   </div>
   <div class="group flex flex-[2.25] items-center justify-end">
     <button
+      type="button"
       class="center h-8 w-8 text-gray-400 hover:text-white"
       use:tooltip={{ content: $volume === 0 ? 'Unmute' : 'Mute' }}
       on:click={() => {

@@ -29,6 +29,7 @@
   <div>{file.basename}</div>
   <div class="whitespace-nowrap text-right">{formatSize(file.size)}</div>
   <button
+    type="button"
     class="h-5 w-5 text-right hover:text-white"
     use:tooltip={{ content: 'Download' }}
     on:click={handleDownload}

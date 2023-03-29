@@ -55,6 +55,7 @@
           <div class="center w-8">
             <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
             <button
+              type="button"
               class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
               on:click={() => play(track.id)}
             >

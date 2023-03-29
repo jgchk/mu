@@ -36,6 +36,7 @@
 
 <div on:mouseenter={pause} on:mouseleave={resume} class="group/container flex shadow">
   <button
+    type="button"
     on:click={close}
     class={cn(
       'center group/button w-10 rounded-l-lg border border-r-0 transition',

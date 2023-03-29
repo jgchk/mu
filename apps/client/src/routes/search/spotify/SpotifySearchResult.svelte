@@ -36,6 +36,7 @@
 
 <div class="w-full overflow-hidden">
   <button
+    type="button"
     class="relative w-full shadow"
     on:click={handleDownload}
     use:tooltip={{

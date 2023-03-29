@@ -20,7 +20,9 @@
         <a class="hover:text-white" href="/downloads/{download.service}/track/{download.id}/import"
           >Import</a
         >
-        <button class="hover:text-white" on:click={handleAutoImport}>Auto-Import</button>
+        <button type="button" class="hover:text-white" on:click={handleAutoImport}
+          >Auto-Import</button
+        >
       {:else if download.progress !== null}
         Downloading... ({download.progress}%)
       {:else}

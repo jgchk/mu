@@ -18,6 +18,7 @@
 
 <div class="absolute bottom-0 left-0 w-full">
   <button
+    type="button"
     class="w-full bg-gray-800 p-1 transition hover:bg-gray-700"
     on:click={() => (show = !show)}>{show ? 'Hide Debug' : 'Show Debug'}</button
   >

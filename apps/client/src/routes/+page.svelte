@@ -9,6 +9,6 @@
   }
 </script>
 
-<button on:click={handlePing}>Ping</button>
+<button type="button" on:click={handlePing}>Ping</button>
 
 <div>{$pingQuery.data}</div>

@@ -48,7 +48,11 @@ module.exports = {
     'import/no-duplicates': 'error',
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+
     'turbo/no-undeclared-env-vars': 'off',
+
     'no-fallthrough': 'off',
+
+    'svelte/button-has-type': 'error',
   },
 }

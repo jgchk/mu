@@ -14,7 +14,7 @@
         class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
         on:dblclick={() => play(track.id)}
       >
-        <button class="relative w-11 shadow" on:click={() => play(track.id)}>
+        <button type="button" class="relative w-11 shadow" on:click={() => play(track.id)}>
           {#if track.hasCoverArt}
             <img
               class="w-full rounded object-cover"
