@@ -32,7 +32,7 @@
   >
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="group ml-2 inline-flex items-center gap-2 rounded-full bg-gray-800 py-1 pl-3 pr-1 transition-all focus-within:bg-white"
+      class="group ml-2 inline-flex cursor-text items-center gap-2 rounded-full bg-gray-800 py-1 pl-3 pr-1 transition-all focus-within:bg-white"
       on:click={() => input?.focus()}
     >
       <SearchIcon class="h-4 w-4 text-gray-400 group-focus-within:text-gray-600" />
@@ -44,7 +44,7 @@
       />
       <button
         type="button"
-        class="center h-6 w-6 rounded-full text-gray-600 opacity-0 transition hover:bg-gray-200 group-focus-within:opacity-100"
+        class="center pointer-events-none h-6 w-6 rounded-full text-gray-600 opacity-0 transition hover:bg-gray-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
         on:click={() => (query = '')}
       >
         <XIcon class="h-4 w-4" />
