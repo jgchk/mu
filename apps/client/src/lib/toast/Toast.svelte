@@ -34,7 +34,7 @@
   onMount(() => resume())
 </script>
 
-<div on:mouseenter={pause} on:mouseleave={resume} class="group/container flex">
+<div on:mouseenter={pause} on:mouseleave={resume} class="group/container flex shadow">
   <button
     on:click={close}
     class={cn(
