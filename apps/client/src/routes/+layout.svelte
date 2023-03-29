@@ -22,7 +22,7 @@
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
-  <div class="flex h-full w-full flex-col bg-gray-800 p-2 text-white">
+  <div class="flex h-full w-full flex-col gap-2 bg-gray-800 p-2 text-white">
     <NavBar />
 
     <main class="relative flex-1 overflow-auto">
