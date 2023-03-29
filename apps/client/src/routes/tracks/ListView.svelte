@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { nowPlaying } from '$lib/now-playing'
   import type { RouterOutput } from '$lib/trpc'
 
@@ -26,8 +27,13 @@
           </div>
         {/if}
         <div
-          class="center hover:border-primary-500 group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
-        />
+          class="center hover:border-primary-500 group/play absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
+        >
+          <PlayIcon
+            size={20}
+            class="group-active/play:text-primary-500 text-white opacity-0 transition group-hover:opacity-100"
+          />
+        </div>
       </button>
       <div class="flex-1 truncate">
         {track.title}
