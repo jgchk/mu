@@ -26,7 +26,7 @@
     "mime-types": "^2.1.35",
     "music-metadata": "workspace:*",
     "sharp": "^0.31.3",
-    "soulseek-ts": "^2.0.6",
+    "soulseek-ts": "^2.0.7",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "trpc": "workspace:*",

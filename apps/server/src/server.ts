@@ -64,6 +64,9 @@ const main = async () => {
   })
   const slsk = new SlskClient()
   await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
+  slsk
+    .on('listen-error', (error) => console.error('SLSK listen error', error))
+    .on('server-error', (error) => console.error('SLSK server error', error))
   const dl = new Downloader({ db, sc, sp, slsk, downloadDir: env.DOWNLOAD_DIR })
 
   const context: Context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR }

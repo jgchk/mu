@@ -163,8 +163,8 @@ importers:
         specifier: ^0.31.3
         version: 0.31.3
       soulseek-ts:
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.0.7
+        version: 2.1.0
       soundcloud:
         specifier: workspace:*
         version: link:../../packages/soundcloud
@@ -234,8 +234,8 @@ importers:
         specifier: workspace:*
         version: link:../music-metadata
       soulseek-ts:
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.0.7
+        version: 2.1.0
       soundcloud:
         specifier: workspace:*
         version: link:../soundcloud
@@ -369,8 +369,8 @@ importers:
         specifier: workspace:*
         version: link:../music-metadata
       soulseek-ts:
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.0.7
+        version: 2.1.0
       soundcloud:
         specifier: workspace:*
         version: link:../soundcloud
@@ -4529,8 +4529,8 @@ packages:
       sander: 0.5.1
     dev: true
 
-  /soulseek-ts@2.0.6:
-    resolution: {integrity: sha512-Gy7VjIqiIEd7m5316BvRb2Dj9sg6a2r4Noikl8g4ZfvJa7UdzNBpN3pXz5U23X977EtVP5peK61yDljFUJPoHA==}
+  /soulseek-ts@2.1.0:
+    resolution: {integrity: sha512-oin/7VC0SkxpV1mTnexU25ej7aF1jq7CZGn1dmDdHkCeuZASvAMe4g2yJjz9MTmyJdtcsOcJPhRGeyzSDzDALA==}
     engines: {node: '>=16.6.0'}
     dependencies:
       typed-emitter: 2.1.0
