@@ -27,7 +27,6 @@ import type {
   SpotifyTrackDownload,
   Track,
   TrackArtist,
-  TrackPretty,
 } from './schema'
 import {
   artists,
@@ -79,23 +78,28 @@ export class Database {
     },
 
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => {
-      const results = this.db
+      return this.db
         .select()
         .from(releaseArtists)
-        .innerJoin(artists, eq(releaseArtists.artistId, artists.id))
         .where(eq(releaseArtists.releaseId, releaseId))
+        .innerJoin(artists, eq(releaseArtists.artistId, artists.id))
+        .orderBy(releaseArtists.order)
         .all()
-      return results.map((result) => ({ ...result.artists, order: result.release_artists.order }))
+        .map((result) => ({ ...result.artists, order: result.release_artists.order }))
     },
 
     getByTrackId: (trackId: TrackArtist['trackId']) => {
-      const results = this.db
+      return this.db
         .select()
         .from(trackArtists)
-        .innerJoin(artists, eq(trackArtists.artistId, artists.id))
         .where(eq(trackArtists.trackId, trackId))
+        .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+        .orderBy(trackArtists.order)
         .all()
-      return results.map((result) => ({ ...result.artists, order: result.track_artists.order }))
+        .map((row) => ({
+          ...row.artists,
+          order: row.track_artists.order,
+        }))
     },
   }
 
@@ -268,34 +272,18 @@ export class Database {
     },
 
     getAllWithArtistsAndRelease: () => {
-      const res = this.db
+      const allTracks = this.db
         .select()
         .from(tracks)
         .leftJoin(releases, eq(tracks.releaseId, releases.id))
-        .leftJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
-        .leftJoin(artists, eq(trackArtists.artistId, artists.id))
-        .groupBy(tracks.id)
+        .orderBy(tracks.title)
         .all()
 
-      // group by track id
-      type TrackWithArtistsAndRelease = TrackPretty & { artists: Artist[]; release?: Release }
-      const tracks_: Map<number, TrackWithArtistsAndRelease> = new Map()
-      for (const row of res) {
-        const trackId = row.tracks.id
-        const trackData: TrackWithArtistsAndRelease = tracks_.get(trackId) ?? {
-          ...convertTrack(row.tracks),
-          artists: [],
-          release: undefined,
-        }
-        if (row.artists !== null) {
-          trackData.artists.push(row.artists)
-        }
-        if (row.releases !== null) {
-          trackData.release = row.releases
-        }
-        tracks_.set(trackId, trackData)
-      }
-      return [...tracks_.values()]
+      return allTracks.map((row) => ({
+        ...convertTrack(row.tracks),
+        release: row.releases,
+        artists: this.artists.getByTrackId(row.tracks.id),
+      }))
     },
 
     getByReleaseId: (releaseId: NonNullable<Track['releaseId']>) => {
@@ -312,23 +300,12 @@ export class Database {
         .select()
         .from(tracks)
         .where(eq(tracks.releaseId, releaseId))
-        .groupBy(tracks.id)
         .orderBy(tracks.trackNumber)
         .all()
 
       return releaseTracks.map((track) => ({
         ...convertTrack(track),
-        artists: this.db
-          .select()
-          .from(trackArtists)
-          .where(eq(trackArtists.trackId, track.id))
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .orderBy(trackArtists.order)
-          .all()
-          .map((row) => ({
-            ...row.artists,
-            order: row.track_artists.order,
-          })),
+        artists: this.artists.getByTrackId(track.id),
       }))
     },
 
