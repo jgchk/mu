@@ -1,6 +1,6 @@
 <script lang="ts">
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import { nowPlaying } from '$lib/now-playing'
+  import { play } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -50,13 +50,13 @@
       {#each $tracksQuery.data.sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0)) as track (track.id)}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-          on:dblclick={() => nowPlaying.set({ id: track.id })}
+          on:dblclick={() => play(track.id)}
         >
           <div class="center w-8">
             <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
             <button
               class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-              on:click={() => nowPlaying.set({ id: track.id })}
+              on:click={() => play(track.id)}
             >
               <PlayIcon />
             </button>

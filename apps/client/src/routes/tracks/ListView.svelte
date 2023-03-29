@@ -1,6 +1,6 @@
 <script lang="ts">
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import { nowPlaying } from '$lib/now-playing'
+  import { play } from '$lib/now-playing'
   import type { RouterOutput } from '$lib/trpc'
 
   type Tracks = RouterOutput['tracks']['getAllWithArtistsAndRelease']
@@ -12,9 +12,9 @@
   {#each tracks as track (track.id)}
     <div
       class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-      on:dblclick={() => nowPlaying.set({ id: track.id })}
+      on:dblclick={() => play(track.id)}
     >
-      <button class="relative w-11 shadow" on:click={() => nowPlaying.set({ id: track.id })}>
+      <button class="relative w-11 shadow" on:click={() => play(track.id)}>
         {#if track.hasCoverArt}
           <img
             class="w-full rounded object-cover"

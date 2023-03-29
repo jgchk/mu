@@ -123,7 +123,7 @@
   </div>
 </div>
 
-{#key nowPlaying.id}
+{#key (nowPlaying.id, nowPlaying.__symbol)}
   <audio
     autoplay
     class="hidden"
