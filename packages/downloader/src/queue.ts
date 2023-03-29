@@ -257,6 +257,11 @@ export class DownloadQueue {
 
         await stream.promises.finished(fsPipe)
 
+        const isDownloadSize0 = await fs.promises.stat(filePath).then((stat) => stat.size === 0)
+        if (isDownloadSize0) {
+          throw new Error('Downloaded file is 0 bytes')
+        }
+
         const metadata: Metadata = {
           title: spotTrack.name,
           artists: spotTrack.artists.map((artist) => artist.name),
