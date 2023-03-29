@@ -308,32 +308,28 @@ export class Database {
     },
 
     getByReleaseIdWithArtists: (releaseId: NonNullable<Track['releaseId']>) => {
-      const res = this.db
+      const releaseTracks = this.db
         .select()
         .from(tracks)
         .where(eq(tracks.releaseId, releaseId))
-        .leftJoin(releases, eq(tracks.releaseId, releases.id))
-        .leftJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
-        .leftJoin(artists, eq(trackArtists.artistId, artists.id))
         .groupBy(tracks.id)
         .orderBy(tracks.trackNumber)
         .all()
 
-      // group by track id
-      type TrackWithArtists = TrackPretty & { artists: Artist[] }
-      const tracks_: Map<number, TrackWithArtists> = new Map()
-      for (const row of res) {
-        const trackId = row.tracks.id
-        const trackData: TrackWithArtists = tracks_.get(trackId) ?? {
-          ...convertTrack(row.tracks),
-          artists: [],
-        }
-        if (row.artists !== null) {
-          trackData.artists.push(row.artists)
-        }
-        tracks_.set(trackId, trackData)
-      }
-      return [...tracks_.values()]
+      return releaseTracks.map((track) => ({
+        ...convertTrack(track),
+        artists: this.db
+          .select()
+          .from(trackArtists)
+          .where(eq(trackArtists.trackId, track.id))
+          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+          .orderBy(trackArtists.order)
+          .all()
+          .map((row) => ({
+            ...row.artists,
+            order: row.track_artists.order,
+          })),
+      }))
     },
 
     get: (id: Track['id']) => {
