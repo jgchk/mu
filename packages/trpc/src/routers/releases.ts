@@ -12,9 +12,15 @@ export const releasesRouter = router({
       hasCoverArt: ctx.db.tracks.getByReleaseId(release.id).some((track) => track.hasCoverArt),
     }))
   ),
-  getById: publicProcedure
+  getByIdWithArtists: publicProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ input: { id }, ctx }) => ctx.db.releases.getWithArtists(id)),
+    .query(({ input: { id }, ctx }) => {
+      const release = ctx.db.releases.getWithArtists(id)
+      return {
+        ...release,
+        hasCoverArt: ctx.db.tracks.getByReleaseId(release.id).some((track) => track.hasCoverArt),
+      }
+    }),
   updateMetadata: publicProcedure
     .input(
       z.object({

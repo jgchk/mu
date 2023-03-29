@@ -171,9 +171,6 @@ export class Database {
 
     getWithArtists: (id: Release['id']) => {
       const release = this.releases.get(id)
-      if (release === undefined) {
-        return undefined
-      }
       const artists = this.artists.getByReleaseId(id)
       return { ...release, artists }
     },
