@@ -13,6 +13,7 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "dependencies": {
+    "@fontsource/inter": "^4.5.15",
     "@jgchk/trpc-svelte-query": "^1.2.1",
     "@popperjs/core": "^2.11.7",
     "@tanstack/svelte-query": "^4.27.0",

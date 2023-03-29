@@ -1,9 +1,13 @@
 const colors = require('tailwindcss/colors')
+const defaults = require('tailwindcss/defaultTheme')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
+    fontFamily: {
+      sans: ['InterVariable', ...defaults.fontFamily.sans],
+    },
     colors: {
       primary: colors.amber,
       secondary: colors.sky,
