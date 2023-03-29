@@ -120,7 +120,7 @@
           <button
             tabIndex={-1}
             type="button"
-            class="block w-full py-1 px-2 text-left hover:bg-gray-600"
+            class="block w-full px-2 py-1 text-left hover:bg-gray-600"
             on:click={() => {
               dispatch(artist.action, artist.id)
               filter = ''
@@ -135,7 +135,7 @@
         <button
           tabIndex={-1}
           type="button"
-          class="block w-full py-1 px-2 text-left hover:bg-gray-600"
+          class="block w-full px-2 py-1 text-left hover:bg-gray-600"
           on:click={() => {
             dispatch('create', displayFilter)
             filter = ''
@@ -146,7 +146,7 @@
       {/if}
 
       <div
-        class="pointer-events-none absolute top-0 left-0 h-full w-full rounded border border-white opacity-5"
+        class="pointer-events-none absolute left-0 top-0 h-full w-full rounded border border-white opacity-5"
       />
     </div>
   {/if}

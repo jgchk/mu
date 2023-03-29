@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc';
+  import { getContextClient } from '$lib/trpc'
 
-  import type { PageData } from './$types';
-  import TrackForm from './TrackForm.svelte';
+  import type { PageData } from './$types'
+  import TrackForm from './TrackForm.svelte'
 
-  export let data: PageData;
+  export let data: PageData
 
-  const trpc = getContextClient();
-  const trackQuery = trpc.tracks.getById.query({ id: data.id });
-  const trackMutation = trpc.tracks.updateMetadata.mutation();
+  const trpc = getContextClient()
+  const trackQuery = trpc.tracks.getById.query({ id: data.id })
+  const trackMutation = trpc.tracks.updateMetadata.mutation()
 </script>
 
 {#if $trackQuery.data}

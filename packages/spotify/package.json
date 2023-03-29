@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "NODE_ENV=development cd downloader && chokidar \"src/**/*\" \"Cargo.toml\" --initial -c \"cargo build\"",
     "build": "NODE_ENV=production cd downloader && cargo build -r",
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\" && cd downloader && cargo fmt --check && cargo clippy --all-targets --all-features",
-    "format": "prettier --write --ignore-path=../../.prettierignore . && cd downloader && cargo fmt"
+    "lint": "prettier --check --ignore-path=../../.prettierignore . **/*.svelte && eslint \".\" && cd downloader && cargo fmt --check && cargo clippy --all-targets --all-features",
+    "format": "prettier --write --ignore-path=../../.prettierignore . **/*.svelte && cd downloader && cargo fmt"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

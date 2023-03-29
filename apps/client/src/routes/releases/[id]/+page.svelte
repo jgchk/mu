@@ -24,11 +24,11 @@
           />
         {:else}
           <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-            <div class="center absolute top-0 left-0 h-full w-full">No cover art</div>
+            <div class="center absolute left-0 top-0 h-full w-full">No cover art</div>
           </div>
         {/if}
         <div
-          class="center group absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition"
+          class="center group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition"
         />
       </div>
 

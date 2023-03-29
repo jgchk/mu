@@ -206,7 +206,7 @@
 
 {#if dev}
   {#await import('$lib/components/SuperformDebug.svelte')}
-    <div class="absolute left-0 bottom-0 flex w-full justify-center p-1 text-gray-400">
+    <div class="absolute bottom-0 left-0 flex w-full justify-center p-1 text-gray-400">
       Loading Debug...
     </div>
   {:then Debug}

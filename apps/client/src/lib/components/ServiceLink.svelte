@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { cn } from '$lib/utils/classes';
+  import { page } from '$app/stores'
+  import { cn } from '$lib/utils/classes'
 
-  export let service: string;
+  export let service: string
 
-  let url: URL;
+  let url: URL
   $: {
-    const newUrl = new URL($page.url);
-    newUrl.pathname = `/search/${service.toLowerCase()}`;
-    url = newUrl;
+    const newUrl = new URL($page.url)
+    newUrl.pathname = `/search/${service.toLowerCase()}`
+    url = newUrl
   }
 
-  $: isCurrentUrl = $page.url.pathname === url.pathname;
+  $: isCurrentUrl = $page.url.pathname === url.pathname
 </script>
 
 <a

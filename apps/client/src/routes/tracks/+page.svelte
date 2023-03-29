@@ -23,11 +23,11 @@
             />
           {:else}
             <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-              <div class="center absolute top-0 left-0 h-full w-full text-[4px]">No cover art</div>
+              <div class="center absolute left-0 top-0 h-full w-full text-[4px]">No cover art</div>
             </div>
           {/if}
           <div
-            class="center hover:border-primary-500 group/play absolute top-0 left-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
+            class="center hover:border-primary-500 group/play absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
           >
             <PlayIcon
               size={20}

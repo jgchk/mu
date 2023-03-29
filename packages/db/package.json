@@ -5,8 +5,8 @@
   "types": "./src/index.ts",
   "license": "MIT",
   "scripts": {
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && tsc --noEmit && eslint \".\"",
-    "format": "prettier --write --ignore-path=../../.prettierignore .",
+    "lint": "prettier --check --ignore-path=../../.prettierignore . **/*.svelte && tsc --noEmit && eslint \".\"",
+    "format": "prettier --write --ignore-path=../../.prettierignore . **/*.svelte",
     "db:push": "dotenv -e ../../.env -e ../../.env.local -- drizzle-kit generate:sqlite",
     "db:remigrate": "dotenv -e ../../.env -e ../../.env.local -- rm db.sqlite || true && rm -r ./src/migrations || true && pnpm run db:push"
   },

@@ -11,7 +11,7 @@
   const FLY_SIZE = 50
 </script>
 
-<ul class="absolute top-2 right-2">
+<ul class="absolute right-2 top-2">
   {#each $toast as item (item.id)}
     <li
       in:fly={{ x: FLY_SIZE, duration: IN_DURATION }}

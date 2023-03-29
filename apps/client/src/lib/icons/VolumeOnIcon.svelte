@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let size: number | string | undefined = undefined;
-  let class_: string | undefined = undefined;
-  export { class_ as class };
+  export let size: number | string | undefined = undefined
+  let class_: string | undefined = undefined
+  export { class_ as class }
 </script>
 
 <svg

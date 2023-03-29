@@ -5,8 +5,8 @@
   "types": "./src/index.ts",
   "license": "MIT",
   "scripts": {
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && tsc --noEmit && eslint \".\" && black --check ./src/metadata",
-    "format": "prettier --write --ignore-path=../../.prettierignore . && black ./src/metadata"
+    "lint": "prettier --check --ignore-path=../../.prettierignore . **/*.svelte&& tsc --noEmit && eslint \".\" && black --check ./src/metadata",
+    "format": "prettier --write --ignore-path=../../.prettierignore . **/*.svelte && black ./src/metadata"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

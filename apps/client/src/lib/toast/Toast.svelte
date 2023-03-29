@@ -64,7 +64,7 @@
         {/if}
       </div>
       <div
-        class="absolute top-0 left-0 h-full w-full opacity-0 transition-all duration-300 group-hover/container:opacity-100"
+        class="absolute left-0 top-0 h-full w-full opacity-0 transition-all duration-300 group-hover/container:opacity-100"
       >
         <XIcon size={20} />
       </div>

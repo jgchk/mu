@@ -5,8 +5,8 @@
   "types": "./src/index.ts",
   "license": "MIT",
   "scripts": {
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\"",
-    "format": "prettier --write --ignore-path=../../.prettierignore ."
+    "lint": "prettier --check --ignore-path=../../.prettierignore . **/*.svelte && eslint \".\"",
+    "format": "prettier --write --ignore-path=../../.prettierignore . **/*.svelte"
   },
   "dependencies": {
     "execa": "^7.1.1",

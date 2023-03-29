@@ -5,8 +5,8 @@
     "dev": "tsup --config tsup.config.dev.ts",
     "build": "tsup --config tsup.config.prod.ts",
     "start": "node dist/server.js",
-    "lint": "prettier --check --ignore-path=../../.prettierignore . && tsc --noEmit && eslint \"src\"",
-    "format": "prettier --write --ignore-path=../../.prettierignore ."
+    "lint": "prettier --check --ignore-path=../../.prettierignore . **/*.svelte && tsc --noEmit && eslint \"src\"",
+    "format": "prettier --write --ignore-path=../../.prettierignore . **/*.svelte"
   },
   "dependencies": {
     "@trpc/server": "^10.18.0",

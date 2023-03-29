@@ -1,140 +1,140 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte'
 
-  import { cn } from '$lib/utils/classes';
+  import { cn } from '$lib/utils/classes'
 
   // Props
-  export let min = 0;
-  export let max = 100;
-  export let increment = (max - min) / 20;
-  export let id: string | null = null;
-  export let value = 0;
+  export let min = 0
+  export let max = 100
+  export let increment = (max - min) / 20
+  export let id: string | null = null
+  export let value = 0
 
   // Node Bindings
-  let container: HTMLDivElement | undefined;
-  let thumb: HTMLDivElement | undefined;
-  let progressBar: HTMLDivElement | undefined;
-  let element: HTMLDivElement | undefined;
+  let container: HTMLDivElement | undefined
+  let thumb: HTMLDivElement | undefined
+  let progressBar: HTMLDivElement | undefined
+  let element: HTMLDivElement | undefined
 
   // Internal State
-  let elementX: number | undefined;
-  let currentThumb: HTMLDivElement | undefined;
-  let holding = false;
+  let elementX: number | undefined
+  let currentThumb: HTMLDivElement | undefined
+  let holding = false
 
   // Dispatch 'change' events
-  const dispatch = createEventDispatcher<{ change: number }>();
+  const dispatch = createEventDispatcher<{ change: number }>()
 
   // Mouse shield used onMouseDown to prevent any mouse events penetrating other elements,
   // ie. hover events on other elements while dragging. Especially for Safari
-  const mouseEventShield = document.createElement('div');
-  mouseEventShield.setAttribute('class', 'mouse-over-shield');
+  const mouseEventShield = document.createElement('div')
+  mouseEventShield.setAttribute('class', 'mouse-over-shield')
   mouseEventShield.addEventListener('mouseover', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  });
+    e.preventDefault()
+    e.stopPropagation()
+  })
 
   function resizeWindow() {
-    elementX = element?.getBoundingClientRect().left;
+    elementX = element?.getBoundingClientRect().left
   }
 
   // Allows both bind:value and on:change for parent value retrieval
   function setValue(val: number) {
-    value = val;
-    dispatch('change', value);
+    value = val
+    dispatch('change', value)
   }
 
   function onTrackEvent(e: TouchEvent | MouseEvent) {
     // Update value immediately before beginning drag
-    updateValueOnEvent(e);
-    onDragStart(e);
+    updateValueOnEvent(e)
+    onDragStart(e)
   }
 
   function onDragStart(e: TouchEvent | MouseEvent) {
     // If mouse event add a pointer events shield
-    if (e.type === 'mousedown') document.body.append(mouseEventShield);
-    currentThumb = thumb;
+    if (e.type === 'mousedown') document.body.append(mouseEventShield)
+    currentThumb = thumb
   }
 
   function onDragEnd(e: TouchEvent | MouseEvent) {
     // If using mouse - remove pointer event shield
     if (isMouseEvent(e) && e.type === 'mouseup') {
-      if (document.body.contains(mouseEventShield)) document.body.removeChild(mouseEventShield);
+      if (document.body.contains(mouseEventShield)) document.body.removeChild(mouseEventShield)
     }
-    currentThumb = undefined;
+    currentThumb = undefined
   }
 
   // Accessible keypress handling
   function onKeyPress(e: KeyboardEvent) {
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
       if (value + increment > max || value >= max) {
-        setValue(max);
+        setValue(max)
       } else {
-        setValue(value + increment);
+        setValue(value + increment)
       }
     }
     if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
       if (value - increment < min || value <= min) {
-        setValue(min);
+        setValue(min)
       } else {
-        setValue(value - increment);
+        setValue(value - increment)
       }
     }
   }
 
   function calculateNewValue(clientX: number) {
     // Find distance between cursor and element's left cord (20px / 2 = 10px) - Center of thumb
-    let delta = clientX - (elementX ?? 0);
+    let delta = clientX - (elementX ?? 0)
 
     // Use width of the container minus (5px * 2 sides) offset for percent calc
-    let percent = (delta * 100) / (container?.clientWidth ?? 0);
+    let percent = (delta * 100) / (container?.clientWidth ?? 0)
 
     // Limit percent 0 -> 100
-    percent = percent < 0 ? 0 : percent > 100 ? 100 : percent;
+    percent = percent < 0 ? 0 : percent > 100 ? 100 : percent
 
     // Limit value min -> max
-    setValue((percent * (max - min)) / 100 + min);
+    setValue((percent * (max - min)) / 100 + min)
   }
 
   // Handles both dragging of touch/mouse as well as simple one-off click/touches
   function updateValueOnEvent(e: TouchEvent | MouseEvent) {
     // touchstart && mousedown are one-off updates, otherwise expect a currentPointer node
     if (!currentThumb && e.type !== 'touchstart' && e.type !== 'mousedown') {
-      return false;
+      return false
     }
 
-    if (e.stopPropagation) e.stopPropagation();
-    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation()
+    if (e.preventDefault) e.preventDefault()
 
     // Get client's x cord either touch or mouse
-    const clientX = isTouchEvent(e) ? e.touches[0].clientX : e.clientX;
+    const clientX = isTouchEvent(e) ? e.touches[0].clientX : e.clientX
 
-    calculateNewValue(clientX);
+    calculateNewValue(clientX)
   }
 
   // React to left position of element relative to window
-  $: if (element) elementX = element.getBoundingClientRect().left;
+  $: if (element) elementX = element.getBoundingClientRect().left
 
   // Set a class based on if dragging
-  $: holding = Boolean(currentThumb);
+  $: holding = Boolean(currentThumb)
 
   // Update progressbar and thumb styles to represent value
   $: if (progressBar && thumb) {
     // Limit value min -> max
-    value = value > min ? value : min;
-    value = value < max ? value : max;
+    value = value > min ? value : min
+    value = value < max ? value : max
 
-    let percent = ((value - min) * 100) / (max - min);
+    let percent = ((value - min) * 100) / (max - min)
 
     // Update thumb position + active range track width
-    thumb.style.left = `calc(${percent}% - 7px)`;
-    progressBar.style.width = `${percent}%`;
+    thumb.style.left = `calc(${percent}% - 7px)`
+    progressBar.style.width = `${percent}%`
   }
 
   function isTouchEvent(event: TouchEvent | MouseEvent): event is TouchEvent {
-    return 'touches' in event;
+    return 'touches' in event
   }
   function isMouseEvent(event: TouchEvent | MouseEvent): event is MouseEvent {
-    return 'button' in event;
+    return 'button' in event
   }
 </script>
 
