@@ -31,7 +31,7 @@
         >
           <PlayIcon
             size={20}
-            class="group-active/play:text-primary-500 text-white opacity-0 transition group-hover:opacity-100"
+            class="group-active/play:text-primary-500 text-white opacity-0 transition-colors group-hover:opacity-100"
           />
         </div>
       </button>
