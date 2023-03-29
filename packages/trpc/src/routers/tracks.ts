@@ -16,6 +16,9 @@ export const tracksRouter = router({
   getByReleaseId: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
+  getByReleaseIdWithArtists: publicProcedure
+    .input(z.object({ releaseId: z.number() }))
+    .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseIdWithArtists(releaseId)),
   updateMetadata: publicProcedure
     .input(
       z.object({
