@@ -36,7 +36,7 @@
   }
 </script>
 
-<nav class="mx-2 mt-2 flex items-center rounded bg-black p-2 px-3 text-white">
+<nav class="flex items-center rounded bg-black p-2 px-3 text-white">
   <NavLink href="/">Home</NavLink>
   <NavLink href="/tracks">Tracks</NavLink>
   <NavLink href="/releases">Releases</NavLink>

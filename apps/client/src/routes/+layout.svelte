@@ -22,7 +22,7 @@
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
-  <div class="absolute top-0 left-0 flex h-screen w-screen flex-col bg-gray-800 text-white">
+  <div class="flex h-full w-full flex-col bg-gray-800 p-2 text-white">
     <NavBar />
 
     <main class="relative flex-1 overflow-auto">
@@ -31,9 +31,7 @@
     </main>
 
     {#if $nowPlaying}
-      <div class="mx-2 mb-2">
-        <Player nowPlaying={$nowPlaying} />
-      </div>
+      <Player nowPlaying={$nowPlaying} />
     {/if}
   </div>
 </QueryClientProvider>

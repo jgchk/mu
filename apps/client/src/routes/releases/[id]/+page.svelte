@@ -13,7 +13,7 @@
 </script>
 
 {#if $releaseQuery.data && $tracksQuery.data}
-  <div class="mr-2 space-y-4 p-4">
+  <div class="space-y-4 p-4">
     <div class="flex items-end gap-4">
       <div class="relative w-64 shadow">
         {#if $releaseQuery.data.hasCoverArt}

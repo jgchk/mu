@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="mr-2 h-full overflow-auto">
+<div class="h-full overflow-auto">
   <form class={cn('p-4', dev && 'mb-8')} method="POST" use:enhance>
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="space-y-1">
