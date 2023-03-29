@@ -47,7 +47,7 @@
     </div>
 
     <div>
-      {#each $tracksQuery.data.sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0)) as track (track.id)}
+      {#each $tracksQuery.data as track (track.id)}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
           on:dblclick={() => play(track.id)}

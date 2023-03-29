@@ -316,6 +316,7 @@ export class Database {
         .leftJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
         .leftJoin(artists, eq(trackArtists.artistId, artists.id))
         .groupBy(tracks.id)
+        .orderBy(tracks.trackNumber)
         .all()
 
       // group by track id
