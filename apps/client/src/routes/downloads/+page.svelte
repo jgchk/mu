@@ -63,8 +63,8 @@
       {/if}
 
       {#if downloads.tracks.length > 0}
-        <h2 class="mt-12 text-2xl font-bold">Tracks</h2>
-        <div class="grid w-fit grid-cols-4 gap-x-3">
+        <h2 class="mt-12 mb-4 text-2xl font-bold">Tracks</h2>
+        <div class="space-y-4">
           {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
             <TrackDownload download={trackDownload} />
           {/each}
