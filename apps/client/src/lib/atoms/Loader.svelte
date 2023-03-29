@@ -1,13 +1,14 @@
 <script lang="ts">
-  import type { ComponentProps } from 'svelte'
+  import { tw } from '$lib/utils/classes'
 
-  import LoaderIcon from '$lib/icons/LoaderIcon.svelte'
-  import { cn } from '$lib/utils/classes'
-
-  type $$Props = ComponentProps<LoaderIcon>
-
-  let class_: $$Props['class'] = undefined
+  let class_: string | undefined = undefined
   export { class_ as class }
 </script>
 
-<LoaderIcon class={cn('animate-spin', class_)} {...$$restProps} />
+<div
+  class={tw(
+    'h-full w-full animate-spin rounded-full border-2 border-transparent border-t-current',
+    class_
+  )}
+  {...$$restProps}
+/>

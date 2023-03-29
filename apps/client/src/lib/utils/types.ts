@@ -15,3 +15,5 @@ export const ifNotNull = <T, O>(value: T | null, fn: (value: T) => O): O | null 
     return null
   }
 }
+
+export type Timeout = ReturnType<typeof setTimeout>

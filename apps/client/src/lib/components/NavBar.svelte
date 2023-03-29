@@ -1,15 +1,40 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
+  import { navigating, page } from '$app/stores'
+  import { tooltip } from '$lib/actions/tooltip'
+  import Loader from '$lib/atoms/Loader.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
+  import { cn } from '$lib/utils/classes'
+  import type { Timeout } from '$lib/utils/types'
 
   let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || ''
 
   let input: HTMLInputElement | undefined
+
+  const DELAYED_NAV_THRESHOLD = 500
+  let delayedNavTimeout: Timeout | undefined
+  let delayedNav = false
+  $: {
+    if ($navigating) {
+      if (delayedNavTimeout) {
+        clearTimeout(delayedNavTimeout)
+      }
+      delayedNavTimeout = setTimeout(() => {
+        delayedNavTimeout = undefined
+        delayedNav = true
+      }, DELAYED_NAV_THRESHOLD)
+    } else {
+      if (delayedNavTimeout) {
+        clearTimeout(delayedNavTimeout)
+        delayedNavTimeout = undefined
+      }
+      delayedNav = false
+    }
+  }
 </script>
 
-<nav class="mx-2 mt-2 flex items-center gap-2 rounded bg-black p-2 px-3">
+<nav class="mx-2 mt-2 flex items-center gap-2 rounded bg-black p-2 px-3 text-white">
   <a href="/">Home</a>
   <a href="/tracks">Tracks</a>
   <a href="/releases">Releases</a>
@@ -17,7 +42,7 @@
   <a href="/downloads">Downloads</a>
 
   <form
-    class="inline text-black"
+    class="inline"
     on:submit|preventDefault={() => {
       if (query.length > 0) {
         if ($page.url.pathname.startsWith('/search')) {
@@ -52,4 +77,11 @@
     </div>
     <button type="submit" class="hidden">Search</button>
   </form>
+
+  <div
+    class={cn('ml-auto transition', delayedNav ? 'opacity-100' : 'pointer-events-none opacity-0')}
+    use:tooltip={{ content: 'Navigating...' }}
+  >
+    <Loader class="text-primary-500 h-6 w-6" />
+  </div>
 </nav>
