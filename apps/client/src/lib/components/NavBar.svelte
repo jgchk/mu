@@ -8,6 +8,8 @@
   import { cn } from '$lib/utils/classes'
   import type { Timeout } from '$lib/utils/types'
 
+  import NavLink from './NavLink.svelte'
+
   let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || ''
 
   let input: HTMLInputElement | undefined
@@ -34,12 +36,12 @@
   }
 </script>
 
-<nav class="mx-2 mt-2 flex items-center gap-2 rounded bg-black p-2 px-3 text-white">
-  <a href="/">Home</a>
-  <a href="/tracks">Tracks</a>
-  <a href="/releases">Releases</a>
-  <a href="/artists">Artists</a>
-  <a href="/downloads">Downloads</a>
+<nav class="mx-2 mt-2 flex items-center rounded bg-black p-2 px-3 text-white">
+  <NavLink href="/">Home</NavLink>
+  <NavLink href="/tracks">Tracks</NavLink>
+  <NavLink href="/releases">Releases</NavLink>
+  <NavLink href="/artists">Artists</NavLink>
+  <NavLink href="/downloads">Downloads</NavLink>
 
   <form
     class="inline"
