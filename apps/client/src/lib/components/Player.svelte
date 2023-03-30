@@ -1,14 +1,16 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
 
-  import { tooltip } from '$lib/actions/tooltip'
+  import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import RewindIcon from '$lib/icons/RewindIcon.svelte'
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
   import type { NowPlaying } from '$lib/now-playing'
-  import { nextTrack } from '$lib/now-playing'
+  import { nextTrack, previousTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
@@ -74,17 +76,34 @@
     {/if}
   </div>
   <div class="max-w-[722px] flex-[4]">
-    <div class="flex w-full justify-center">
+    <div class="flex w-full items-center justify-center gap-3.5">
+      <button
+        type="button"
+        class="center h-8 w-8 text-gray-400 transition hover:text-white"
+        use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
+        on:click={() => previousTrack()}
+      >
+        <RewindIcon class="h-6 w-6" />
+      </button>
       <button
         type="button"
         class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
         on:click={togglePlaying}
+        use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
       >
         {#if paused}
           <PlayIcon />
         {:else}
           <PauseIcon />
         {/if}
+      </button>
+      <button
+        type="button"
+        class="center h-8 w-8 text-gray-400 transition hover:text-white"
+        use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
+        on:click={() => nextTrack()}
+      >
+        <FastForwardIcon class="h-6 w-6" />
       </button>
     </div>
     <Range

@@ -52,10 +52,10 @@
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
           on:dblclick={() =>
-            playTrack(
-              track.id,
-              tracks.slice(i + 1).map((t) => t.id)
-            )}
+            playTrack(track.id, {
+              previousTracks: tracks.slice(0, i).map((t) => t.id),
+              nextTracks: tracks.slice(i + 1).map((t) => t.id),
+            })}
         >
           <div class="center w-8">
             <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
@@ -63,10 +63,10 @@
               type="button"
               class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
               on:click={() =>
-                playTrack(
-                  track.id,
-                  tracks.slice(i + 1).map((t) => t.id)
-                )}
+                playTrack(track.id, {
+                  previousTracks: tracks.slice(0, i).map((t) => t.id),
+                  nextTracks: tracks.slice(i + 1).map((t) => t.id),
+                })}
             >
               <PlayIcon />
             </button>

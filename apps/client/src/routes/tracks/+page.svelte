@@ -14,19 +14,19 @@
       <div
         class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
         on:dblclick={() =>
-          playTrack(
-            track.id,
-            tracks.slice(i + 1).map((t) => t.id)
-          )}
+          playTrack(track.id, {
+            previousTracks: tracks.slice(0, i).map((t) => t.id),
+            nextTracks: tracks.slice(i + 1).map((t) => t.id),
+          })}
       >
         <button
           type="button"
           class="relative h-11 w-11 shadow"
           on:click={() =>
-            playTrack(
-              track.id,
-              tracks.slice(i + 1).map((t) => t.id)
-            )}
+            playTrack(track.id, {
+              previousTracks: tracks.slice(0, i).map((t) => t.id),
+              nextTracks: tracks.slice(i + 1).map((t) => t.id),
+            })}
         >
           {#if track.hasCoverArt}
             <img
