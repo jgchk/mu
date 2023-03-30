@@ -23,7 +23,7 @@
 <div class="w-full overflow-hidden">
   <button
     type="button"
-    class="relative w-full shadow"
+    class="relative w-full pt-[100%] shadow"
     on:click={handleDownload}
     use:tooltip={{
       content: 'Download',
@@ -33,10 +33,16 @@
     }}
   >
     {#if result.artwork?.[500]}
-      <img class="w-full rounded object-cover" src={result.artwork[500]} alt={result.title} />
+      <img
+        class="absolute left-0 top-0 h-full w-full rounded object-cover"
+        src={result.artwork[500]}
+        alt={result.title}
+      />
     {:else}
-      <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-        <div class="center absolute left-0 top-0 h-full w-full">No cover art</div>
+      <div
+        class="center absolute left-0 top-0 h-full w-full rounded bg-gray-800 italic text-gray-600"
+      >
+        No cover art
       </div>
     {/if}
     <div

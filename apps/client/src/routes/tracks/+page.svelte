@@ -14,16 +14,16 @@
         class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
         on:dblclick={() => play(track.id)}
       >
-        <button type="button" class="relative w-11 shadow" on:click={() => play(track.id)}>
+        <button type="button" class="relative h-11 w-11 shadow" on:click={() => play(track.id)}>
           {#if track.hasCoverArt}
             <img
-              class="w-full rounded object-cover"
+              class="h-full w-full rounded object-cover"
               src="/api/tracks/{track.id}/cover-art?width=80&height=80"
               alt={track.title}
             />
           {:else}
-            <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-              <div class="center absolute left-0 top-0 h-full w-full text-[4px]">No cover art</div>
+            <div class="center h-full w-full rounded bg-gray-800 text-[4px] italic text-gray-600">
+              No cover art
             </div>
           {/if}
           <div

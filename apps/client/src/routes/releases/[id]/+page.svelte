@@ -15,10 +15,10 @@
 {#if $releaseQuery.data && $tracksQuery.data}
   <div class="space-y-4 p-4">
     <div class="flex items-end gap-4">
-      <div class="relative w-64 shadow">
+      <div class="relative h-64 w-64 shadow">
         {#if $releaseQuery.data.hasCoverArt}
           <img
-            class="w-full rounded object-cover"
+            class="h-full w-full rounded object-cover"
             src="/api/releases/{$releaseQuery.data.id}/cover-art?width=512&height=512"
             alt={$releaseQuery.data.title}
           />

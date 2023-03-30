@@ -10,16 +10,18 @@
   <FlowGrid class="p-4">
     {#each $releasesQuery.data as release (release.id)}
       <a href="/releases/{release.id}" class="w-full overflow-hidden">
-        <div class="relative w-full shadow">
+        <div class="relative w-full pt-[100%] shadow">
           {#if release.hasCoverArt}
             <img
-              class="w-full rounded object-cover"
+              class="absolute left-0 top-0 h-full w-full rounded object-cover"
               src="/api/releases/{release.id}/cover-art?width=400&height=400"
               alt={release.title}
             />
           {:else}
-            <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-              <div class="center absolute left-0 top-0 h-full w-full">No cover art</div>
+            <div
+              class="center absolute left-0 top-0 h-full w-full rounded bg-gray-800 italic text-gray-600"
+            >
+              No cover art
             </div>
           {/if}
           <div

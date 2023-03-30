@@ -156,6 +156,9 @@ importers:
       file-type:
         specifier: ^18.2.1
         version: 18.2.1
+      is-animated-gif:
+        specifier: ^1.0.3
+        version: 1.0.3
       mime-types:
         specifier: ^2.1.35
         version: 2.1.35
@@ -2075,6 +2078,10 @@ packages:
     resolution: {integrity: sha512-c1Vbv5tuUlBFp0mb3mCIjw+REEsgthRgNE8BlbEDKmvzb8rxjcVki6OkQP83vLN34s0XCxpSkq7AZNep1a6xhw==}
     dev: true
 
+  /emitter-component@1.1.1:
+    resolution: {integrity: sha512-G+mpdiAySMuB7kesVRLuyvYRqDmshB7ReKEVuyBPkzQlmiDiLrt7hHHIy4Aff552bgknVN7B2/d3lzhGO5dvpQ==}
+    dev: false
+
   /emoji-regex@7.0.3:
     resolution: {integrity: sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA==}
     dev: true
@@ -3258,6 +3265,12 @@ packages:
   /ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
+    dev: false
+
+  /is-animated-gif@1.0.3:
+    resolution: {integrity: sha512-R4F0b4VlU7q9rg5bBaP4wITpWgi7cd5uG+q3UsmdqfRdXoBYYdtqa6YgbHCb7aDvU3ixTkzCPPfQtpB4/tpVCg==}
+    dependencies:
+      stream: 0.0.2
     dev: false
 
   /is-array-buffer@3.0.2:
@@ -4564,6 +4577,12 @@ packages:
   /statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /stream@0.0.2:
+    resolution: {integrity: sha512-gCq3NDI2P35B2n6t76YJuOp7d6cN/C7Rt0577l91wllh0sY9ZBuw9KaSGqH/b0hzn3CWWJbpbW0W0WvQ1H/Q7g==}
+    dependencies:
+      emitter-component: 1.1.1
     dev: false
 
   /streamsearch@1.1.0:

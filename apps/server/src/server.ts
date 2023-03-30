@@ -8,6 +8,7 @@ import express from 'express'
 import asyncHandler from 'express-async-handler'
 import { fileTypeFromBuffer, fileTypeFromFile, fileTypeStream } from 'file-type'
 import fs from 'fs'
+import { isAnimatedGif } from 'is-animated-gif'
 import mime from 'mime-types'
 import { getMissingPythonDependencies, readTrackCoverArt } from 'music-metadata'
 import path from 'path'
@@ -94,8 +95,20 @@ const main = async () => {
     { width, height }: { width?: number; height?: number }
   ): Promise<{ output: Buffer; contentType?: string }> => {
     if (width !== undefined || height !== undefined) {
-      const resizedBuffer = await sharp(buffer).resize(width, height).png().toBuffer()
-      return { output: resizedBuffer, contentType: 'image/png' }
+      const fileType = await fileTypeFromBuffer(buffer)
+      if (fileType?.mime === 'image/gif') {
+        const animated = isAnimatedGif(buffer)
+        if (animated) {
+          // resizing animated gifs is super slow. just return the original
+          return { output: buffer, contentType: 'image/gif' }
+        } else {
+          const resizedBuffer = await sharp(buffer).resize(width, height).gif().toBuffer()
+          return { output: resizedBuffer, contentType: 'image/gif' }
+        }
+      } else {
+        const resizedBuffer = await sharp(buffer).resize(width, height).png().toBuffer()
+        return { output: resizedBuffer, contentType: 'image/png' }
+      }
     } else {
       let contentType: string | undefined
       const fileType = await fileTypeFromBuffer(buffer)
