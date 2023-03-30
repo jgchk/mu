@@ -8,6 +8,7 @@
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
   import type { NowPlaying } from '$lib/now-playing'
+  import { nextTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
@@ -16,7 +17,7 @@
   export let nowPlaying: NowPlaying
 
   const trpc = getContextClient()
-  $: nowPlayingTrack = trpc.tracks.getById.query({ id: nowPlaying.id })
+  $: nowPlayingTrack = trpc.tracks.getById.query({ id: nowPlaying.trackId })
 
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
@@ -43,7 +44,7 @@
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {#if $nowPlayingTrack.data.hasCoverArt}
-        <PlayerCover id={nowPlaying.id} title={$nowPlayingTrack.data.title} />
+        <PlayerCover id={nowPlaying.trackId} title={$nowPlayingTrack.data.title} />
       {:else}
         <div
           class="center h-[64px] w-[64px] rounded-sm bg-gray-800 text-[8px] italic text-gray-600"
@@ -125,7 +126,7 @@
   </div>
 </div>
 
-{#key (nowPlaying.id, nowPlaying.__symbol)}
+{#key (nowPlaying.trackId, nowPlaying.__playSignal)}
   <audio
     autoplay
     class="hidden"
@@ -134,7 +135,8 @@
     bind:duration
     bind:paused
     bind:volume={$volume}
+    on:ended={() => nextTrack()}
   >
-    <source src="/api/tracks/{nowPlaying.id}/stream" type="audio/mpeg" />
+    <source src="/api/tracks/{nowPlaying.trackId}/stream" type="audio/mpeg" />
   </audio>
 {/key}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import { play } from '$lib/now-playing'
+  import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -13,6 +13,7 @@
 </script>
 
 {#if $releaseQuery.data && $tracksQuery.data}
+  {@const tracks = $tracksQuery.data}
   <div class="space-y-4 p-4">
     <div class="flex items-end gap-4">
       <div class="relative h-64 w-64 shadow">
@@ -47,17 +48,25 @@
     </div>
 
     <div>
-      {#each $tracksQuery.data as track (track.id)}
+      {#each tracks as track, i (track.id)}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-          on:dblclick={() => play(track.id)}
+          on:dblclick={() =>
+            playTrack(
+              track.id,
+              tracks.slice(i + 1).map((t) => t.id)
+            )}
         >
           <div class="center w-8">
             <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
             <button
               type="button"
               class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-              on:click={() => play(track.id)}
+              on:click={() =>
+                playTrack(
+                  track.id,
+                  tracks.slice(i + 1).map((t) => t.id)
+                )}
             >
               <PlayIcon />
             </button>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import { play } from '$lib/now-playing'
+  import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
@@ -8,13 +8,26 @@
 </script>
 
 {#if $tracksQuery.data}
+  {@const tracks = $tracksQuery.data}
   <div class="p-4">
-    {#each $tracksQuery.data as track (track.id)}
+    {#each tracks as track, i (track.id)}
       <div
         class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-        on:dblclick={() => play(track.id)}
+        on:dblclick={() =>
+          playTrack(
+            track.id,
+            tracks.slice(i + 1).map((t) => t.id)
+          )}
       >
-        <button type="button" class="relative h-11 w-11 shadow" on:click={() => play(track.id)}>
+        <button
+          type="button"
+          class="relative h-11 w-11 shadow"
+          on:click={() =>
+            playTrack(
+              track.id,
+              tracks.slice(i + 1).map((t) => t.id)
+            )}
+        >
           {#if track.hasCoverArt}
             <img
               class="h-full w-full rounded object-cover"
