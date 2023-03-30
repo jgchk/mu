@@ -15,7 +15,7 @@
 {#if $releaseQuery.data && $tracksQuery.data}
   {@const tracks = $tracksQuery.data}
   <div class="space-y-4 p-4">
-    <div class="flex items-end gap-4">
+    <div class="flex items-end gap-6">
       <div class="relative h-64 w-64 shadow">
         {#if $releaseQuery.data.hasCoverArt}
           <img
