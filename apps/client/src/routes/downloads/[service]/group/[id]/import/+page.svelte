@@ -6,12 +6,14 @@
 
   import { dev } from '$app/environment'
   import Button from '$lib/atoms/Button.svelte'
+  import FileDrop from '$lib/atoms/FileDrop.svelte'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
+  import { toErrorString } from '$lib/utils/error'
 
   import type { PageServerData } from './$types'
 
@@ -20,16 +22,28 @@
   const toast = getContextToast()
   const { form, enhance, errors, constraints, delayed } = superForm(data.form, {
     dataType: 'json',
+    onSubmit: (event) => {
+      if (albumArt) {
+        event.data.append('albumArt', albumArt)
+      }
+      console.log('submit', event)
+    },
     onResult: ({ result }) => {
       if (result.type === 'redirect' || result.type === 'success') {
         toast.success(`Imported ${$form.album.title || 'release'}!`)
       } else if (result.type === 'failure') {
-        toast.error('Check the form for errors')
+        if (result.data?.reason) {
+          toast.error(`Failed to import release: ${toErrorString(result.data.reason)}`)
+        } else {
+          toast.error('Check the form for errors')
+        }
       } else if (result.type === 'error') {
-        toast.error('Failed to import release')
+        toast.error(`Failed to import release: ${toErrorString(result.error)}`)
       }
     },
   })
+
+  let albumArt: File | undefined = undefined
 
   type StoreType<T extends Readable<unknown>> = T extends Readable<infer U> ? U : never
 
@@ -58,68 +72,100 @@
   ) => {
     $form.tracks = e.detail.items.map((track, i) => ({ ...track, track: i + 1 }))
   }
+
+  const handleFileDrop = (e: CustomEvent<File[]>) => {
+    albumArt = e.detail.at(0)
+  }
 </script>
 
 <div class="h-full overflow-auto">
   <form class={cn('p-4', dev && 'mb-8')} method="POST" use:enhance>
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
-    <div class="space-y-1">
-      <Input
-        bind:value={$form.album.title}
-        errors={$errors.album?.title}
-        {...$constraints.album?.title}
-      />
-      {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
+    <div class="flex gap-4">
+      <div class="h-64 w-64">
+        {#if albumArt}
+          <button
+            type="button"
+            class="relative h-full w-full shadow"
+            on:click={() => (albumArt = undefined)}
+          >
+            <img
+              class="h-full w-full rounded object-cover"
+              src={URL.createObjectURL(albumArt)}
+              alt="Album Art"
+            />
+            <div
+              class="center hover:border-primary-500 group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
+            >
+              <DeleteIcon
+                size={32}
+                class="group-active:text-primary-500 text-white opacity-0 transition group-hover:opacity-100"
+              />
+            </div>
+          </button>
+        {:else}
+          <FileDrop class="h-full w-full" on:drop={(e) => void handleFileDrop(e)} />
+        {/if}
+      </div>
 
       <div class="space-y-1">
-        {#each $form.album.artists as artist}
-          <div class="flex gap-1">
-            <ArtistSelect
-              value={artist}
-              createArtists={$form.artists}
-              on:create={({ detail }) => {
-                const id = $form.artists.size + 1
-                $form.artists.set(id, detail)
-                artist = {
-                  action: 'create',
-                  id,
-                }
-                removeIfUnused(artist)
-              }}
-              on:created={({ detail }) => {
-                artist = {
-                  action: 'create',
-                  id: detail,
-                }
-                removeIfUnused(artist)
-              }}
-              on:connect={({ detail }) => {
-                artist = {
-                  action: 'connect',
-                  id: detail,
-                }
-                removeIfUnused(artist)
-              }}
-            />
-            <IconButton
-              tooltip="Remove"
-              kind="text"
-              on:click={() => {
-                $form.album.artists = $form.album.artists.filter((artist_) => artist_ !== artist)
-                removeIfUnused(artist)
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        {/each}
+        <Input
+          bind:value={$form.album.title}
+          errors={$errors.album?.title}
+          {...$constraints.album?.title}
+        />
+        {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
 
-        <Button
-          kind="outline"
-          on:click={() => ($form.album.artists = [...$form.album.artists, undefined])}
-        >
-          Add Artist
-        </Button>
+        <div class="space-y-1">
+          {#each $form.album.artists as artist}
+            <div class="flex gap-1">
+              <ArtistSelect
+                value={artist}
+                createArtists={$form.artists}
+                on:create={({ detail }) => {
+                  const id = $form.artists.size + 1
+                  $form.artists.set(id, detail)
+                  artist = {
+                    action: 'create',
+                    id,
+                  }
+                  removeIfUnused(artist)
+                }}
+                on:created={({ detail }) => {
+                  artist = {
+                    action: 'create',
+                    id: detail,
+                  }
+                  removeIfUnused(artist)
+                }}
+                on:connect={({ detail }) => {
+                  artist = {
+                    action: 'connect',
+                    id: detail,
+                  }
+                  removeIfUnused(artist)
+                }}
+              />
+              <IconButton
+                tooltip="Remove"
+                kind="text"
+                on:click={() => {
+                  $form.album.artists = $form.album.artists.filter((artist_) => artist_ !== artist)
+                  removeIfUnused(artist)
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </div>
+          {/each}
+
+          <Button
+            kind="outline"
+            on:click={() => ($form.album.artists = [...$form.album.artists, undefined])}
+          >
+            Add Artist
+          </Button>
+        </div>
       </div>
     </div>
 

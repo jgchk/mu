@@ -3,6 +3,7 @@ import { superValidate } from 'sveltekit-superforms/server'
 import { z } from 'zod'
 
 import { createClient } from '$lib/trpc'
+import { isFile } from '$lib/utils/file'
 import { paramNumber, paramService } from '$lib/utils/params'
 import { isDefined } from '$lib/utils/types'
 
@@ -93,9 +94,9 @@ export const load: PageServerLoad = async (event) => {
 }
 
 export const actions: Actions = {
-  default: async (event) => {
-    // Same syntax as in the load function
-    const form = await superValidate(event, schema)
+  default: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const form = await superValidate(formData, schema)
 
     // Convenient validation check:
     if (!form.valid) {
@@ -103,12 +104,26 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const trpc = createClient(event.fetch)
+    const albumArtRaw = formData.get('albumArt')
+    let albumArt
+    if (albumArtRaw) {
+      if (!isFile(albumArtRaw)) {
+        return fail(400, { form, reason: 'Album art must be a File' })
+      } else {
+        const buffer = await albumArtRaw.arrayBuffer()
+        albumArt = Buffer.from(buffer).toString('base64')
+      }
+    } else {
+      albumArt = undefined
+    }
+
+    const trpc = createClient(fetch)
     const result = await trpc.import.groupDownloadManual.mutate({
       ...form.data,
       album: {
         ...form.data.album,
         artists: form.data.album.artists.filter(isDefined),
+        art: albumArt,
       },
       tracks: form.data.tracks.map((track) => ({
         ...track,

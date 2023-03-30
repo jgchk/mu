@@ -199,6 +199,7 @@ export const importRouter = router({
               z.object({ action: z.literal('create'), id: z.number() }),
             ])
             .array(),
+          art: z.string().optional(),
         }),
         tracks: z
           .object({
@@ -254,6 +255,8 @@ export const importRouter = router({
       const artistMap = new Map(
         [...input.artists.entries()].map(([id, name]) => [id, ctx.db.artists.insert({ name })])
       )
+
+      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
 
       const albumTitle = input.album.title
       const albumArtists = input.album.artists.map((artist) => {
@@ -319,13 +322,22 @@ export const importRouter = router({
           }
           await writeTrackMetadata(path.resolve(newPath), metadata)
 
+          if (albumArt) {
+            try {
+              await writeTrackCoverArt(path.resolve(newPath), albumArt)
+            } catch {
+              // OGG Files sometimes fail the first time then work the second time
+              await writeTrackCoverArt(path.resolve(newPath), albumArt)
+            }
+          }
+
           const dbTrack = ctx.db.tracks.insertWithArtists({
             title: metadata.title,
             artists: artists.map((artist) => artist.id),
             path: newPath,
             releaseId: dbRelease.id,
             trackNumber: metadata.track,
-            hasCoverArt: false,
+            hasCoverArt: !!albumArt,
           })
 
           if (input.service === 'soulseek') {
