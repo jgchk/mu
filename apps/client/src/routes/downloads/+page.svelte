@@ -53,23 +53,14 @@
 <div class="p-4">
   {#if downloads}
     {#if downloads.groups.length > 0 || downloads.tracks.length > 0}
-      {#if downloads.groups.length > 0}
-        <h2 class="mb-4 mt-2 text-2xl font-bold">Groups</h2>
-        <div class="space-y-4">
-          {#each downloads.groups as releaseDownload (`${releaseDownload.service}-${releaseDownload.id}`)}
-            <GroupDownload download={releaseDownload} />
-          {/each}
-        </div>
-      {/if}
-
-      {#if downloads.tracks.length > 0}
-        <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
-        <div class="space-y-4">
-          {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
-            <TrackDownload download={trackDownload} />
-          {/each}
-        </div>
-      {/if}
+      <div class="space-y-4">
+        {#each downloads.groups as releaseDownload (`${releaseDownload.service}-${releaseDownload.id}`)}
+          <GroupDownload download={releaseDownload} />
+        {/each}
+        {#each downloads.tracks as trackDownload (`${trackDownload.service}-${trackDownload.id}`)}
+          <TrackDownload download={trackDownload} />
+        {/each}
+      </div>
     {:else}
       No downloads
     {/if}
