@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getContextClient } from '$lib/trpc'
   import { sum } from '$lib/utils/math'
 
   import type {
@@ -31,12 +30,6 @@
       }
     }
   }
-
-  const trpc = getContextClient()
-  const importDownloadMutation = trpc.import.groupDownload.mutation()
-  const handleAutoImport = () => {
-    $importDownloadMutation.mutate({ service: download.service, id: download.id })
-  }
 </script>
 
 <div class="max-w-4xl rounded bg-gray-900 p-4 text-gray-200">
@@ -48,9 +41,6 @@
           <a
             class="hover:text-white"
             href="/downloads/{download.service}/group/{download.id}/import">Import</a
-          >
-          <button type="button" class="hover:text-white" on:click={handleAutoImport}
-            >Auto-Import</button
           >
         {:else if status.type === 'downloading'}
           Downloading... ({status.progress}%)
