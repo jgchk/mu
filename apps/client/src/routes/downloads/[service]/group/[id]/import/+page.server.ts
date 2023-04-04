@@ -90,7 +90,7 @@ export const load: PageServerLoad = async (event) => {
     schema
   )
 
-  return { form }
+  return { form, art: data.album.art }
 }
 
 export const actions: Actions = {

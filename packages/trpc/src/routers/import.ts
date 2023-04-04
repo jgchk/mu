@@ -2,7 +2,12 @@ import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
-import { readTrackMetadata, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
+import {
+  readTrackCoverArt,
+  readTrackMetadata,
+  writeTrackCoverArt,
+  writeTrackMetadata,
+} from 'music-metadata'
 import path from 'path'
 import { z } from 'zod'
 
@@ -69,6 +74,7 @@ export const importRouter = router({
           }
           return {
             id: download.dbDownload.id,
+            path: download.dbDownload.path,
             metadata,
           }
         })
@@ -80,10 +86,20 @@ export const importRouter = router({
       const albumTitle =
         tracks.find((track) => track.metadata && track.metadata.album)?.metadata?.album ?? null
 
+      let albumArt: Buffer | undefined
+      for (const track of tracks) {
+        const coverArt = await readTrackCoverArt(track.path)
+        if (coverArt !== undefined) {
+          albumArt = coverArt
+          break
+        }
+      }
+
       return {
         album: {
           title: albumTitle,
           artists: albumArtists,
+          art: albumArt?.toString('base64'),
         },
         tracks: tracks.map((track) => ({
           id: track.id,

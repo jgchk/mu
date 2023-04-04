@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import type { Readable } from 'svelte/store'
   import type { DndEvent } from 'svelte-dnd-action'
   import { dndzone } from 'svelte-dnd-action'
@@ -14,6 +15,8 @@
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
   import { toErrorString } from '$lib/utils/error'
+  import { base64ToFile } from '$lib/utils/file'
+  import { ifDefined } from '$lib/utils/types'
 
   import type { PageServerData } from './$types'
 
@@ -44,6 +47,13 @@
   })
 
   let albumArt: File | undefined = undefined
+  onMount(() => {
+    if (data.art) {
+      albumArt = base64ToFile(data.art, 'art')
+    } else {
+      albumArt = undefined
+    }
+  })
 
   type StoreType<T extends Readable<unknown>> = T extends Readable<infer U> ? U : never
 
