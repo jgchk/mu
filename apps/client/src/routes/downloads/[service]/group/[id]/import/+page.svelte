@@ -15,8 +15,7 @@
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
   import { toErrorString } from '$lib/utils/error'
-  import { base64ToFile } from '$lib/utils/file'
-  import { ifDefined } from '$lib/utils/types'
+  import { base64ToBlob, } from '$lib/utils/file'
 
   import type { PageServerData } from './$types'
 
@@ -46,10 +45,10 @@
     },
   })
 
-  let albumArt: File | undefined = undefined
+  let albumArt: Blob | undefined = undefined
   onMount(() => {
     if (data.art) {
-      albumArt = base64ToFile(data.art, 'art')
+      albumArt = base64ToBlob(data.art)
     } else {
       albumArt = undefined
     }
