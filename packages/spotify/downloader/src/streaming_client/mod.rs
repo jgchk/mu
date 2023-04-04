@@ -26,20 +26,21 @@ impl StreamingClient {
         password: &str,
         credentials_cache: &str,
     ) -> Result<Self, StreamingClientError> {
-        let credentials =
-            librespot::core::authentication::Credentials::with_password(username, password);
+        let cache = librespot::core::cache::Cache::new(
+            Some(Path::new(credentials_cache)),
+            None,
+            None,
+            None,
+        )?;
+
+        let credentials = cache.credentials().unwrap_or_else(|| {
+            librespot::core::authentication::Credentials::with_password(username, password)
+        });
+
         let (session, _) = Session::connect(
             librespot::core::config::SessionConfig::default(),
             credentials,
-            Some(
-                librespot::core::cache::Cache::new(
-                    Some(Path::new(credentials_cache)),
-                    None,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            ),
+            Some(cache),
             true,
         )
         .await?;

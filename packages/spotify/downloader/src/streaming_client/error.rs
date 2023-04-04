@@ -6,6 +6,8 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 #[allow(clippy::enum_variant_names)]
 pub enum StreamingClientError {
+    #[error("{0:?}")]
+    CacheError(#[from] std::io::Error),
     #[error(transparent)]
     SessionError(#[from] SessionError),
     #[error("{0:?}")]
