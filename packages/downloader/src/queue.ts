@@ -121,11 +121,9 @@ export class DownloadQueue {
 
         let filePath = dbTrack.path
         if (!filePath) {
-          filePath = path.resolve(
-            path.join(
-              this.downloadDir,
-              `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`
-            )
+          filePath = path.join(
+            this.downloadDir,
+            `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`
           )
           this.db.soundcloudTrackDownloads.update(task.dbId, { path: filePath })
         }
@@ -235,11 +233,9 @@ export class DownloadQueue {
 
         let filePath = dbTrack.path
         if (!filePath) {
-          filePath = path.resolve(
-            path.join(
-              this.downloadDir,
-              `spot-${spotTrack.id}-${Date.now()}-${randomInt(0, 10)}.ogg`
-            )
+          filePath = path.join(
+            this.downloadDir,
+            `spot-${spotTrack.id}-${Date.now()}-${randomInt(0, 10)}.ogg`
           )
           this.db.spotifyTrackDownloads.update(task.dbId, { path: filePath })
         }

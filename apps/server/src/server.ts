@@ -134,7 +134,7 @@ const main = async () => {
     .get('/api/tracks/:id/stream', (req, res) => {
       const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
       const track = db.tracks.get(id)
-      const stream = fs.createReadStream(path.resolve(track.path))
+      const stream = fs.createReadStream(track.path)
       stream.pipe(res)
     })
     .get(
@@ -186,7 +186,7 @@ const main = async () => {
           return
         }
 
-        const stream = fs.createReadStream(path.resolve(albumCover.dbDownload.path))
+        const stream = fs.createReadStream(albumCover.dbDownload.path)
         const streamWithFileType = await fileTypeStream(stream)
 
         if (streamWithFileType.fileType) {
@@ -227,7 +227,7 @@ const main = async () => {
           return
         }
 
-        const coverArt = await readTrackCoverArt(path.resolve(fileDownload.path))
+        const coverArt = await readTrackCoverArt(fileDownload.path)
 
         if (coverArt === undefined) {
           res.status(404).send('Track does not have cover art')
@@ -260,7 +260,7 @@ const main = async () => {
           throw new Error('Track does not have cover art')
         }
 
-        const coverArt = await readTrackCoverArt(path.resolve(track.path))
+        const coverArt = await readTrackCoverArt(track.path)
 
         if (coverArt === undefined) {
           throw new Error('Track does not have cover art')
@@ -290,7 +290,7 @@ const main = async () => {
 
         for (const track of tracks) {
           if (track.hasCoverArt) {
-            const coverArt = await readTrackCoverArt(path.resolve(track.path))
+            const coverArt = await readTrackCoverArt(track.path)
             if (coverArt !== undefined) {
               const { output, contentType } = await handleResize(coverArt, { width, height })
               if (contentType) {

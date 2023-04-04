@@ -63,7 +63,7 @@ export const importRouter = router({
 
       const tracks = await Promise.all(
         audioDownloads.map(async (download) => {
-          const metadata = await readTrackMetadata(path.resolve(download.dbDownload.path))
+          const metadata = await readTrackMetadata(download.dbDownload.path)
           if (!metadata) {
             throw new Error('Could not read metadata')
           }
@@ -205,7 +205,7 @@ export const importRouter = router({
 
           if (path.resolve(download.dbDownload.path) !== path.resolve(newPath)) {
             await fs.mkdir(path.dirname(newPath), { recursive: true })
-            await fs.rename(path.resolve(download.dbDownload.path), newPath)
+            await fs.rename(download.dbDownload.path, newPath)
           }
 
           const artists = download.metadata.artists.map((artist) => {
@@ -226,14 +226,14 @@ export const importRouter = router({
             album: albumTitle ?? null,
             albumArtists: albumArtists.map((artist) => artist.name),
           }
-          await writeTrackMetadata(path.resolve(newPath), metadata)
+          await writeTrackMetadata(newPath, metadata)
 
           if (albumArt) {
             try {
-              await writeTrackCoverArt(path.resolve(newPath), albumArt)
+              await writeTrackCoverArt(newPath, albumArt)
             } catch {
               // OGG Files sometimes fail the first time then work the second time
-              await writeTrackCoverArt(path.resolve(newPath), albumArt)
+              await writeTrackCoverArt(newPath, albumArt)
             }
           }
 
@@ -304,7 +304,7 @@ export const importRouter = router({
         throw new Error('File is not audio')
       }
 
-      const metadata = await readTrackMetadata(path.resolve(dbDownload.path))
+      const metadata = await readTrackMetadata(dbDownload.path)
       if (!metadata) {
         throw new Error('Could not read metadata')
       }
@@ -378,7 +378,7 @@ export const importRouter = router({
 
       if (path.resolve(dbDownload.path) !== path.resolve(newPath)) {
         await fs.mkdir(path.dirname(newPath), { recursive: true })
-        await fs.rename(path.resolve(dbDownload.path), newPath)
+        await fs.rename(dbDownload.path, newPath)
       }
 
       const metadata: Metadata = {
@@ -388,7 +388,7 @@ export const importRouter = router({
         album: input.title ?? null,
         albumArtists: artists.map((artist) => artist.name),
       }
-      await writeTrackMetadata(path.resolve(newPath), metadata)
+      await writeTrackMetadata(newPath, metadata)
 
       const dbTrack = ctx.db.tracks.insertWithArtists({
         title: metadata.title,

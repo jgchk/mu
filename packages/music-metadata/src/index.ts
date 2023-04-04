@@ -1,4 +1,5 @@
 import { execa } from 'execa'
+import path from 'path'
 import { z } from 'zod'
 
 export * from './dependencies'
@@ -29,13 +30,13 @@ export const writeTrackMetadata = async (filePath: string, metadata: Partial<Met
   if (metadata.track !== null && metadata.track !== undefined) {
     metadataArgs.push('--track', metadata.track.toString())
   }
-  await execa('python3', ['-m', 'metadata', 'write', filePath, ...metadataArgs], {
+  await execa('python3', ['-m', 'metadata', 'write', path.resolve(filePath), ...metadataArgs], {
     cwd: __dirname,
   })
 }
 
 export const readTrackMetadata = async (filePath: string): Promise<Metadata | undefined> => {
-  const { stdout } = await execa('python3', ['-m', 'metadata', 'read', filePath], {
+  const { stdout } = await execa('python3', ['-m', 'metadata', 'read', path.resolve(filePath)], {
     cwd: __dirname,
   })
 
@@ -47,7 +48,7 @@ export const readTrackMetadata = async (filePath: string): Promise<Metadata | un
 }
 
 export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => {
-  await execa('python3', ['-m', 'metadata', 'write-cover', filePath], {
+  await execa('python3', ['-m', 'metadata', 'write-cover', path.resolve(filePath)], {
     cwd: __dirname,
     input: coverArt,
     encoding: null,
@@ -55,10 +56,14 @@ export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => 
 }
 
 export const readTrackCoverArt = async (filePath: string): Promise<Buffer | undefined> => {
-  const { stdout } = await execa('python3', ['-m', 'metadata', 'read-cover', filePath], {
-    cwd: __dirname,
-    encoding: null,
-  })
+  const { stdout } = await execa(
+    'python3',
+    ['-m', 'metadata', 'read-cover', path.resolve(filePath)],
+    {
+      cwd: __dirname,
+      encoding: null,
+    }
+  )
 
   if (stdout.toString() === 'No cover art found') {
     return undefined

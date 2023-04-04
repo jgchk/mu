@@ -47,7 +47,7 @@ export class SoulseekDownloadManager {
 
       const extension = path.extname(dbTrack.file)
       const fileName = `slsk-${hashedFile}-${Date.now()}-${crypto.randomInt(0, 10)}${extension}`
-      filePath = path.resolve(path.join(this.downloadDir, fileName))
+      filePath = path.join(this.downloadDir, fileName)
       this.db.soulseekTrackDownloads.update(dbId, { path: filePath })
     }
 
