@@ -26,8 +26,8 @@
     <NavBar />
 
     <main class="relative flex-1 overflow-auto">
-      <Toaster />
       <slot />
+      <Toaster />
     </main>
 
     {#if $nowPlaying}
