@@ -1,4 +1,5 @@
 <script lang="ts">
+  import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
@@ -15,10 +16,8 @@
 {#if $releaseQuery.data}
   {@const tracks = $releaseQuery.data.tracks}
 
-  <a href="/releases/{$releaseQuery.data.id}/edit" class="absolute right-4 top-4">Edit</a>
-
   <div class="space-y-4 p-4">
-    <div class="flex items-end gap-6">
+    <div class="relative flex items-end gap-6">
       <div class="relative w-64 shrink-0">
         <CoverArt
           src={$releaseQuery.data.hasCoverArt
@@ -41,6 +40,12 @@
           {/each}
         </ul>
       </div>
+
+      <LinkButton
+        href="/releases/{$releaseQuery.data.id}/edit"
+        kind="outline"
+        class="absolute top-0 right-0">Edit</LinkButton
+      >
     </div>
 
     <div>
