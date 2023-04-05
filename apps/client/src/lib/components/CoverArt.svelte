@@ -61,7 +61,7 @@
   </div>
 </div>
 
-<style>
+<style lang="postcss">
   .skeleton::before {
     content: '';
     position: absolute;
