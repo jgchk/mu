@@ -179,6 +179,12 @@ export class Database {
       return { ...release, artists }
     },
 
+    getWithTracksAndArtists: (id: Release['id']) => {
+      const release = this.releases.getWithArtists(id)
+      const tracks = this.tracks.getByReleaseId(id)
+      return { ...release, tracks }
+    },
+
     delete: (id: Release['id']) => {
       return this.db.delete(releases).where(eq(releases.id, id)).run()
     },

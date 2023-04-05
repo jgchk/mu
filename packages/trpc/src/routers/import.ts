@@ -235,6 +235,7 @@ export const importRouter = router({
               return ctx.db.artists.get(artist.id)
             }
           })
+
           const metadata: Metadata = {
             title: download.metadata.title ?? null,
             artists: artists.map((artist) => artist.name),

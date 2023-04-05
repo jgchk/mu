@@ -13,9 +13,9 @@
 <ReleaseForm
   formData={data.form}
   artData={data.art}
-  on:success={({ detail: { data } }) => toast.success(`Imported ${data.album.title || 'release'}!`)}
+  on:success={({ detail: { data } }) => toast.success(`Updated ${data.album.title || 'release'}!`)}
   on:failure={({ detail: { reason } }) =>
-    toast.error(`Failed to import release: ${toErrorString(reason)}`)}
+    toast.error(`Failed to update release: ${toErrorString(reason)}`)}
   on:error={({ detail: { error } }) =>
-    toast.error(`Error while importing release: ${toErrorString(error)}`)}
+    toast.error(`Error while updating release: ${toErrorString(error)}`)}
 />
