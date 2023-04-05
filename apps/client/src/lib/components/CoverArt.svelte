@@ -8,18 +8,30 @@
   export let hoverable = true
 
   let loaded = false
+  let img: HTMLImageElement | undefined
+
+  $: if (img?.complete) {
+    loaded = true
+  }
 </script>
 
 <div class="relative w-full pt-[100%] shadow">
   {#if src !== undefined}
     <img
-      class={cn('absolute left-0 top-0 h-full w-full rounded object-cover', !loaded && 'hidden')}
+      class={cn(
+        'absolute left-0 top-0 h-full w-full rounded object-cover transition',
+        loaded ? 'opacity-100' : 'opacity-0'
+      )}
       {src}
       {alt}
       on:load={() => (loaded = true)}
+      bind:this={img}
     />
     <div
-      class={cn('absolute left-0 top-0 h-full w-full rounded bg-gray-800', loaded && 'hidden')}
+      class={cn(
+        'skeleton absolute left-0 top-0 h-full w-full overflow-hidden rounded bg-gray-800 transition',
+        loaded ? 'opacity-0' : 'opacity-100'
+      )}
     />
   {:else}
     <div
@@ -48,3 +60,24 @@
     </div>
   </div>
 </div>
+
+<style>
+  .skeleton::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: shimmer 2s linear infinite;
+    background-image: linear-gradient(to right, transparent, theme(colors.gray.700), transparent);
+    width: 200%;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-110%);
+    }
+    100% {
+      transform: translateX(60%);
+    }
+  }
+</style>
