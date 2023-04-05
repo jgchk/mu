@@ -9,11 +9,10 @@
 
   const trpc = getContextClient()
   const releaseQuery = trpc.releases.getWithTracksAndArtists.query({ id: data.id })
-  const tracksQuery = trpc.tracks.getByReleaseIdWithArtists.query({ releaseId: data.id })
 </script>
 
-{#if $releaseQuery.data && $tracksQuery.data}
-  {@const tracks = $tracksQuery.data}
+{#if $releaseQuery.data}
+  {@const tracks = $releaseQuery.data.tracks}
 
   <a href="/releases/{$releaseQuery.data.id}/edit" class="absolute right-4 top-4">Edit</a>
 
@@ -90,8 +89,8 @@
       {/each}
     </div>
   </div>
-{:else if $releaseQuery.error || $tracksQuery.error}
-  <div>{($releaseQuery.error ?? $tracksQuery.error)?.message}</div>
+{:else if $releaseQuery.error}
+  <div>{$releaseQuery.error.message}</div>
 {:else}
   <div>Loading...</div>
 {/if}

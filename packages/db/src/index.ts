@@ -181,7 +181,7 @@ export class Database {
 
     getWithTracksAndArtists: (id: Release['id']) => {
       const release = this.releases.getWithArtists(id)
-      const tracks = this.tracks.getByReleaseId(id)
+      const tracks = this.tracks.getByReleaseIdWithArtists(id)
       return { ...release, tracks }
     },
 
