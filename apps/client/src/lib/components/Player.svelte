@@ -2,7 +2,6 @@
   import { onDestroy } from 'svelte'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
-  import Loader from '$lib/atoms/Loader.svelte'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -13,8 +12,6 @@
   import type { NowPlaying } from '$lib/now-playing'
   import { nextTrack, previousTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
-  import { isInOneOfRangesExclusive } from '$lib/utils/math'
-  import type { Timeout } from '$lib/utils/types'
 
   import Range from '../atoms/Range.svelte'
   import PlayerCover from './PlayerCover.svelte'
@@ -31,45 +28,6 @@
   let paused = false
   let currentTime = 0
   let duration = 1
-  let buffered: TimeRanges | undefined
-
-  let loading = false
-  $: {
-    let loading_
-    if (!buffered || buffered.length === 0) {
-      loading_ = true
-    } else {
-      loading_ = !isInOneOfRangesExclusive(
-        currentTime,
-        (buffered as unknown as Array<{ start: number; end: number }>).map((b) => [b.start, b.end])
-      )
-    }
-
-    if (loading !== loading_) {
-      loading = loading_
-    }
-  }
-
-  const DELAYED_LOADING_THRESHOLD = 500
-  let delayedLoadingTimeout: Timeout | undefined
-  let delayedLoading = false
-  $: {
-    if (loading) {
-      if (delayedLoadingTimeout) {
-        clearTimeout(delayedLoadingTimeout)
-      }
-      delayedLoadingTimeout = setTimeout(() => {
-        delayedLoadingTimeout = undefined
-        delayedLoading = true
-      }, DELAYED_LOADING_THRESHOLD)
-    } else {
-      if (delayedLoadingTimeout) {
-        clearTimeout(delayedLoadingTimeout)
-        delayedLoadingTimeout = undefined
-      }
-      delayedLoading = false
-    }
-  }
 
   onDestroy(() => {
     player?.pause()
@@ -133,11 +91,7 @@
         on:click={togglePlaying}
         use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
       >
-        {#if delayedLoading}
-          <div class="h-8 w-8 rounded-full bg-white p-1.5">
-            <Loader class="text-black" />
-          </div>
-        {:else if paused}
+        {#if paused}
           <PlayIcon />
         {:else}
           <PauseIcon />
@@ -199,7 +153,6 @@
     bind:currentTime
     bind:duration
     bind:paused
-    bind:buffered
     bind:volume={$volume}
     on:ended={() => nextTrack()}
   >
