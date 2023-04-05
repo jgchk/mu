@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CoverArt from '$lib/components/CoverArt.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
@@ -28,25 +29,16 @@
               nextTracks: tracks.slice(i + 1).map((t) => t.id),
             })}
         >
-          {#if track.hasCoverArt}
-            <img
-              class="h-full w-full rounded object-cover"
-              src="/api/tracks/{track.id}/cover-art?width=80&height=80"
-              alt={track.title}
-            />
-          {:else}
-            <div class="center h-full w-full rounded bg-gray-800 text-[4px] italic text-gray-600">
-              No cover art
-            </div>
-          {/if}
-          <div
-            class="center hover:border-primary-500 group/play absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
+          <CoverArt
+            src={track.hasCoverArt
+              ? `/api/tracks/${track.id}/cover-art?width=80&height=80`
+              : undefined}
+            alt={track.title}
+            iconClass="w-5 h-5"
+            placeholderClass="text-[5px]"
           >
-            <PlayIcon
-              size={20}
-              class="group-active/play:text-primary-500 text-white opacity-0 transition-colors group-hover:opacity-100"
-            />
-          </div>
+            <PlayIcon />
+          </CoverArt>
         </button>
         <div class="flex-1 truncate">
           {track.title}

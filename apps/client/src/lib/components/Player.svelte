@@ -14,7 +14,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
-  import PlayerCover from './PlayerCover.svelte'
+  import CoverArt from './CoverArt.svelte'
 
   export let nowPlaying: NowPlaying
 
@@ -45,15 +45,17 @@
 <div class="flex items-center gap-4 rounded bg-black p-2">
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
-      {#if $nowPlayingTrack.data.hasCoverArt}
-        <PlayerCover id={nowPlaying.trackId} title={$nowPlayingTrack.data.title} />
-      {:else}
-        <div
-          class="center h-[64px] w-[64px] rounded-sm bg-gray-800 text-[8px] italic text-gray-600"
-        >
-          No cover art
-        </div>
-      {/if}
+      <div class="h-16 w-16 shrink-0">
+        <CoverArt
+          src={$nowPlayingTrack.data.hasCoverArt
+            ? `/api/tracks/${nowPlaying.trackId}/cover-art?width=128&height=128`
+            : undefined}
+          alt={$nowPlayingTrack.data.title}
+          hoverable={false}
+          placeholderClass="text-[8px]"
+        />
+      </div>
+
       <div class="overflow-hidden">
         <div class="truncate">
           {$nowPlayingTrack.data.title}

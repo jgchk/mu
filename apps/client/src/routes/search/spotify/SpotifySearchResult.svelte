@@ -2,6 +2,7 @@
   import { followCursor } from 'tippy.js'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import CoverArt from '$lib/components/CoverArt.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -37,7 +38,7 @@
 <div class="w-full overflow-hidden">
   <button
     type="button"
-    class="relative w-full pt-[100%] shadow"
+    class="w-full"
     on:click={handleDownload}
     use:tooltip={{
       content: 'Download',
@@ -46,27 +47,9 @@
       plugins: [followCursor],
     }}
   >
-    {#if artwork}
-      <img
-        class="absolute left-0 top-0 h-full w-full rounded object-cover"
-        src={artwork}
-        alt={result.name}
-      />
-    {:else}
-      <div
-        class="center absolute left-0 top-0 h-full w-full rounded bg-gray-800 italic text-gray-600"
-      >
-        No cover art
-      </div>
-    {/if}
-    <div
-      class="center hover:border-primary-500 group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
-    >
-      <DownloadIcon
-        size={32}
-        class="group-active:text-primary-500 text-white opacity-0 transition group-hover:opacity-100"
-      />
-    </div>
+    <CoverArt src={artwork} alt={result.name}>
+      <DownloadIcon />
+    </CoverArt>
   </button>
 
   <div class="truncate text-sm font-bold" title={result.name}>{result.name}</div>

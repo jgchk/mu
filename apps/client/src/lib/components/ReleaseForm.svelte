@@ -17,6 +17,7 @@
   import type { StoreType } from '$lib/utils/svelte'
 
   import type { PageServerData } from '../../routes/releases/[id]/edit/$types'
+  import CoverArt from './CoverArt.svelte'
 
   export let formData: PageServerData['form']
   export let artData: PageServerData['art']
@@ -101,19 +102,9 @@
             class="relative h-full w-full shadow"
             on:click={() => (albumArt = undefined)}
           >
-            <img
-              class="h-full w-full rounded object-cover"
-              src={URL.createObjectURL(albumArt)}
-              alt="Album Art"
-            />
-            <div
-              class="center hover:border-primary-500 group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60 active:bg-opacity-80"
-            >
-              <DeleteIcon
-                size={32}
-                class="group-active:text-primary-500 text-white opacity-0 transition group-hover:opacity-100"
-              />
-            </div>
+            <CoverArt src={URL.createObjectURL(albumArt)} alt="Album Art">
+              <DeleteIcon />
+            </CoverArt>
           </button>
         {:else}
           <FileDrop class="h-full w-full" on:drop={(e) => void handleFileDrop(e)} />

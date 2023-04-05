@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CoverArt from '$lib/components/CoverArt.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
@@ -18,20 +19,13 @@
 
   <div class="space-y-4 p-4">
     <div class="flex items-end gap-6">
-      <div class="relative h-64 w-64 shadow">
-        {#if $releaseQuery.data.hasCoverArt}
-          <img
-            class="h-full w-full rounded object-cover"
-            src="/api/releases/{$releaseQuery.data.id}/cover-art?width=512&height=512"
-            alt={$releaseQuery.data.title}
-          />
-        {:else}
-          <div class="relative w-full rounded bg-gray-800 pt-[100%] italic text-gray-600">
-            <div class="center absolute left-0 top-0 h-full w-full">No cover art</div>
-          </div>
-        {/if}
-        <div
-          class="center group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition"
+      <div class="relative w-64 shrink-0">
+        <CoverArt
+          src={$releaseQuery.data.hasCoverArt
+            ? `/api/releases/${$releaseQuery.data.id}/cover-art?width=512&height=512`
+            : undefined}
+          alt={$releaseQuery.data.title}
+          hoverable={false}
         />
       </div>
 
