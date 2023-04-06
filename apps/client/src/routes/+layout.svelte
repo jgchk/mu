@@ -24,7 +24,7 @@
 
 <QueryClientProvider client={data.trpc.queryClient}>
   <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
-    <div class="flex flex-1 flex-col gap-2">
+    <div class="flex min-w-0 flex-1 flex-col gap-2">
       <NavBar />
 
       <main class="relative flex-1 overflow-auto">
