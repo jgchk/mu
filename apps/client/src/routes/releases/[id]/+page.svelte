@@ -29,7 +29,9 @@
       </div>
 
       <div class="space-y-1 pb-2">
-        <h1 class="text-6xl font-bold">{$releaseQuery.data.title}</h1>
+        <h1 class="line-clamp-2 text-6xl font-bold leading-[1.19]" title={$releaseQuery.data.title}>
+          {$releaseQuery.data.title}
+        </h1>
         <ul class="comma-list text-sm font-bold">
           {#each $releaseQuery.data.artists as artist (artist.id)}
             <li class="flex">
