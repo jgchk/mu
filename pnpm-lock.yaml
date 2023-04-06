@@ -159,6 +159,9 @@ importers:
       is-animated-gif:
         specifier: ^1.0.3
         version: 1.0.3
+      last-fm:
+        specifier: workspace:*
+        version: link:../../packages/last-fm
       mime-types:
         specifier: ^2.1.35
         version: 2.1.35
@@ -283,6 +286,15 @@ importers:
         specifier: ^2.23.1
         version: 2.23.1(eslint@8.36.0)(svelte@3.57.0)
 
+  packages/last-fm:
+    dependencies:
+      got:
+        specifier: ^12.6.0
+        version: 12.6.0
+      zod:
+        specifier: ^3.21.4
+        version: 3.21.4
+
   packages/music-metadata:
     dependencies:
       execa:
@@ -368,6 +380,9 @@ importers:
       got:
         specifier: ^12.6.0
         version: 12.6.0
+      last-fm:
+        specifier: workspace:*
+        version: link:../last-fm
       mime:
         specifier: ^3.0.0
         version: 3.0.0

@@ -4,6 +4,7 @@
 
   import { QueryClientProvider } from '@tanstack/svelte-query'
 
+  import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
   import Player from '$lib/components/Player.svelte'
   import { nowPlaying } from '$lib/now-playing'
@@ -22,16 +23,20 @@
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
-  <div class="flex h-full w-full flex-col gap-2 bg-gray-800 p-2 text-white">
-    <NavBar />
+  <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
+    <div class="flex flex-1 flex-col gap-2">
+      <NavBar />
 
-    <main class="relative flex-1 overflow-auto">
-      <slot />
-      <Toaster />
-    </main>
+      <main class="relative flex-1 overflow-auto">
+        <slot />
+        <Toaster />
+      </main>
 
-    {#if $nowPlaying}
-      <Player nowPlaying={$nowPlaying} />
-    {/if}
+      {#if $nowPlaying}
+        <Player nowPlaying={$nowPlaying} />
+      {/if}
+    </div>
+
+    <FriendsSidebar />
   </div>
 </QueryClientProvider>

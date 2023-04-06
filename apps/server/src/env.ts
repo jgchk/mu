@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production']).default('production'),
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
   MUSIC_DIR: z.string(),
@@ -12,7 +13,10 @@ const envSchema = z.object({
   SPOTIFY_PASSWORD: z.string(),
   SOULSEEK_USERNAME: z.string(),
   SOULSEEK_PASSWORD: z.string(),
-  NODE_ENV: z.enum(['development', 'production']).default('production'),
+  LASTFM_KEY: z.string(),
+  LASTFM_SECRET: z.string(),
+  LASTFM_USERNAME: z.string(),
+  LASTFM_PASSWORD: z.string(),
 })
 
 const envRes = envSchema.safeParse(process.env)

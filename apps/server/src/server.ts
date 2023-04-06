@@ -9,6 +9,7 @@ import asyncHandler from 'express-async-handler'
 import { fileTypeFromBuffer, fileTypeFromFile, fileTypeStream } from 'file-type'
 import fs from 'fs'
 import { isAnimatedGif } from 'is-animated-gif'
+import { LastFM } from 'last-fm'
 import mime from 'mime-types'
 import { getMissingPythonDependencies, readTrackCoverArt } from 'music-metadata'
 import path from 'path'
@@ -69,8 +70,13 @@ const main = async () => {
     .on('listen-error', (error) => console.error('SLSK listen error', error))
     .on('server-error', (error) => console.error('SLSK server error', error))
   const dl = new Downloader({ db, sc, sp, slsk, downloadDir: env.DOWNLOAD_DIR })
+  const lfm = await new LastFM({ apiKey: env.LASTFM_KEY }).login({
+    username: env.LASTFM_USERNAME,
+    password: env.LASTFM_PASSWORD,
+    apiSecret: env.LASTFM_SECRET,
+  })
 
-  const context: Context = { db, dl, sc, sp, slsk, musicDir: env.MUSIC_DIR }
+  const context: Context = { db, dl, sc, sp, slsk, lfm, musicDir: env.MUSIC_DIR }
   const createContext = (): Context => context
 
   // Resume downloads

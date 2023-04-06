@@ -12,6 +12,7 @@ export default defineConfig({
     '../../packages/music-metadata',
     '../../packages/spotify',
     '../../packages/soundcloud',
+    '../../packages/last-fm',
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',

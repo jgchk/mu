@@ -44,7 +44,7 @@
       <LinkButton
         href="/releases/{$releaseQuery.data.id}/edit"
         kind="outline"
-        class="absolute top-0 right-0">Edit</LinkButton
+        class="absolute right-0 top-0">Edit</LinkButton
       >
     </div>
 
