@@ -1,13 +1,15 @@
 import { publicProcedure, router } from '../trpc'
 import { withinLastMinutes } from '../utils/date'
+import { undefIfEmpty } from '../utils/string'
+import { ifDefined } from '../utils/types'
 
 type LastTrack = {
   title: string
   url: string
   artist: string
   artistUrl: string
-  album: string
-  albumUrl: string
+  album?: string
+  albumUrl?: string
   friendName: string
   friendUrl: string
   art?: string
@@ -23,18 +25,26 @@ export const friendsRouter = router({
         const lastTrack = lastTracks[0]
         const nowPlaying = '@attr' in lastTrack ? lastTrack['@attr'].nowplaying === 'true' : false
 
+        const album = undefIfEmpty(lastTrack.album['#text'])
         const baseData = {
           title: lastTrack.name,
           url: lastTrack.url,
           artist: lastTrack.artist.name,
           artistUrl: lastTrack.artist.url,
-          album: lastTrack.album['#text'],
-          albumUrl: `https://www.last.fm/music/${encodeURIComponent(
-            lastTrack.artist.name
-          )}/${encodeURIComponent(lastTrack.album['#text'])}`,
+          album,
+          albumUrl: ifDefined(
+            album,
+            (album) =>
+              `https://www.last.fm/music/${encodeURIComponent(
+                lastTrack.artist.name
+              )}/${encodeURIComponent(album)}`
+          ),
           friendName: friend.name,
           friendUrl: friend.url,
-          art: lastTrack.image.find((img) => img.size === 'large')?.['#text'],
+          art: ifDefined(
+            lastTrack.image.find((img) => img.size === 'large')?.['#text'],
+            undefIfEmpty
+          ),
         }
 
         let data: LastTrack
