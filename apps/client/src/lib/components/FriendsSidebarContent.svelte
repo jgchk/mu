@@ -9,7 +9,7 @@
   export let data: RouterOutput['friends']['spotify']
 </script>
 
-{#each data as friend}
+{#each data as friend (friend.friendUrl)}
   <div class="flex gap-2.5">
     <div class="relative top-[0.2rem] h-10 w-10 shrink-0">
       <CoverArt
