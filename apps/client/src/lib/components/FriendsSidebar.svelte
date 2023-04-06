@@ -18,7 +18,7 @@
   {#if $friendsQuery.data}
     {#each $friendsQuery.data as friend}
       <div class="flex gap-2">
-        <div class="relative top-0.5 h-10 w-10 shrink-0">
+        <div class="relative top-[0.2rem] h-10 w-10 shrink-0">
           <CoverArt
             src={friend.lastTrack.art}
             alt={friend.lastTrack.album}
