@@ -3,6 +3,7 @@
 
   export let src: string | undefined = undefined
   export let alt: string | null | undefined = undefined
+  export let rounding = 'rounded'
   export let iconClass: string | undefined = undefined
   export let placeholderClass: string | undefined = undefined
   export let hoverable = true
@@ -19,8 +20,9 @@
   {#if src !== undefined}
     <img
       class={cn(
-        'absolute left-0 top-0 h-full w-full rounded object-cover transition',
-        loaded ? 'opacity-100' : 'opacity-0'
+        'absolute left-0 top-0 h-full w-full object-cover transition',
+        loaded ? 'opacity-100' : 'opacity-0',
+        rounding
       )}
       {src}
       {alt}
@@ -29,14 +31,16 @@
     />
     <div
       class={cn(
-        'skeleton absolute left-0 top-0 h-full w-full overflow-hidden rounded bg-gray-800 transition',
-        loaded ? 'opacity-0' : 'opacity-100'
+        'skeleton absolute left-0 top-0 h-full w-full overflow-hidden bg-gray-800 transition',
+        loaded ? 'opacity-0' : 'opacity-100',
+        rounding
       )}
     />
   {:else}
     <div
       class={tw(
-        'center absolute left-0 top-0 h-full w-full rounded bg-gray-800 italic text-gray-600',
+        'center absolute left-0 top-0 h-full w-full bg-gray-800 italic text-gray-600',
+        rounding,
         placeholderClass
       )}
     >
@@ -45,9 +49,10 @@
   {/if}
   <div
     class={cn(
-      'center group absolute left-0 top-0 h-full w-full rounded border border-white border-opacity-20 transition active:bg-opacity-80',
+      'center group absolute left-0 top-0 h-full w-full border border-white border-opacity-20 transition active:bg-opacity-80',
       hoverable &&
-        'hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60'
+        'hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60',
+      rounding
     )}
   >
     <div

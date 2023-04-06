@@ -36,6 +36,7 @@
             alt={track.title}
             iconClass="w-5 h-5"
             placeholderClass="text-[5px]"
+            rounding="rounded-sm"
           >
             <PlayIcon />
           </CoverArt>

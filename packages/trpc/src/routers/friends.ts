@@ -1,4 +1,5 @@
 import { publicProcedure, router } from '../trpc'
+import { withinLastMinutes } from '../utils/date'
 
 type LastTrack = {
   title: string
@@ -6,11 +7,14 @@ type LastTrack = {
   artist: string
   artistUrl: string
   album: string
+  albumUrl: string
+  friendName: string
+  friendUrl: string
   art?: string
 } & ({ nowPlaying: true } | { nowPlaying: false; date: Date })
 
 export const friendsRouter = router({
-  getLastListened: publicProcedure.query(async ({ ctx }) => {
+  lastFm: publicProcedure.query(async ({ ctx }) => {
     const friends = await ctx.lfm.getFriends()
 
     const lastTracks = await Promise.all(
@@ -25,6 +29,11 @@ export const friendsRouter = router({
           artist: lastTrack.artist.name,
           artistUrl: lastTrack.artist.url,
           album: lastTrack.album['#text'],
+          albumUrl: `https://www.last.fm/music/${encodeURIComponent(
+            lastTrack.artist.name
+          )}/${encodeURIComponent(lastTrack.album['#text'])}`,
+          friendName: friend.name,
+          friendUrl: friend.url,
           art: lastTrack.image.find((img) => img.size === 'large')?.['#text'],
         }
 
@@ -46,26 +55,54 @@ export const friendsRouter = router({
           }
         }
 
-        return {
-          friend,
-          lastTrack: data,
-        }
+        return data
       })
     )
 
     return lastTracks.sort((a, b) => {
-      if (a.lastTrack.nowPlaying) {
+      if (a.nowPlaying) {
         return -1
       }
-      if (b.lastTrack.nowPlaying) {
+      if (b.nowPlaying) {
         return 1
       }
 
-      return b.lastTrack.date.getTime() - a.lastTrack.date.getTime()
+      return b.date.getTime() - a.date.getTime()
     })
   }),
-  spotifyFriends: publicProcedure.query(async ({ ctx }) => {
-    const res = await ctx.sp.getFriendActivity()
-    return res
+  spotify: publicProcedure.query(async ({ ctx }) => {
+    const friends = await ctx.sp.getFriendActivity()
+    return friends.map((friend) => {
+      const baseData = {
+        title: friend.track.name,
+        url: ctx.sp.uriToUrl(friend.track.uri),
+        artist: friend.track.artist.name,
+        artistUrl: ctx.sp.uriToUrl(friend.track.artist.uri),
+        album: friend.track.album.name,
+        albumUrl: ctx.sp.uriToUrl(friend.track.album.uri),
+        friendName: friend.user.name,
+        friendUrl: ctx.sp.uriToUrl(friend.user.uri),
+        art: friend.track.imageUrl,
+      }
+
+      const date = new Date(friend.timestamp)
+      const nowPlaying = withinLastMinutes(date, 5)
+
+      let data: LastTrack
+      if (nowPlaying) {
+        data = {
+          ...baseData,
+          nowPlaying: true,
+        }
+      } else {
+        data = {
+          ...baseData,
+          nowPlaying: false,
+          date,
+        }
+      }
+
+      return data
+    })
   }),
 })

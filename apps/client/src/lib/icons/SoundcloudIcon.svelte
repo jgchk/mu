@@ -5,7 +5,6 @@
 </script>
 
 <svg
-  role="img"
   viewBox="0 0 24 24"
   height={size ?? '100%'}
   width={size ?? '100%'}

@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 import {
   AuthResponse,
+  FriendActivity,
   FullAlbum,
   FullTrack,
   Pager,
@@ -49,6 +50,15 @@ export class Spotify {
     this.devMode = devMode
   }
 
+  uriToUrl(uri: string) {
+    const splitUri = uri.split(':')
+    if (splitUri.length < 3) {
+      throw new Error('Invalid Spotify URI')
+    }
+    const [kind, id] = splitUri.slice(1)
+    return `https://open.spotify.com/${kind}/${id}`
+  }
+
   async getAccessToken() {
     const res = await got
       .post('https://accounts.spotify.com/api/token', {
@@ -85,7 +95,7 @@ export class Spotify {
         },
       })
       .json()
-    return res
+    return FriendActivity.parse(res).friends.reverse()
   }
 
   async getTrack(trackId: string) {

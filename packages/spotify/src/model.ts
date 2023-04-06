@@ -61,3 +61,47 @@ export const Pager = <T extends z.ZodTypeAny>(itemType: T) =>
     next: z.string().nullable(),
     previous: z.string().nullable(),
   })
+
+export type FriendActivity = z.infer<typeof FriendActivity>
+export const FriendActivity = z.object({
+  friends: z
+    .union([
+      z.object({
+        timestamp: z.number(),
+        user: z.object({
+          uri: z.string(),
+          name: z.string(),
+          imageUrl: z.string(),
+        }),
+        track: z.object({
+          uri: z.string(),
+          name: z.string(),
+          imageUrl: z.string(),
+          album: z.object({ uri: z.string(), name: z.string() }),
+          artist: z.object({ uri: z.string(), name: z.string() }),
+          context: z.object({
+            uri: z.string(),
+            name: z.string(),
+            index: z.number(),
+          }),
+        }),
+      }),
+      z.object({
+        timestamp: z.number(),
+        user: z.object({ uri: z.string(), name: z.string() }),
+        track: z.object({
+          uri: z.string(),
+          name: z.string(),
+          imageUrl: z.string(),
+          album: z.object({ uri: z.string(), name: z.string() }),
+          artist: z.object({ uri: z.string(), name: z.string() }),
+          context: z.object({
+            uri: z.string(),
+            name: z.string(),
+            index: z.number(),
+          }),
+        }),
+      }),
+    ])
+    .array(),
+})
