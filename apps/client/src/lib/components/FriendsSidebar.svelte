@@ -1,11 +1,15 @@
 <script lang="ts">
   import { tooltip } from '$lib/actions/tooltip'
+  import Loader from '$lib/atoms/Loader.svelte'
   import PlayingIcon from '$lib/icons/PlayingIcon.svelte'
   import { getContextClient } from '$lib/trpc'
   import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
 
   const trpc = getContextClient()
-  const friendsQuery = trpc.friends.getLastListened.query(undefined, { refetchInterval: 1000 * 60 })
+  const friendsQuery = trpc.friends.getLastListened.query(undefined, {
+    refetchInterval: 1000 * 60,
+    staleTime: 1000 * 10,
+  })
 </script>
 
 <div class="w-72 shrink-0 space-y-4 overflow-auto rounded bg-gray-900 p-4">
@@ -64,6 +68,10 @@
       {$friendsQuery.error.message}
     </div>
   {:else}
-    <div>Loading friends...</div>
+    <div class="flex h-full flex-col items-center">
+      <div class="h-[40%] max-h-16" />
+      <Loader class="h-10 w-10 text-gray-600" />
+      <div class="h-[40%] max-h-16" />
+    </div>
   {/if}
 </div>
