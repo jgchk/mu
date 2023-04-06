@@ -6,6 +6,7 @@ type LastTrack = {
   artist: string
   artistUrl: string
   album: string
+  art?: string
 } & ({ nowPlaying: true } | { nowPlaying: false; date: Date })
 
 export const friendsRouter = router({
@@ -24,6 +25,7 @@ export const friendsRouter = router({
           artist: lastTrack.artist.name,
           artistUrl: lastTrack.artist.url,
           album: lastTrack.album['#text'],
+          art: lastTrack.image.find((img) => img.size === 'large')?.['#text'],
         }
 
         let data: LastTrack
