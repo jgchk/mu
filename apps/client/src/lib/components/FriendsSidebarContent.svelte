@@ -60,9 +60,15 @@
         </a>
       </div>
       <div class="truncate text-xs text-gray-400 hover:text-white hover:underline">
-        <a href={friend.albumUrl} title={friend.album}>
-          💿 {friend.album}
-        </a>
+        {#if friend.album}
+          <a href={friend.albumUrl} title={friend.album}>
+            💿 {friend.album}
+          </a>
+        {:else}
+          <a href={friend.url} title={friend.title}>
+            🎵 {friend.title}
+          </a>
+        {/if}
       </div>
     </div>
   </div>
