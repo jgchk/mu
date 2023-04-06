@@ -5,8 +5,8 @@
   export { class_ as class }
 </script>
 
-<svg class={tw('spinner h-full w-full', class_)} viewBox="0 0 50 50">
-  <circle class="path stroke-current" cx="25" cy="25" r="20" fill="none" stroke-width="7" />
+<svg class={tw('spinner h-full w-full stroke-[10%]', class_)} viewBox="0 0 50 50">
+  <circle class="path stroke-current" cx="25" cy="25" r="20" fill="none" />
 </svg>
 
 <style>
