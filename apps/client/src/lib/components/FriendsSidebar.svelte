@@ -5,7 +5,7 @@
   import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
 
   const trpc = getContextClient()
-  const friendsQuery = trpc.friends.getLastListened.query()
+  const friendsQuery = trpc.friends.getLastListened.query(undefined, { refetchInterval: 1000 * 60 })
 </script>
 
 <div class="w-72 shrink-0 space-y-4 rounded bg-gray-900 p-4">
