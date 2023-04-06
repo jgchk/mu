@@ -59,7 +59,7 @@
           {friend.artist}
         </a>
       </div>
-      <div class="truncate text-xs text-gray-400 hover:text-white hover:underline">
+      <div class="w-fit max-w-full truncate text-xs text-gray-400 hover:text-white hover:underline">
         {#if friend.album}
           <a href={friend.albumUrl} title={friend.album}>
             💿 {friend.album}
