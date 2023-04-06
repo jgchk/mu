@@ -14,10 +14,10 @@
   })
 </script>
 
-<div class="w-72 shrink-0 space-y-4 overflow-auto rounded bg-gray-900 p-4">
+<div class="w-72 shrink-0 space-y-6 overflow-auto rounded bg-gray-900 p-4">
   {#if $friendsQuery.data}
     {#each $friendsQuery.data as friend}
-      <div class="flex gap-2">
+      <div class="flex gap-2.5">
         <div class="relative top-[0.2rem] h-10 w-10 shrink-0">
           <CoverArt
             src={friend.lastTrack.art}
