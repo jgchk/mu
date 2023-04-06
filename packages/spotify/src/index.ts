@@ -11,6 +11,7 @@ import {
   Pager,
   SimplifiedAlbum,
   SimplifiedTrack,
+  WebTokenResponse,
 } from './model'
 
 export * from './model'
@@ -22,6 +23,7 @@ export class Spotify {
   password: string
   clientId: string
   clientSecret: string
+  dcCookie: string
   devMode: boolean
 
   constructor({
@@ -29,18 +31,21 @@ export class Spotify {
     password,
     clientId,
     clientSecret,
+    dcCookie,
     devMode = false,
   }: {
     username: string
     password: string
     clientId: string
     clientSecret: string
+    dcCookie: string
     devMode?: boolean
   }) {
     this.username = username
     this.password = password
     this.clientId = clientId
     this.clientSecret = clientSecret
+    this.dcCookie = dcCookie
     this.devMode = devMode
   }
 
@@ -57,6 +62,30 @@ export class Spotify {
       .json()
       .then((res) => AuthResponse.parse(res))
     return res.access_token
+  }
+
+  async getWebAccessToken() {
+    const res = await fetch(
+      'https://open.spotify.com/get_access_token?reason=transport&productType=web_player',
+      {
+        headers: {
+          Cookie: `sp_dc=${this.dcCookie}`,
+        },
+      }
+    )
+    return WebTokenResponse.parse(await res.json()).accessToken
+  }
+
+  async getFriendActivity() {
+    const token = await this.getWebAccessToken()
+    const res = await got
+      .get('https://guc-spclient.spotify.com/presence-view/v1/buddylist', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .json()
+    return res
   }
 
   async getTrack(trackId: string) {

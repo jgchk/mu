@@ -64,4 +64,8 @@ export const friendsRouter = router({
       return b.lastTrack.date.getTime() - a.lastTrack.date.getTime()
     })
   }),
+  spotifyFriends: publicProcedure.query(async ({ ctx }) => {
+    const res = await ctx.sp.getFriendActivity()
+    return res
+  }),
 })

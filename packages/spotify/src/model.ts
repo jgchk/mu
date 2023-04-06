@@ -5,6 +5,11 @@ export const AuthResponse = z.object({
   access_token: z.string(),
 })
 
+export type WebTokenResponse = z.infer<typeof WebTokenResponse>
+export const WebTokenResponse = z.object({
+  accessToken: z.string(),
+})
+
 export type SimplifiedArtist = z.infer<typeof SimplifiedArtist>
 export const SimplifiedArtist = z.object({
   type: z.literal('artist'),

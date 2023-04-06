@@ -63,6 +63,7 @@ const main = async () => {
     clientSecret: env.SPOTIFY_CLIENT_SECRET,
     username: env.SPOTIFY_USERNAME,
     password: env.SPOTIFY_PASSWORD,
+    dcCookie: env.SPOTIFY_DC_COOKIE,
   })
   const slsk = new SlskClient()
   await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)

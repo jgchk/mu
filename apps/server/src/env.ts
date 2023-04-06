@@ -11,6 +11,7 @@ const envSchema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string(),
   SPOTIFY_USERNAME: z.string(),
   SPOTIFY_PASSWORD: z.string(),
+  SPOTIFY_DC_COOKIE: z.string(),
   SOULSEEK_USERNAME: z.string(),
   SOULSEEK_PASSWORD: z.string(),
   LASTFM_KEY: z.string(),
