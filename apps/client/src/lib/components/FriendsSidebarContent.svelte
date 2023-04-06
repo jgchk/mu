@@ -23,7 +23,7 @@
     <div class="relative min-w-0 flex-1 space-y-1">
       <div class="flex justify-between">
         <a
-          class="text-sm font-semibold text-gray-300 hover:text-white hover:underline"
+          class="mr-1 truncate text-sm font-semibold text-gray-300 hover:text-white hover:underline"
           href={friend.friendUrl}
           title={friend.friendName}
         >
