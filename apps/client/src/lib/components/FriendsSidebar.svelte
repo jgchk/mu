@@ -69,7 +69,7 @@
               href="https://www.last.fm/music/{friend.lastTrack.artist}/{friend.lastTrack.album}"
               title={friend.lastTrack.album}
             >
-              {friend.lastTrack.album}
+              💿 {friend.lastTrack.album}
             </a>
           </div>
         </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css'
   import '@fontsource/inter/variable.css'
+  import '@fontsource/noto-emoji'
 
   import { QueryClientProvider } from '@tanstack/svelte-query'
 
