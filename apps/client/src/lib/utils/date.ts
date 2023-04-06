@@ -1,55 +1,42 @@
-export const getTimeSince = (date: Date) => {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
-
-  let interval = Math.floor(seconds / 31536000)
-
-  if (interval > 1) {
-    return `${interval} years`
-  }
-  interval = Math.floor(seconds / 2592000)
-  if (interval > 1) {
-    return `${interval} months`
-  }
-  interval = Math.floor(seconds / 86400)
-  if (interval > 1) {
-    return `${interval} days`
-  }
-  interval = Math.floor(seconds / 3600)
-  if (interval > 1) {
-    return `${interval} hours`
-  }
-  interval = Math.floor(seconds / 60)
-  if (interval > 1) {
-    return `${interval} minutes`
-  }
-  return `${Math.floor(seconds)} seconds`
-}
+export const minutesInDay = 1440
+export const minutesInMonth = 43200
+export const minutesInYear = 525600
 
 export const getTimeSinceShort = (date: Date) => {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
+  const milliseconds = new Date().getTime() - date.getTime()
 
-  let interval = Math.floor(seconds / 31536000)
+  // 0 to 60 seconds
+  const seconds = Math.round(milliseconds / 1000)
+  if (seconds < 60) {
+    return `${seconds}s`
+  }
 
-  if (interval > 1) {
-    return `${interval}y`
+  // 1 to 60 minutes
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) {
+    return `${minutes}m`
   }
-  interval = Math.floor(seconds / 2592000)
-  if (interval > 1) {
-    return `${interval}mo`
+
+  // 1 to 24 hours
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) {
+    return `${hours}h`
   }
-  interval = Math.floor(seconds / 86400)
-  if (interval > 1) {
-    return `${interval}d`
+
+  // 1 to 30 days
+  const days = Math.round(minutes / minutesInDay)
+  if (days < 30) {
+    return `${days}d`
   }
-  interval = Math.floor(seconds / 3600)
-  if (interval > 1) {
-    return `${interval}h`
+
+  // 1 to 12 months
+  const months = Math.round(minutes / minutesInMonth)
+  if (months < 12) {
+    return `${months}mo`
   }
-  interval = Math.floor(seconds / 60)
-  if (interval > 1) {
-    return `${interval}m`
-  }
-  return `${Math.floor(seconds)}s`
+
+  const years = Math.round(minutes / minutesInYear)
+  return `${years}y`
 }
 
 const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'medium' })
