@@ -8,7 +8,7 @@
   const friendsQuery = trpc.friends.getLastListened.query(undefined, { refetchInterval: 1000 * 60 })
 </script>
 
-<div class="w-72 shrink-0 space-y-4 rounded bg-gray-900 p-4">
+<div class="w-72 shrink-0 space-y-4 overflow-auto rounded bg-gray-900 p-4">
   {#if $friendsQuery.data}
     {#each $friendsQuery.data as friend}
       <div>
