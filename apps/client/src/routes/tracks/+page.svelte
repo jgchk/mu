@@ -11,7 +11,32 @@
   const trpc = getContextClient()
   const tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.query()
 
-  const favoriteMutation = trpc.tracks.favorite.mutation()
+  const favoriteMutation = trpc.tracks.favorite.mutation({
+    onMutate: async (input) => {
+      await trpc.tracks.getAllWithArtistsAndRelease.utils.cancel()
+      const previousData = trpc.tracks.getAllWithArtistsAndRelease.utils.getData()
+      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(undefined, (old) => {
+        if (!old) return old
+        const newTracks = old.map((track) => {
+          if (track.id === input.id) {
+            return {
+              ...track,
+              favorite: input.favorite,
+            }
+          }
+          return track
+        })
+        return newTracks
+      })
+      return { previousData }
+    },
+    onError: (err, input, context) => {
+      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(undefined, context?.previousData)
+    },
+    onSuccess: async () => {
+      await trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate()
+    },
+  })
 </script>
 
 {#if $tracksQuery.data}
