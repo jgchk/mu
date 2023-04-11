@@ -1,6 +1,7 @@
 <script lang="ts">
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
+  import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
@@ -12,6 +13,36 @@
 
   const trpc = getContextClient()
   const releaseQuery = trpc.releases.getWithTracksAndArtists.query({ id: data.id })
+
+  const favoriteMutation = trpc.tracks.favorite.mutation({
+    onMutate: async (input) => {
+      await trpc.releases.getWithTracksAndArtists.utils.cancel({ id: data.id })
+      const previousData = trpc.releases.getWithTracksAndArtists.utils.getData({ id: data.id })
+      trpc.releases.getWithTracksAndArtists.utils.setData({ id: data.id }, (old) => {
+        if (!old) return old
+        const newTracks = old.tracks.map((track) => {
+          if (track.id === input.id) {
+            return {
+              ...track,
+              favorite: input.favorite,
+            }
+          }
+          return track
+        })
+        return {
+          ...old,
+          tracks: newTracks,
+        }
+      })
+      return { previousData }
+    },
+    onError: (err, input, context) => {
+      trpc.releases.getWithTracksAndArtists.utils.setData({ id: data.id }, context?.previousData)
+    },
+    onSuccess: async () => {
+      await trpc.releases.getWithTracksAndArtists.utils.invalidate({ id: data.id })
+    },
+  })
 </script>
 
 {#if $releaseQuery.data}
@@ -90,6 +121,10 @@
           <div class="text-sm text-gray-400">
             {formatMilliseconds(track.duration)}
           </div>
+          <FavoriteButton
+            favorite={track.favorite}
+            on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+          />
         </div>
       {/each}
     </div>
