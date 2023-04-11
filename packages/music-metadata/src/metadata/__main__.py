@@ -42,20 +42,16 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="operation")
     subparsers.required = True
 
-    parser_read = subparsers.add_parser(
-        "read", help="Read metadata from a file")
+    parser_read = subparsers.add_parser("read", help="Read metadata from a file")
     parser_read.add_argument("file", help="The file to read metadata from")
 
-    parser_write = subparsers.add_parser(
-        "write", help="Write metadata to a file")
+    parser_write = subparsers.add_parser("write", help="Write metadata to a file")
     parser_write.add_argument("file", help="The file to write metadata to")
-    parser_write.add_argument(
-        "--title", help="The title of the track", default=None)
+    parser_write.add_argument("--title", help="The title of the track", default=None)
     parser_write.add_argument(
         "--artists", help="The artists of the track", nargs="+", default=[]
     )
-    parser_write.add_argument(
-        "--album", help="The album of the track", default=None)
+    parser_write.add_argument("--album", help="The album of the track", default=None)
     parser_write.add_argument(
         "--album-artists", help="The album artists of the track", nargs="+", default=[]
     )
@@ -66,14 +62,12 @@ if __name__ == "__main__":
     parser_read_cover = subparsers.add_parser(
         "read-cover", help="Read cover art from a file"
     )
-    parser_read_cover.add_argument(
-        "file", help="The file to read cover art from")
+    parser_read_cover.add_argument("file", help="The file to read cover art from")
 
     parser_write_cover = subparsers.add_parser(
         "write-cover", help="Write cover art to a file"
     )
-    parser_write_cover.add_argument(
-        "file", help="The file to write cover art to")
+    parser_write_cover.add_argument("file", help="The file to write cover art to")
 
     args = parser.parse_args()
     if args.operation == "read":
@@ -128,8 +122,7 @@ if __name__ == "__main__":
     elif args.operation == "write-cover":
         file_path = args.file
         cover_data = sys.stdin.buffer.read()
-        cover = Image(data=cover_data, desc="album cover",
-                      type=ImageType.front)
+        cover = Image(data=cover_data, desc="album cover", type=ImageType.front)
         file = MediaFile(file_path)
         file.images = [cover]
         file.save()

@@ -25,6 +25,10 @@
   const trpc = getContextClient()
   $: nowPlayingTrack = trpc.tracks.getById.query({ id: trackId })
 
+  $: formattedCurrentTime = formatMilliseconds((currentTime || 0) * 1000)
+  $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)
+  $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
+
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
@@ -128,19 +132,23 @@
       </button>
     </div>
     <div class="flex items-center gap-2">
-      <div class="text-xs text-gray-400">{formatMilliseconds((currentTime || 0) * 1000)}</div>
-      <Range
-        bind:value={currentTime}
-        min={0}
-        max={duration ?? 1}
-        on:change={(e) => {
-          if (player) {
-            player.currentTime = e.detail
-          }
-        }}
-      />
-      <div class="text-xs text-gray-400">
-        {formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)}
+      <div class="text-right text-xs text-gray-400" style:min-width={timeMinWidth}>
+        {formattedCurrentTime}
+      </div>
+      <div class="flex-1">
+        <Range
+          bind:value={currentTime}
+          min={0}
+          max={duration ?? 1}
+          on:change={(e) => {
+            if (player) {
+              player.currentTime = e.detail
+            }
+          }}
+        />
+      </div>
+      <div class="text-xs text-gray-400" style:min-width={timeMinWidth}>
+        {formattedDuration}
       </div>
     </div>
   </div>

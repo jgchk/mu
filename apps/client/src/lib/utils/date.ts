@@ -1,3 +1,5 @@
+export const millisecondsInHour = 3600000
+
 export const minutesInDay = 1440
 export const minutesInMonth = 43200
 export const minutesInYear = 525600
@@ -44,7 +46,6 @@ export const toPrettyDate = (date: Date) => {
   return formatter.format(date)
 }
 
-// M:SS if less than 1 hour, H:MM:SS otherwise
 export const formatMilliseconds = (milliseconds: number) => {
   const seconds = Math.round(milliseconds / 1000)
   const minutes = Math.floor(seconds / 60)
