@@ -45,6 +45,7 @@ export const tracks = sqliteTable(
     trackNumber: integer('track_number'),
     hasCoverArt: integer('has_cover_art').notNull(),
     duration: integer('duration').notNull(),
+    favorite: integer('favorite').notNull(),
   },
   (tracks) => ({
     pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),
@@ -71,14 +72,22 @@ export const trackArtists = sqliteTable(
 export type TrackArtist = InferModel<typeof trackArtists>
 export type InsertTrackArtist = InferModel<typeof trackArtists, 'insert'>
 
-export type TrackPretty = Omit<Track, 'hasCoverArt'> & { hasCoverArt: boolean }
-export type InsertTrackPretty = Omit<InsertTrack, 'hasCoverArt'> & { hasCoverArt: boolean }
+export type TrackPretty = Omit<Track, 'hasCoverArt' | 'favorite'> & {
+  hasCoverArt: boolean
+  favorite: boolean
+}
+export type InsertTrackPretty = Omit<InsertTrack, 'hasCoverArt' | 'favorite'> & {
+  hasCoverArt: boolean
+  favorite?: boolean
+}
 
 export const convertInsertTrack = (track: InsertTrackPretty): InsertTrack => ({
   ...track,
   hasCoverArt: track.hasCoverArt ? 1 : 0,
+  favorite: track.favorite ? 1 : 0,
 })
 export const convertTrack = (track: Track): TrackPretty => ({
   ...track,
   hasCoverArt: track.hasCoverArt !== 0,
+  favorite: track.favorite !== 0,
 })

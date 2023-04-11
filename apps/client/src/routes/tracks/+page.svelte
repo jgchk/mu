@@ -1,12 +1,17 @@
 <script lang="ts">
+  import IconButton from '$lib/atoms/IconButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
+  import HeartIcon from '$lib/icons/HeartIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
+  import { cn } from '$lib/utils/classes'
   import { formatMilliseconds } from '$lib/utils/date'
 
   const trpc = getContextClient()
   const tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.query()
+
+  const favoriteMutation = trpc.tracks.favorite.mutation()
 </script>
 
 {#if $tracksQuery.data}
@@ -68,6 +73,14 @@
         <div class="text-sm text-gray-400">
           {formatMilliseconds(track.duration)}
         </div>
+        <IconButton
+          kind="text"
+          tooltip={track.favorite ? 'Unfavorite' : 'Favorite'}
+          class="text-gray-400 hover:bg-gray-600 hover:text-gray-300"
+          on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+        >
+          <HeartIcon class={cn(track.favorite && 'text-error-600')} />
+        </IconButton>
       </div>
     {/each}
   </div>

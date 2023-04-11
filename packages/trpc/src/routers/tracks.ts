@@ -43,4 +43,7 @@ export const tracksRouter = router({
       await writeTrackMetadata(track.path, getMetadataFromTrack(ctx.db, track.id))
       return track
     }),
+  favorite: publicProcedure
+    .input(z.object({ id: z.number(), favorite: z.boolean() }))
+    .mutation(({ input: { id, favorite }, ctx }) => ctx.db.tracks.update(id, { favorite })),
 })

@@ -234,6 +234,7 @@ export class Database {
         ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
         ...(data.hasCoverArt !== undefined ? { hasCoverArt: data.hasCoverArt ? 1 : 0 } : {}),
+        ...(data.favorite !== undefined ? { favorite: data.favorite ? 1 : 0 } : {}),
       }
       return convertTrack(
         this.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()

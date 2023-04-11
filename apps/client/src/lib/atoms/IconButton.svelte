@@ -2,7 +2,7 @@
   import { scale } from 'svelte/transition'
 
   import { tooltip as tooltipAction } from '$lib/actions/tooltip'
-  import { cn } from '$lib/utils/classes'
+  import { cn, tw } from '$lib/utils/classes'
 
   import Loader from './Loader.svelte'
 
@@ -19,8 +19,8 @@
   on:click
   {disabled}
   {type}
-  class={cn(
-    'focus:ring-primary-500 center h-8 w-8 rounded-full border p-[7px]',
+  class={tw(
+    'focus:ring-primary-500 center h-8 w-8 rounded-full border p-[7px] transition',
     kind === 'solid' &&
       'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&

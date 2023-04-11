@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "f7cf7109-9d40-473e-8880-5526b9d8bd08",
+  "id": "95fe67e6-2c5c-4113-bad5-b0bf46ea3f15",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -209,6 +209,13 @@
         },
         "duration": {
           "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "favorite": {
+          "name": "favorite",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

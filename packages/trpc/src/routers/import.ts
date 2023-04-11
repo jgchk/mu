@@ -262,6 +262,7 @@ export const importRouter = router({
             trackNumber: metadata.track,
             hasCoverArt: !!albumArt,
             duration: outputMetadata.length,
+            favorite: false,
           })
 
           if (input.service === 'soulseek') {
@@ -416,6 +417,7 @@ export const importRouter = router({
         trackNumber: metadata.track,
         hasCoverArt: false,
         duration: outputMetadata.length,
+        favorite: false,
       })
 
       if (input.service === 'soulseek') {
