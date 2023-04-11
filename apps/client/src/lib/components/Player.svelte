@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
@@ -9,25 +9,26 @@
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
-  import type { NowPlaying } from '$lib/now-playing'
-  import { nextTrack, previousTrack } from '$lib/now-playing'
+  import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
+  import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
   import CoverArt from './CoverArt.svelte'
 
-  export let nowPlaying: NowPlaying
+  export let trackId: number
+  export let __playSignal: symbol
+  export let currentTime: number | undefined
+  export let duration: number | undefined
 
   const trpc = getContextClient()
-  $: nowPlayingTrack = trpc.tracks.getById.query({ id: nowPlaying.trackId })
+  $: nowPlayingTrack = trpc.tracks.getById.query({ id: trackId })
 
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
   let player: HTMLAudioElement | undefined
   let paused = false
-  let currentTime = 0
-  let duration = 1
 
   onDestroy(() => {
     player?.pause()
@@ -42,12 +43,21 @@
   }
 
   const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
-  const { mutate } = $updateNowPlayingMutation
-  $: {
-    if (!paused) {
-      mutate({ id: nowPlaying.trackId })
+  const { mutate: updateNowPlaying } = $updateNowPlayingMutation
+
+  const scrobbleMutation = trpc.playback.scrobble.mutation()
+  const { mutate: scrobble } = $scrobbleMutation
+
+  onMount(() => {
+    const unsubscribeScrobbler = createScrobbler((data) =>
+      scrobble({ id: data.id, timestamp: data.startTime })
+    )
+    const unsubscribeNowPlayer = createNowPlayer((data) => updateNowPlaying({ id: data.id }))
+    return () => {
+      unsubscribeScrobbler()
+      unsubscribeNowPlayer()
     }
-  }
+  })
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">
@@ -56,7 +66,7 @@
       <div class="h-16 w-16 shrink-0">
         <CoverArt
           src={$nowPlayingTrack.data.hasCoverArt
-            ? `/api/tracks/${nowPlaying.trackId}/cover-art?width=128&height=128`
+            ? `/api/tracks/${trackId}/cover-art?width=128&height=128`
             : undefined}
           alt={$nowPlayingTrack.data.title}
           hoverable={false}
@@ -119,7 +129,7 @@
     <Range
       bind:value={currentTime}
       min={0}
-      max={duration}
+      max={duration ?? 1}
       on:change={(e) => {
         if (player) {
           player.currentTime = e.detail
@@ -155,17 +165,17 @@
   </div>
 </div>
 
-{#key (nowPlaying.trackId, nowPlaying.__playSignal)}
+{#key __playSignal}
   <audio
     autoplay
     class="hidden"
     bind:this={player}
-    bind:currentTime
-    bind:duration
+    bind:currentTime={$nowPlaying.currentTime}
+    bind:duration={$nowPlaying.duration}
     bind:paused
     bind:volume={$volume}
     on:ended={() => nextTrack()}
   >
-    <source src="/api/tracks/{nowPlaying.trackId}/stream" type="audio/mpeg" />
+    <source src="/api/tracks/{trackId}/stream" type="audio/mpeg" />
   </audio>
 {/key}

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import got from 'got'
 
-import { Friends, MobileSession, NowPlaying, RecentTracks } from './model'
+import { Friends, MobileSession, NowPlaying, RecentTracks, Scrobble } from './model'
 
 export * from './model'
 
@@ -194,7 +194,10 @@ export class LastFMAuthenticated extends LastFM {
       method: 'track.scrobble',
       artist,
       track,
-      timestamp: timestamp instanceof Date ? timestamp.getTime().toString() : timestamp.toString(),
+      timestamp:
+        timestamp instanceof Date
+          ? Math.round(timestamp.getTime() / 1000).toString()
+          : timestamp.toString(),
       ...(album ? { album } : {}),
       ...(chosenByUser ? { chosenByUser: chosenByUser ? '1' : '0' } : {}),
       ...(trackNumber ? { trackNumber: trackNumber.toString() } : {}),
@@ -212,7 +215,6 @@ export class LastFMAuthenticated extends LastFM {
         },
       })
       .json()
-    console.log('track.scrobble', res)
-    return res
+    return Scrobble.parse(res).scrobbles
   }
 }

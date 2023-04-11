@@ -33,8 +33,13 @@
         <Toaster />
       </main>
 
-      {#if $nowPlaying}
-        <Player nowPlaying={$nowPlaying} />
+      {#if $nowPlaying.track}
+        <Player
+          trackId={$nowPlaying.track.id}
+          __playSignal={$nowPlaying.track.__playSignal}
+          currentTime={$nowPlaying.currentTime}
+          duration={$nowPlaying.duration}
+        />
       {/if}
     </div>
 

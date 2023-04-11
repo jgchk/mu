@@ -1,14 +1,25 @@
 import { writable } from 'svelte/store'
 
+import { ifDefined } from './utils/types'
+
 export type NowPlaying = {
-  trackId: number
-  __playSignal: symbol
+  track?: {
+    id: number
+    __playSignal: symbol
+    startTime: Date
+  }
+
+  currentTime?: number
+  duration?: number
 
   previousTracks: number[]
   nextTracks: number[]
 }
 
-export const nowPlaying = writable<NowPlaying | undefined>(undefined)
+export const nowPlaying = writable<NowPlaying>({
+  previousTracks: [],
+  nextTracks: [],
+})
 
 export const playTrack = (
   id: number,
@@ -17,19 +28,28 @@ export const playTrack = (
     nextTracks = [],
   }: { previousTracks?: number[]; nextTracks?: number[] } = {}
 ) => {
-  nowPlaying.set({ trackId: id, __playSignal: Symbol(), previousTracks, nextTracks })
+  nowPlaying.set({
+    track: {
+      id,
+      __playSignal: Symbol(),
+      startTime: new Date(),
+    },
+    previousTracks,
+    nextTracks,
+  })
 }
 
 export const nextTrack = () => {
   nowPlaying.update((data) => {
-    if (!data) return
-
     if (data.nextTracks.length > 0) {
       const nextTrackId = data.nextTracks[0]
       return {
-        trackId: nextTrackId,
-        __playSignal: Symbol(),
-        previousTracks: [...data.previousTracks, data.trackId],
+        track: {
+          id: nextTrackId,
+          __playSignal: Symbol(),
+          startTime: new Date(),
+        },
+        previousTracks: [...data.previousTracks, ...(data.track ? [data.track.id] : [])],
         nextTracks: data.nextTracks.slice(1),
       }
     } else {
@@ -40,21 +60,26 @@ export const nextTrack = () => {
 
 export const previousTrack = () => {
   nowPlaying.update((data) => {
-    if (!data) return
-
     if (data.previousTracks.length > 0) {
       const previousTrackId = data.previousTracks[data.previousTracks.length - 1]
       return {
-        trackId: previousTrackId,
-        __playSignal: Symbol(),
+        track: {
+          id: previousTrackId,
+          __playSignal: Symbol(),
+          startTime: new Date(),
+        },
         previousTracks: data.previousTracks.slice(0, data.previousTracks.length - 1),
-        nextTracks: [data.trackId, ...data.nextTracks],
+        nextTracks: [...(data.track ? [data.track.id] : []), ...data.nextTracks],
       }
     } else {
       // if no previous tracks, just restart the current track
       return {
         ...data,
-        __playSignal: Symbol(),
+        track: ifDefined(data.track, (track) => ({
+          ...track,
+          __playSignal: Symbol(),
+          startTime: new Date(),
+        })),
       }
     }
   })

@@ -81,3 +81,18 @@ export const NowPlaying = z.object({
     album: z.object({ corrected: z.string(), '#text': z.string() }),
   }),
 })
+
+export type Scrobble = z.infer<typeof Scrobble>
+export const Scrobble = z.object({
+  scrobbles: z.object({
+    scrobble: z.object({
+      artist: z.object({ corrected: z.string(), '#text': z.string() }),
+      album: z.object({ corrected: z.string(), '#text': z.string() }),
+      track: z.object({ corrected: z.string(), '#text': z.string() }),
+      ignoredMessage: z.object({ code: z.string(), '#text': z.string() }),
+      albumArtist: z.object({ corrected: z.string(), '#text': z.string() }),
+      timestamp: z.string(),
+    }),
+    '@attr': z.object({ ignored: z.number(), accepted: z.number() }),
+  }),
+})
