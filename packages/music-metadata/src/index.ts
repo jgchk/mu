@@ -13,7 +13,15 @@ export const Metadata = z.object({
   track: z.number().nullable(),
 })
 
-export const writeTrackMetadata = async (filePath: string, metadata: Partial<Metadata>) => {
+export type ReadMetadata = z.infer<typeof ReadMetadata>
+export const ReadMetadata = Metadata.extend({
+  length: z.number(),
+})
+
+export const writeTrackMetadata = async (
+  filePath: string,
+  metadata: Partial<Metadata>
+): Promise<ReadMetadata> => {
   const metadataArgs = []
   if (metadata.title !== null && metadata.title !== undefined) {
     metadataArgs.push('--title', metadata.title)
@@ -30,21 +38,21 @@ export const writeTrackMetadata = async (filePath: string, metadata: Partial<Met
   if (metadata.track !== null && metadata.track !== undefined) {
     metadataArgs.push('--track', metadata.track.toString())
   }
-  await execa('python3', ['-m', 'metadata', 'write', path.resolve(filePath), ...metadataArgs], {
-    cwd: __dirname,
-  })
+  const { stdout } = await execa(
+    'python3',
+    ['-m', 'metadata', 'write', path.resolve(filePath), ...metadataArgs],
+    {
+      cwd: __dirname,
+    }
+  )
+  return ReadMetadata.parse(JSON.parse(stdout))
 }
 
-export const readTrackMetadata = async (filePath: string): Promise<Metadata | undefined> => {
+export const readTrackMetadata = async (filePath: string): Promise<ReadMetadata> => {
   const { stdout } = await execa('python3', ['-m', 'metadata', 'read', path.resolve(filePath)], {
     cwd: __dirname,
   })
-
-  if (stdout === 'No metadata found') {
-    return undefined
-  }
-
-  return Metadata.parse(JSON.parse(stdout))
+  return ReadMetadata.parse(JSON.parse(stdout))
 }
 
 export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => {

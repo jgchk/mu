@@ -31,6 +31,7 @@ export const playbackRouter = router({
         album: release?.title ?? undefined,
         trackNumber:
           ifNotNull(dbTrack.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
+        duration: dbTrack.duration / 1000,
         albumArtist: albumArtists ?? undefined,
       })
     }),
@@ -68,6 +69,7 @@ export const playbackRouter = router({
         trackNumber:
           ifNotNull(dbTrack.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
         albumArtist: albumArtists ?? undefined,
+        duration: dbTrack.duration / 1000,
         timestamp: input.timestamp,
       })
     }),

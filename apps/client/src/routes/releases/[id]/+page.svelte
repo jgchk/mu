@@ -4,6 +4,7 @@
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
+  import { formatMilliseconds } from '$lib/utils/date'
 
   import type { PageData } from './$types'
 
@@ -85,6 +86,9 @@
                 </li>
               {/each}
             </ul>
+          </div>
+          <div class="text-sm text-gray-400">
+            {formatMilliseconds(track.duration)}
           </div>
         </div>
       {/each}

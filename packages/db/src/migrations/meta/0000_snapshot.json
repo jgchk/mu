@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "05d0a69a-bdea-4c9b-9675-c2b1bc35de21",
+  "id": "f7cf7109-9d40-473e-8880-5526b9d8bd08",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -202,6 +202,13 @@
         },
         "has_cover_art": {
           "name": "has_cover_art",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

@@ -12,6 +12,7 @@
   import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { getContextClient } from '$lib/trpc'
+  import { formatMilliseconds } from '$lib/utils/date'
 
   import Range from '../atoms/Range.svelte'
   import CoverArt from './CoverArt.svelte'
@@ -126,16 +127,22 @@
         <FastForwardIcon class="h-6 w-6" />
       </button>
     </div>
-    <Range
-      bind:value={currentTime}
-      min={0}
-      max={duration ?? 1}
-      on:change={(e) => {
-        if (player) {
-          player.currentTime = e.detail
-        }
-      }}
-    />
+    <div class="flex items-center gap-2">
+      <div class="text-xs text-gray-400">{formatMilliseconds((currentTime || 0) * 1000)}</div>
+      <Range
+        bind:value={currentTime}
+        min={0}
+        max={duration ?? 1}
+        on:change={(e) => {
+          if (player) {
+            player.currentTime = e.detail
+          }
+        }}
+      />
+      <div class="text-xs text-gray-400">
+        {formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)}
+      </div>
+    </div>
   </div>
   <div class="group flex flex-[2.25] items-center justify-end">
     <button

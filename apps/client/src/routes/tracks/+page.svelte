@@ -3,6 +3,7 @@
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
+  import { formatMilliseconds } from '$lib/utils/date'
 
   const trpc = getContextClient()
   const tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.query()
@@ -63,6 +64,9 @@
               {/if}
             </a>
           {/if}
+        </div>
+        <div class="text-sm text-gray-400">
+          {formatMilliseconds(track.duration)}
         </div>
       </div>
     {/each}

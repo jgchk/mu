@@ -243,7 +243,7 @@ export const importRouter = router({
             album: albumTitle ?? null,
             albumArtists: albumArtists.map((artist) => artist.name),
           }
-          await writeTrackMetadata(newPath, metadata)
+          const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
           if (albumArt) {
             try {
@@ -261,6 +261,7 @@ export const importRouter = router({
             releaseId: dbRelease.id,
             trackNumber: metadata.track,
             hasCoverArt: !!albumArt,
+            duration: outputMetadata.length,
           })
 
           if (input.service === 'soulseek') {
@@ -405,7 +406,7 @@ export const importRouter = router({
         album: input.title ?? null,
         albumArtists: artists.map((artist) => artist.name),
       }
-      await writeTrackMetadata(newPath, metadata)
+      const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
       const dbTrack = ctx.db.tracks.insertWithArtists({
         title: metadata.title,
@@ -414,6 +415,7 @@ export const importRouter = router({
         releaseId: dbRelease.id,
         trackNumber: metadata.track,
         hasCoverArt: false,
+        duration: outputMetadata.length,
       })
 
       if (input.service === 'soulseek') {
