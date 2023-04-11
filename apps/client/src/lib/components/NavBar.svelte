@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
+
   import { goto } from '$app/navigation'
   import { navigating, page } from '$app/stores'
   import { tooltip } from '$lib/actions/tooltip'
@@ -10,7 +12,13 @@
 
   import NavLink from './NavLink.svelte'
 
-  let query = ($page.url.pathname.startsWith('/search') && $page.url.searchParams.get('q')) || ''
+  let query = ''
+  onMount(() => {
+    const unsubscribe = page.subscribe((page) => {
+      query = (page.url.pathname.startsWith('/search') && page.url.searchParams.get('q')) || ''
+    })
+    return () => unsubscribe()
+  })
 
   let input: HTMLInputElement | undefined
 
