@@ -20,7 +20,7 @@
   {disabled}
   {type}
   class={tw(
-    'focus:ring-primary-500 center h-8 w-8 rounded-full border p-[7px] transition',
+    'focus:ring-primary-500 center group/icon-button h-8 w-8 rounded-full border p-[7px] transition',
     kind === 'solid' &&
       'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&
@@ -31,7 +31,12 @@
   )}
   use:tooltipAction={{ content: tooltip }}
 >
-  <div class={cn('relative h-full w-full', !disabled && 'group-active:top-px')}>
+  <div
+    class={cn(
+      'relative h-full w-full transition-all',
+      !disabled && 'group-active/icon-button:top-px'
+    )}
+  >
     {#if loading}
       <Loader />
     {:else}
