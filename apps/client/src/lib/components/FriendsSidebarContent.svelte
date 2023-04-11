@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tooltip } from '$lib/actions/tooltip'
   import PlayingIcon from '$lib/icons/PlayingIcon.svelte'
+  import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import type { RouterOutput } from '$lib/trpc'
   import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
 
@@ -12,13 +13,17 @@
 {#each data as friend (friend.friendUrl)}
   <div class="flex gap-2.5">
     <div class="relative top-[0.2rem] h-10 w-10 shrink-0">
-      <CoverArt
-        src={friend.art}
-        alt={friend.album}
-        rounding="rounded-sm"
-        placeholderClass="text-[5px]"
-        hoverable={false}
-      />
+      <a href="/search?q={encodeURIComponent(`${friend.artist} - ${friend.album}`)}">
+        <CoverArt
+          src={friend.art}
+          alt={friend.album}
+          rounding="rounded-sm"
+          iconClass="w-5 h-5"
+          placeholderClass="text-[5px]"
+        >
+          <SearchIcon />
+        </CoverArt>
+      </a>
     </div>
     <div class="relative min-w-0 flex-1 space-y-1">
       <div class="flex justify-between">
