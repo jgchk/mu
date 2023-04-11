@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import got from 'got'
 
-import { Friends, MobileSession, RecentTracks } from './model'
+import { Friends, MobileSession, NowPlaying, RecentTracks } from './model'
 
 export * from './model'
 
@@ -122,12 +122,7 @@ export class LastFMAuthenticated extends LastFM {
   }
 
   getApiSignature(params: Record<string, string>) {
-    const sortedParams = Object.entries(params)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}${v}`)
-      .join('')
-    const apiSig = crypto.createHash('md5').update(`${sortedParams}${this.apiSecret}`).digest('hex')
-    return apiSig
+    return getApiSignature(params, this.apiSecret)
   }
 
   getFriends(username = this.username) {
@@ -173,8 +168,7 @@ export class LastFMAuthenticated extends LastFM {
         },
       })
       .json()
-    console.log('track.updateNowPlaying', res)
-    return res
+    return NowPlaying.parse(res).nowplaying
   }
 
   async scrobble({

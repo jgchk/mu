@@ -40,6 +40,14 @@
       player?.pause()
     }
   }
+
+  const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
+  const { mutate } = $updateNowPlayingMutation
+  $: {
+    if (!paused) {
+      mutate({ id: nowPlaying.trackId })
+    }
+  }
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">

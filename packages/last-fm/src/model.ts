@@ -70,3 +70,14 @@ export const RecentTracks = z.object({
     }),
   }),
 })
+
+export type NowPlaying = z.infer<typeof NowPlaying>
+export const NowPlaying = z.object({
+  nowplaying: z.object({
+    artist: z.object({ corrected: z.string(), '#text': z.string() }),
+    track: z.object({ corrected: z.string(), '#text': z.string() }),
+    ignoredMessage: z.object({ code: z.string(), '#text': z.string() }),
+    albumArtist: z.object({ corrected: z.string(), '#text': z.string() }),
+    album: z.object({ corrected: z.string(), '#text': z.string() }),
+  }),
+})
