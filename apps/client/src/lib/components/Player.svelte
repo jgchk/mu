@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
+  import { raf } from 'svelte/internal'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
@@ -50,6 +51,19 @@
   }
   const pause = () => {
     player?.pause()
+  }
+
+  let audio_animationframe: number | void
+  function audio_timeupdate_handler() {
+    if (audio_animationframe !== void 0) {
+      cancelAnimationFrame(audio_animationframe)
+    }
+
+    if (!player?.paused) {
+      audio_animationframe = raf(audio_timeupdate_handler)
+    }
+
+    track.currentTime = player?.currentTime
   }
 
   const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
@@ -111,11 +125,7 @@
         type="button"
         class="center h-8 w-8 text-gray-400 transition hover:text-white"
         use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => {
-          pause()
-          // TODO: this is super hacky. prob should manually bind the currentTime
-          setTimeout(() => previousTrack(), 100)
-        }}
+        on:click={() => previousTrack()}
       >
         <RewindIcon class="h-6 w-6" />
       </button>
@@ -195,11 +205,11 @@
       autoplay
       class="hidden"
       bind:this={player}
-      bind:currentTime={$nowPlaying.track.currentTime}
-      bind:duration={$nowPlaying.track.duration}
       bind:paused
       bind:volume={$volume}
       on:ended={() => nextTrack()}
+      on:timeupdate={audio_timeupdate_handler}
+      on:durationchange={(e) => (track.duration = e.currentTarget.duration)}
     >
       <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
     </audio>
