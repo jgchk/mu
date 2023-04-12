@@ -6,22 +6,13 @@ import { appRouter } from 'trpc'
 import { WebSocketServer } from 'ws'
 
 import { ctx } from './context'
+import { env } from './env'
 import { router } from './router'
 
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
   if (missingPythonDeps.length > 0) {
     console.error('❌ Missing Python dependencies:', missingPythonDeps)
-    process.exit(1)
-  }
-
-  const PORT = process.env.SERVER_PORT ? parseInt(process.env.SERVER_PORT, 10) : undefined
-  if (PORT === undefined) {
-    console.error('SERVER_PORT is not defined')
-    process.exit(1)
-  }
-  if (isNaN(PORT)) {
-    console.error('SERVER_PORT is not a number')
     process.exit(1)
   }
 
@@ -46,8 +37,8 @@ const main = async () => {
 
   app.use(cors()).use(router)
 
-  const server = app.listen({ port: PORT }, () => {
-    console.log(`> Running on localhost:${PORT}`)
+  const server = app.listen({ port: env.SERVER_PORT }, () => {
+    console.log(`> Running on localhost:${env.SERVER_PORT}`)
   })
 
   const wss = new WebSocketServer({ port: 8080 })
