@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { compareDates } from '../utils/date'
+import { sum } from '../utils/math'
 
 const SoundcloudDownload = z.object({
   service: z.literal('soundcloud'),
@@ -193,9 +195,54 @@ export const downloadsRouter = router({
       ]
     )
 
-    return {
+    const rawData = {
       groups: [...scPlaylists, ...spAlbums, ...slskReleases],
       tracks: [...scTracks, ...spTracks, ...slskTracks],
+    }
+
+    type GroupDownloadType = (typeof rawData.groups)[number]
+    type TrackDownloadType = (typeof rawData.tracks)[number]
+
+    const groupedData: {
+      groups: { [id: string]: GroupDownloadType & { tracks: TrackDownloadType[] } }
+      tracks: TrackDownloadType[]
+    } = {
+      groups: Object.fromEntries(
+        rawData.groups.map((group) => [`${group.service}-${group.id}`, { ...group, tracks: [] }])
+      ),
+      tracks: [],
+    }
+
+    for (const track of rawData.tracks) {
+      if (track.parentId === null) {
+        groupedData.tracks.push(track)
+      } else {
+        groupedData.groups[`${track.service}-${track.parentId}`].tracks.push(track)
+      }
+    }
+
+    return {
+      groups: Object.values(groupedData.groups)
+        .map((group) => {
+          const totalProgress = group.tracks.length * 100
+          const currentProgress = sum(group.tracks.map((track) => track.progress ?? 0))
+          const progress = Math.floor((currentProgress / totalProgress) * 100)
+
+          return {
+            ...group,
+            progress,
+          }
+        })
+        .sort((a, b) => {
+          if (a.progress === 100) {
+            return -1
+          }
+          if (b.progress === 100) {
+            return 1
+          }
+          return compareDates(a.createdAt, b.createdAt)
+        }),
+      tracks: groupedData.tracks,
     }
   }),
 })
