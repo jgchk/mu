@@ -18,6 +18,7 @@ export const {
   getContextClient,
 } = createTRPCSvelte<AppRouter>()
 
+export type TRPCClient = ReturnType<typeof __createClient>
 export type RouterInput = AppRouterInput
 export type RouterOutput = AppRouterOutput
 

@@ -14,6 +14,7 @@
   import type { NowPlaying } from '$lib/now-playing'
   import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
+  import { favoriteTrackMutation, getTrackByIdQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
 
@@ -25,28 +26,9 @@
 
   const trpc = getContextClient()
   $: trackId = track.id
-  $: nowPlayingTrack = trpc.tracks.getById.query({ id: trackId })
+  $: nowPlayingTrack = getTrackByIdQuery(trpc, trackId)
 
-  const favoriteMutation = trpc.tracks.favorite.mutation({
-    onMutate: async (input) => {
-      await trpc.tracks.getById.utils.cancel({ id: trackId })
-      const previousData = trpc.tracks.getById.utils.getData({ id: trackId })
-      trpc.tracks.getById.utils.setData({ id: trackId }, (old) => {
-        if (!old) return old
-        return {
-          ...old,
-          favorite: input.favorite,
-        }
-      })
-      return { previousData }
-    },
-    onError: (err, input, context) => {
-      trpc.tracks.getById.utils.setData({ id: trackId }, context?.previousData)
-    },
-    onSuccess: async () => {
-      await trpc.tracks.getById.utils.invalidate({ id: trackId })
-    },
-  })
+  $: favoriteMutation = favoriteTrackMutation(trpc, { getTrackByIdQuery: { id: trackId } })
 
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
   $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)

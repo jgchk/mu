@@ -7,6 +7,10 @@
   import { makeTrackCoverArtUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
+  import {
+    favoriteTrackMutation,
+    getAllTracksWithArtistsAndReleaseQuery,
+  } from '$lib/services/tracks'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
@@ -21,45 +25,11 @@
   $: tracksQueryInput = makeTracksQueryInput(data.favoritesOnly)
 
   const trpc = getContextClient()
-  $: tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.infiniteQuery(tracksQueryInput, {
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-  })
+  $: tracksQuery = getAllTracksWithArtistsAndReleaseQuery(trpc, tracksQueryInput)
   $: tracks = ifDefined($tracksQuery.data, (data) => data.pages.flatMap((page) => page.items))
 
-  const favoriteMutation = trpc.tracks.favorite.mutation({
-    onMutate: async (input) => {
-      await trpc.tracks.getAllWithArtistsAndRelease.utils.cancel(tracksQueryInput)
-      const previousData =
-        trpc.tracks.getAllWithArtistsAndRelease.utils.getInfiniteData(tracksQueryInput)
-      trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(tracksQueryInput, (old) => {
-        if (!old) return old
-        return {
-          ...old,
-          pages: old.pages.map((page) => {
-            const newTracks = page.items.map((track) => {
-              if (track.id === input.id) {
-                return {
-                  ...track,
-                  favorite: input.favorite,
-                }
-              }
-              return track
-            })
-            return { ...page, items: newTracks }
-          }),
-        }
-      })
-      return { previousData }
-    },
-    onError: (err, input, context) => {
-      trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(
-        tracksQueryInput,
-        context?.previousData
-      )
-    },
-    onSuccess: async () => {
-      await trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate(tracksQueryInput)
-    },
+  $: favoriteMutation = favoriteTrackMutation(trpc, {
+    getAllTracksWithArtistsAndReleaseQuery: tracksQueryInput,
   })
 
   let inView = false
