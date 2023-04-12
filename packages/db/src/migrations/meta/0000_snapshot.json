@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "fe385e37-0f33-4d37-b8f6-24ee1a24f25d",
+  "id": "6be3debd-f8df-437a-8ab4-ee531a748932",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -273,8 +273,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -337,8 +336,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -403,8 +401,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -467,8 +464,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -523,8 +519,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -586,8 +581,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "current_timestamp"
+          "autoincrement": false
         }
       },
       "indexes": {

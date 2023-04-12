@@ -91,3 +91,11 @@ export const convertTrack = (track: Track): TrackPretty => ({
   hasCoverArt: track.hasCoverArt !== 0,
   favorite: track.favorite !== 0,
 })
+
+export type AutoCreatedAt<T> = Omit<T, 'createdAt'>
+export const withCreatedAt = <T>(
+  model: AutoCreatedAt<T>
+): AutoCreatedAt<T> & { createdAt: Date } => ({
+  ...model,
+  createdAt: new Date(),
+})

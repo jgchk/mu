@@ -212,8 +212,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.0
       drizzle-orm:
-        specifier: ^0.23.2
-        version: 0.23.2(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0)
+        specifier: ^0.23.11
+        version: 0.23.11(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0)
       soundcloud:
         specifier: workspace:*
         version: link:../soundcloud
@@ -228,8 +228,8 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0
       drizzle-kit:
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.4
+        version: 0.17.4
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
@@ -2021,8 +2021,8 @@ packages:
       wordwrap: 1.0.0
     dev: true
 
-  /drizzle-kit@0.17.1:
-    resolution: {integrity: sha512-1+/RSzVMRpAjqQzr+Gi8st3Y3GrRzun/EG9MwASZ/iYOm3erLJgAaM4xTz9RiM/wLYonPI+I5MZRXStSpCfEmg==}
+  /drizzle-kit@0.17.4:
+    resolution: {integrity: sha512-9OuHsZBxS1IkWnF9vFeTWR5XH9UCv4SclfPaFt7he8TPVzDka5vpGmhNh9Oaj+OZg6Pf4PSV2Yt8X3c44ayHVA==}
     hasBin: true
     dependencies:
       camelcase: 7.0.1
@@ -2038,11 +2038,12 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.23.2(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0):
-    resolution: {integrity: sha512-GSOhOc+gGSMsf3eyBzL1Yb0g0M3pOurWmFI1lVhOrmMQCVuA/smJgYSy4UeTzBV521+J+emiFaSKSomEmc+fog==}
+  /drizzle-orm@0.23.11(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0):
+    resolution: {integrity: sha512-uqebUff9QeDo0ZI+s5XurmHjFNDuQMbnNObWIClzotU+iI0RfA1RSEXbK3lSp1FNp/HeUy23yIv8lkYzU9278A==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
+      '@libsql/client': '*'
       '@neondatabase/serverless': '>=0.1'
       '@planetscale/database': '>=1'
       '@types/better-sqlite3': '*'
@@ -2061,6 +2062,8 @@ packages:
       '@aws-sdk/client-rds-data':
         optional: true
       '@cloudflare/workers-types':
+        optional: true
+      '@libsql/client':
         optional: true
       '@neondatabase/serverless':
         optional: true

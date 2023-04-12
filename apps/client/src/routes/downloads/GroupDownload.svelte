@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { tooltip } from '$lib/actions/tooltip'
+  import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
   import { sum } from '$lib/utils/math'
 
   import type {
@@ -63,6 +65,15 @@
         </div>
       </div>
     {/each}
+  </div>
+  <div class="mt-3 flex items-center gap-4 text-sm">
+    <div class="rounded bg-gray-500 bg-opacity-40 px-1.5 py-0.5 capitalize">{download.service}</div>
+    <div
+      class="rounded bg-gray-500 bg-opacity-40 px-1.5 py-0.5"
+      use:tooltip={{ content: toPrettyDate(download.createdAt) }}
+    >
+      {getTimeSinceShort(download.createdAt)}
+    </div>
   </div>
 </div>
 

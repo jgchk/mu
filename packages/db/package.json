@@ -12,13 +12,13 @@
   },
   "devDependencies": {
     "dotenv-cli": "^7.1.0",
-    "drizzle-kit": "^0.17.1",
+    "drizzle-kit": "^0.17.4",
     "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
     "@types/better-sqlite3": "^7.6.3",
     "better-sqlite3": "^8.2.0",
-    "drizzle-orm": "^0.23.2",
+    "drizzle-orm": "^0.23.11",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "superjson": "^1.12.2"

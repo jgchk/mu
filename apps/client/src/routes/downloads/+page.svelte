@@ -43,6 +43,8 @@
         }
       }
 
+      console.log('d', data.groups)
+
       downloads = {
         groups: Object.values(data.groups).sort((a, b) => compareDates(a.createdAt, b.createdAt)),
         tracks: data.tracks,

@@ -6,6 +6,7 @@ import { and, eq, isNull } from 'drizzle-orm/expressions'
 import { migrate } from './migrate'
 import type {
   Artist,
+  AutoCreatedAt,
   InsertArtist,
   InsertRelease,
   InsertReleaseArtist,
@@ -42,6 +43,7 @@ import {
   spotifyTrackDownloads,
   trackArtists,
   tracks,
+  withCreatedAt,
 } from './schema'
 
 export * from './schema'
@@ -342,10 +344,10 @@ export class Database {
   }
 
   soundcloudPlaylistDownloads = {
-    insert: (soundcloudPlaylistDownload: InsertSoundcloudPlaylistDownload) => {
+    insert: (soundcloudPlaylistDownload: AutoCreatedAt<InsertSoundcloudPlaylistDownload>) => {
       return this.db
         .insert(soundcloudPlaylistDownloads)
-        .values(soundcloudPlaylistDownload)
+        .values(withCreatedAt(soundcloudPlaylistDownload))
         .returning()
         .get()
     },
@@ -397,10 +399,10 @@ export class Database {
   }
 
   soundcloudTrackDownloads = {
-    insert: (soundcloudTrackDownload: InsertSoundcloudTrackDownload) => {
+    insert: (soundcloudTrackDownload: AutoCreatedAt<InsertSoundcloudTrackDownload>) => {
       return this.db
         .insert(soundcloudTrackDownloads)
-        .values(soundcloudTrackDownload)
+        .values(withCreatedAt(soundcloudTrackDownload))
         .returning()
         .get()
     },
@@ -481,8 +483,12 @@ export class Database {
   }
 
   spotifyAlbumDownloads = {
-    insert: (spotifyAlbumDownload: InsertSpotifyAlbumDownload) => {
-      return this.db.insert(spotifyAlbumDownloads).values(spotifyAlbumDownload).returning().get()
+    insert: (spotifyAlbumDownload: AutoCreatedAt<InsertSpotifyAlbumDownload>) => {
+      return this.db
+        .insert(spotifyAlbumDownloads)
+        .values(withCreatedAt(spotifyAlbumDownload))
+        .returning()
+        .get()
     },
 
     update: (
@@ -529,8 +535,12 @@ export class Database {
   }
 
   spotifyTrackDownloads = {
-    insert: (spotifyTrackDownload: InsertSpotifyTrackDownload) => {
-      return this.db.insert(spotifyTrackDownloads).values(spotifyTrackDownload).returning().get()
+    insert: (spotifyTrackDownload: AutoCreatedAt<InsertSpotifyTrackDownload>) => {
+      return this.db
+        .insert(spotifyTrackDownloads)
+        .values(withCreatedAt(spotifyTrackDownload))
+        .returning()
+        .get()
     },
 
     update: (
@@ -602,10 +612,10 @@ export class Database {
   }
 
   soulseekReleaseDownloads = {
-    insert: (soulseekReleaseDownload: InsertSoulseekReleaseDownload) => {
+    insert: (soulseekReleaseDownload: AutoCreatedAt<InsertSoulseekReleaseDownload>) => {
       return this.db
         .insert(soulseekReleaseDownloads)
-        .values(soulseekReleaseDownload)
+        .values(withCreatedAt(soulseekReleaseDownload))
         .returning()
         .get()
     },
@@ -665,8 +675,12 @@ export class Database {
   }
 
   soulseekTrackDownloads = {
-    insert: (soulseekTrackDownload: InsertSoulseekTrackDownload) => {
-      return this.db.insert(soulseekTrackDownloads).values(soulseekTrackDownload).returning().get()
+    insert: (soulseekTrackDownload: AutoCreatedAt<InsertSoulseekTrackDownload>) => {
+      return this.db
+        .insert(soulseekTrackDownloads)
+        .values(withCreatedAt(soulseekTrackDownload))
+        .returning()
+        .get()
     },
 
     update: (

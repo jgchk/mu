@@ -1,5 +1,6 @@
 {
   "dialect": "sqlite",
   "out": "./src/migrations",
-  "schema": "./src"
+  "schema": "./src",
+  "breakpoints": true
 }
