@@ -1,6 +1,8 @@
 <script lang="ts">
   import { tooltip } from '$lib/actions/tooltip'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import { addedToDownloads } from '$lib/strings'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
@@ -30,14 +32,24 @@
     return `${bytes} B`
   }
 
+  const toast = getContextToast()
+  $: dirpart = item.dirname.slice(0, item.dirname.indexOf('/'))
+
   const trpc = getContextClient()
   const downloadMutation = trpc.downloads.download.mutation()
   const handleDownload = () => {
-    $downloadMutation.mutate({
-      service: 'soulseek',
-      kind: 'tracks',
-      tracks: item.files.map((f) => ({ username: item.username, file: f.filename })),
-    })
+    $downloadMutation.mutate(
+      {
+        service: 'soulseek',
+        kind: 'tracks',
+        tracks: item.files.map((f) => ({ username: item.username, file: f.filename })),
+      },
+      {
+        onSuccess: () => {
+          toast.success(addedToDownloads(dirpart))
+        },
+      }
+    )
   }
 </script>
 

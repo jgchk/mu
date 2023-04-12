@@ -4,6 +4,8 @@
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import { addedToDownloads } from '$lib/strings'
+  import { getContextToast } from '$lib/toast/toast'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -13,11 +15,19 @@
 
   export let result: SearchResult
 
+  const toast = getContextToast()
+
   const trpc = getContextClient()
   const downloadMutation = trpc.downloads.download.mutation()
-
   const handleDownload = () => {
-    $downloadMutation.mutate({ service: 'soundcloud', id: result.id, kind: result.kind })
+    $downloadMutation.mutate(
+      { service: 'soundcloud', id: result.id, kind: result.kind },
+      {
+        onSuccess: () => {
+          toast.success(addedToDownloads(result.title))
+        },
+      }
+    )
   }
 </script>
 

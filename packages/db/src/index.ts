@@ -279,12 +279,17 @@ export class Database {
     },
 
     getAllWithArtistsAndRelease: ({
+      favorite,
       skip = 0,
       limit = 50,
-    }: { skip?: number; limit?: number } = {}) => {
-      const allTracks = this.db
-        .select()
-        .from(tracks)
+    }: { favorite?: boolean; skip?: number; limit?: number } = {}) => {
+      let query = this.db.select().from(tracks)
+
+      if (favorite !== undefined) {
+        query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
+      }
+
+      const allTracks = query
         .offset(skip)
         .leftJoin(releases, eq(tracks.releaseId, releases.id))
         .orderBy(tracks.title)

@@ -10,6 +10,7 @@ export const tracksRouter = router({
   getAllWithArtistsAndRelease: publicProcedure
     .input(
       z.object({
+        favorite: z.boolean().optional(),
         limit: z.number().min(1).max(100).optional(),
         cursor: z.number().optional(),
       })
@@ -18,7 +19,11 @@ export const tracksRouter = router({
       const skip = input.cursor ?? 0
       const limit = input.limit ?? 50
 
-      const items = ctx.db.tracks.getAllWithArtistsAndRelease({ skip, limit: limit + 1 })
+      const items = ctx.db.tracks.getAllWithArtistsAndRelease({
+        favorite: input.favorite,
+        skip,
+        limit: limit + 1,
+      })
 
       let nextCursor: number | undefined = undefined
       if (items.length > limit) {
