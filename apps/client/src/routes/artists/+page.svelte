@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { createAddArtistMutation, createAllArtistsQuery } from '$lib/services/artists'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const artistsQuery = trpc.artists.getAll.query()
-  const addArtistMutation = trpc.artists.add.mutation()
+  const artistsQuery = createAllArtistsQuery(trpc)
+  const addArtistMutation = createAddArtistMutation(trpc)
 
   let name = ''
   const handleAddArtist = () => {

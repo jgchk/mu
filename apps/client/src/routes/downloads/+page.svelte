@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { createAllDownloadsQuery } from '$lib/services/downloads'
   import { getContextClient } from '$lib/trpc'
 
   import GroupDownload from './GroupDownload.svelte'
   import TrackDownload from './TrackDownload.svelte'
 
   const trpc = getContextClient()
-  const downloadsQuery = trpc.downloads.getAll.query(undefined, { refetchInterval: 1000 })
+  const downloadsQuery = createAllDownloadsQuery(trpc)
 </script>
 
 <div class="p-4">

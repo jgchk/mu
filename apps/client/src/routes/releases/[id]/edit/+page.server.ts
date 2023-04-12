@@ -2,6 +2,11 @@ import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { z } from 'zod'
 
+import {
+  fetchReleaseCoverArtQuery,
+  fetchReleaseWithTracksAndArtistsQuery,
+  mutateReleaseWithTracksAndArtists,
+} from '$lib/services/releases'
 import { createClient } from '$lib/trpc'
 import { isFile } from '$lib/utils/file'
 import { paramNumber } from '$lib/utils/params'
@@ -36,8 +41,8 @@ export const load: PageServerLoad = async (event) => {
   const id = paramNumber(event.params.id, 'Release ID must be a number')
 
   const trpc = createClient(event.fetch)
-  const data = await trpc.releases.getWithTracksAndArtists.fetchQuery({ id })
-  const art = await trpc.releases.getCoverArt.fetchQuery({ id })
+  const data = await fetchReleaseWithTracksAndArtistsQuery(trpc, id)
+  const art = await fetchReleaseCoverArtQuery(trpc, id)
 
   const form = await superValidate(
     {
@@ -89,7 +94,7 @@ export const actions: Actions = {
     }
 
     const trpc = createClient(fetch)
-    const result = await trpc.releases.updateWithTracksAndArtists.mutate({
+    const result = await mutateReleaseWithTracksAndArtists(trpc, {
       ...form.data,
       album: {
         ...form.data.album,

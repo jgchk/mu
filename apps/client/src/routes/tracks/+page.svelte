@@ -8,8 +8,8 @@
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import {
-    favoriteTrackMutation,
-    getAllTracksWithArtistsAndReleaseQuery,
+    createAllTracksWithArtistsAndReleaseQuery,
+    createFavoriteTrackMutation,
   } from '$lib/services/tracks'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
@@ -25,10 +25,10 @@
   $: tracksQueryInput = makeTracksQueryInput(data.favoritesOnly)
 
   const trpc = getContextClient()
-  $: tracksQuery = getAllTracksWithArtistsAndReleaseQuery(trpc, tracksQueryInput)
+  $: tracksQuery = createAllTracksWithArtistsAndReleaseQuery(trpc, tracksQueryInput)
   $: tracks = ifDefined($tracksQuery.data, (data) => data.pages.flatMap((page) => page.items))
 
-  $: favoriteMutation = favoriteTrackMutation(trpc, {
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getAllTracksWithArtistsAndReleaseQuery: tracksQueryInput,
   })
 

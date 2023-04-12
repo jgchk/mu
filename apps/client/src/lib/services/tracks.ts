@@ -2,9 +2,12 @@ import type { InfiniteData } from '@tanstack/svelte-query'
 
 import type { RouterInput, RouterOutput, TRPCClient } from '$lib/trpc'
 
-export const getTrackByIdQuery = (trpc: TRPCClient, id: number) => trpc.tracks.getById.query({ id })
+export const createTrackQuery = (trpc: TRPCClient, id: number) => trpc.tracks.getById.query({ id })
 
-export const getAllTracksWithArtistsAndReleaseQuery = (
+export const prefetchTrackQuery = (trpc: TRPCClient, id: number) =>
+  trpc.tracks.getById.prefetchQuery({ id })
+
+export const createAllTracksWithArtistsAndReleaseQuery = (
   trpc: TRPCClient,
   input: Omit<RouterInput['tracks']['getAllWithArtistsAndRelease'], 'cursor'>
 ) =>
@@ -12,7 +15,15 @@ export const getAllTracksWithArtistsAndReleaseQuery = (
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 
-export const favoriteTrackMutation = (
+export const prefetchAllTracksWithArtistsAndReleaseQuery = (
+  trpc: TRPCClient,
+  input: Omit<RouterInput['tracks']['getAllWithArtistsAndRelease'], 'cursor'>
+) => trpc.tracks.getAllWithArtistsAndRelease.prefetchInfiniteQuery(input)
+
+export const createUpdateTrackMetadataMutation = (trpc: TRPCClient) =>
+  trpc.tracks.updateMetadata.mutation()
+
+export const createFavoriteTrackMutation = (
   trpc: TRPCClient,
   optimistic?: {
     getTrackByIdQuery?: RouterInput['tracks']['getById']

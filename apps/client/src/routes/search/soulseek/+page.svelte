@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte'
   import { derived } from 'svelte/store'
 
+  import { createSearchSoulseekSubscription } from '$lib/services/search'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -37,7 +38,7 @@
   }
 
   const trpc = getContextClient()
-  $: soulseekSubscription = trpc.search.soulseekSubscription.subscription({ query: data.query })
+  $: soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
   onDestroy(() => {
     soulseekSubscription.unsubscribe()
   })
@@ -47,7 +48,7 @@
       soulseekData = []
       sendWorkerMessage({ kind: 'reset' })
       soulseekSubscription.unsubscribe()
-      soulseekSubscription = trpc.search.soulseekSubscription.subscription({ query: data.query })
+      soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
       oldQuery = data.query
     }
   }

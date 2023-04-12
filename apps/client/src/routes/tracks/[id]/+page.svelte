@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createTrackQuery, createUpdateTrackMetadataMutation } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -7,8 +8,8 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  const trackQuery = trpc.tracks.getById.query({ id: data.id })
-  const trackMutation = trpc.tracks.updateMetadata.mutation()
+  const trackQuery = createTrackQuery(trpc, data.id)
+  const trackMutation = createUpdateTrackMetadataMutation(trpc)
 </script>
 
 {#if $trackQuery.data}

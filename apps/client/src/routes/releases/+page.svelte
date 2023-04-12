@@ -2,10 +2,11 @@
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
   import { makeReleaseCoverArtUrl } from '$lib/cover-art'
+  import { createAllReleasesQuery } from '$lib/services/releases'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const releasesQuery = trpc.releases.getAll.query()
+  const releasesQuery = createAllReleasesQuery(trpc)
 </script>
 
 {#if $releasesQuery.data}

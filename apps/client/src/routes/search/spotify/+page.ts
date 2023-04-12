@@ -1,3 +1,5 @@
+import { prefetchSearchSpotifyQuery } from '$lib/services/search'
+
 import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ url, parent }) => {
@@ -8,7 +10,7 @@ export const load: PageLoad = async ({ url, parent }) => {
 
   if (hasQuery) {
     const { trpc } = await parent()
-    await trpc.search.spotify.prefetchQuery({ query })
+    await prefetchSearchSpotifyQuery(trpc, query)
   }
 
   return { query, hasQuery }

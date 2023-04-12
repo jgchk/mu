@@ -14,7 +14,8 @@
   import type { NowPlaying } from '$lib/now-playing'
   import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
-  import { favoriteTrackMutation, getTrackByIdQuery } from '$lib/services/tracks'
+  import { createScrobbleMutation, createUpdateNowPlayingMutation } from '$lib/services/playback'
+  import { createFavoriteTrackMutation, createTrackQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
 
@@ -26,9 +27,9 @@
 
   const trpc = getContextClient()
   $: trackId = track.id
-  $: nowPlayingTrack = getTrackByIdQuery(trpc, trackId)
+  $: nowPlayingTrack = createTrackQuery(trpc, trackId)
 
-  $: favoriteMutation = favoriteTrackMutation(trpc, { getTrackByIdQuery: { id: trackId } })
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, { getTrackByIdQuery: { id: trackId } })
 
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
   $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)
@@ -73,10 +74,10 @@
     }
   }
 
-  const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
+  const updateNowPlayingMutation = createUpdateNowPlayingMutation(trpc)
   const { mutate: updateNowPlaying } = $updateNowPlayingMutation
 
-  const scrobbleMutation = trpc.playback.scrobble.mutation()
+  const scrobbleMutation = createScrobbleMutation(trpc)
   const { mutate: scrobble } = $scrobbleMutation
 
   onMount(() => {

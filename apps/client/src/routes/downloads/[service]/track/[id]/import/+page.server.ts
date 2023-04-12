@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { z } from 'zod'
 
+import { fetchTrackDownloadDataQuery, mutateTrackDownloadManual } from '$lib/services/import'
 import { createClient } from '$lib/trpc'
 import { paramNumber, paramService } from '$lib/utils/params'
 import { isDefined } from '$lib/utils/types'
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async (event) => {
   const id = paramNumber(event.params.id, 'Download ID must be a number')
 
   const trpc = createClient(event.fetch)
-  const data = await trpc.import.trackDownloadData.fetchQuery({ service, id })
+  const data = await fetchTrackDownloadDataQuery(trpc, { service, id })
 
   const createArtists: Map<number, string> = new Map()
   const getArtistIdByName = (name: string) => {
@@ -70,7 +71,7 @@ export const actions: Actions = {
     }
 
     const trpc = createClient(event.fetch)
-    const result = await trpc.import.trackDownloadManual.mutate({
+    const result = await mutateTrackDownloadManual(trpc, {
       ...form.data,
       artists: form.data.artists.filter(isDefined),
     })

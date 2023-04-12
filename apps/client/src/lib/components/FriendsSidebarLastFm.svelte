@@ -1,14 +1,12 @@
 <script lang="ts">
   import Loader from '$lib/atoms/Loader.svelte'
+  import { createLastFmFriendsQuery } from '$lib/services/friends'
   import { getContextClient } from '$lib/trpc'
 
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
 
   const trpc = getContextClient()
-  const friendsQuery = trpc.friends.lastFm.query(undefined, {
-    refetchInterval: 1000 * 60,
-    staleTime: 1000 * 10,
-  })
+  const friendsQuery = createLastFmFriendsQuery(trpc)
 </script>
 
 {#if $friendsQuery.data}

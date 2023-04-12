@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tooltip } from '$lib/actions/tooltip'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import { createDownloadMutation } from '$lib/services/downloads'
   import { addedToDownloads } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
@@ -23,7 +24,7 @@
   const toast = getContextToast()
 
   const trpc = getContextClient()
-  const downloadMutation = trpc.downloads.download.mutation()
+  const downloadMutation = createDownloadMutation(trpc)
   const handleDownload = () => {
     $downloadMutation.mutate(
       { service: 'soulseek', kind: 'track', username, file: file.filename },

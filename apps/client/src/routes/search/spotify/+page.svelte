@@ -1,5 +1,6 @@
 <script lang="ts">
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import { createSearchSpotifyQuery } from '$lib/services/search'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -8,10 +9,7 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: spotifyQuery = trpc.search.spotify.query(
-    { query: data.query },
-    { enabled: data.hasQuery, staleTime: 60 * 1000 }
-  )
+  $: spotifyQuery = createSearchSpotifyQuery(trpc, data.query)
 </script>
 
 {#if data.hasQuery}

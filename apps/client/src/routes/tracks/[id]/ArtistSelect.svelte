@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { createAllArtistsQuery } from '$lib/services/artists'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const artistsQuery = trpc.artists.getAll.query()
+  const artistsQuery = createAllArtistsQuery(trpc)
 
   export let value: string | number | undefined = undefined
   export let open = false

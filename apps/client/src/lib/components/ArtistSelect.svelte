@@ -4,11 +4,12 @@
   import { clickOutside } from '$lib/actions/clickOutside'
   import { createPopperAction } from '$lib/actions/popper'
   import Input from '$lib/atoms/Input.svelte'
+  import { createAllArtistsQuery } from '$lib/services/artists'
   import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const artistsQuery = trpc.artists.getAll.query()
+  const artistsQuery = createAllArtistsQuery(trpc)
 
   export let value:
     | {

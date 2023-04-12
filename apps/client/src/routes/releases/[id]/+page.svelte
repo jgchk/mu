@@ -5,8 +5,8 @@
   import { makeReleaseCoverArtUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
-  import { getReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
-  import { favoriteTrackMutation } from '$lib/services/tracks'
+  import { createReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
+  import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
@@ -16,9 +16,9 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: releaseQuery = getReleaseWithTracksAndArtistsQuery(trpc, data.id)
+  $: releaseQuery = createReleaseWithTracksAndArtistsQuery(trpc, data.id)
 
-  $: favoriteMutation = favoriteTrackMutation(trpc, {
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getReleaseWithTracksAndArtistsQuery: { id: data.id },
   })
 
