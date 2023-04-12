@@ -235,7 +235,7 @@ export class Database {
         ...(data.path !== undefined ? { path: data.path } : {}),
         ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
-        ...(data.hasCoverArt !== undefined ? { hasCoverArt: data.hasCoverArt ? 1 : 0 } : {}),
+        ...(data.coverArtHash !== undefined ? { coverArtHash: data.coverArtHash } : {}),
         ...(data.favorite !== undefined ? { favorite: data.favorite ? 1 : 0 } : {}),
       }
       return convertTrack(

@@ -7,13 +7,15 @@ import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
 import { publicProcedure, router } from '../trpc'
-import { ifDefined } from '../utils/types'
+import { md5 } from '../utils/fs'
+import { ifDefined, ifNotNull } from '../utils/types'
 
 export const releasesRouter = router({
   getAll: publicProcedure.query(({ ctx }) =>
     ctx.db.releases.getAll().map((release) => ({
       ...release,
-      hasCoverArt: ctx.db.tracks.getByReleaseId(release.id).some((track) => track.hasCoverArt),
+      coverArtHash: ctx.db.tracks.getByReleaseId(release.id).find((track) => track.coverArtHash)
+        ?.coverArtHash,
     }))
   ),
   getWithTracksAndArtists: publicProcedure
@@ -22,7 +24,7 @@ export const releasesRouter = router({
       const release = ctx.db.releases.getWithTracksAndArtists(id)
       return {
         ...release,
-        hasCoverArt: release.tracks.some((track) => track.hasCoverArt),
+        coverArtHash: release.tracks.find((track) => track.coverArtHash)?.coverArtHash,
       }
     }),
   getCoverArt: publicProcedure
@@ -30,7 +32,7 @@ export const releasesRouter = router({
     .query(async ({ input: { id }, ctx }) => {
       const tracks = ctx.db.tracks.getByReleaseId(id)
       for (const track of tracks) {
-        if (track.hasCoverArt) {
+        if (track.coverArtHash) {
           const coverArt = await readTrackCoverArt(track.path)
           if (coverArt !== undefined) {
             return coverArt.toString('base64')
@@ -146,13 +148,15 @@ export const releasesRouter = router({
               }
             }
 
+            const coverArtHash = ifNotNull(albumArt, md5)
+
             ctx.db.tracks.updateWithArtists(existingDbTrack.id, {
               title: metadata.title,
               artists: artists.map((artist) => artist.id),
               path: newPath,
               releaseId: dbRelease.id,
               trackNumber: metadata.track,
-              hasCoverArt: !!albumArt,
+              coverArtHash,
             })
           })
         )

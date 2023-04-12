@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "a657663a-1c73-411d-b2bd-301b01cc862b",
+  "id": "44339c95-9193-4212-8f99-4b488795e699",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -200,12 +200,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "has_cover_art": {
-          "name": "has_cover_art",
-          "type": "integer",
+        "cover_art_hash": {
+          "name": "cover_art_hash",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false
         },
         "duration": {
           "name": "duration",

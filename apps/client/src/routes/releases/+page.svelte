@@ -1,6 +1,7 @@
 <script lang="ts">
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import { makeReleaseCoverArtUrl } from '$lib/cover-art'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
@@ -12,8 +13,8 @@
     {#each $releasesQuery.data as release (release.id)}
       <a href="/releases/{release.id}" class="w-full overflow-hidden">
         <CoverArt
-          src={release.hasCoverArt
-            ? `/api/releases/${release.id}/cover-art?width=400&height=400`
+          src={release.coverArtHash
+            ? makeReleaseCoverArtUrl(release.id, release.coverArtHash, { size: 400 })
             : undefined}
           alt={release.title}
         />

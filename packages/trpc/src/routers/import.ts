@@ -1,3 +1,11 @@
+import type {
+  SoulseekReleaseDownload,
+  SoulseekTrackDownload,
+  SoundcloudPlaylistDownload,
+  SoundcloudTrackDownload,
+  SpotifyAlbumDownload,
+  SpotifyTrackDownload,
+} from 'db'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -12,8 +20,11 @@ import path from 'path'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { md5 } from '../utils/fs'
+import type { DistributiveOmit } from '../utils/types'
+import { ifNotNull } from '../utils/types'
 
-type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
+type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
 }
 const isDownloadComplete = <T extends { path: string | null }>(
@@ -139,37 +150,37 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      let releaseDownload
-      let trackDownloads
-      let completeDownloads
+      let releaseDownload:
+        | SoulseekReleaseDownload
+        | SoundcloudPlaylistDownload
+        | SpotifyAlbumDownload
+      let trackDownloads: (SoulseekTrackDownload | SoundcloudTrackDownload | SpotifyTrackDownload)[]
       if (input.service === 'soulseek') {
         releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
         trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
       } else if (input.service === 'soundcloud') {
         releaseDownload = ctx.db.soundcloudPlaylistDownloads.get(input.id)
         trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
       } else if (input.service === 'spotify') {
         releaseDownload = ctx.db.spotifyAlbumDownloads.get(input.id)
         trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
       } else {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         throw new Error(`Invalid service: ${input.service}`)
       }
 
+      const completeDownloads = trackDownloads.filter(isDownloadComplete)
       if (completeDownloads.length !== trackDownloads.length) {
         throw new Error('Not all downloads are complete')
       }
 
-      const downloads = completeDownloads.map((download) => {
-        const track = input.tracks.find((track) => track.id === download.id)
-        if (!track) {
-          throw new Error('Track not found')
+      const downloads = input.tracks.map((track) => {
+        const dbDownload = completeDownloads.find((download) => download.id === track.id)
+        if (!dbDownload) {
+          throw new Error(`Download not found: ${track.id}`)
         }
         return {
-          dbDownload: download,
+          dbDownload,
           metadata: track,
         }
       })
@@ -254,13 +265,15 @@ export const importRouter = router({
             }
           }
 
+          const coverArtHash = ifNotNull(albumArt, md5)
+
           const dbTrack = ctx.db.tracks.insertWithArtists({
             title: metadata.title,
             artists: artists.map((artist) => artist.id),
             path: newPath,
             releaseId: dbRelease.id,
             trackNumber: metadata.track,
-            hasCoverArt: !!albumArt,
+            coverArtHash,
             duration: outputMetadata.length,
             favorite: false,
           })
@@ -415,7 +428,7 @@ export const importRouter = router({
         path: newPath,
         releaseId: dbRelease.id,
         trackNumber: metadata.track,
-        hasCoverArt: false,
+        coverArtHash: null,
         duration: outputMetadata.length,
         favorite: false,
       })

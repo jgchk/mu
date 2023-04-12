@@ -17,3 +17,7 @@ export const ifNotNull = <T, O>(value: T | null, fn: (value: T) => O): O | null 
 }
 
 export { default as deepEquals } from 'fast-deep-equal/es6'
+
+export type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
+
+export type DistributivePick<T, K extends keyof T> = T extends unknown ? Pick<T, K> : never

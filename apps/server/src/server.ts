@@ -263,7 +263,7 @@ const main = async () => {
           .parse(req.query)
 
         const track = db.tracks.get(id)
-        if (!track.hasCoverArt) {
+        if (!track.coverArtHash) {
           throw new Error('Track does not have cover art')
         }
 
@@ -296,7 +296,7 @@ const main = async () => {
         const tracks = db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {
-          if (track.hasCoverArt) {
+          if (track.coverArtHash) {
             const coverArt = await readTrackCoverArt(track.path)
             if (coverArt !== undefined) {
               const { output, contentType } = await handleResize(coverArt, { width, height })

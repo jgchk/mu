@@ -3,6 +3,7 @@
   import { raf } from 'svelte/internal'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import { makeTrackCoverArtUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -91,8 +92,8 @@
     {#if $nowPlayingTrack.data}
       <div class="h-16 w-16 shrink-0">
         <CoverArt
-          src={$nowPlayingTrack.data.hasCoverArt
-            ? `/api/tracks/${track.id}/cover-art?width=128&height=128`
+          src={$nowPlayingTrack.data.coverArtHash
+            ? makeTrackCoverArtUrl(track.id, $nowPlayingTrack.data.coverArtHash, { size: 128 })
             : undefined}
           alt={$nowPlayingTrack.data.title}
           hoverable={false}

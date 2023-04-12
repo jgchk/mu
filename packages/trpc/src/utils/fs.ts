@@ -1,3 +1,5 @@
+import type { BinaryLike } from 'crypto'
+import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import path from 'path'
 
@@ -22,3 +24,5 @@ export async function fileExists(path: string): Promise<boolean> {
     return false
   }
 }
+
+export const md5 = (content: BinaryLike) => createHash('md5').update(content).digest('hex')

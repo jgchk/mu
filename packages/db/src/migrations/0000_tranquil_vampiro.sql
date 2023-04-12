@@ -32,7 +32,7 @@ CREATE TABLE `tracks` (
 	`title` text,
 	`release_id` integer,
 	`track_number` integer,
-	`has_cover_art` integer NOT NULL,
+	`cover_art_hash` text,
 	`duration` integer NOT NULL,
 	`favorite` integer NOT NULL,
 	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`)
