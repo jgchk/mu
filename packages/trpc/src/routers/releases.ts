@@ -37,6 +37,7 @@ export const releasesRouter = router({
           }
         }
       }
+      return null
     }),
   updateWithTracksAndArtists: publicProcedure
     .input(
