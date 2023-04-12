@@ -278,12 +278,17 @@ export class Database {
       return this.db.select().from(tracks).all().map(convertTrack)
     },
 
-    getAllWithArtistsAndRelease: () => {
+    getAllWithArtistsAndRelease: ({
+      skip = 0,
+      limit = 50,
+    }: { skip?: number; limit?: number } = {}) => {
       const allTracks = this.db
         .select()
         .from(tracks)
+        .offset(skip)
         .leftJoin(releases, eq(tracks.releaseId, releases.id))
         .orderBy(tracks.title)
+        .limit(limit)
         .all()
 
       return allTracks.map((row) => ({

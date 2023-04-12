@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { inview } from 'svelte-inview'
+
+  import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -6,16 +9,20 @@
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
 
+  import { tracksQueryInput } from './common'
+
   const trpc = getContextClient()
-  const tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.query()
+  let tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.infiniteQuery(tracksQueryInput, {
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
 
   const favoriteMutation = trpc.tracks.favorite.mutation({
     onMutate: async (input) => {
-      await trpc.tracks.getAllWithArtistsAndRelease.utils.cancel()
-      const previousData = trpc.tracks.getAllWithArtistsAndRelease.utils.getData()
-      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(undefined, (old) => {
+      await trpc.tracks.getAllWithArtistsAndRelease.utils.cancel(tracksQueryInput)
+      const previousData = trpc.tracks.getAllWithArtistsAndRelease.utils.getData(tracksQueryInput)
+      trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(tracksQueryInput, (old) => {
         if (!old) return old
-        const newTracks = old.map((track) => {
+        const newTracks = old.items.map((track) => {
           if (track.id === input.id) {
             return {
               ...track,
@@ -24,21 +31,28 @@
           }
           return track
         })
-        return newTracks
+        return { ...old, items: newTracks }
       })
       return { previousData }
     },
     onError: (err, input, context) => {
-      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(undefined, context?.previousData)
+      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(tracksQueryInput, context?.previousData)
     },
     onSuccess: async () => {
-      await trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate()
+      await trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate(tracksQueryInput)
     },
   })
+
+  let inView = false
+  $: {
+    if (inView && $tracksQuery.hasNextPage && !$tracksQuery.isFetchingNextPage) {
+      void $tracksQuery.fetchNextPage()
+    }
+  }
 </script>
 
 {#if $tracksQuery.data}
-  {@const tracks = $tracksQuery.data}
+  {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
   <div class="p-4">
     {#each tracks as track, i (track.id)}
       <div
@@ -102,6 +116,18 @@
         />
       </div>
     {/each}
+
+    {#if $tracksQuery.hasNextPage}
+      <div
+        class="m-1 flex justify-center"
+        use:inview
+        on:inview_change={(event) => (inView = event.detail.inView)}
+      >
+        <Button kind="outline" on:click={() => $tracksQuery.fetchNextPage()}>
+          {$tracksQuery.isFetchingNextPage ? 'Loading...' : 'Load More'}
+        </Button>
+      </div>
+    {/if}
   </div>
 {:else if $tracksQuery.error}
   <div>{$tracksQuery.error.message}</div>

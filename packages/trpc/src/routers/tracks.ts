@@ -7,9 +7,30 @@ import { ifDefined } from '../utils/types'
 
 export const tracksRouter = router({
   getAll: publicProcedure.query(({ ctx }) => ctx.db.tracks.getAll()),
-  getAllWithArtistsAndRelease: publicProcedure.query(({ ctx }) =>
-    ctx.db.tracks.getAllWithArtistsAndRelease()
-  ),
+  getAllWithArtistsAndRelease: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).optional(),
+        cursor: z.number().optional(),
+      })
+    )
+    .query(({ input, ctx }) => {
+      const skip = input.cursor ?? 0
+      const limit = input.limit ?? 50
+
+      const items = ctx.db.tracks.getAllWithArtistsAndRelease({ skip, limit: limit + 1 })
+
+      let nextCursor: number | undefined = undefined
+      if (items.length > limit) {
+        items.pop()
+        nextCursor = skip + limit
+      }
+
+      return {
+        items,
+        nextCursor,
+      }
+    }),
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => ctx.db.tracks.getWithArtists(id)),
