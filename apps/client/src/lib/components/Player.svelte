@@ -9,7 +9,8 @@
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
-  import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
+  import type { NowPlaying } from '$lib/now-playing'
+  import { nextTrack, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
@@ -17,15 +18,13 @@
   import Range from '../atoms/Range.svelte'
   import CoverArt from './CoverArt.svelte'
 
-  export let trackId: number
-  export let __playSignal: symbol
-  export let currentTime: number | undefined
-  export let duration: number | undefined
+  export let track: NonNullable<NowPlaying['track']>
 
   const trpc = getContextClient()
+  $: trackId = track.id
   $: nowPlayingTrack = trpc.tracks.getById.query({ id: trackId })
 
-  $: formattedCurrentTime = formatMilliseconds((currentTime || 0) * 1000)
+  $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
   $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)
   $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
 
@@ -71,7 +70,7 @@
       <div class="h-16 w-16 shrink-0">
         <CoverArt
           src={$nowPlayingTrack.data.hasCoverArt
-            ? `/api/tracks/${trackId}/cover-art?width=128&height=128`
+            ? `/api/tracks/${track.id}/cover-art?width=128&height=128`
             : undefined}
           alt={$nowPlayingTrack.data.title}
           hoverable={false}
@@ -137,9 +136,9 @@
       </div>
       <div class="flex-1">
         <Range
-          bind:value={currentTime}
+          bind:value={track.currentTime}
           min={0}
-          max={duration ?? 1}
+          max={track.duration ?? 1}
           on:change={(e) => {
             if (player) {
               player.currentTime = e.detail
@@ -180,17 +179,17 @@
   </div>
 </div>
 
-{#key __playSignal}
+{#key track.__playSignal}
   <audio
     autoplay
     class="hidden"
     bind:this={player}
-    bind:currentTime={$nowPlaying.currentTime}
-    bind:duration={$nowPlaying.duration}
+    bind:currentTime={track.currentTime}
+    bind:duration={track.duration}
     bind:paused
     bind:volume={$volume}
     on:ended={() => nextTrack()}
   >
-    <source src="/api/tracks/{trackId}/stream" type="audio/mpeg" />
+    <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
   </audio>
 {/key}

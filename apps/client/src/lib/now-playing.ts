@@ -7,10 +7,9 @@ export type NowPlaying = {
     id: number
     __playSignal: symbol
     startTime: Date
+    currentTime?: number
+    duration?: number
   }
-
-  currentTime?: number
-  duration?: number
 
   previousTracks: number[]
   nextTracks: number[]
@@ -53,7 +52,9 @@ export const nextTrack = () => {
         nextTracks: data.nextTracks.slice(1),
       }
     } else {
-      return data
+      return {
+        ...data,
+      }
     }
   })
 }
@@ -76,7 +77,7 @@ export const previousTrack = () => {
       return {
         ...data,
         track: ifDefined(data.track, (track) => ({
-          ...track,
+          id: track.id,
           __playSignal: Symbol(),
           startTime: new Date(),
         })),
