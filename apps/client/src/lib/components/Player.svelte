@@ -53,14 +53,14 @@
     player?.pause()
   }
 
-  let audio_animationframe: number | void
-  function audio_timeupdate_handler() {
-    if (audio_animationframe !== void 0) {
-      cancelAnimationFrame(audio_animationframe)
+  let audioAnimationFrame: number | void
+  function handleTimeUpdate() {
+    if (audioAnimationFrame !== void 0) {
+      cancelAnimationFrame(audioAnimationFrame)
     }
 
     if (!player?.paused) {
-      audio_animationframe = raf(audio_timeupdate_handler)
+      audioAnimationFrame = raf(handleTimeUpdate)
     }
 
     track.currentTime = player?.currentTime
@@ -208,7 +208,7 @@
       bind:paused
       bind:volume={$volume}
       on:ended={() => nextTrack()}
-      on:timeupdate={audio_timeupdate_handler}
+      on:timeupdate={handleTimeUpdate}
       on:durationchange={(e) => (track.duration = e.currentTarget.duration)}
     >
       <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
