@@ -2,17 +2,18 @@
   import { inview } from 'svelte-inview'
 
   import Button from '$lib/atoms/Button.svelte'
-  import ToggleButton from '$lib/atoms/ToggleButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
   import { formatMilliseconds } from '$lib/utils/date'
+  import { ifDefined } from '$lib/utils/types'
 
   import type { PageData } from './$types'
-  import { baseTracksQueryInput, makeTracksQueryInput } from './common'
+  import { makeTracksQueryInput } from './common'
 
   export let data: PageData
 
@@ -22,6 +23,7 @@
   $: tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.infiniteQuery(tracksQueryInput, {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
+  $: tracks = ifDefined($tracksQuery.data, (data) => data.pages.flatMap((page) => page.items))
 
   const favoriteMutation = trpc.tracks.favorite.mutation({
     onMutate: async (input) => {
@@ -65,6 +67,22 @@
       void $tracksQuery.fetchNextPage()
     }
   }
+
+  const toast = getContextToast()
+  function makeQueueData(trackIndex: number) {
+    if (!tracks) {
+      toast.warning('Could not queue additional tracks')
+      return {
+        previousTracks: [],
+        nextTracks: [],
+      }
+    }
+
+    return {
+      previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
+      nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
+    }
+  }
 </script>
 
 <div class="flex h-full gap-2">
@@ -80,26 +98,17 @@
     </a>
   </div>
   <div class="h-full flex-1 overflow-auto">
-    {#if $tracksQuery.data}
-      {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
+    {#if tracks}
       <div class="p-4">
         {#each tracks as track, i (track.id)}
           <div
             class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-            on:dblclick={() =>
-              playTrack(track.id, {
-                previousTracks: tracks.slice(0, i).map((t) => t.id),
-                nextTracks: tracks.slice(i + 1).map((t) => t.id),
-              })}
+            on:dblclick={() => playTrack(track.id, makeQueueData(i))}
           >
             <button
               type="button"
               class="relative h-11 w-11 shadow"
-              on:click={() =>
-                playTrack(track.id, {
-                  previousTracks: tracks.slice(0, i).map((t) => t.id),
-                  nextTracks: tracks.slice(i + 1).map((t) => t.id),
-                })}
+              on:click={() => playTrack(track.id, makeQueueData(i))}
             >
               <CoverArt
                 src={track.hasCoverArt
