@@ -11,6 +11,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
   import { base64ToBlob } from '$lib/utils/file'
@@ -43,7 +44,7 @@
         if (result.data?.reason) {
           dispatch('failure', { reason: result.data.reason })
         } else {
-          toast.error('Check the form for errors')
+          toast.error(formErrors())
         }
       } else if (result.type === 'error') {
         dispatch('error', { error: result.error })

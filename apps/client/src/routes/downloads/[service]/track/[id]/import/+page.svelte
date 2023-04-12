@@ -8,6 +8,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import { formErrors, importTrackError, importTrackFail, importTrackSuccess } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
 
@@ -20,11 +21,15 @@
     dataType: 'json',
     onResult: ({ result }) => {
       if (result.type === 'redirect' || result.type === 'success') {
-        toast.success(`Imported ${$form.title || 'track'}!`)
+        toast.success(importTrackSuccess($form.title))
       } else if (result.type === 'failure') {
-        toast.error('Check the form for errors')
+        if (result.data?.reason) {
+          toast.error(importTrackFail(result.data.reason))
+        } else {
+          toast.error(formErrors())
+        }
       } else if (result.type === 'error') {
-        toast.error('Failed to import release')
+        toast.error(importTrackError(result.error))
       }
     },
   })

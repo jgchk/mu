@@ -1,7 +1,7 @@
 <script lang="ts">
   import ReleaseForm from '$lib/components/ReleaseForm.svelte'
+  import { importReleaseError, importReleaseFail, importReleaseSuccess } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
-  import { toErrorString } from '$lib/utils/error'
 
   import type { PageServerData } from './$types'
 
@@ -13,9 +13,7 @@
 <ReleaseForm
   formData={data.form}
   artData={data.art}
-  on:success={({ detail: { data } }) => toast.success(`Imported ${data.album.title || 'release'}!`)}
-  on:failure={({ detail: { reason } }) =>
-    toast.error(`Failed to import release: ${toErrorString(reason)}`)}
-  on:error={({ detail: { error } }) =>
-    toast.error(`Error while importing release: ${toErrorString(error)}`)}
+  on:success={({ detail: { data } }) => toast.success(importReleaseSuccess(data.album.title))}
+  on:failure={({ detail: { reason } }) => toast.error(importReleaseFail(reason))}
+  on:error={({ detail: { error } }) => toast.error(importReleaseError(error))}
 />
