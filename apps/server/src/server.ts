@@ -26,7 +26,7 @@ const main = async () => {
   for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
     void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
-  for (const download of ctx.db.spotifyTrackDownloads.getAll()) {
+  for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
     void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
   for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
