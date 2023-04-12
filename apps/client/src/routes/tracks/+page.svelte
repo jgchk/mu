@@ -19,24 +19,33 @@
   const favoriteMutation = trpc.tracks.favorite.mutation({
     onMutate: async (input) => {
       await trpc.tracks.getAllWithArtistsAndRelease.utils.cancel(tracksQueryInput)
-      const previousData = trpc.tracks.getAllWithArtistsAndRelease.utils.getData(tracksQueryInput)
+      const previousData =
+        trpc.tracks.getAllWithArtistsAndRelease.utils.getInfiniteData(tracksQueryInput)
       trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(tracksQueryInput, (old) => {
         if (!old) return old
-        const newTracks = old.items.map((track) => {
-          if (track.id === input.id) {
-            return {
-              ...track,
-              favorite: input.favorite,
-            }
-          }
-          return track
-        })
-        return { ...old, items: newTracks }
+        return {
+          ...old,
+          pages: old.pages.map((page) => {
+            const newTracks = page.items.map((track) => {
+              if (track.id === input.id) {
+                return {
+                  ...track,
+                  favorite: input.favorite,
+                }
+              }
+              return track
+            })
+            return { ...page, items: newTracks }
+          }),
+        }
       })
       return { previousData }
     },
     onError: (err, input, context) => {
-      trpc.tracks.getAllWithArtistsAndRelease.utils.setData(tracksQueryInput, context?.previousData)
+      trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(
+        tracksQueryInput,
+        context?.previousData
+      )
     },
     onSuccess: async () => {
       await trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate(tracksQueryInput)
