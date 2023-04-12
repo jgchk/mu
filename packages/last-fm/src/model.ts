@@ -96,3 +96,31 @@ export const Scrobble = z.object({
     '@attr': z.object({ ignored: z.number(), accepted: z.number() }),
   }),
 })
+
+export type LovedTracks = z.infer<typeof LovedTracks>
+export const LovedTracks = z.object({
+  lovedtracks: z.object({
+    track: z
+      .object({
+        artist: z.object({
+          url: z.string(),
+          name: z.string(),
+          mbid: z.string(),
+        }),
+        date: z.object({ uts: z.string(), '#text': z.string() }),
+        mbid: z.string(),
+        url: z.string(),
+        name: z.string(),
+        image: z.array(z.object({ size: z.string(), '#text': z.string() })),
+        streamable: z.object({ fulltrack: z.string(), '#text': z.string() }),
+      })
+      .array(),
+    '@attr': z.object({
+      user: z.string(),
+      totalPages: z.string(),
+      page: z.string(),
+      perPage: z.string(),
+      total: z.string(),
+    }),
+  }),
+})

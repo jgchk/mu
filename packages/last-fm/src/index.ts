@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import got from 'got'
 
-import { Friends, MobileSession, NowPlaying, RecentTracks, Scrobble } from './model'
+import { Friends, LovedTracks, MobileSession, NowPlaying, RecentTracks, Scrobble } from './model'
 
 export * from './model'
 
@@ -93,6 +93,32 @@ export class LastFM {
     }).json()
     return RecentTracks.parse(res).recenttracks.track
   }
+
+  async getLovedTracks(username: string, opts: { limit?: number; page?: number } = {}) {
+    const res = await got('https://ws.audioscrobbler.com/2.0/', {
+      searchParams: {
+        method: 'user.getLovedTracks',
+        user: username,
+        limit: opts.limit,
+        page: opts.page,
+        api_key: this.apiKey,
+        format: 'json',
+      },
+    }).json()
+    return LovedTracks.parse(res).lovedtracks
+  }
+
+  async getAllLovedTracks(username: string) {
+    const page1 = await this.getLovedTracks(username, { limit: 1000 })
+
+    const allPages = Array.from({ length: parseInt(page1['@attr'].totalPages) }, (_, i) => i + 1)
+
+    const restPages = await Promise.all(
+      allPages.slice(1).map((page) => this.getLovedTracks(username, { limit: 1000, page }))
+    )
+
+    return [...page1.track, ...restPages.flatMap((page) => page.track)]
+  }
 }
 
 export class LastFMAuthenticated extends LastFM {
@@ -131,6 +157,14 @@ export class LastFMAuthenticated extends LastFM {
 
   getRecentTracks(username = this.username) {
     return super.getRecentTracks(username)
+  }
+
+  getLovedTracks(username = this.username, opts: { limit?: number; page?: number } = {}) {
+    return super.getLovedTracks(username, opts)
+  }
+
+  getAllLovedTracks(username = this.username) {
+    return super.getAllLovedTracks(username)
   }
 
   async updateNowPlaying({
