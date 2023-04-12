@@ -12,7 +12,7 @@
 
 <ReleaseForm
   formData={data.form}
-  artData={data.art}
+  artData={data.art ?? null}
   on:success={({ detail: { data } }) => toast.success(importReleaseSuccess(data.album.title))}
   on:failure={({ detail: { reason } }) => toast.error(importReleaseFail(reason))}
   on:error={({ detail: { error } }) => toast.error(importReleaseError(error))}
