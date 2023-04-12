@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tooltip } from '$lib/actions/tooltip'
+  import LinkButton from '$lib/atoms/LinkButton.svelte'
   import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
   import { sum } from '$lib/utils/math'
 
@@ -38,12 +39,14 @@
   <div class="files-grid items-center">
     <div class="contents">
       <div class="mb-2 truncate text-lg">{download.name ?? 'Loading...'}</div>
-      <div class="mb-2 text-right text-lg">
+      <div class="mb-2 flex justify-end">
         {#if status.type === 'complete'}
-          <a
-            class="hover:text-white"
-            href="/downloads/{download.service}/group/{download.id}/import">Import</a
+          <LinkButton
+            kind="outline"
+            href="/downloads/{download.service}/group/{download.id}/import"
           >
+            Import
+          </LinkButton>
         {:else if status.type === 'downloading'}
           Downloading... ({status.progress}%)
         {:else}
