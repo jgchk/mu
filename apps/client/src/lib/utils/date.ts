@@ -60,3 +60,7 @@ export const formatMilliseconds = (milliseconds: number) => {
     )}`
   }
 }
+
+export const compareDates = (a: Date, b: Date) => {
+  return a.getTime() - b.getTime()
+}

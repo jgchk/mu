@@ -17,6 +17,7 @@ export const soundcloudPlaylistDownloads = sqliteTable(
     id: integer('id').primaryKey(),
     playlistId: integer('playlist_id').notNull(),
     playlist: blob('playlist', { mode: 'json' }).$type<SoundcloudPlaylist>(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (soundcloudPlaylistDownloads) => ({
     playlistIdUniqueIndex: uniqueIndex('playlistIdUniqueIndex').on(
@@ -38,6 +39,7 @@ export const soundcloudTrackDownloads = sqliteTable(
     playlistDownloadId: integer('playlist_download_id').references(
       () => soundcloudPlaylistDownloads.id
     ),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (soundcloudTrackDownloads) => ({
     trackIdPlaylistIdUniqueIndex: uniqueIndex('trackIdPlaylistIdUniqueIndex').on(
@@ -55,6 +57,7 @@ export const spotifyAlbumDownloads = sqliteTable(
     id: integer('id').primaryKey(),
     albumId: text('album_id').notNull(),
     album: blob('album', { mode: 'json' }).$type<SpotifyFullAlbum>(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (spotifyAlbumDownloads) => ({
     albumIdUniqueIndex: uniqueIndex('albumIdUniqueIndex').on(spotifyAlbumDownloads.albumId),
@@ -72,6 +75,7 @@ export const spotifyTrackDownloads = sqliteTable(
     path: text('path'),
     progress: integer('progress'),
     albumDownloadId: integer('album_download_id').references(() => spotifyAlbumDownloads.id),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (spotifyTrackDownloads) => ({
     trackIdAlbumIdUniqueIndex: uniqueIndex('trackIdAlbumIdUniqueIndex').on(
@@ -89,6 +93,7 @@ export const soulseekReleaseDownloads = sqliteTable(
     id: integer('id').primaryKey(),
     username: text('username').notNull(),
     dir: text('name').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (soulseekReleaseDownloads) => ({
     usernameDirUniqueIndex: uniqueIndex('usernameDirUniqueIndex').on(
@@ -109,6 +114,7 @@ export const soulseekTrackDownloads = sqliteTable(
     path: text('path'),
     progress: integer('progress'),
     releaseDownloadId: integer('release_download_id').references(() => soulseekReleaseDownloads.id),
+    createdAt: integer('created_at', { mode: 'timestamp' }).defaultCurrentTimestamp().notNull(),
   },
   (soulseekTrackDownloads) => ({
     usernameFileUniqueIndex: uniqueIndex('usernameFileUniqueIndex').on(

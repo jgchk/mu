@@ -41,7 +41,8 @@ CREATE TABLE tracks (
 CREATE TABLE soulseek_release_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,
-	`name` text NOT NULL
+	`name` text NOT NULL,
+	`created_at` integer DEFAULT current_timestamp NOT NULL
 );
 
 CREATE TABLE soulseek_track_downloads (
@@ -51,13 +52,15 @@ CREATE TABLE soulseek_track_downloads (
 	`path` text,
 	`progress` integer,
 	`release_download_id` integer,
+	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	FOREIGN KEY (`release_download_id`) REFERENCES soulseek_release_downloads(`id`)
 );
 
 CREATE TABLE soundcloud_playlist_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
 	`playlist_id` integer NOT NULL,
-	`playlist` blob
+	`playlist` blob,
+	`created_at` integer DEFAULT current_timestamp NOT NULL
 );
 
 CREATE TABLE soundcloud_track_downloads (
@@ -67,13 +70,15 @@ CREATE TABLE soundcloud_track_downloads (
 	`path` text,
 	`progress` integer,
 	`playlist_download_id` integer,
+	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	FOREIGN KEY (`playlist_download_id`) REFERENCES soundcloud_playlist_downloads(`id`)
 );
 
 CREATE TABLE spotify_album_downloads (
 	`id` integer PRIMARY KEY NOT NULL,
 	`album_id` text NOT NULL,
-	`album` blob
+	`album` blob,
+	`created_at` integer DEFAULT current_timestamp NOT NULL
 );
 
 CREATE TABLE spotify_track_downloads (
@@ -83,6 +88,7 @@ CREATE TABLE spotify_track_downloads (
 	`path` text,
 	`progress` integer,
 	`album_download_id` integer,
+	`created_at` integer DEFAULT current_timestamp NOT NULL,
 	FOREIGN KEY (`album_download_id`) REFERENCES spotify_album_downloads(`id`)
 );
 

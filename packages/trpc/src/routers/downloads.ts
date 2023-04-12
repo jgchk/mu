@@ -134,6 +134,7 @@ export const downloadsRouter = router({
               service: 'soundcloud',
               id: playlist.id,
               name: playlist.playlist?.title,
+              createdAt: playlist.createdAt,
             } as const)
         ),
         ctx.db.soundcloudTrackDownloads.getAll().map(
@@ -144,6 +145,7 @@ export const downloadsRouter = router({
               parentId: track.playlistDownloadId,
               progress: track.progress,
               name: track.track?.title,
+              createdAt: track.createdAt,
             } as const)
         ),
         ctx.db.spotifyAlbumDownloads.getAll().map(
@@ -152,6 +154,7 @@ export const downloadsRouter = router({
               service: 'spotify',
               id: album.id,
               name: album.album?.name,
+              createdAt: album.createdAt,
             } as const)
         ),
         ctx.db.spotifyTrackDownloads.getAll().map(
@@ -162,6 +165,7 @@ export const downloadsRouter = router({
               parentId: track.albumDownloadId,
               progress: track.progress,
               name: track.track?.name,
+              createdAt: track.createdAt,
             } as const)
         ),
         ctx.db.soulseekReleaseDownloads.getAll().map(
@@ -170,6 +174,7 @@ export const downloadsRouter = router({
               service: 'soulseek',
               id: release.id,
               name: release.dir,
+              createdAt: release.createdAt,
             } as const)
         ),
         ctx.db.soulseekTrackDownloads.getAll().map(
@@ -182,6 +187,7 @@ export const downloadsRouter = router({
               filename: track.file,
               dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
               name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
+              createdAt: track.createdAt,
             } as const)
         ),
       ]

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getContextClient } from '$lib/trpc'
+  import { compareDates } from '$lib/utils/date'
 
   import GroupDownload from './GroupDownload.svelte'
   import TrackDownload from './TrackDownload.svelte'
@@ -43,7 +44,7 @@
       }
 
       downloads = {
-        groups: Object.values(data.groups),
+        groups: Object.values(data.groups).sort((a, b) => compareDates(a.createdAt, b.createdAt)),
         tracks: data.tracks,
       }
     }
