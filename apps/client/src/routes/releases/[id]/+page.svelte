@@ -4,6 +4,7 @@
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
 
@@ -43,6 +44,22 @@
       await trpc.releases.getWithTracksAndArtists.utils.invalidate({ id: data.id })
     },
   })
+
+  const toast = getContextToast()
+  function makeQueueData(trackIndex: number) {
+    if (!$releaseQuery.data) {
+      toast.warning('Could not queue additional tracks')
+      return {
+        previousTracks: [],
+        nextTracks: [],
+      }
+    }
+
+    return {
+      previousTracks: $releaseQuery.data.tracks.slice(0, trackIndex).map((t) => t.id),
+      nextTracks: $releaseQuery.data.tracks.slice(trackIndex + 1).map((t) => t.id),
+    }
+  }
 </script>
 
 {#if $releaseQuery.data}
@@ -50,15 +67,23 @@
 
   <div class="space-y-4 p-4">
     <div class="relative flex items-end gap-6">
-      <div class="relative w-64 shrink-0">
-        <CoverArt
-          src={$releaseQuery.data.hasCoverArt
-            ? `/api/releases/${$releaseQuery.data.id}/cover-art?width=512&height=512`
-            : undefined}
-          alt={$releaseQuery.data.title}
-          hoverable={false}
-        />
-      </div>
+      <button
+        type="button"
+        disabled={tracks.length === 0}
+        on:click={() => playTrack(tracks[0].id, makeQueueData(0))}
+      >
+        <div class="relative w-64 shrink-0">
+          <CoverArt
+            src={$releaseQuery.data.hasCoverArt
+              ? `/api/releases/${$releaseQuery.data.id}/cover-art?width=512&height=512`
+              : undefined}
+            alt={$releaseQuery.data.title}
+            iconClass="w-16 h-16"
+          >
+            <PlayIcon />
+          </CoverArt>
+        </div>
+      </button>
 
       <div class="space-y-1 pb-2">
         <h1 class="line-clamp-2 text-6xl font-bold leading-[1.19]" title={$releaseQuery.data.title}>
@@ -86,22 +111,14 @@
       {#each tracks as track, i (track.id)}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-          on:dblclick={() =>
-            playTrack(track.id, {
-              previousTracks: tracks.slice(0, i).map((t) => t.id),
-              nextTracks: tracks.slice(i + 1).map((t) => t.id),
-            })}
+          on:dblclick={() => playTrack(track.id, makeQueueData(i))}
         >
           <div class="center w-8">
             <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
             <button
               type="button"
               class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-              on:click={() =>
-                playTrack(track.id, {
-                  previousTracks: tracks.slice(0, i).map((t) => t.id),
-                  nextTracks: tracks.slice(i + 1).map((t) => t.id),
-                })}
+              on:click={() => playTrack(track.id, makeQueueData(i))}
             >
               <PlayIcon />
             </button>
