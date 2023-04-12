@@ -18,16 +18,16 @@ export const createListenedDuration = () => {
       __playSignal = data.track.__playSignal
     }
 
-    if (data.currentTime === undefined) return 0
+    if (data.track.currentTime === undefined) return 0
 
-    const timeDelta = data.currentTime - previousTime
+    const timeDelta = data.track.currentTime - previousTime
 
     // only count listened time if the user didn't manually skip
     if (timeDelta > 0 && timeDelta < 2) {
       listenedDuration += timeDelta
     }
 
-    previousTime = data.currentTime
+    previousTime = data.track.currentTime
 
     return listenedDuration
   })
@@ -55,32 +55,39 @@ export const createNowPlayer = (onNowPlaying: (data: NonNullable<NowPlaying['tra
   return unsubscribe
 }
 
-export const createScrobbler = (onScrobble: (data: NonNullable<NowPlaying['track']>) => void) => {
+export const createScrobbler = (
+  onScrobble: (data: Pick<NonNullable<NowPlaying['track']>, 'id' | 'startTime'>) => void
+) => {
   let __playSignal: symbol | undefined = undefined
   let scrobbled = false
   const listenedDuration = createListenedDuration()
 
   const combined = derived([nowPlaying, listenedDuration], ([np, ld]) => ({
-    track: np.track,
-    duration: np.duration,
+    id: np.track?.id,
+    startTime: np.track?.startTime,
+    __playSignal: np.track?.__playSignal,
+    duration: np.track?.duration,
     listenedDuration: ld,
   }))
 
   const unsubscribe = combined.subscribe((data) => {
-    if (!data.track) return
-
-    if (data.track.__playSignal !== __playSignal) {
+    if (data.__playSignal !== __playSignal) {
       scrobbled = false
-      __playSignal = data.track.__playSignal
+      __playSignal = data.__playSignal
     }
 
     if (
       !scrobbled &&
       data.duration !== undefined &&
+      data.id !== undefined &&
+      data.startTime !== undefined &&
       shouldScrobble(data.duration, data.listenedDuration)
     ) {
       // scrobble
-      onScrobble(data.track)
+      onScrobble({
+        id: data.id,
+        startTime: data.startTime,
+      })
       scrobbled = true
     }
   })

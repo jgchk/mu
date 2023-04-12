@@ -10,7 +10,7 @@
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
   import type { NowPlaying } from '$lib/now-playing'
-  import { nextTrack, previousTrack } from '$lib/now-playing'
+  import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { getContextClient } from '$lib/trpc'
   import { formatMilliseconds } from '$lib/utils/date'
@@ -40,10 +40,16 @@
 
   const togglePlaying = () => {
     if (player?.paused) {
-      void player?.play()
+      play()
     } else {
-      player?.pause()
+      pause()
     }
+  }
+  const play = () => {
+    void player?.play()
+  }
+  const pause = () => {
+    player?.pause()
   }
 
   const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
@@ -105,7 +111,11 @@
         type="button"
         class="center h-8 w-8 text-gray-400 transition hover:text-white"
         use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => previousTrack()}
+        on:click={() => {
+          pause()
+          // TODO: this is super hacky. prob should manually bind the currentTime
+          setTimeout(() => previousTrack(), 100)
+        }}
       >
         <RewindIcon class="h-6 w-6" />
       </button>
@@ -179,17 +189,19 @@
   </div>
 </div>
 
-{#key track.__playSignal}
-  <audio
-    autoplay
-    class="hidden"
-    bind:this={player}
-    bind:currentTime={track.currentTime}
-    bind:duration={track.duration}
-    bind:paused
-    bind:volume={$volume}
-    on:ended={() => nextTrack()}
-  >
-    <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
-  </audio>
-{/key}
+{#if $nowPlaying.track}
+  {#key $nowPlaying.track.__playSignal}
+    <audio
+      autoplay
+      class="hidden"
+      bind:this={player}
+      bind:currentTime={$nowPlaying.track.currentTime}
+      bind:duration={$nowPlaying.track.duration}
+      bind:paused
+      bind:volume={$volume}
+      on:ended={() => nextTrack()}
+    >
+      <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
+    </audio>
+  {/key}
+{/if}
