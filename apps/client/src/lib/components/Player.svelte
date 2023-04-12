@@ -63,7 +63,9 @@
       audioAnimationFrame = raf(handleTimeUpdate)
     }
 
-    track.currentTime = player?.currentTime
+    if ($nowPlaying.track) {
+      $nowPlaying.track.currentTime = player?.currentTime
+    }
   }
 
   const updateNowPlayingMutation = trpc.playback.updateNowPlaying.mutation()
@@ -209,7 +211,11 @@
       bind:volume={$volume}
       on:ended={() => nextTrack()}
       on:timeupdate={handleTimeUpdate}
-      on:durationchange={(e) => (track.duration = e.currentTarget.duration)}
+      on:durationchange={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.duration = e.currentTarget.duration
+        }
+      }}
     >
       <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
     </audio>
