@@ -19,12 +19,34 @@
 
   import Range from '../atoms/Range.svelte'
   import CoverArt from './CoverArt.svelte'
+  import FavoriteButton from './FavoriteButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
 
   const trpc = getContextClient()
   $: trackId = track.id
   $: nowPlayingTrack = trpc.tracks.getById.query({ id: trackId })
+
+  const favoriteMutation = trpc.tracks.favorite.mutation({
+    onMutate: async (input) => {
+      await trpc.tracks.getById.utils.cancel({ id: trackId })
+      const previousData = trpc.tracks.getById.utils.getData({ id: trackId })
+      trpc.tracks.getById.utils.setData({ id: trackId }, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          favorite: input.favorite,
+        }
+      })
+      return { previousData }
+    },
+    onError: (err, input, context) => {
+      trpc.tracks.getById.utils.setData({ id: trackId }, context?.previousData)
+    },
+    onSuccess: async () => {
+      await trpc.tracks.getById.utils.invalidate({ id: trackId })
+    },
+  })
 
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
   $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)
@@ -90,12 +112,13 @@
 <div class="flex items-center gap-4 rounded bg-black p-2">
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
+      {@const track = $nowPlayingTrack.data}
       <div class="h-16 w-16 shrink-0">
         <CoverArt
-          src={$nowPlayingTrack.data.coverArtHash
-            ? makeTrackCoverArtUrl(track.id, $nowPlayingTrack.data.coverArtHash, { size: 128 })
+          src={track.coverArtHash
+            ? makeTrackCoverArtUrl(track.id, track.coverArtHash, { size: 128 })
             : undefined}
-          alt={$nowPlayingTrack.data.title}
+          alt={track.title}
           hoverable={false}
           placeholderClass="text-[8px]"
         />
@@ -103,15 +126,21 @@
 
       <div class="overflow-hidden">
         <div class="truncate">
-          {$nowPlayingTrack.data.title}
+          {track.title}
         </div>
         <div class="text-sm text-gray-400">
-          {$nowPlayingTrack.data.artists
+          {track.artists
             .sort((a, b) => a.order - b.order)
             .map((artist) => artist.name)
             .join(', ')}
         </div>
       </div>
+
+      <FavoriteButton
+        class="hover:bg-gray-900"
+        favorite={track.favorite}
+        on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+      />
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
