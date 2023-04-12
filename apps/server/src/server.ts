@@ -16,8 +16,6 @@ const main = async () => {
     process.exit(1)
   }
 
-  const app = express()
-
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
     void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
@@ -35,7 +33,7 @@ const main = async () => {
     void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
-  app.use(cors()).use(router)
+  const app = express().use(cors()).use(router)
 
   const server = app.listen({ port: env.SERVER_PORT }, () => {
     console.log(`> Running on localhost:${env.SERVER_PORT}`)
