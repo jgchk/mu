@@ -3,7 +3,9 @@
   import { derived } from 'svelte/store'
 
   import { createSearchSoulseekSubscription } from '$lib/services/search'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
+  import { toErrorString } from '$lib/utils/error'
 
   import type { PageData } from './$types'
   import SoulseekResults from './SoulseekResults.svelte'
@@ -53,18 +55,31 @@
     }
   }
 
-  let cleanup: () => void | undefined
+  const toast = getContextToast()
+
+  let dataCleanup: (() => void) | undefined
+  let errorCleanup: (() => void) | undefined
   $: {
-    cleanup?.()
-    const { data } = soulseekSubscription
-    cleanup = derived(data, (value) => value).subscribe((v) => {
+    dataCleanup?.()
+    errorCleanup?.()
+
+    const { data, error } = soulseekSubscription
+
+    dataCleanup = derived(data, (value) => value).subscribe((v) => {
       if (v) {
         sendWorkerMessage({ kind: 'result', result: v })
       }
     })
+
+    errorCleanup = error.subscribe((e) => {
+      if (e) {
+        toast.error(toErrorString(e))
+      }
+    })
   }
   onDestroy(() => {
-    cleanup?.()
+    dataCleanup?.()
+    errorCleanup?.()
   })
 </script>
 
