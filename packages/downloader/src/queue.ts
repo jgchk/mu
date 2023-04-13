@@ -336,9 +336,6 @@ export class DownloadQueue {
 
       db.spotifyTrackDownloads.update(trackId, { progress: 100, status: 'done' })
     } catch (error) {
-      console.log('e', error)
-      console.log('er', JSON.parse(JSON.stringify(error)))
-      console.log('err', JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error))))
       db.spotifyTrackDownloads.update(trackId, { status: 'error', error })
     }
   }
