@@ -1,8 +1,7 @@
 <script lang="ts">
   import { slide } from 'svelte/transition'
   import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte'
-
-  import { mapValuesRecursive } from '$lib/utils/object'
+  import { mapValuesRecursive } from 'utils'
 
   export let data: unknown
   export let show = false
