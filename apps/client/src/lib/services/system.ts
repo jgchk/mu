@@ -5,6 +5,8 @@ export const createSystemStatusQuery = (
   options?: RouterOptions['system']['status']
 ) => trpc.system.status.query(undefined, options)
 
+export const prefetchSystemStatusQuery = (trpc: TRPCClient) => trpc.system.status.prefetchQuery()
+
 export const createStartSoulseekMutation = (
   trpc: TRPCClient,
   options?: RouterOptions['system']['startSoulseek']
