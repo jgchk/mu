@@ -22,16 +22,28 @@
   <div>Soulseek: {status.soulseek}</div>
   {#if status.soulseek === 'stopped'}
     <Button
-      on:click={() => $startSoulseekMutation.mutate()}
+      on:click={() => {
+        if (!$startSoulseekMutation.isLoading) {
+          $startSoulseekMutation.mutate()
+        }
+      }}
       loading={$startSoulseekMutation.isLoading}>Start</Button
     >
   {:else}
     <Button
-      on:click={() => $stopSoulseekMutation.mutate()}
+      on:click={() => {
+        if (!$stopSoulseekMutation.isLoading) {
+          $stopSoulseekMutation.mutate()
+        }
+      }}
       loading={$stopSoulseekMutation.isLoading}>Stop</Button
     >
     <Button
-      on:click={() => $restartSoulseekMutation.mutate()}
+      on:click={() => {
+        if (!$restartSoulseekMutation.isLoading) {
+          $restartSoulseekMutation.mutate()
+        }
+      }}
       loading={$restartSoulseekMutation.isLoading}>Restart</Button
     >
   {/if}
