@@ -4,7 +4,7 @@ import { env } from '../env'
 
 const makeSlsk = async () => {
   const slsk = new SlskClient()
-  // await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
+  await slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
   slsk
     .on('listen-error', (error) => console.error('SLSK listen error', error))
     .on('server-error', (error) => console.error('SLSK server error', error))
