@@ -29,8 +29,8 @@ const injectDefaultParams = (params: TooltipProps): TooltipProps => ({
 export const tooltip: Action<TooltipProps> = (node, params) => {
   let tip: Instance<TippyProps> | undefined
 
-  const updateTip = (params: TooltipProps) => {
-    if (params.enabled) {
+  const updateTip = ({ enabled, ...params }: TooltipProps) => {
+    if (enabled) {
       if (!tip) {
         tip = tippy(node, params)
       } else {
