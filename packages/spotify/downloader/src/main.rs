@@ -60,6 +60,9 @@ async fn main() -> anyhow::Result<()> {
         .audio_file(*file_id, 1024 * 1024, true)
         .await?;
 
+    let size = audio_file.get_stream_loader_controller().len() as u64;
+    std::io::stdout().write_all(&size.to_le_bytes())?;
+
     let s = try_stream! {
         let mut decrypted = StreamingClient::audio_decrypt(key, audio_file);
         // Skip (i guess encrypted shit)

@@ -274,7 +274,10 @@ export class DownloadQueue {
       }
 
       const fsPipe = fs.createWriteStream(filePath)
-      const dlPipe = sp.downloadTrack(spotTrack.id)
+      const dlPipe = sp.downloadTrack(spotTrack.id, {
+        onProgress: ({ progress }) =>
+          db.spotifyTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) }),
+      })
       dlPipe.pipe(fsPipe)
 
       await stream.promises.finished(fsPipe)
