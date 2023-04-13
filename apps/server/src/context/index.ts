@@ -1,3 +1,4 @@
+import { SlskClient } from 'soulseek-ts'
 import type { Context } from 'trpc'
 
 import { env } from '../env'
@@ -5,7 +6,6 @@ import { makeDb } from './db'
 import { makeDownloader } from './dl'
 import { makeLastFm } from './lfm'
 import { makeSoundcloud } from './sc'
-import { makeSlsk } from './slsk'
 import { makeSpotify } from './sp'
 
 export const makeContext = async (): Promise<Context> => {
@@ -20,12 +20,25 @@ export const makeContext = async (): Promise<Context> => {
     startSoulseek: async () => {
       if (context.slsk) return
 
-      context.slsk = await makeSlsk()
+      context.slsk = new SlskClient()
+
+      try {
+        await context.slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
+      } catch (e) {
+        context.slsk?.destroy()
+        context.slsk = undefined
+        throw e
+      }
+
+      context.slsk
+        .on('listen-error', (error) => console.error('SLSK listen error', error))
+        .on('server-error', (error) => console.error('SLSK server error', error))
+        .on('client-error', (error) => console.error('SLSK client error', error))
     },
     stopSoulseek: () => {
       if (!context.slsk) return
 
-      context.slsk.destroy()
+      context.slsk?.destroy()
       context.slsk = undefined
     },
     restartSoulseek: async () => {

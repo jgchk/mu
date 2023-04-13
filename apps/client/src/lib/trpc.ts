@@ -1,3 +1,4 @@
+import type { inferSvelteQueryProcedureOptions } from '@jgchk/trpc-svelte-query'
 import {
   createTRPCSvelte,
   createWSClient,
@@ -21,6 +22,7 @@ export const {
 export type TRPCClient = ReturnType<typeof __createClient>
 export type RouterInput = AppRouterInput
 export type RouterOutput = AppRouterOutput
+export type RouterOptions = inferSvelteQueryProcedureOptions<AppRouter>
 
 export type ErrorToastEvent = CustomEvent<{
   error: unknown

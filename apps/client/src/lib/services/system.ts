@@ -1,24 +1,27 @@
-import type { TRPCClient } from '$lib/trpc'
+import type { RouterOptions, TRPCClient } from '$lib/trpc'
 
-export const createSystemStatusQuery = (trpc: TRPCClient) => trpc.system.status.query()
+export const createSystemStatusQuery = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['status']
+) => trpc.system.status.query(undefined, options)
 
 export const createStartSoulseekMutation = (trpc: TRPCClient) =>
   trpc.system.startSoulseek.mutation({
-    onSuccess: async () => {
+    onSettled: async () => {
       await trpc.system.status.utils.invalidate()
     },
   })
 
 export const createStopSoulseekMutation = (trpc: TRPCClient) =>
   trpc.system.stopSoulseek.mutation({
-    onSuccess: async () => {
+    onSettled: async () => {
       await trpc.system.status.utils.invalidate()
     },
   })
 
 export const createRestartSoulseekMutation = (trpc: TRPCClient) =>
   trpc.system.restartSoulseek.mutation({
-    onSuccess: async () => {
+    onSettled: async () => {
       await trpc.system.status.utils.invalidate()
     },
   })

@@ -12,17 +12,25 @@
   import { capitalize } from '$lib/utils/string'
 
   const trpc = getContextClient()
-  const statusQuery = createSystemStatusQuery(trpc)
 
   const startSoulseekMutation = createStartSoulseekMutation(trpc)
   const stopSoulseekMutation = createStopSoulseekMutation(trpc)
   const restartSoulseekMutation = createRestartSoulseekMutation(trpc)
+
+  $: statusQuery = createSystemStatusQuery(trpc, {
+    refetchInterval:
+      $startSoulseekMutation.isLoading ||
+      $stopSoulseekMutation.isLoading ||
+      $restartSoulseekMutation.isLoading
+        ? 1000
+        : false,
+  })
 </script>
 
 {#if $statusQuery.data}
   {@const status = $statusQuery.data}
 
-  <div class="flex items-center gap-4 rounded p-1.5 px-3 hover:bg-gray-700">
+  <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
     <div>Soulseek</div>
     <div>
       <div
@@ -41,6 +49,8 @@
           on:click={() => {
             if (!$startSoulseekMutation.isLoading) {
               $startSoulseekMutation.mutate()
+              $stopSoulseekMutation.reset()
+              $restartSoulseekMutation.reset()
             }
           }}
           loading={$startSoulseekMutation.isLoading}>Start</Button
@@ -50,6 +60,8 @@
           on:click={() => {
             if (!$stopSoulseekMutation.isLoading) {
               $stopSoulseekMutation.mutate()
+              $startSoulseekMutation.reset()
+              $restartSoulseekMutation.reset()
             }
           }}
           loading={$stopSoulseekMutation.isLoading}>Stop</Button
@@ -58,6 +70,8 @@
           on:click={() => {
             if (!$restartSoulseekMutation.isLoading) {
               $restartSoulseekMutation.mutate()
+              $startSoulseekMutation.reset()
+              $stopSoulseekMutation.reset()
             }
           }}
           loading={$restartSoulseekMutation.isLoading}>Restart</Button
