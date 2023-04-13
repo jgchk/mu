@@ -32,7 +32,7 @@ const dirnamePlugin: Plugin = {
 }
 
 const config: Options = {
-  entry: ['src/server.ts'],
+  entry: ['src/server.ts', 'src/jobs/*.ts'],
   format: ['esm'],
   platform: 'node',
   noExternal: ['trpc', 'downloader', 'db', 'music-metadata', 'soundcloud', 'spotify', 'last-fm'],

@@ -1,4 +1,5 @@
 import SqliteDatabase from 'better-sqlite3'
+import { placeholder, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { and, eq, isNull } from 'drizzle-orm/expressions'
@@ -48,14 +49,37 @@ import {
 
 export * from './schema'
 
+const makePreparedQueries = (db: BetterSQLite3Database) =>
+  ({
+    getArtistsBySimilarName: db
+      .select()
+      .from(artists)
+      .where(sql`lower(${artists.name}) like ${placeholder('name')}`)
+      .prepare(),
+    getTracksBySimilarTitle: db
+      .select()
+      .from(tracks)
+      .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
+      .prepare(),
+    getTracksByArtistAndSimilarTitle: db
+      .select()
+      .from(tracks)
+      .where(eq(trackArtists.artistId, placeholder('artistId')))
+      .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
+      .prepare(),
+  } as const)
+
 export class Database {
   private sqlite: SqliteDatabase.Database
   private db: BetterSQLite3Database
+  private preparedQueries: ReturnType<typeof makePreparedQueries>
 
   constructor(url: string) {
     this.sqlite = new SqliteDatabase(url)
     this.db = drizzle(this.sqlite)
     migrate(this.db)
+
+    this.preparedQueries = makePreparedQueries(this.db)
   }
 
   close() {
@@ -75,8 +99,12 @@ export class Database {
       return this.db.select().from(artists).where(eq(artists.id, id)).get()
     },
 
-    getByName: (name: string) => {
+    getByName: (name: Artist['name']) => {
       return this.db.select().from(artists).where(eq(artists.name, name)).all()
+    },
+
+    getBySimilarName: (name: string) => {
+      return this.preparedQueries.getArtistsBySimilarName.all({ name: `%${name.toLowerCase()}%` })
     },
 
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => {
@@ -256,6 +284,17 @@ export class Database {
       }
       const artists = this.artists.getByTrackId(id)
       return { ...track, artists }
+    },
+
+    getBySimilarTitle: (title: NonNullable<Track['title']>) => {
+      return this.preparedQueries.getTracksBySimilarTitle.all({ title: `%${title.toLowerCase()}%` })
+    },
+
+    getByArtistAndSimilarTitle: (artistId: Artist['id'], title: NonNullable<Track['title']>) => {
+      return this.preparedQueries.getTracksByArtistAndSimilarTitle.all({
+        artistId,
+        title: `%${title.toLowerCase()}%`,
+      })
     },
 
     getByPath: (path: Track['path']) => {

@@ -1,8 +1,11 @@
 import { applyWSSHandler } from '@trpc/server/adapters/ws'
+import Bree from 'bree'
 import cors from 'cors'
 import express from 'express'
 import { getMissingPythonDependencies } from 'music-metadata'
+import path from 'path'
 import { appRouter } from 'trpc'
+import { fileURLToPath } from 'url'
 import { WebSocketServer } from 'ws'
 
 import { ctx } from './context'
@@ -15,6 +18,12 @@ const main = async () => {
     console.error('❌ Missing Python dependencies:', missingPythonDeps)
     process.exit(1)
   }
+
+  const bree = new Bree({
+    root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
+    jobs: [{ name: 'import-lastfm-loved' }],
+  })
+  await bree.start()
 
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
