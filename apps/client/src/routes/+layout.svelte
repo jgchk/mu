@@ -22,7 +22,15 @@
 
   onMount(() => {
     const listener = (e: ErrorToastEvent) => {
-      toast.error(toErrorString(e.detail.error))
+      const errorString = toErrorString(e.detail.error)
+      if (errorString === 'NetworkError when attempting to fetch resource.') {
+        const offlineMessage = 'You are offline. Please check your internet connection.'
+        if (!$toast.some((toast) => toast.msg === offlineMessage)) {
+          toast.error(offlineMessage, { duration: Infinity })
+        }
+      } else {
+        toast.error(errorString)
+      }
     }
 
     // @ts-expect-error custom event
