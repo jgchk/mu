@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "6831bc74-09ea-4f29-94ea-004c1e8484cf",
+  "id": "975c5581-1b8d-42ff-bde5-82bbb329186b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -316,12 +316,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "progress": {
           "name": "progress",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "error": {
+          "name": "error",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
         },
         "release_download_id": {
           "name": "release_download_id",
@@ -444,12 +456,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "progress": {
           "name": "progress",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "error": {
+          "name": "error",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
         },
         "playlist_download_id": {
           "name": "playlist_download_id",
@@ -561,12 +585,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "progress": {
           "name": "progress",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "error": {
+          "name": "error",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
         },
         "album_download_id": {
           "name": "album_download_id",

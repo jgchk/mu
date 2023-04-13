@@ -88,6 +88,7 @@ export class DownloadQueue {
           db.soundcloudTrackDownloads.insert({
             trackId: track.id,
             playlistDownloadId: dbPlaylist.id,
+            status: 'pending',
           })
 
         let scTrack = dbTrack.track
@@ -108,83 +109,94 @@ export class DownloadQueue {
   async downloadSoundcloudTrack(trackId: number): Promise<void> {
     const { db, sc } = this.getContext()
 
-    const dbTrack = db.soundcloudTrackDownloads.get(trackId)
+    try {
+      const dbTrack = db.soundcloudTrackDownloads.get(trackId)
 
-    if (dbTrack.progress === 100) {
-      return
-    }
+      if (dbTrack.status === 'done') {
+        return
+      }
 
-    let scTrack = dbTrack.track
-    if (!scTrack) {
-      scTrack = await sc.getTrack(dbTrack.trackId)
-      db.soundcloudTrackDownloads.update(trackId, { track: scTrack })
-    }
+      let scTrack = dbTrack.track
+      if (!scTrack) {
+        scTrack = await sc.getTrack(dbTrack.trackId)
+        db.soundcloudTrackDownloads.update(trackId, { track: scTrack })
+      }
 
-    const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack)
+      db.soundcloudTrackDownloads.update(trackId, {
+        status: 'downloading',
+        progress: dbTrack.progress ?? 0,
+      })
 
-    let filePath = dbTrack.path
-    if (!filePath) {
-      filePath = path.join(
-        this.downloadDir,
-        `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`
+      const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack)
+
+      let filePath = dbTrack.path
+      if (!filePath) {
+        filePath = path.join(
+          this.downloadDir,
+          `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`
+        )
+        db.soundcloudTrackDownloads.update(trackId, { path: filePath })
+      }
+
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+
+      const fileAlreadyExists = await fileExists(filePath)
+      if (fileAlreadyExists) {
+        await fs.promises.rm(filePath)
+      }
+
+      const fsPipe = fs.createWriteStream(filePath)
+      dlPipe.pipe(fsPipe)
+
+      await stream.promises.finished(fsPipe)
+
+      const { artists: trackArtists, title: trackTitle } = parseArtistTitle(scTrack.title)
+
+      const metadata: Metadata = {
+        title: trackTitle,
+        artists: trackArtists ?? [scTrack.user.username],
+        album: trackTitle,
+        albumArtists: trackArtists ?? [scTrack.user.username],
+        track: 1,
+      }
+
+      if (dbTrack.playlistDownloadId !== null) {
+        const dbPlaylist = db.soundcloudPlaylistDownloads.get(dbTrack.playlistDownloadId)
+
+        let scPlaylist = dbPlaylist.playlist
+        if (!scPlaylist) {
+          scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
+          db.soundcloudPlaylistDownloads.update(dbPlaylist.id, { playlist: scPlaylist })
+        }
+
+        const { artists: playlistArtists, title: playlistTitle } = parseArtistTitle(
+          scPlaylist.title
+        )
+
+        metadata.album = playlistTitle
+        metadata.albumArtists = playlistArtists ?? [scPlaylist.user.username]
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const trackIndex = scPlaylist.tracks.findIndex((track) => track.id === scTrack!.id)
+
+        if (trackIndex !== -1) {
+          metadata.track = trackIndex + 1
+        }
+      }
+
+      await writeTrackMetadata(filePath, metadata)
+
+      const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
+        Soundcloud.getLargestAvailableImage(artworkUrl)
       )
-      db.soundcloudTrackDownloads.update(trackId, { path: filePath })
-    }
-
-    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-    const fileAlreadyExists = await fileExists(filePath)
-    if (fileAlreadyExists) {
-      await fs.promises.rm(filePath)
-    }
-
-    const fsPipe = fs.createWriteStream(filePath)
-    dlPipe.pipe(fsPipe)
-
-    await stream.promises.finished(fsPipe)
-
-    const { artists: trackArtists, title: trackTitle } = parseArtistTitle(scTrack.title)
-
-    const metadata: Metadata = {
-      title: trackTitle,
-      artists: trackArtists ?? [scTrack.user.username],
-      album: trackTitle,
-      albumArtists: trackArtists ?? [scTrack.user.username],
-      track: 1,
-    }
-
-    if (dbTrack.playlistDownloadId !== null) {
-      const dbPlaylist = db.soundcloudPlaylistDownloads.get(dbTrack.playlistDownloadId)
-
-      let scPlaylist = dbPlaylist.playlist
-      if (!scPlaylist) {
-        scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
-        db.soundcloudPlaylistDownloads.update(dbPlaylist.id, { playlist: scPlaylist })
+      if (artwork) {
+        await writeTrackCoverArt(filePath, artwork)
       }
 
-      const { artists: playlistArtists, title: playlistTitle } = parseArtistTitle(scPlaylist.title)
-
-      metadata.album = playlistTitle
-      metadata.albumArtists = playlistArtists ?? [scPlaylist.user.username]
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const trackIndex = scPlaylist.tracks.findIndex((track) => track.id === scTrack!.id)
-
-      if (trackIndex !== -1) {
-        metadata.track = trackIndex + 1
-      }
+      db.soundcloudTrackDownloads.update(trackId, { progress: 100, status: 'done' })
+    } catch (error) {
+      db.soundcloudTrackDownloads.update(trackId, { status: 'error', error })
     }
-
-    await writeTrackMetadata(filePath, metadata)
-
-    const artwork = await ifNotNull(scTrack.artwork_url, (artworkUrl) =>
-      Soundcloud.getLargestAvailableImage(artworkUrl)
-    )
-    if (artwork) {
-      await writeTrackCoverArt(filePath, artwork)
-    }
-
-    db.soundcloudTrackDownloads.update(trackId, { progress: 100 })
   }
 
   async downloadSpotifyAlbum(albumId: number) {
@@ -207,6 +219,7 @@ export class DownloadQueue {
           db.spotifyTrackDownloads.insert({
             trackId: track.id,
             albumDownloadId: dbAlbum.id,
+            status: 'pending',
           })
 
         const spotTrack = dbTrack.track
@@ -226,92 +239,104 @@ export class DownloadQueue {
   async downloadSpotifyTrack(trackId: number) {
     const { db, sp } = this.getContext()
 
-    const dbTrack = db.spotifyTrackDownloads.get(trackId)
-
-    if (dbTrack.progress === 100) {
-      return
-    }
-
-    let spotTrack = dbTrack.track
-    if (!spotTrack) {
-      spotTrack = await sp.getTrack(dbTrack.trackId)
-      db.spotifyTrackDownloads.update(trackId, { track: spotTrack })
-    }
-
-    let filePath = dbTrack.path
-    if (!filePath) {
-      filePath = path.join(
-        this.downloadDir,
-        `spot-${spotTrack.id}-${Date.now()}-${randomInt(0, 10)}.ogg`
-      )
-      db.spotifyTrackDownloads.update(trackId, { path: filePath })
-    }
-
-    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-    const fileAlreadyExists = await fileExists(filePath)
-    if (fileAlreadyExists) {
-      await fs.promises.rm(filePath)
-    }
-
-    const fsPipe = fs.createWriteStream(filePath)
-    const dlPipe = sp.downloadTrack(spotTrack.id)
-    dlPipe.pipe(fsPipe)
-
-    await stream.promises.finished(fsPipe)
-
-    const isDownloadSize0 = await fs.promises.stat(filePath).then((stat) => stat.size === 0)
-    if (isDownloadSize0) {
-      throw new Error('Downloaded file is 0 bytes')
-    }
-
-    const metadata: Metadata = {
-      title: spotTrack.name,
-      artists: spotTrack.artists.map((artist) => artist.name),
-      album: spotTrack.name,
-      albumArtists: spotTrack.artists.map((artist) => artist.name),
-      track: 1,
-    }
-
-    let spotAlbum: SpotifySimplifiedAlbum
-    if (dbTrack.albumDownloadId !== null) {
-      const dbAlbum = db.spotifyAlbumDownloads.get(dbTrack.albumDownloadId)
-
-      let spotAlbum_ = dbAlbum.album
-      if (!spotAlbum_) {
-        spotAlbum_ = await sp.getAlbum(dbAlbum.albumId)
-        db.spotifyAlbumDownloads.update(dbAlbum.id, { album: spotAlbum_ })
-      }
-      spotAlbum = spotAlbum_
-
-      metadata.album = spotAlbum.name
-      metadata.albumArtists = spotAlbum.artists.map((artist) => artist.name)
-      metadata.track = spotTrack.track_number
-    } else {
-      const fullSpotTrack = await sp.getTrack(spotTrack.id)
-      spotAlbum = fullSpotTrack.album
-    }
-
     try {
-      await writeTrackMetadata(filePath, metadata)
-    } catch {
-      // OGG Files sometimes fail the first time then work the second time
-      await writeTrackMetadata(filePath, metadata)
-    }
+      const dbTrack = db.spotifyTrackDownloads.get(trackId)
 
-    const largestImage = spotAlbum.images
-      .sort((a, b) => b.width * b.height - a.width * a.height)
-      .at(0)
-    if (largestImage) {
-      const artwork = await got(largestImage.url).buffer()
+      if (dbTrack.status === 'done') {
+        return
+      }
+
+      let spotTrack = dbTrack.track
+      if (!spotTrack) {
+        spotTrack = await sp.getTrack(dbTrack.trackId)
+        db.spotifyTrackDownloads.update(trackId, { track: spotTrack })
+      }
+
+      db.spotifyTrackDownloads.update(trackId, {
+        status: 'downloading',
+        progress: dbTrack.progress ?? 0,
+      })
+
+      let filePath = dbTrack.path
+      if (!filePath) {
+        filePath = path.join(
+          this.downloadDir,
+          `spot-${spotTrack.id}-${Date.now()}-${randomInt(0, 10)}.ogg`
+        )
+        db.spotifyTrackDownloads.update(trackId, { path: filePath })
+      }
+
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+
+      const fileAlreadyExists = await fileExists(filePath)
+      if (fileAlreadyExists) {
+        await fs.promises.rm(filePath)
+      }
+
+      const fsPipe = fs.createWriteStream(filePath)
+      const dlPipe = sp.downloadTrack(spotTrack.id)
+      dlPipe.pipe(fsPipe)
+
+      await stream.promises.finished(fsPipe)
+
+      const isDownloadSize0 = await fs.promises.stat(filePath).then((stat) => stat.size === 0)
+      if (isDownloadSize0) {
+        throw new Error('Downloaded file is 0 bytes')
+      }
+
+      const metadata: Metadata = {
+        title: spotTrack.name,
+        artists: spotTrack.artists.map((artist) => artist.name),
+        album: spotTrack.name,
+        albumArtists: spotTrack.artists.map((artist) => artist.name),
+        track: 1,
+      }
+
+      let spotAlbum: SpotifySimplifiedAlbum
+      if (dbTrack.albumDownloadId !== null) {
+        const dbAlbum = db.spotifyAlbumDownloads.get(dbTrack.albumDownloadId)
+
+        let spotAlbum_ = dbAlbum.album
+        if (!spotAlbum_) {
+          spotAlbum_ = await sp.getAlbum(dbAlbum.albumId)
+          db.spotifyAlbumDownloads.update(dbAlbum.id, { album: spotAlbum_ })
+        }
+        spotAlbum = spotAlbum_
+
+        metadata.album = spotAlbum.name
+        metadata.albumArtists = spotAlbum.artists.map((artist) => artist.name)
+        metadata.track = spotTrack.track_number
+      } else {
+        const fullSpotTrack = await sp.getTrack(spotTrack.id)
+        spotAlbum = fullSpotTrack.album
+      }
+
       try {
-        await writeTrackCoverArt(filePath, artwork)
+        await writeTrackMetadata(filePath, metadata)
       } catch {
         // OGG Files sometimes fail the first time then work the second time
-        await writeTrackCoverArt(filePath, artwork)
+        await writeTrackMetadata(filePath, metadata)
       }
-    }
 
-    db.spotifyTrackDownloads.update(trackId, { progress: 100 })
+      const largestImage = spotAlbum.images
+        .sort((a, b) => b.width * b.height - a.width * a.height)
+        .at(0)
+      if (largestImage) {
+        const artwork = await got(largestImage.url).buffer()
+        try {
+          await writeTrackCoverArt(filePath, artwork)
+        } catch {
+          // OGG Files sometimes fail the first time then work the second time
+          await writeTrackCoverArt(filePath, artwork)
+        }
+      }
+
+      db.spotifyTrackDownloads.update(trackId, { progress: 100, status: 'done' })
+    } catch (error) {
+      console.log('e', error)
+      console.log('er', JSON.parse(JSON.stringify(error)))
+      console.log('err', JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error))))
+      db.spotifyTrackDownloads.update(trackId, { status: 'error', error })
+    }
   }
 }

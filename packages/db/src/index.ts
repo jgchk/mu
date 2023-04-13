@@ -454,7 +454,9 @@ export class Database {
         ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
         ...(data.track !== undefined ? { track: data.track } : {}),
         ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.status !== undefined ? { status: data.status } : {}),
         ...(data.progress !== undefined ? { progress: data.progress } : {}),
+        ...(data.error !== undefined ? { error: data.error } : {}),
         ...(data.playlistDownloadId !== undefined
           ? { playlistDownloadId: data.playlistDownloadId }
           : {}),
@@ -590,7 +592,14 @@ export class Database {
         ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
         ...(data.track !== undefined ? { track: data.track } : {}),
         ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.status !== undefined ? { status: data.status } : {}),
         ...(data.progress !== undefined ? { progress: data.progress } : {}),
+        ...(data.error !== undefined
+          ? {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              error: JSON.parse(JSON.stringify(data.error, Object.getOwnPropertyNames(data.error))),
+            }
+          : {}),
         ...(data.albumDownloadId !== undefined ? { albumDownloadId: data.albumDownloadId } : {}),
       }
       return this.db
@@ -730,7 +739,12 @@ export class Database {
         ...(data.username !== undefined ? { username: data.username } : {}),
         ...(data.file !== undefined ? { file: data.file } : {}),
         ...(data.path !== undefined ? { path: data.path } : {}),
+        ...(data.status !== undefined ? { status: data.status } : {}),
         ...(data.progress !== undefined ? { progress: data.progress } : {}),
+        ...(data.error !== undefined ? { error: data.error } : {}),
+        ...(data.releaseDownloadId !== undefined
+          ? { releaseDownloadId: data.releaseDownloadId }
+          : {}),
       }
       return this.db
         .update(soulseekTrackDownloads)

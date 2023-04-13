@@ -2,6 +2,7 @@
   import { tooltip } from '$lib/actions/tooltip'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
+  import { toErrorString } from '$lib/utils/error'
   import { sum } from '$lib/utils/math'
 
   import type {
@@ -58,10 +59,19 @@
       <div class="contents text-gray-400">
         <div class="truncate">{track.name ?? 'Loading...'}</div>
         <div class="text-right">
-          {#if track.progress === 100}
+          {#if track.status === 'done'}
             Complete
-          {:else if track.progress !== null}
-            Downloading... ({track.progress}%)
+          {:else if track.status === 'downloading'}
+            Downloading...{#if track.progress !== null} ({track.progress}%){/if}
+          {:else if track.status === 'error'}
+            <span
+              class="text-error-500"
+              use:tooltip={{
+                content: track.error !== undefined ? toErrorString(track.error) : 'Unknown error',
+              }}
+            >
+              Error
+            </span>
           {:else}
             Queued
           {/if}

@@ -50,7 +50,9 @@ CREATE TABLE `soulseek_track_downloads` (
 	`username` text NOT NULL,
 	`file` text NOT NULL,
 	`path` text,
+	`status` text NOT NULL,
 	`progress` integer,
+	`error` blob,
 	`release_download_id` integer,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`release_download_id`) REFERENCES `soulseek_release_downloads`(`id`)
@@ -68,7 +70,9 @@ CREATE TABLE `soundcloud_track_downloads` (
 	`track_id` integer NOT NULL,
 	`track` blob,
 	`path` text,
+	`status` text NOT NULL,
 	`progress` integer,
+	`error` blob,
 	`playlist_download_id` integer,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`playlist_download_id`) REFERENCES `soundcloud_playlist_downloads`(`id`)
@@ -86,7 +90,9 @@ CREATE TABLE `spotify_track_downloads` (
 	`track_id` text NOT NULL,
 	`track` blob,
 	`path` text,
+	`status` text NOT NULL,
 	`progress` integer,
+	`error` blob,
 	`album_download_id` integer,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`album_download_id`) REFERENCES `spotify_album_downloads`(`id`)

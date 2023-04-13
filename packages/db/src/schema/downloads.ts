@@ -6,6 +6,8 @@ import type {
   SimplifiedTrack as SpotifySimplifiedTrack,
 } from 'spotify'
 
+export type DownloadStatus = 'pending' | 'downloading' | 'done' | 'error'
+
 export type SoundcloudPlaylistDownload = InferModel<typeof soundcloudPlaylistDownloads>
 export type InsertSoundcloudPlaylistDownload = InferModel<
   typeof soundcloudPlaylistDownloads,
@@ -35,7 +37,9 @@ export const soundcloudTrackDownloads = sqliteTable(
     trackId: integer('track_id').notNull(),
     track: blob('track', { mode: 'json' }).$type<SoundcloudFullTrack>(),
     path: text('path'),
+    status: text('status').$type<DownloadStatus>().notNull(),
     progress: integer('progress'),
+    error: blob('error', { mode: 'json' }),
     playlistDownloadId: integer('playlist_download_id').references(
       () => soundcloudPlaylistDownloads.id
     ),
@@ -73,7 +77,9 @@ export const spotifyTrackDownloads = sqliteTable(
     trackId: text('track_id').notNull(),
     track: blob('track', { mode: 'json' }).$type<SpotifySimplifiedTrack>(),
     path: text('path'),
+    status: text('status').$type<DownloadStatus>().notNull(),
     progress: integer('progress'),
+    error: blob('error', { mode: 'json' }),
     albumDownloadId: integer('album_download_id').references(() => spotifyAlbumDownloads.id),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
@@ -112,7 +118,9 @@ export const soulseekTrackDownloads = sqliteTable(
     username: text('username').notNull(),
     file: text('file').notNull(),
     path: text('path'),
+    status: text('status').$type<DownloadStatus>().notNull(),
     progress: integer('progress'),
+    error: blob('error', { mode: 'json' }),
     releaseDownloadId: integer('release_download_id').references(() => soulseekReleaseDownloads.id),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },

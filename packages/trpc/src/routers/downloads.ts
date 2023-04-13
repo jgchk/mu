@@ -53,7 +53,7 @@ export const downloadsRouter = router({
           case 'track': {
             const dbTrack =
               ctx.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(input.id, null) ??
-              ctx.db.soundcloudTrackDownloads.insert({ trackId: input.id })
+              ctx.db.soundcloudTrackDownloads.insert({ trackId: input.id, status: 'pending' })
             void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
@@ -71,7 +71,7 @@ export const downloadsRouter = router({
           case 'track': {
             const dbTrack =
               ctx.db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(input.id, null) ??
-              ctx.db.spotifyTrackDownloads.insert({ trackId: input.id })
+              ctx.db.spotifyTrackDownloads.insert({ trackId: input.id, status: 'pending' })
             void ctx.dl.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
@@ -85,6 +85,7 @@ export const downloadsRouter = router({
               ctx.db.soulseekTrackDownloads.insert({
                 username: input.username,
                 file: input.file,
+                status: 'pending',
               })
             void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
@@ -116,6 +117,7 @@ export const downloadsRouter = router({
                   username: track.username,
                   file: track.file,
                   releaseDownloadId: dbRelease.id,
+                  status: 'pending',
                 })
             )
             for (const dbTrack of dbTracks) {
@@ -145,7 +147,9 @@ export const downloadsRouter = router({
               service: 'soundcloud',
               id: track.id,
               parentId: track.playlistDownloadId,
+              status: track.status,
               progress: track.progress,
+              error: track.error,
               name: track.track?.title,
               createdAt: track.createdAt,
             } as const)
@@ -165,7 +169,9 @@ export const downloadsRouter = router({
               service: 'spotify',
               id: track.id,
               parentId: track.albumDownloadId,
+              status: track.status,
               progress: track.progress,
+              error: track.error,
               name: track.track?.name,
               createdAt: track.createdAt,
             } as const)
@@ -185,7 +191,9 @@ export const downloadsRouter = router({
               service: 'soulseek',
               id: track.id,
               parentId: track.releaseDownloadId,
+              status: track.status,
               progress: track.progress,
+              error: track.error,
               filename: track.file,
               dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
               name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
