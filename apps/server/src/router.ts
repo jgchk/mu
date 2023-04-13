@@ -13,6 +13,7 @@ import { appRouter } from 'trpc'
 import { z } from 'zod'
 
 import { ctx } from './context'
+import { db } from './context/db'
 
 type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -68,7 +69,7 @@ const makeRouter = () => {
     })
     .get('/api/tracks/:id/stream', (req, res) => {
       const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
-      const track = ctx.db.tracks.get(id)
+      const track = db.tracks.get(id)
       const stream = fs.createReadStream(track.path)
       stream.pipe(res)
     })
@@ -87,7 +88,7 @@ const makeRouter = () => {
           return
         }
 
-        const fileDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(id)
+        const fileDownloads = db.soulseekTrackDownloads.getByReleaseDownloadId(id)
         const completeDownloads = fileDownloads.filter(isDownloadComplete)
 
         if (completeDownloads.length !== fileDownloads.length) {
@@ -146,11 +147,11 @@ const makeRouter = () => {
 
         let fileDownload
         if (service === 'soundcloud') {
-          fileDownload = ctx.db.soundcloudTrackDownloads.get(id)
+          fileDownload = db.soundcloudTrackDownloads.get(id)
         } else if (service === 'spotify') {
-          fileDownload = ctx.db.spotifyTrackDownloads.get(id)
+          fileDownload = db.spotifyTrackDownloads.get(id)
         } else if (service === 'soulseek') {
-          fileDownload = ctx.db.soulseekTrackDownloads.get(id)
+          fileDownload = db.soulseekTrackDownloads.get(id)
         } else {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           res.status(400).send(`Invalid service: ${service}`)
@@ -190,7 +191,7 @@ const makeRouter = () => {
           })
           .parse(req.query)
 
-        const track = ctx.db.tracks.get(id)
+        const track = db.tracks.get(id)
         if (!track.coverArtHash) {
           throw new Error('Track does not have cover art')
         }
@@ -220,8 +221,8 @@ const makeRouter = () => {
           })
           .parse(req.query)
 
-        const release = ctx.db.releases.get(id)
-        const tracks = ctx.db.tracks.getByReleaseId(release.id)
+        const release = db.releases.get(id)
+        const tracks = db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {
           if (track.coverArtHash) {

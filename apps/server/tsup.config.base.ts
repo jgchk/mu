@@ -46,6 +46,7 @@ const config: Options = {
     }
   },
   esbuildPlugins: [dirnamePlugin],
+  clean: true,
 }
 
 export default config

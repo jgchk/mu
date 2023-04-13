@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url'
 import { WebSocketServer } from 'ws'
 
 import { ctx } from './context'
+import { db } from './context/db'
+import { dl } from './context/dl'
+import { slsk } from './context/slsk'
 import { env } from './env'
 import { router } from './router'
 
@@ -26,20 +29,20 @@ const main = async () => {
   await bree.start()
 
   // Resume downloads
-  for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+  for (const download of db.soundcloudPlaylistDownloads.getAll()) {
+    void dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
-  for (const download of ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
+  for (const download of db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
+    void dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
-  for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
-    void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
+  for (const download of db.spotifyAlbumDownloads.getAll()) {
+    void dl.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
-  for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
-    void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
+  for (const download of db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
+    void dl.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
-  for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
+  for (const download of db.soulseekTrackDownloads.getAll()) {
+    void dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
   const app = express().use(cors()).use(router)
@@ -68,7 +71,9 @@ const main = async () => {
     trpcWsHandler.broadcastReconnectNotification()
     wss.close()
     server.close()
-    ctx.destroy()
+    db.close()
+    dl.close()
+    slsk.destroy()
   })
 }
 

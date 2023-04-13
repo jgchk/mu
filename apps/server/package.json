@@ -30,7 +30,7 @@
     "mime-types": "^2.1.35",
     "music-metadata": "workspace:*",
     "sharp": "^0.31.3",
-    "soulseek-ts": "link:../../../soulseek-ts",
+    "soulseek-ts": "^2.1.1",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "string-similarity": "^4.0.4",
