@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { getTimeSinceShort, toErrorString, toPrettyDate } from 'utils'
+  import { getTimeSinceShort, sum, toErrorString, toPrettyDate } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
-  import { sum } from '$lib/utils/math'
 
   import type {
     GroupDownload as GroupDownloadType,
