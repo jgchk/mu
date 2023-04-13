@@ -8,11 +8,11 @@ import path from 'path'
 import { Soundcloud } from 'soundcloud'
 import type { SimplifiedAlbum as SpotifySimplifiedAlbum } from 'spotify'
 import stream from 'stream'
+import { ifNotNull } from 'utils'
 
 import type { Context } from '.'
 import { uniqBy } from './utils/array'
 import { fileExists } from './utils/fs'
-import { ifNotNull } from './utils/types'
 
 export type Task = SoundcloudTask | SpotifyTask
 

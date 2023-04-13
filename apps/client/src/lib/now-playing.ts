@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store'
-
-import { ifDefined } from './utils/types'
+import { ifDefined } from 'utils'
 
 export type NowPlaying = {
   track?: {

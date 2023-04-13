@@ -4,9 +4,9 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { isNotNull } from 'utils'
 
   import { cn } from '$lib/utils/classes'
-  import { isNotNull } from '$lib/utils/types'
 
   export let id = `file-drop-${Date.now()}-${currId++}`
   export let multiple = false

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import type { Timeout } from 'utils'
 
   import { goto } from '$app/navigation'
   import { navigating, page } from '$app/stores'
@@ -8,7 +9,6 @@
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
   import { cn } from '$lib/utils/classes'
-  import type { Timeout } from '$lib/utils/types'
 
   import NavLink from './NavLink.svelte'
 

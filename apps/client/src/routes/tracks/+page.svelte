@@ -1,5 +1,6 @@
 <script lang="ts">
   import { inview } from 'svelte-inview'
+  import { ifDefined } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
@@ -15,7 +16,6 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
   import { formatMilliseconds } from '$lib/utils/date'
-  import { ifDefined } from '$lib/utils/types'
 
   import type { PageData } from './$types'
   import { makeTracksQueryInput } from './common'

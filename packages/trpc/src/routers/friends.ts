@@ -1,7 +1,8 @@
+import { ifDefined } from 'utils'
+
 import { publicProcedure, router } from '../trpc'
 import { withinLastMinutes } from '../utils/date'
 import { undefIfEmpty } from '../utils/string'
-import { ifDefined } from '../utils/types'
 
 type LastTrack = {
   title: string

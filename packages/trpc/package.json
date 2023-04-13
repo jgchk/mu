@@ -31,6 +31,7 @@
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "superjson": "^1.12.2",
+    "utils": "workspace:*",
     "zod": "^3.21.4"
   }
 }

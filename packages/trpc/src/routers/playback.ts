@@ -1,7 +1,7 @@
+import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { ifNotNull } from '../utils/types'
 
 export const playbackRouter = router({
   updateNowPlaying: publicProcedure

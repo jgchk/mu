@@ -1,5 +1,5 @@
 {
-  "name": "soundcloud",
+  "name": "utils",
   "version": "0.0.0",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -9,11 +9,6 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "dependencies": {
-    "execa": "^7.1.1",
-    "file-type": "^18.2.1",
-    "got": "^12.6.0",
-    "m3u8-parser": "^6.0.0",
-    "utils": "workspace:*",
-    "zod": "^3.21.4"
+    "fast-deep-equal": "^3.1.3"
   }
 }

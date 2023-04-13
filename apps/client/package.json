@@ -28,6 +28,7 @@
     "tippy.js": "^6.3.7",
     "trpc": "workspace:*",
     "ui": "workspace:*",
+    "utils": "workspace:*",
     "zod": "^3.21.4"
   },
   "devDependencies": {

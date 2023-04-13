@@ -20,6 +20,7 @@
     "soulseek-ts": "^2.1.2",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
+    "utils": "workspace:*",
     "zod": "^3.21.4"
   }
 }
