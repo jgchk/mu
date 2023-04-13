@@ -6,3 +6,7 @@ export function regexLastIndexOf(str: string, regex: RegExp) {
   const lastMatch = matches[matches.length - 1]
   return str.lastIndexOf(lastMatch)
 }
+
+export const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}

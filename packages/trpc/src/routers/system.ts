@@ -2,10 +2,10 @@ import { publicProcedure, router } from '../trpc'
 
 export const systemRouter = router({
   status: publicProcedure.query(({ ctx }) => {
-    let soulseekStatus: 'stopped' | 'starting' | 'logged-in'
+    let soulseekStatus: 'stopped' | 'starting' | 'running'
     if (ctx.slsk) {
       if (ctx.slsk.loggedIn) {
-        soulseekStatus = 'logged-in'
+        soulseekStatus = 'running'
       } else {
         soulseekStatus = 'starting'
       }
