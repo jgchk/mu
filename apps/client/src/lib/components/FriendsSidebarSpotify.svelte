@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition'
+
   import Loader from '$lib/atoms/Loader.svelte'
   import { createSpotifyFriendsQuery } from '$lib/services/friends'
   import { getContextClient } from '$lib/trpc'
 
+  import Delay from './Delay.svelte'
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
 
   const trpc = getContextClient()
@@ -16,9 +19,9 @@
     {$friendsQuery.error.message}
   </div>
 {:else}
-  <div class="flex h-full flex-col items-center">
-    <div class="h-[40%] max-h-16" />
-    <Loader class="h-10 w-10 text-gray-600" />
-    <div class="h-[40%] max-h-16" />
-  </div>
+  <Delay>
+    <div class="flex h-full max-h-72 items-center justify-center" in:fade|local>
+      <Loader class="h-10 w-10 text-gray-600" />
+    </div>
+  </Delay>
 {/if}

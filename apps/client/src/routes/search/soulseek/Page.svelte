@@ -90,7 +90,7 @@
   {#key data.query}
     {#if soulseekData.length === 0}
       <Delay>
-        <div class="flex h-full max-h-72 items-center justify-center" in:fade>
+        <div class="flex h-full max-h-72 items-center justify-center" in:fade|local>
           <Loader class="h-10 w-10 text-gray-600" />
         </div>
       </Delay>

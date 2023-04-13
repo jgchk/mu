@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import type { Timeout } from 'utils'
+  import { fade } from 'svelte/transition'
 
   import { goto } from '$app/navigation'
   import { navigating, page } from '$app/stores'
@@ -8,8 +8,8 @@
   import Loader from '$lib/atoms/Loader.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
-  import { cn } from '$lib/utils/classes'
 
+  import Delay from './Delay.svelte'
   import NavLink from './NavLink.svelte'
 
   let query = ''
@@ -21,27 +21,6 @@
   })
 
   let input: HTMLInputElement | undefined
-
-  const DELAYED_NAV_THRESHOLD = 500
-  let delayedNavTimeout: Timeout | undefined
-  let delayedNav = false
-  $: {
-    if ($navigating) {
-      if (delayedNavTimeout) {
-        clearTimeout(delayedNavTimeout)
-      }
-      delayedNavTimeout = setTimeout(() => {
-        delayedNavTimeout = undefined
-        delayedNav = true
-      }, DELAYED_NAV_THRESHOLD)
-    } else {
-      if (delayedNavTimeout) {
-        clearTimeout(delayedNavTimeout)
-        delayedNavTimeout = undefined
-      }
-      delayedNav = false
-    }
-  }
 </script>
 
 <nav class="flex items-center rounded bg-black p-2 px-3 text-white">
@@ -89,10 +68,15 @@
     <button type="submit" class="hidden">Search</button>
   </form>
 
-  <div
-    class={cn('ml-auto transition', delayedNav ? 'opacity-100' : 'pointer-events-none opacity-0')}
-    use:tooltip={{ content: 'Navigating...' }}
-  >
-    <Loader class="text-primary-500 h-6 w-6" />
-  </div>
+  {#if $navigating}
+    <Delay>
+      <div
+        class="pointer-events-none ml-auto"
+        use:tooltip={{ content: 'Navigating...' }}
+        in:fade|local
+      >
+        <Loader class="text-primary-500 h-6 w-6" />
+      </div>
+    </Delay>
+  {/if}
 </nav>
