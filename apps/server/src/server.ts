@@ -8,12 +8,9 @@ import { appRouter } from 'trpc'
 import { fileURLToPath } from 'url'
 import { WebSocketServer } from 'ws'
 
-import { ctx } from './context'
-import { db } from './context/db'
-import { dl } from './context/dl'
-import { slsk } from './context/slsk'
+import { makeContext } from './context'
 import { env } from './env'
-import { router } from './router'
+import { makeRouter } from './router'
 
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
@@ -28,24 +25,26 @@ const main = async () => {
   })
   await bree.start()
 
+  const ctx = await makeContext()
+
   // Resume downloads
-  for (const download of db.soundcloudPlaylistDownloads.getAll()) {
-    void dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+  for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
+    void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
-  for (const download of db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
+  for (const download of ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
+    void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
-  for (const download of db.spotifyAlbumDownloads.getAll()) {
-    void dl.download({ service: 'spotify', type: 'album', dbId: download.id })
+  for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
+    void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
-  for (const download of db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
-    void dl.download({ service: 'spotify', type: 'track', dbId: download.id })
+  for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
+    void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
-  for (const download of db.soulseekTrackDownloads.getAll()) {
-    void dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
+  for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
+    void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
-  const app = express().use(cors()).use(router)
+  const app = express().use(cors()).use(makeRouter(ctx))
 
   const server = app.listen({ port: env.SERVER_PORT }, () => {
     console.log(`> Running on localhost:${env.SERVER_PORT}`)
@@ -71,9 +70,7 @@ const main = async () => {
     trpcWsHandler.broadcastReconnectNotification()
     wss.close()
     server.close()
-    db.close()
-    dl.close()
-    slsk.destroy()
+    ctx.destroy()
   })
 }
 

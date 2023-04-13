@@ -9,11 +9,9 @@ import mime from 'mime-types'
 import { readTrackCoverArt } from 'music-metadata'
 import path from 'path'
 import sharp from 'sharp'
+import type { Context } from 'trpc'
 import { appRouter } from 'trpc'
 import { z } from 'zod'
-
-import { ctx } from './context'
-import { db } from './context/db'
 
 type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -53,7 +51,7 @@ const handleResize = async (
   }
 }
 
-const makeRouter = () => {
+export const makeRouter = (ctx: Context) => {
   const router = Router()
 
   router
@@ -69,7 +67,7 @@ const makeRouter = () => {
     })
     .get('/api/tracks/:id/stream', (req, res) => {
       const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
-      const track = db.tracks.get(id)
+      const track = ctx.db.tracks.get(id)
       const stream = fs.createReadStream(track.path)
       stream.pipe(res)
     })
@@ -88,7 +86,7 @@ const makeRouter = () => {
           return
         }
 
-        const fileDownloads = db.soulseekTrackDownloads.getByReleaseDownloadId(id)
+        const fileDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(id)
         const completeDownloads = fileDownloads.filter(isDownloadComplete)
 
         if (completeDownloads.length !== fileDownloads.length) {
@@ -147,11 +145,11 @@ const makeRouter = () => {
 
         let fileDownload
         if (service === 'soundcloud') {
-          fileDownload = db.soundcloudTrackDownloads.get(id)
+          fileDownload = ctx.db.soundcloudTrackDownloads.get(id)
         } else if (service === 'spotify') {
-          fileDownload = db.spotifyTrackDownloads.get(id)
+          fileDownload = ctx.db.spotifyTrackDownloads.get(id)
         } else if (service === 'soulseek') {
-          fileDownload = db.soulseekTrackDownloads.get(id)
+          fileDownload = ctx.db.soulseekTrackDownloads.get(id)
         } else {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           res.status(400).send(`Invalid service: ${service}`)
@@ -191,7 +189,7 @@ const makeRouter = () => {
           })
           .parse(req.query)
 
-        const track = db.tracks.get(id)
+        const track = ctx.db.tracks.get(id)
         if (!track.coverArtHash) {
           throw new Error('Track does not have cover art')
         }
@@ -221,8 +219,8 @@ const makeRouter = () => {
           })
           .parse(req.query)
 
-        const release = db.releases.get(id)
-        const tracks = db.tracks.getByReleaseId(release.id)
+        const release = ctx.db.releases.get(id)
+        const tracks = ctx.db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {
           if (track.coverArtHash) {
@@ -246,5 +244,3 @@ const makeRouter = () => {
 
   return router
 }
-
-export const router = makeRouter()

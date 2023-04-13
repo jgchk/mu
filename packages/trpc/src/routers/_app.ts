@@ -6,6 +6,7 @@ import { importRouter } from './import'
 import { playbackRouter } from './playback'
 import { releasesRouter } from './releases'
 import { searchRouter } from './search'
+import { systemRouter } from './system'
 import { tracksRouter } from './tracks'
 
 export const appRouter = router({
@@ -17,6 +18,7 @@ export const appRouter = router({
   search: searchRouter,
   friends: friendsRouter,
   playback: playbackRouter,
+  system: systemRouter,
 })
 
 export type AppRouter = typeof appRouter

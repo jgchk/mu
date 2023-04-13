@@ -26,32 +26,24 @@ export type SoulseekDownload = {
   dbId: number
 }
 
+export type Context = {
+  db: Database
+  sc: Soundcloud
+  sp: Spotify
+  slsk: SlskClient | undefined
+}
+
 export class Downloader {
   private queue: DownloadQueue
   private soulseek: SoulseekDownloadManager
 
-  constructor({
-    db,
-    sc,
-    sp,
-    slsk,
-    downloadDir,
-  }: {
-    db: Database
-    sc: Soundcloud
-    sp: Spotify
-    slsk: SlskClient
-    downloadDir: string
-  }) {
+  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
     this.queue = new DownloadQueue({
-      db,
-      sc,
-      sp,
+      getContext,
       downloadDir,
     })
     this.soulseek = new SoulseekDownloadManager({
-      slsk,
-      db,
+      getContext,
       downloadDir,
     })
   }

@@ -1,5 +1,4 @@
 import { randomInt } from 'crypto'
-import type { Database } from 'db'
 import fastq from 'fastq'
 import fs from 'fs'
 import got from 'got'
@@ -7,9 +6,10 @@ import type { Metadata } from 'music-metadata'
 import { parseArtistTitle, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { Soundcloud } from 'soundcloud'
-import type { SimplifiedAlbum as SpotifySimplifiedAlbum, Spotify } from 'spotify'
+import type { SimplifiedAlbum as SpotifySimplifiedAlbum } from 'spotify'
 import stream from 'stream'
 
+import type { Context } from '.'
 import { uniqBy } from './utils/array'
 import { fileExists } from './utils/fs'
 import { ifNotNull } from './utils/types'
@@ -30,25 +30,11 @@ export type SpotifyTask = {
 
 export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>
-  private db: Database
-  private sc: Soundcloud
-  private sp: Spotify
   private downloadDir: string
+  private getContext: () => Context
 
-  constructor({
-    db,
-    sc,
-    sp,
-    downloadDir,
-  }: {
-    db: Database
-    sc: Soundcloud
-    sp: Spotify
-    downloadDir: string
-  }) {
-    this.db = db
-    this.sc = sc
-    this.sp = sp
+  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
+    this.getContext = getContext
     this.downloadDir = downloadDir
     this.q = fastq.promise(this.worker.bind(this), 10)
     this.q.error((err, task) => {
@@ -67,14 +53,16 @@ export class DownloadQueue {
   }
 
   private async worker(task: Task) {
+    const { db, sc, sp } = this.getContext()
+
     if (task.service === 'soundcloud') {
       if (task.type === 'playlist') {
-        const dbPlaylist = this.db.soundcloudPlaylistDownloads.get(task.dbId)
+        const dbPlaylist = db.soundcloudPlaylistDownloads.get(task.dbId)
 
         let scPlaylist = dbPlaylist.playlist
         if (!scPlaylist) {
-          scPlaylist = await this.sc.getPlaylist(dbPlaylist.playlistId)
-          this.db.soundcloudPlaylistDownloads.update(task.dbId, { playlist: scPlaylist })
+          scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
+          db.soundcloudPlaylistDownloads.update(task.dbId, { playlist: scPlaylist })
         }
 
         const tracks = uniqBy(scPlaylist.tracks, (track) => track.id)
@@ -82,19 +70,19 @@ export class DownloadQueue {
         const dbTracks = await Promise.all(
           tracks.map(async (track) => {
             const dbTrack =
-              this.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(
+              db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(
                 track.id,
                 dbPlaylist.id
               ) ??
-              this.db.soundcloudTrackDownloads.insert({
+              db.soundcloudTrackDownloads.insert({
                 trackId: track.id,
                 playlistDownloadId: dbPlaylist.id,
               })
 
             let scTrack = dbTrack.track
             if (!scTrack) {
-              scTrack = await this.sc.getTrack(dbTrack.trackId)
-              this.db.soundcloudTrackDownloads.update(dbTrack.id, { track: scTrack })
+              scTrack = await sc.getTrack(dbTrack.trackId)
+              db.soundcloudTrackDownloads.update(dbTrack.id, { track: scTrack })
             }
 
             return dbTrack
@@ -105,7 +93,7 @@ export class DownloadQueue {
           void this.q.push({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
         }
       } else if (task.type === 'track') {
-        const dbTrack = this.db.soundcloudTrackDownloads.get(task.dbId)
+        const dbTrack = db.soundcloudTrackDownloads.get(task.dbId)
 
         if (dbTrack.progress === 100) {
           return
@@ -113,11 +101,11 @@ export class DownloadQueue {
 
         let scTrack = dbTrack.track
         if (!scTrack) {
-          scTrack = await this.sc.getTrack(dbTrack.trackId)
-          this.db.soundcloudTrackDownloads.update(task.dbId, { track: scTrack })
+          scTrack = await sc.getTrack(dbTrack.trackId)
+          db.soundcloudTrackDownloads.update(task.dbId, { track: scTrack })
         }
 
-        const { pipe: dlPipe, extension } = await this.sc.downloadTrack(scTrack)
+        const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack)
 
         let filePath = dbTrack.path
         if (!filePath) {
@@ -125,7 +113,7 @@ export class DownloadQueue {
             this.downloadDir,
             `sc-${scTrack.id}-${Date.now()}-${randomInt(0, 10)}.${extension}`
           )
-          this.db.soundcloudTrackDownloads.update(task.dbId, { path: filePath })
+          db.soundcloudTrackDownloads.update(task.dbId, { path: filePath })
         }
 
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
@@ -151,12 +139,12 @@ export class DownloadQueue {
         }
 
         if (dbTrack.playlistDownloadId !== null) {
-          const dbPlaylist = this.db.soundcloudPlaylistDownloads.get(dbTrack.playlistDownloadId)
+          const dbPlaylist = db.soundcloudPlaylistDownloads.get(dbTrack.playlistDownloadId)
 
           let scPlaylist = dbPlaylist.playlist
           if (!scPlaylist) {
-            scPlaylist = await this.sc.getPlaylist(dbPlaylist.playlistId)
-            this.db.soundcloudPlaylistDownloads.update(dbPlaylist.id, { playlist: scPlaylist })
+            scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
+            db.soundcloudPlaylistDownloads.update(dbPlaylist.id, { playlist: scPlaylist })
           }
 
           const { artists: playlistArtists, title: playlistTitle } = parseArtistTitle(
@@ -183,32 +171,32 @@ export class DownloadQueue {
           await writeTrackCoverArt(filePath, artwork)
         }
 
-        this.db.soundcloudTrackDownloads.update(task.dbId, { progress: 100 })
+        db.soundcloudTrackDownloads.update(task.dbId, { progress: 100 })
       }
     } else if (task.service === 'spotify') {
       if (task.type === 'album') {
-        const dbAlbum = this.db.spotifyAlbumDownloads.get(task.dbId)
+        const dbAlbum = db.spotifyAlbumDownloads.get(task.dbId)
 
         let spotAlbum = dbAlbum.album
         if (!spotAlbum) {
-          spotAlbum = await this.sp.getAlbum(dbAlbum.albumId)
-          this.db.spotifyAlbumDownloads.update(task.dbId, { album: spotAlbum })
+          spotAlbum = await sp.getAlbum(dbAlbum.albumId)
+          db.spotifyAlbumDownloads.update(task.dbId, { album: spotAlbum })
         }
 
-        const tracks = await this.sp.getAlbumTracks(spotAlbum.id)
+        const tracks = await sp.getAlbumTracks(spotAlbum.id)
 
         const dbTracks = await Promise.all(
           tracks.map((track) => {
             const dbTrack =
-              this.db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(track.id, dbAlbum.id) ??
-              this.db.spotifyTrackDownloads.insert({
+              db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(track.id, dbAlbum.id) ??
+              db.spotifyTrackDownloads.insert({
                 trackId: track.id,
                 albumDownloadId: dbAlbum.id,
               })
 
             const spotTrack = dbTrack.track
             if (!spotTrack) {
-              this.db.spotifyTrackDownloads.update(dbTrack.id, { track: track })
+              db.spotifyTrackDownloads.update(dbTrack.id, { track: track })
             }
 
             return dbTrack
@@ -219,7 +207,7 @@ export class DownloadQueue {
           void this.q.push({ service: 'spotify', type: 'track', dbId: dbTrack.id })
         }
       } else if (task.type === 'track') {
-        const dbTrack = this.db.spotifyTrackDownloads.get(task.dbId)
+        const dbTrack = db.spotifyTrackDownloads.get(task.dbId)
 
         if (dbTrack.progress === 100) {
           return
@@ -227,8 +215,8 @@ export class DownloadQueue {
 
         let spotTrack = dbTrack.track
         if (!spotTrack) {
-          spotTrack = await this.sp.getTrack(dbTrack.trackId)
-          this.db.spotifyTrackDownloads.update(task.dbId, { track: spotTrack })
+          spotTrack = await sp.getTrack(dbTrack.trackId)
+          db.spotifyTrackDownloads.update(task.dbId, { track: spotTrack })
         }
 
         let filePath = dbTrack.path
@@ -237,7 +225,7 @@ export class DownloadQueue {
             this.downloadDir,
             `spot-${spotTrack.id}-${Date.now()}-${randomInt(0, 10)}.ogg`
           )
-          this.db.spotifyTrackDownloads.update(task.dbId, { path: filePath })
+          db.spotifyTrackDownloads.update(task.dbId, { path: filePath })
         }
 
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
@@ -248,7 +236,7 @@ export class DownloadQueue {
         }
 
         const fsPipe = fs.createWriteStream(filePath)
-        const dlPipe = this.sp.downloadTrack(spotTrack.id)
+        const dlPipe = sp.downloadTrack(spotTrack.id)
         dlPipe.pipe(fsPipe)
 
         await stream.promises.finished(fsPipe)
@@ -268,12 +256,12 @@ export class DownloadQueue {
 
         let spotAlbum: SpotifySimplifiedAlbum
         if (dbTrack.albumDownloadId !== null) {
-          const dbAlbum = this.db.spotifyAlbumDownloads.get(dbTrack.albumDownloadId)
+          const dbAlbum = db.spotifyAlbumDownloads.get(dbTrack.albumDownloadId)
 
           let spotAlbum_ = dbAlbum.album
           if (!spotAlbum_) {
-            spotAlbum_ = await this.sp.getAlbum(dbAlbum.albumId)
-            this.db.spotifyAlbumDownloads.update(dbAlbum.id, { album: spotAlbum_ })
+            spotAlbum_ = await sp.getAlbum(dbAlbum.albumId)
+            db.spotifyAlbumDownloads.update(dbAlbum.id, { album: spotAlbum_ })
           }
           spotAlbum = spotAlbum_
 
@@ -281,7 +269,7 @@ export class DownloadQueue {
           metadata.albumArtists = spotAlbum.artists.map((artist) => artist.name)
           metadata.track = spotTrack.track_number
         } else {
-          const fullSpotTrack = await this.sp.getTrack(spotTrack.id)
+          const fullSpotTrack = await sp.getTrack(spotTrack.id)
           spotAlbum = fullSpotTrack.album
         }
 
@@ -305,7 +293,7 @@ export class DownloadQueue {
           }
         }
 
-        this.db.spotifyTrackDownloads.update(task.dbId, { progress: 100 })
+        db.spotifyTrackDownloads.update(task.dbId, { progress: 100 })
       }
     }
   }

@@ -1,9 +1,8 @@
 import crypto from 'crypto'
-import type { Database } from 'db'
 import fs from 'fs'
 import path from 'path'
-import type { SlskClient } from 'soulseek-ts'
 
+import type { Context } from '.'
 import { fileExists } from './utils/fs'
 
 export type SoulseekDownload = {
@@ -13,26 +12,29 @@ export type SoulseekDownload = {
 }
 
 export class SoulseekDownloadManager {
-  private slsk: SlskClient
-  private db: Database
+  private getContext: () => Context
   private downloadDir: string
   private openFiles: Map<number, fs.WriteStream>
 
-  constructor({ slsk, db, downloadDir }: { slsk: SlskClient; db: Database; downloadDir: string }) {
-    this.slsk = slsk
-    this.db = db
+  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
+    this.getContext = getContext
     this.downloadDir = downloadDir
     this.openFiles = new Map()
   }
 
   async downloadTrack(dbId: number) {
+    const { slsk, db } = this.getContext()
+    if (!slsk) {
+      throw new Error('Soulseek is not running')
+    }
+
     const existingPipe = this.openFiles.get(dbId)
     if (existingPipe) {
       console.error('Already downloading track', dbId)
       return
     }
 
-    const dbTrack = this.db.soulseekTrackDownloads.get(dbId)
+    const dbTrack = db.soulseekTrackDownloads.get(dbId)
 
     if (dbTrack.progress === 100) {
       console.error('Track already downloaded', dbId)
@@ -48,7 +50,7 @@ export class SoulseekDownloadManager {
       const extension = path.extname(dbTrack.file)
       const fileName = `slsk-${hashedFile}-${Date.now()}-${crypto.randomInt(0, 10)}${extension}`
       filePath = path.join(this.downloadDir, fileName)
-      this.db.soulseekTrackDownloads.update(dbId, { path: filePath })
+      db.soulseekTrackDownloads.update(dbId, { path: filePath })
     }
 
     await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
@@ -59,7 +61,7 @@ export class SoulseekDownloadManager {
       downloadedBytes = (await fs.promises.stat(filePath)).size
     }
 
-    const slskDownload = await this.slsk.download(dbTrack.username, dbTrack.file, downloadedBytes)
+    const slskDownload = await slsk.download(dbTrack.username, dbTrack.file, downloadedBytes)
 
     const fsPipe = fs.createWriteStream(filePath)
     this.openFiles.set(dbId, fsPipe)
@@ -67,11 +69,11 @@ export class SoulseekDownloadManager {
 
     slskDownload.events
       .on('progress', ({ progress }) => {
-        this.db.soulseekTrackDownloads.update(dbId, { progress: Math.floor(progress * 100) })
+        db.soulseekTrackDownloads.update(dbId, { progress: Math.floor(progress * 100) })
       })
       .on('complete', () => {
         this.openFiles.delete(dbId)
-        this.db.soulseekTrackDownloads.update(dbId, { progress: 100 })
+        db.soulseekTrackDownloads.update(dbId, { progress: 100 })
       })
   }
 

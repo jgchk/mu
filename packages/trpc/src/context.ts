@@ -10,7 +10,13 @@ export type Context = {
   dl: Downloader
   sc: Soundcloud
   sp: Spotify
-  slsk: SlskClient
+  slsk: SlskClient | undefined
   lfm: LastFMAuthenticated
   musicDir: string
+
+  startSoulseek: () => Promise<void>
+  stopSoulseek: () => void
+  restartSoulseek: () => Promise<void>
+
+  destroy: () => void
 }

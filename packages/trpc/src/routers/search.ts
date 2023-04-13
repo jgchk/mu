@@ -40,9 +40,17 @@ export const searchRouter = router({
     }),
   soulseekSubscription: publicProcedure
     .input(z.object({ query: z.string() }))
-    .subscription(({ input: { query }, ctx }) =>
-      observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        void ctx.slsk.search(query, { onResult: (result) => emit.next(result) })
+    .subscription(({ input: { query }, ctx }) => {
+      const slsk = ctx.slsk
+      if (!slsk) {
+        throw new Error('Soulseek is not running')
+      }
+      return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
+        const handler = async () => {
+          await slsk.search(query, { onResult: (result) => emit.next(result) })
+          emit.complete()
+        }
+        void handler()
       })
-    ),
+    }),
 })
