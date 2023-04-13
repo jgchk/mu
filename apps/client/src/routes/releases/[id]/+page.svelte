@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { formatMilliseconds } from 'utils'
+
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
@@ -9,7 +11,6 @@
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
-  import { formatMilliseconds } from '$lib/utils/date'
 
   import type { PageData } from './$types'
 

@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { getTimeSinceShort, toPrettyDate } from 'utils'
+
   import { tooltip } from '$lib/actions/tooltip'
   import PlayingIcon from '$lib/icons/PlayingIcon.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import type { RouterOutput } from '$lib/trpc'
-  import { getTimeSinceShort, toPrettyDate } from '$lib/utils/date'
 
   import CoverArt from './CoverArt.svelte'
 

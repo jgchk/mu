@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { raf } from 'svelte/internal'
+  import { formatMilliseconds } from 'utils'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import { makeTrackCoverArtUrl } from '$lib/cover-art'
@@ -17,7 +18,6 @@
   import { createScrobbleMutation, createUpdateNowPlayingMutation } from '$lib/services/playback'
   import { createFavoriteTrackMutation, createTrackQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
-  import { formatMilliseconds } from '$lib/utils/date'
 
   import Range from '../atoms/Range.svelte'
   import CoverArt from './CoverArt.svelte'
