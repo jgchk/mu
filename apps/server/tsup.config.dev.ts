@@ -13,6 +13,7 @@ export default defineConfig({
     '../../packages/spotify',
     '../../packages/soundcloud',
     '../../packages/last-fm',
+    '../../packages/utils',
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',

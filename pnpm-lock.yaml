@@ -201,6 +201,9 @@ importers:
       trpc:
         specifier: workspace:*
         version: link:../../packages/trpc
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
       ws:
         specifier: ^8.13.0
         version: 8.13.0

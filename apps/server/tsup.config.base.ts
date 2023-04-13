@@ -35,7 +35,16 @@ const config: Options = {
   entry: ['src/server.ts', 'src/jobs/*.ts'],
   format: ['esm'],
   platform: 'node',
-  noExternal: ['trpc', 'downloader', 'db', 'music-metadata', 'soundcloud', 'spotify', 'last-fm'],
+  noExternal: [
+    'trpc',
+    'downloader',
+    'db',
+    'music-metadata',
+    'soundcloud',
+    'spotify',
+    'last-fm',
+    'utils',
+  ],
   esbuildOptions(options) {
     options.banner = {
       ...options.banner,

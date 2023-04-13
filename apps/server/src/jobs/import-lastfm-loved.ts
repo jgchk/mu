@@ -1,10 +1,10 @@
 import type { Artist } from 'db'
 import { compareTwoStrings } from 'string-similarity'
+import { groupBy } from 'utils'
 import { parentPort } from 'worker_threads'
 
 import { makeDb } from '../context/db'
 import { makeLastFm } from '../context/lfm'
-import { groupBy } from '../utils/array'
 
 const db = makeDb()
 const lfm = await makeLastFm()

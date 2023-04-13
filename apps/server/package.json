@@ -35,6 +35,7 @@
     "spotify": "workspace:*",
     "string-similarity": "^4.0.4",
     "trpc": "workspace:*",
+    "utils": "workspace:*",
     "ws": "^8.13.0",
     "zod": "^3.21.4"
   },
