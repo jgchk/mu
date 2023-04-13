@@ -1,8 +1,7 @@
+import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { compareDates } from '../utils/date'
-import { sum } from '../utils/math'
 
 const SoundcloudDownload = z.object({
   service: z.literal('soundcloud'),

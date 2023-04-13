@@ -18,11 +18,10 @@ import {
 } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
-import { ifNotNull, numDigits } from 'utils'
+import { ifNotNull, md5, numDigits } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { md5 } from '../utils/fs'
 
 type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>

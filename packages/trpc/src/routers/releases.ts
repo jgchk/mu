@@ -3,12 +3,11 @@ import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { ifDefined, ifNotNull, numDigits } from 'utils'
+import { ifDefined, ifNotNull, md5, numDigits } from 'utils'
 import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
 import { publicProcedure, router } from '../trpc'
-import { md5 } from '../utils/fs'
 
 export const releasesRouter = router({
   getAll: publicProcedure.query(({ ctx }) =>
