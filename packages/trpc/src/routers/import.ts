@@ -18,7 +18,7 @@ import {
 } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
-import { ifNotNull } from 'utils'
+import { ifNotNull, numDigits } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
@@ -212,7 +212,7 @@ export const importRouter = router({
         downloads.map(async (download) => {
           let filename = ''
           if (download.metadata.track !== undefined) {
-            const numDigitsInTrackNumber = Math.ceil(Math.log10(downloads.length + 1))
+            const numDigitsInTrackNumber = numDigits(downloads.length)
             filename += download.metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
             filename += ' '
           }

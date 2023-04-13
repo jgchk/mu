@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { ifDefined, ifNotNull } from 'utils'
+import { ifDefined, ifNotNull, numDigits } from 'utils'
 import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
@@ -95,7 +95,7 @@ export const releasesRouter = router({
 
             let filename = ''
             if (track.track !== undefined) {
-              const numDigitsInTrackNumber = Math.ceil(Math.log10(existingDbTracks.length + 1))
+              const numDigitsInTrackNumber = numDigits(existingDbTracks.length)
               filename += track.track.toString().padStart(numDigitsInTrackNumber, '0')
               filename += ' '
             }
