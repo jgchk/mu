@@ -261,7 +261,7 @@ export class LastFMAuthenticated extends LastFM {
       sk: this.sessionKey,
       format: 'json',
     }
-    const res = await got
+    await got
       .post('https://ws.audioscrobbler.com/2.0/', {
         form: {
           ...params,
@@ -269,7 +269,6 @@ export class LastFMAuthenticated extends LastFM {
         },
       })
       .json()
-    return res
   }
 
   async unloveTrack({ track, artist }: { track: string; artist: string }) {
@@ -281,7 +280,7 @@ export class LastFMAuthenticated extends LastFM {
       sk: this.sessionKey,
       format: 'json',
     }
-    const res = await got
+    await got
       .post('https://ws.audioscrobbler.com/2.0/', {
         form: {
           ...params,
@@ -289,6 +288,5 @@ export class LastFMAuthenticated extends LastFM {
         },
       })
       .json()
-    return res
   }
 }
