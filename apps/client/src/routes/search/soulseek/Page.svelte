@@ -1,8 +1,11 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { derived } from 'svelte/store'
+  import { fade } from 'svelte/transition'
   import { toErrorString } from 'utils'
 
+  import Loader from '$lib/atoms/Loader.svelte'
+  import Delay from '$lib/components/Delay.svelte'
   import { createSearchSoulseekSubscription } from '$lib/services/search'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
@@ -85,7 +88,15 @@
 
 {#if data.hasQuery}
   {#key data.query}
-    <SoulseekResults items={soulseekData} />
+    {#if soulseekData.length === 0}
+      <Delay>
+        <div class="flex h-full max-h-72 items-center justify-center" in:fade>
+          <Loader class="h-10 w-10 text-gray-600" />
+        </div>
+      </Delay>
+    {:else}
+      <SoulseekResults items={soulseekData} />
+    {/if}
   {/key}
 {:else}
   <div>Enter a search query</div>
