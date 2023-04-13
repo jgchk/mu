@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./m3u8-parser.d.ts" />
+
 import crypto from 'crypto'
 import { execa } from 'execa'
 import { fileTypeStream } from 'file-type'
