@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { getTimeSinceShort, toPrettyDate } from 'utils'
+  import { getTimeSinceShort, toErrorString, toPrettyDate } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
-  import { toErrorString } from '$lib/utils/error'
   import { sum } from '$lib/utils/math'
 
   import type {

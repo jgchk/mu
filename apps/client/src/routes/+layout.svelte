@@ -5,6 +5,7 @@
 
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import { onMount } from 'svelte'
+  import { toErrorString } from 'utils'
 
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
@@ -14,7 +15,6 @@
   import Toaster from '$lib/toast/Toaster.svelte'
   import type { ErrorToastEvent } from '$lib/trpc'
   import { setContextClient } from '$lib/trpc'
-  import { toErrorString } from '$lib/utils/error'
 
   import type { LayoutData } from './$types'
 

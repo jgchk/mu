@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { derived } from 'svelte/store'
+  import { toErrorString } from 'utils'
 
   import { createSearchSoulseekSubscription } from '$lib/services/search'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
-  import { toErrorString } from '$lib/utils/error'
 
   import type { PageData } from './$types'
   import SoulseekResults from './SoulseekResults.svelte'

@@ -1,4 +1,4 @@
-import { toErrorString } from './utils/error'
+import { toErrorString } from 'utils'
 
 export const addedToDownloads = (title: string | undefined) =>
   title ? `Added "${title}" to download queue!` : 'Added to download queue!'
