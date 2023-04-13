@@ -11,11 +11,10 @@ import { Parser } from 'm3u8-parser'
 import os from 'os'
 import path from 'path'
 import stream from 'stream'
-import { getFileSize, ifDefined } from 'utils'
+import { getFileSize, ifDefined, sum } from 'utils'
 
 import type { Transcoding } from './model'
 import { DownloadResponse, FullTrack, Pager, Playlist, TranscodingResponse } from './model'
-import { sum } from './utils/math'
 
 export * from './model'
 

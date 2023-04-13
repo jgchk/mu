@@ -9,3 +9,7 @@ export const isInRangeExclusive = (value: number, min: number, max: number): boo
 export const isInOneOfRangesExclusive = (value: number, ranges: [number, number][]): boolean => {
   return ranges.some(([min, max]) => isInRangeExclusive(value, min, max))
 }
+
+export const numDigits = (x: number) => {
+  return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1
+}
