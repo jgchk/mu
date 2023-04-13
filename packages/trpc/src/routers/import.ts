@@ -267,6 +267,12 @@ export const importRouter = router({
 
           const coverArtHash = ifNotNull(albumArt, md5)
 
+          const lastFm = await ctx.lfm.getTrackInfoUser({
+            track: metadata.title ?? '[untitled]',
+            artist: artists.map((artist) => artist.name).join(', '),
+          })
+          const favorite = lastFm.userloved === '1'
+
           const dbTrack = ctx.db.tracks.insertWithArtists({
             title: metadata.title,
             artists: artists.map((artist) => artist.id),
@@ -275,7 +281,7 @@ export const importRouter = router({
             trackNumber: metadata.track,
             coverArtHash,
             duration: outputMetadata.length,
-            favorite: false,
+            favorite,
           })
 
           if (input.service === 'soulseek') {
@@ -422,6 +428,12 @@ export const importRouter = router({
       }
       const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
+      const lastFm = await ctx.lfm.getTrackInfoUser({
+        track: metadata.title ?? '[untitled]',
+        artist: artists.map((artist) => artist.name).join(', '),
+      })
+      const favorite = lastFm.userloved === '1'
+
       const dbTrack = ctx.db.tracks.insertWithArtists({
         title: metadata.title,
         artists: artists.map((artist) => artist.id),
@@ -430,7 +442,7 @@ export const importRouter = router({
         trackNumber: metadata.track,
         coverArtHash: null,
         duration: outputMetadata.length,
-        favorite: false,
+        favorite,
       })
 
       if (input.service === 'soulseek') {

@@ -1,7 +1,16 @@
 import crypto from 'crypto'
 import got from 'got'
 
-import { Friends, LovedTracks, MobileSession, NowPlaying, RecentTracks, Scrobble } from './model'
+import {
+  Friends,
+  LovedTracks,
+  MobileSession,
+  NowPlaying,
+  RecentTracks,
+  Scrobble,
+  TrackInfo,
+  TrackInfoUser,
+} from './model'
 
 export * from './model'
 
@@ -119,6 +128,42 @@ export class LastFM {
 
     return [...page1.track, ...restPages.flatMap((page) => page.track)]
   }
+
+  async getTrackInfo({ artist, track }: { artist: string; track: string }) {
+    const res = await got('https://ws.audioscrobbler.com/2.0/', {
+      searchParams: {
+        method: 'track.getInfo',
+        artist: artist,
+        track: track,
+        api_key: this.apiKey,
+        format: 'json',
+      },
+    }).json()
+    return TrackInfo.parse(res).track
+  }
+
+  async getTrackInfoUser(
+    {
+      artist,
+      track,
+    }: {
+      artist: string
+      track: string
+    },
+    username: string
+  ) {
+    const res = await got('https://ws.audioscrobbler.com/2.0/', {
+      searchParams: {
+        method: 'track.getInfo',
+        artist: artist,
+        track: track,
+        username: username,
+        api_key: this.apiKey,
+        format: 'json',
+      },
+    }).json()
+    return TrackInfoUser.parse(res).track
+  }
 }
 
 export class LastFMAuthenticated extends LastFM {
@@ -165,6 +210,10 @@ export class LastFMAuthenticated extends LastFM {
 
   getAllLovedTracks(username = this.username) {
     return super.getAllLovedTracks(username)
+  }
+
+  getTrackInfoUser({ artist, track }: { artist: string; track: string }, username = this.username) {
+    return super.getTrackInfoUser({ artist, track }, username)
   }
 
   async updateNowPlaying({
