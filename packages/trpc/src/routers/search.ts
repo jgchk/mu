@@ -46,11 +46,7 @@ export const searchRouter = router({
         throw new Error('Soulseek is not running')
       }
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        const handler = async () => {
-          await slsk.search(query, { onResult: (result) => emit.next(result) })
-          emit.complete()
-        }
-        void handler()
+        void slsk.search(query, { onResult: (result) => emit.next(result) })
       })
     }),
 })
