@@ -1,92 +1,42 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
-  import { derived } from 'svelte/store'
-  import { toErrorString } from 'utils'
-
-  import { createSearchSoulseekSubscription } from '$lib/services/search'
+  import Button from '$lib/atoms/Button.svelte'
+  import { createStartSoulseekMutation, createSystemStatusQuery } from '$lib/services/system'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
-  import SoulseekResults from './SoulseekResults.svelte'
-  import type { SortedSoulseekResults } from './types'
-  import type { FromWorkerMessage, ToWorkerMessage } from './worker-communication'
+  import Page from './Page.svelte'
 
   export let data: PageData
-  let oldQuery = data.query
-
-  let soulseekData: SortedSoulseekResults = []
-  let worker: Worker | undefined = undefined
-  const loadWorker = () => {
-    worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'classic' })
-    worker.onmessage = (e: MessageEvent<FromWorkerMessage>) => {
-      const msg = e.data
-      switch (msg.kind) {
-        case 'results': {
-          soulseekData = msg.results
-          break
-        }
-      }
-    }
-  }
-  onMount(() => {
-    loadWorker()
-  })
-  onDestroy(() => {
-    worker?.terminate()
-  })
-  const sendWorkerMessage = (msg: ToWorkerMessage) => {
-    worker?.postMessage(msg)
-  }
 
   const trpc = getContextClient()
-  $: soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
-  onDestroy(() => {
-    soulseekSubscription.unsubscribe()
-  })
-
-  $: {
-    if (oldQuery !== data.query) {
-      soulseekData = []
-      sendWorkerMessage({ kind: 'reset' })
-      soulseekSubscription.unsubscribe()
-      soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
-      oldQuery = data.query
-    }
-  }
+  const statusQuery = createSystemStatusQuery(trpc)
 
   const toast = getContextToast()
-
-  let dataCleanup: (() => void) | undefined
-  let errorCleanup: (() => void) | undefined
-  $: {
-    dataCleanup?.()
-    errorCleanup?.()
-
-    const { data, error } = soulseekSubscription
-
-    dataCleanup = derived(data, (value) => value).subscribe((v) => {
-      if (v) {
-        sendWorkerMessage({ kind: 'result', result: v })
-      }
-    })
-
-    errorCleanup = error.subscribe((e) => {
-      if (e) {
-        toast.error(toErrorString(e))
-      }
-    })
-  }
-  onDestroy(() => {
-    dataCleanup?.()
-    errorCleanup?.()
+  const startSoulseekMutation = createStartSoulseekMutation(trpc, {
+    showToast: false,
+    onError: (error) => {
+      toast.error(`Error starting Soulseek: ${error.message}`)
+    },
   })
 </script>
 
-{#if data.hasQuery}
-  {#key data.query}
-    <SoulseekResults items={soulseekData} />
-  {/key}
+{#if $statusQuery.data?.soulseek !== 'running'}
+  <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+    <div class="text-2xl text-gray-500">Soulseek is not running</div>
+    <div>
+      <Button
+        on:click={() => {
+          if (!$startSoulseekMutation.isLoading) {
+            $startSoulseekMutation.mutate()
+          }
+        }}
+        loading={$startSoulseekMutation.isLoading}
+      >
+        Start
+      </Button>
+    </div>
+  </div>
 {:else}
-  <div>Enter a search query</div>
+  <Page {data} />
 {/if}

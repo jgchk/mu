@@ -71,8 +71,10 @@
               $restartSoulseekMutation.reset()
             }
           }}
-          loading={$startSoulseekMutation.isLoading}>Start</Button
+          loading={$startSoulseekMutation.isLoading}
         >
+          Start
+        </Button>
       {:else}
         <Button
           on:click={() => {
@@ -82,8 +84,10 @@
               $restartSoulseekMutation.reset()
             }
           }}
-          loading={$stopSoulseekMutation.isLoading}>Stop</Button
+          loading={$stopSoulseekMutation.isLoading}
         >
+          Stop
+        </Button>
         <Button
           on:click={() => {
             if (!$restartSoulseekMutation.isLoading) {
@@ -92,8 +96,10 @@
               $stopSoulseekMutation.reset()
             }
           }}
-          loading={$restartSoulseekMutation.isLoading}>Restart</Button
+          loading={$restartSoulseekMutation.isLoading}
         >
+          Restart
+        </Button>
       {/if}
     </div>
   </div>
