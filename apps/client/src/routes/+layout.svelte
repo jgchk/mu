@@ -24,7 +24,7 @@
     const listener = (e: ErrorToastEvent) => {
       const errorString = toErrorString(e.detail.error)
       if (errorString === 'NetworkError when attempting to fetch resource.') {
-        const offlineMessage = 'You are offline. Please check your internet connection.'
+        const offlineMessage = 'Cannot reach server. Are you offline?'
         if (!$toast.some((toast) => toast.msg === offlineMessage)) {
           toast.error(offlineMessage, { duration: Infinity })
         }

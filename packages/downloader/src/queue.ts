@@ -8,7 +8,8 @@ import path from 'path'
 import { Soundcloud } from 'soundcloud'
 import type { SimplifiedAlbum as SpotifySimplifiedAlbum } from 'spotify'
 import stream from 'stream'
-import { fileExists, ifNotNull, uniqBy } from 'utils'
+import { ifNotNull, uniqBy } from 'utils'
+import { fileExists } from 'utils/fs'
 
 import type { Context } from '.'
 

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
-import { fileExists } from 'utils'
+import { fileExists } from 'utils/fs'
 
 import type { Context } from '.'
 
