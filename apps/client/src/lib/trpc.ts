@@ -52,7 +52,7 @@ export const createClient = (fetchFn: typeof fetch) => {
     mutationCache: browser
       ? new MutationCache({
           onError: (error, variables, context, mutation) => {
-            if (mutation.options.showToast && !mutation.options.onError) {
+            if (mutation.options.showToast) {
               onErrorToast(error)
             }
           },

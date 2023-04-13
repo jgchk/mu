@@ -7,15 +7,32 @@
     createStopSoulseekMutation,
     createSystemStatusQuery,
   } from '$lib/services/system'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
   import { capitalize } from '$lib/utils/string'
 
   const trpc = getContextClient()
+  const toast = getContextToast()
 
-  const startSoulseekMutation = createStartSoulseekMutation(trpc)
-  const stopSoulseekMutation = createStopSoulseekMutation(trpc)
-  const restartSoulseekMutation = createRestartSoulseekMutation(trpc)
+  const startSoulseekMutation = createStartSoulseekMutation(trpc, {
+    showToast: false,
+    onError: (error) => {
+      toast.error(`Error starting Soulseek: ${error.message}`)
+    },
+  })
+  const stopSoulseekMutation = createStopSoulseekMutation(trpc, {
+    showToast: false,
+    onError: (error) => {
+      toast.error(`Error stopping Soulseek: ${error.message}`)
+    },
+  })
+  const restartSoulseekMutation = createRestartSoulseekMutation(trpc, {
+    showToast: false,
+    onError: (error) => {
+      toast.error(`Error restarting Soulseek: ${error.message}`)
+    },
+  })
 
   $: statusQuery = createSystemStatusQuery(trpc, {
     refetchInterval:
@@ -36,7 +53,7 @@
       <div
         use:tooltip={{ content: capitalize(status.soulseek) }}
         class={cn(
-          'h-4 w-4 rounded-full',
+          'h-4 w-4 rounded-full transition',
           status.soulseek === 'stopped' && 'bg-error-600',
           status.soulseek === 'starting' && 'bg-warning-600',
           status.soulseek === 'running' && 'bg-success-600'

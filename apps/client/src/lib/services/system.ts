@@ -5,23 +5,38 @@ export const createSystemStatusQuery = (
   options?: RouterOptions['system']['status']
 ) => trpc.system.status.query(undefined, options)
 
-export const createStartSoulseekMutation = (trpc: TRPCClient) =>
+export const createStartSoulseekMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['startSoulseek']
+) =>
   trpc.system.startSoulseek.mutation({
-    onSettled: async () => {
+    ...options,
+    onSettled: async (...args) => {
       await trpc.system.status.utils.invalidate()
+      await options?.onSettled?.(...args)
     },
   })
 
-export const createStopSoulseekMutation = (trpc: TRPCClient) =>
+export const createStopSoulseekMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['stopSoulseek']
+) =>
   trpc.system.stopSoulseek.mutation({
-    onSettled: async () => {
+    ...options,
+    onSettled: async (...args) => {
       await trpc.system.status.utils.invalidate()
+      await options?.onSettled?.(...args)
     },
   })
 
-export const createRestartSoulseekMutation = (trpc: TRPCClient) =>
+export const createRestartSoulseekMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['restartSoulseek']
+) =>
   trpc.system.restartSoulseek.mutation({
-    onSettled: async () => {
+    ...options,
+    onSettled: async (...args) => {
       await trpc.system.status.utils.invalidate()
+      await options?.onSettled?.(...args)
     },
   })
