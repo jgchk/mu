@@ -251,4 +251,44 @@ export class LastFMAuthenticated extends LastFM {
       .json()
     return Scrobble.parse(res).scrobbles
   }
+
+  async loveTrack({ track, artist }: { track: string; artist: string }) {
+    const params = {
+      method: 'track.love',
+      track,
+      artist,
+      api_key: this.apiKey,
+      sk: this.sessionKey,
+      format: 'json',
+    }
+    const res = await got
+      .post('https://ws.audioscrobbler.com/2.0/', {
+        form: {
+          ...params,
+          api_sig: this.getApiSignature(params),
+        },
+      })
+      .json()
+    return res
+  }
+
+  async unloveTrack({ track, artist }: { track: string; artist: string }) {
+    const params = {
+      method: 'track.unlove',
+      track,
+      artist,
+      api_key: this.apiKey,
+      sk: this.sessionKey,
+      format: 'json',
+    }
+    const res = await got
+      .post('https://ws.audioscrobbler.com/2.0/', {
+        form: {
+          ...params,
+          api_sig: this.getApiSignature(params),
+        },
+      })
+      .json()
+    return res
+  }
 }

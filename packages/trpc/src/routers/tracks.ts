@@ -44,5 +44,21 @@ export const tracksRouter = router({
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseIdWithArtists(releaseId)),
   favorite: publicProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
-    .mutation(({ input: { id, favorite }, ctx }) => ctx.db.tracks.update(id, { favorite })),
+    .mutation(async ({ input: { id, favorite }, ctx }) => {
+      const dbTrack = ctx.db.tracks.update(id, { favorite })
+
+      const artists = ctx.db.artists
+        .getByTrackId(dbTrack.id)
+        .sort((a, b) => a.order - b.order)
+        .map((artist) => artist.name)
+        .join(', ')
+
+      if (favorite) {
+        await ctx.lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+      } else {
+        await ctx.lfm.unloveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+      }
+
+      return dbTrack
+    }),
 })
