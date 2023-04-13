@@ -20,4 +20,13 @@ declare global {
   }
 }
 
+declare module '@tanstack/svelte-query' {
+  export interface QueryOptions {
+    showToast?: boolean
+  }
+  export interface MutationOptions {
+    showToast?: boolean
+  }
+}
+
 export {}

@@ -4,6 +4,7 @@
   import '@fontsource/noto-emoji'
 
   import { QueryClientProvider } from '@tanstack/svelte-query'
+  import { onMount } from 'svelte'
 
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
@@ -11,11 +12,27 @@
   import { nowPlaying } from '$lib/now-playing'
   import { createToast, setContextToast } from '$lib/toast/toast'
   import Toaster from '$lib/toast/Toaster.svelte'
+  import type { ErrorToastEvent } from '$lib/trpc'
   import { setContextClient } from '$lib/trpc'
+  import { toErrorString } from '$lib/utils/error'
 
   import type { LayoutData } from './$types'
 
   export let data: LayoutData
+
+  onMount(() => {
+    const listener = (e: ErrorToastEvent) => {
+      toast.error(toErrorString(e.detail.error))
+    }
+
+    // @ts-expect-error custom event
+    window.addEventListener('error-toast', listener)
+
+    return () => {
+      // @ts-expect-error custom event
+      window.removeEventListener('error-toast', listener)
+    }
+  })
 
   setContextClient(data.trpc)
 

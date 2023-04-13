@@ -6,7 +6,7 @@ import {
   splitLink,
   wsLink,
 } from '@jgchk/trpc-svelte-query'
-import { QueryClient } from '@tanstack/svelte-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/svelte-query'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 
@@ -22,16 +22,52 @@ export type TRPCClient = ReturnType<typeof __createClient>
 export type RouterInput = AppRouterInput
 export type RouterOutput = AppRouterOutput
 
+export type ErrorToastEvent = CustomEvent<{
+  error: unknown
+}>
+
+const onErrorToast = (error: unknown) => {
+  const event: ErrorToastEvent = new CustomEvent('error-toast', {
+    detail: {
+      error,
+    },
+  })
+
+  window.dispatchEvent(event)
+}
+
 export const createClient = (fetchFn: typeof fetch) => {
   const queryClient = new QueryClient({
+    queryCache: browser
+      ? new QueryCache({
+          onError: (error, query) => {
+            if (query.options.showToast) {
+              onErrorToast(error)
+            }
+          },
+        })
+      : undefined,
+    mutationCache: browser
+      ? new MutationCache({
+          onError: (error, variables, context, mutation) => {
+            if (mutation.options.showToast && !mutation.options.onError) {
+              onErrorToast(error)
+            }
+          },
+        })
+      : undefined,
     defaultOptions: {
       queries: {
+        showToast: true,
         enabled: browser,
+      },
+      mutations: {
+        showToast: true,
       },
     },
   })
 
-  return __createClient({
+  const client = __createClient({
     queryClient,
     fetch: fetchFn,
     links: [
@@ -60,4 +96,6 @@ export const createClient = (fetchFn: typeof fetch) => {
     ],
     transformer: superjson,
   })
+
+  return client
 }

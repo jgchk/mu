@@ -50,6 +50,7 @@
   <NavLink href="/releases">Releases</NavLink>
   <NavLink href="/artists">Artists</NavLink>
   <NavLink href="/downloads">Downloads</NavLink>
+  <NavLink href="/system">System</NavLink>
 
   <form
     class="inline"
