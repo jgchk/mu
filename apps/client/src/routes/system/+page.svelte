@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { capitalize } from 'utils'
+
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import {
@@ -10,7 +12,6 @@
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
-  import { capitalize } from '$lib/utils/string'
 
   const trpc = getContextClient()
   const toast = getContextToast()
