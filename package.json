@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run build --filter client && NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev --concurrency 11",
+    "dev": "test -f ./apps/client/build/index.js && true || turbo run build --filter client && NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev --concurrency 11",
     "lint": "turbo run lint",
     "format": "prettier --write . **/*.svelte && turbo run format",
     "ci": "pnpm turbo run build --filter client && turbo run ci",
