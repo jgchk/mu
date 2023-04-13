@@ -7,5 +7,8 @@
   "scripts": {
     "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\"",
     "format": "prettier --write --ignore-path=../../.prettierignore ."
+  },
+  "dependencies": {
+    "@types/node": "^18.15.11"
   }
 }

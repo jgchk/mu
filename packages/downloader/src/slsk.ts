@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
+import { fileExists } from 'utils'
 
 import type { Context } from '.'
-import { fileExists } from './utils/fs'
 
 export type SoulseekDownload = {
   service: 'soulseek'
