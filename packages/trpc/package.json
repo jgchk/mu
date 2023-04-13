@@ -27,7 +27,7 @@
     "last-fm": "workspace:*",
     "mime": "^3.0.0",
     "music-metadata": "workspace:*",
-    "soulseek-ts": "^2.1.1",
+    "soulseek-ts": "^2.1.2",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "superjson": "^1.12.2",
