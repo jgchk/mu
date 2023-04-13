@@ -127,7 +127,10 @@ export class DownloadQueue {
         progress: dbTrack.progress ?? 0,
       })
 
-      const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack)
+      const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack, {
+        onProgress: ({ progress }) =>
+          db.soundcloudTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) }),
+      })
 
       let filePath = dbTrack.path
       if (!filePath) {

@@ -3,14 +3,25 @@ import { execa } from 'execa'
 import { fileTypeStream } from 'file-type'
 import fs from 'fs'
 import got from 'got'
+import type { Manifest } from 'm3u8-parser'
+import { Parser } from 'm3u8-parser'
 import os from 'os'
 import path from 'path'
 import stream from 'stream'
 
 import type { Transcoding } from './model'
 import { DownloadResponse, FullTrack, Pager, Playlist, TranscodingResponse } from './model'
+import { getFileSize } from './utils/fs'
+import { sum } from './utils/math'
+import { ifDefined } from './utils/types'
 
 export * from './model'
+
+export type DownloadOptions = {
+  pollInterval?: number
+  secretToken?: string
+  onProgress?: (data: { totalBytes: number; receivedBytes: number; progress: number }) => void
+}
 
 export class Soundcloud {
   private clientId: string
@@ -71,7 +82,7 @@ export class Soundcloud {
     return Playlist.parse(res)
   }
 
-  async downloadTrack(track: FullTrack, secretToken?: string) {
+  async downloadTrack(track: FullTrack, opts?: DownloadOptions) {
     if (!track.streamable) {
       throw new Error('Track is not streamable')
     }
@@ -81,8 +92,8 @@ export class Soundcloud {
     }
 
     const pipe = track.downloadable
-      ? await this.downloadOriginalFile(track.id, secretToken)
-      : await this.downloadHls(track)
+      ? await this.downloadOriginalFile(track.id, opts?.secretToken)
+      : await this.downloadHls(track, opts)
 
     return pipe
   }
@@ -123,7 +134,7 @@ export class Soundcloud {
     return result.redirectUri
   }
 
-  async downloadHls(track: FullTrack) {
+  async downloadHls(track: FullTrack, opts?: DownloadOptions) {
     if (track.media.transcodings.length === 0) {
       throw new Error(`Track ${track.id} has no transcodings`)
     }
@@ -136,6 +147,34 @@ export class Soundcloud {
       os.tmpdir(),
       `sc-${track.id}-${Date.now()}-${crypto.randomBytes(4).readUInt32LE(0)}.${extension}`
     )
+
+    const m3u8Raw = await got(url, {
+      headers: { Authorization: `OAuth ${this.authToken}` },
+    }).text()
+
+    const parser = new Parser(m3u8Raw)
+    parser.push(m3u8Raw)
+    parser.end()
+
+    const m3u8 = parser.manifest
+    const fileSize = await getHlsTotalBytes(m3u8)
+
+    let interval: NodeJS.Timeout | undefined
+    if (opts?.onProgress) {
+      interval = setInterval(() => {
+        void getFileSize(tempFile)
+          .then((size) => {
+            opts.onProgress?.({
+              receivedBytes: size,
+              totalBytes: fileSize,
+              progress: size / fileSize,
+            })
+          })
+          .catch(() => {
+            // ignore
+          })
+      }, opts.pollInterval ?? 100)
+    }
 
     try {
       await execa('ffmpeg', [
@@ -157,6 +196,9 @@ export class Soundcloud {
     const readPipe = fs.createReadStream(tempFile)
     readPipe.on('close', () => {
       void fs.promises.rm(tempFile)
+      if (interval !== undefined) {
+        clearInterval(interval)
+      }
     })
 
     return { pipe: readPipe, extension }
@@ -240,3 +282,12 @@ const getExtensionFromTranscodingPreset = (preset: string) => {
     return ext
   }
 }
+
+const getHlsTotalBytes = async (m3u: Manifest) =>
+  sum(
+    await Promise.all(
+      m3u.segments.map((segment) =>
+        got.head(segment.uri).then((res) => ifDefined(res.headers['content-length'], parseInt) ?? 0)
+      )
+    )
+  )
