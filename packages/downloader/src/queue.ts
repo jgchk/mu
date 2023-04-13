@@ -9,7 +9,7 @@ import { Soundcloud } from 'soundcloud'
 import type { SimplifiedAlbum as SpotifySimplifiedAlbum } from 'spotify'
 import stream from 'stream'
 import { ifNotNull, uniqBy } from 'utils'
-import { fileExists } from 'utils/fs'
+import { fileExists } from 'utils/node'
 
 import type { Context } from '.'
 

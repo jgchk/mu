@@ -12,7 +12,7 @@ import os from 'os'
 import path from 'path'
 import stream from 'stream'
 import { ifDefined, sum } from 'utils'
-import { getFileSize } from 'utils/fs'
+import { getFileSize } from 'utils/node'
 
 import type { Transcoding } from './model'
 import { DownloadResponse, FullTrack, Pager, Playlist, TranscodingResponse } from './model'

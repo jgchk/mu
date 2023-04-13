@@ -19,7 +19,7 @@ import {
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
 import { ifNotNull, numDigits } from 'utils'
-import { md5 } from 'utils/fs'
+import { md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
