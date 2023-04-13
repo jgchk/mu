@@ -5,10 +5,14 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./browser": "./src/browser/index.ts",
     "./node": "./src/node/index.ts"
   },
   "typesVersions": {
     "*": {
+      "browser": [
+        "./src/browser/index.ts"
+      ],
       "node": [
         "./src/node/index.ts"
       ]

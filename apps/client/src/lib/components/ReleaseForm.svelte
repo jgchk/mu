@@ -3,6 +3,7 @@
   import type { DndEvent } from 'svelte-dnd-action'
   import { dndzone } from 'svelte-dnd-action'
   import { superForm } from 'sveltekit-superforms/client'
+  import { base64ToBlob } from 'utils/browser'
 
   import { dev } from '$app/environment'
   import Button from '$lib/atoms/Button.svelte'
@@ -14,7 +15,6 @@
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
-  import { base64ToBlob } from '$lib/utils/file'
   import type { StoreType } from '$lib/utils/svelte'
 
   import type { PageServerData } from '../../routes/releases/[id]/edit/$types'

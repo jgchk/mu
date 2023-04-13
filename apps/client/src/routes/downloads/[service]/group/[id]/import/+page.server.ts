@@ -1,11 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { isDefined } from 'utils'
+import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
 import { fetchGroupDownloadDataQuery, mutateGroupDownloadManual } from '$lib/services/import'
 import { createClient } from '$lib/trpc'
-import { isFile } from '$lib/utils/file'
 import { paramNumber, paramService } from '$lib/utils/params'
 
 import type { Actions, PageServerLoad } from './$types'
