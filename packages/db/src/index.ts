@@ -218,6 +218,20 @@ export class Database {
       return { ...release, artists }
     },
 
+    getByArtistWithArtists: (artistId: ReleaseArtist['artistId']) => {
+      const releases_ = this.db
+        .select()
+        .from(releases)
+        .innerJoin(releaseArtists, eq(releases.id, releaseArtists.releaseId))
+        .where(eq(releaseArtists.artistId, artistId))
+        .orderBy(releases.title)
+        .all()
+      return releases_.map((row) => {
+        const artists = this.artists.getByReleaseId(row.releases.id)
+        return { ...row.releases, artists }
+      })
+    },
+
     getWithTracksAndArtists: (id: Release['id']) => {
       const release = this.releases.getWithArtists(id)
       const tracks = this.tracks.getByReleaseIdWithArtists(id)
@@ -384,6 +398,20 @@ export class Database {
       const track = this.tracks.get(id)
       const artists = this.artists.getByTrackId(id)
       return { ...track, artists }
+    },
+
+    getByArtistWithArtists: (artistId: Artist['id']) => {
+      const tracks_ = this.db
+        .select()
+        .from(tracks)
+        .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
+        .where(eq(trackArtists.artistId, artistId))
+        .orderBy(tracks.title)
+        .all()
+      return tracks_.map((row) => {
+        const artists = this.artists.getByTrackId(row.tracks.id)
+        return { ...convertTrack(row.tracks), artists }
+      })
     },
 
     delete: (id: Track['id']) => {

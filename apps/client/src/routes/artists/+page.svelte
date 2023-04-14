@@ -16,9 +16,9 @@
 {#if $artistsQuery.data}
   <div>
     {#each $artistsQuery.data as artist}
-      <div>
+      <a href="/artists/{artist.id}">
         {artist.name}
-      </div>
+      </a>
     {/each}
   </div>
 
