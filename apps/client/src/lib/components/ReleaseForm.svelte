@@ -75,7 +75,7 @@
       )
 
     if (!isUsedElsewhere) {
-      $form.artists.delete(artist.id)
+      $form.createArtists.delete(artist.id)
     }
   }
 
@@ -125,10 +125,10 @@
             <div class="flex gap-1">
               <ArtistSelect
                 value={artist}
-                createArtists={$form.artists}
+                createArtists={$form.createArtists}
                 on:create={({ detail }) => {
-                  const id = $form.artists.size + 1
-                  $form.artists.set(id, detail)
+                  const id = $form.createArtists.size + 1
+                  $form.createArtists.set(id, detail)
                   artist = {
                     action: 'create',
                     id,
@@ -200,10 +200,10 @@
                 <div class="flex gap-1">
                   <ArtistSelect
                     value={artist}
-                    createArtists={$form.artists}
+                    createArtists={$form.createArtists}
                     on:create={({ detail }) => {
-                      const id = $form.artists.size + 1
-                      $form.artists.set(id, detail)
+                      const id = $form.createArtists.size + 1
+                      $form.createArtists.set(id, detail)
                       artist = {
                         action: 'create',
                         id,

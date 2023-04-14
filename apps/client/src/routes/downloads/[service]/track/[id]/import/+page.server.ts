@@ -28,30 +28,14 @@ export const load: PageServerLoad = async (event) => {
   const trpc = createClient(event.fetch)
   const data = await fetchTrackDownloadDataQuery(trpc, { service, id })
 
-  const createArtists: Map<number, string> = new Map()
-  const getArtistIdByName = (name: string) => {
-    return [...createArtists.entries()].find(([, artistName]) => artistName === name)?.[0]
-  }
-
-  const artists = data.metadata.artists.map((name) => {
-    const id = getArtistIdByName(name)
-    if (id !== undefined) {
-      return id
-    } else {
-      const id = createArtists.size + 1
-      createArtists.set(id, name)
-      return id
-    }
-  })
-
   const form = await superValidate(
     {
       service,
       id,
-      createArtists: createArtists,
-      title: data.metadata.title ?? undefined,
-      artists: artists.map((id) => ({ action: 'create', id } as const)),
-      track: data.metadata.track ?? undefined,
+      createArtists: data.createArtists,
+      title: data.title,
+      artists: data.artists,
+      track: data.track,
     },
     schema
   )

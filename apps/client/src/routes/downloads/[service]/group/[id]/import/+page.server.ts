@@ -13,7 +13,7 @@ import type { Actions, PageServerLoad } from './$types'
 const schema = z.object({
   service: z.enum(['soundcloud', 'spotify', 'soulseek']),
   id: z.number(),
-  artists: z.map(z.number(), z.string()),
+  createArtists: z.map(z.number(), z.string()),
   album: z.object({
     title: z.string().min(1).optional(),
     artists: z
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async (event) => {
     {
       service,
       id,
-      artists: data.artists,
+      createArtists: data.createArtists,
       album: {
         title: data.album.title,
         artists: data.album.artists,

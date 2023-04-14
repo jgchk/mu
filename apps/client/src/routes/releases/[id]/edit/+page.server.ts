@@ -16,7 +16,7 @@ import type { Actions, PageServerLoad } from './$types'
 
 const schema = z.object({
   id: z.number(),
-  artists: z.map(z.number(), z.string()),
+  createArtists: z.map(z.number(), z.string()),
   album: z.object({
     title: z.string().min(1).optional(),
     artists: z
@@ -47,7 +47,7 @@ export const load: PageServerLoad = async (event) => {
   const form = await superValidate(
     {
       id,
-      artists: new Map(),
+      createArtists: new Map(),
       album: {
         title: data.title ?? undefined,
         artists: data.artists

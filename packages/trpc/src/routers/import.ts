@@ -91,7 +91,7 @@ export const importRouter = router({
         })
       )
 
-      const albumArtists_ =
+      const albumArtists =
         tracks.find((track) => track.metadata && track.metadata.albumArtists.length > 0)?.metadata
           ?.albumArtists ?? []
       const albumTitle =
@@ -106,8 +106,7 @@ export const importRouter = router({
         }
       }
 
-      const artists: Map<number, string> = new Map()
-
+      const createArtists: Map<number, string> = new Map()
       const artistMap: Map<string, { action: 'create' | 'connect'; id: number }> = new Map()
 
       const getArtist = (name: string) => {
@@ -122,8 +121,8 @@ export const importRouter = router({
             artistMap.set(name, artist)
             return artist
           } else {
-            const id = artists.size + 1
-            artists.set(id, name)
+            const id = createArtists.size + 1
+            createArtists.set(id, name)
 
             const artist = { action: 'create', id } as const
             artistMap.set(name, artist)
@@ -132,13 +131,11 @@ export const importRouter = router({
         }
       }
 
-      const albumArtists = albumArtists_.map(getArtist)
-
       return {
-        artists,
+        createArtists,
         album: {
           title: albumTitle ?? undefined,
-          artists: albumArtists,
+          artists: albumArtists.map(getArtist),
           art: albumArt?.toString('base64'),
         },
         tracks: tracks.map((track) => ({
@@ -154,7 +151,7 @@ export const importRouter = router({
       z.object({
         service: z.enum(['soundcloud', 'spotify', 'soulseek']),
         id: z.number(),
-        artists: z.map(z.number(), z.string()),
+        createArtists: z.map(z.number(), z.string()),
         album: z.object({
           title: z.string().optional(),
           artists: z
@@ -217,7 +214,10 @@ export const importRouter = router({
       })
 
       const artistMap = new Map(
-        [...input.artists.entries()].map(([id, name]) => [id, ctx.db.artists.insert({ name })])
+        [...input.createArtists.entries()].map(([id, name]) => [
+          id,
+          ctx.db.artists.insert({ name }),
+        ])
       )
 
       const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
@@ -378,9 +378,37 @@ export const importRouter = router({
         throw new Error('Could not read metadata')
       }
 
+      const createArtists: Map<number, string> = new Map()
+      const artistMap: Map<string, { action: 'create' | 'connect'; id: number }> = new Map()
+
+      const getArtist = (name: string) => {
+        const artist = artistMap.get(name)
+
+        if (artist) {
+          return artist
+        } else {
+          const dbArtist = ctx.db.artists.getByNameCaseInsensitive(name).at(0)
+          if (dbArtist) {
+            const artist = { action: 'connect', id: dbArtist.id } as const
+            artistMap.set(name, artist)
+            return artist
+          } else {
+            const id = createArtists.size + 1
+            createArtists.set(id, name)
+
+            const artist = { action: 'create', id } as const
+            artistMap.set(name, artist)
+            return artist
+          }
+        }
+      }
+
       return {
         id: dbDownload.id,
-        metadata,
+        createArtists,
+        title: metadata.title ?? undefined,
+        artists: metadata.artists.map(getArtist),
+        track: metadata.track ?? undefined,
       }
     }),
   trackDownloadManual: publicProcedure

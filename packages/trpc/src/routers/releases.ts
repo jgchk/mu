@@ -45,7 +45,7 @@ export const releasesRouter = router({
     .input(
       z.object({
         id: z.number(),
-        artists: z.map(z.number(), z.string()),
+        createArtists: z.map(z.number(), z.string()),
         album: z.object({
           title: z.string().min(1).optional(),
           artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
@@ -63,7 +63,10 @@ export const releasesRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const artistMap = new Map(
-        [...input.artists.entries()].map(([id, name]) => [id, ctx.db.artists.insert({ name })])
+        [...input.createArtists.entries()].map(([id, name]) => [
+          id,
+          ctx.db.artists.insert({ name }),
+        ])
       )
 
       const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
