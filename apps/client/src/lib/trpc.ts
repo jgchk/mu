@@ -69,7 +69,16 @@ export const createClient = (fetchFn: typeof fetch) => {
     },
   })
 
-  const url = browser ? '/api/trpc' : `http://localhost:${process.env.SERVER_PORT}/api/trpc`
+  let url
+  if (browser) {
+    url = '/api/trpc'
+  } else {
+    const serverPort = process.env.SERVER_PORT
+    if (!serverPort) {
+      throw new Error('SERVER_PORT not set')
+    }
+    url = `http://localhost:${serverPort}/api/trpc`
+  }
 
   const client = __createClient({
     queryClient,
