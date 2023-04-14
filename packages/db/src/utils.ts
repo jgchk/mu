@@ -23,3 +23,5 @@ export const withCreatedAt = <T>(
   ...model,
   createdAt: new Date(),
 })
+
+export type UpdateData<T> = Partial<Omit<T, 'id'>>

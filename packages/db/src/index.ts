@@ -7,7 +7,9 @@ import { and, eq, isNull } from 'drizzle-orm/expressions'
 import { migrate } from './migrate'
 import type {
   Artist,
+  Config,
   InsertArtist,
+  InsertConfig,
   InsertRelease,
   InsertReleaseArtist,
   InsertSoulseekReleaseDownload,
@@ -30,6 +32,7 @@ import type {
 } from './schema'
 import {
   artists,
+  configs,
   releaseArtists,
   releases,
   soulseekReleaseDownloads,
@@ -41,7 +44,7 @@ import {
   trackArtists,
   tracks,
 } from './schema'
-import type { AutoCreatedAt, InsertTrackPretty } from './utils'
+import type { AutoCreatedAt, InsertTrackPretty, UpdateData } from './utils'
 import { convertInsertTrack, convertTrack, withCreatedAt } from './utils'
 
 export * from './schema'
@@ -86,6 +89,30 @@ export class Database {
 
   close() {
     this.sqlite.close()
+  }
+
+  configs = {
+    insert: (config: InsertConfig) => {
+      return this.db.insert(configs).values(config).returning().get()
+    },
+
+    getAll: () => {
+      return this.db.select().from(configs).all()
+    },
+
+    get: (id: Config['id']) => {
+      return this.db.select().from(configs).where(eq(configs.id, id)).get()
+    },
+
+    update: (id: Config['id'], data: UpdateData<InsertConfig>) => {
+      const update = {
+        ...(data.lastFmKey !== undefined ? { lastFmKey: data.lastFmKey } : {}),
+        ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
+        ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
+        ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
+      }
+      return this.db.update(configs).set(update).where(eq(configs.id, id)).returning().get()
+    },
   }
 
   artists = {
@@ -179,7 +206,7 @@ export class Database {
       return { ...release, artists }
     },
 
-    update: (id: Release['id'], data: Partial<Omit<InsertRelease, 'id'>>) => {
+    update: (id: Release['id'], data: UpdateData<InsertRelease>) => {
       const update = {
         ...(data.title !== undefined ? { title: data.title } : {}),
       }
@@ -188,7 +215,7 @@ export class Database {
 
     updateWithArtists: (
       id: Release['id'],
-      data: Partial<Omit<InsertRelease, 'id'>> & { artists?: ReleaseArtist['artistId'][] }
+      data: UpdateData<InsertRelease & { artists: ReleaseArtist['artistId'][] }>
     ) => {
       const release = this.releases.update(id, data)
       if (data.artists !== undefined) {
@@ -290,7 +317,7 @@ export class Database {
       return { ...track, artists }
     },
 
-    update: (id: Track['id'], data: Partial<Omit<InsertTrackPretty, 'id'>>) => {
+    update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => {
       const update = {
         ...(data.path !== undefined ? { path: data.path } : {}),
         ...(data.title !== undefined ? { title: data.title } : {}),
@@ -305,7 +332,7 @@ export class Database {
 
     updateWithArtists: (
       id: Track['id'],
-      data: Partial<Omit<InsertTrackPretty, 'id'>> & { artists?: TrackArtist['artistId'][] }
+      data: UpdateData<InsertTrackPretty & { artists: TrackArtist['artistId'][] }>
     ) => {
       const track = this.tracks.update(id, data)
       if (data.artists !== undefined) {
@@ -439,7 +466,7 @@ export class Database {
 
     update: (
       id: SoundcloudPlaylistDownload['id'],
-      data: Partial<Omit<InsertSoundcloudPlaylistDownload, 'id'>>
+      data: UpdateData<InsertSoundcloudPlaylistDownload>
     ) => {
       const update = {
         ...(data.playlistId !== undefined ? { playlistId: data.playlistId } : {}),
@@ -494,7 +521,7 @@ export class Database {
 
     update: (
       id: SoundcloudTrackDownload['id'],
-      data: Partial<Omit<InsertSoundcloudTrackDownload, 'id'>>
+      data: UpdateData<InsertSoundcloudTrackDownload>
     ) => {
       const update = {
         ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
@@ -578,10 +605,7 @@ export class Database {
         .get()
     },
 
-    update: (
-      id: SpotifyAlbumDownload['id'],
-      data: Partial<Omit<InsertSpotifyAlbumDownload, 'id'>>
-    ) => {
+    update: (id: SpotifyAlbumDownload['id'], data: UpdateData<InsertSpotifyAlbumDownload>) => {
       const update = {
         ...(data.albumId !== undefined ? { albumId: data.albumId } : {}),
         ...(data.album !== undefined ? { album: data.album } : {}),
@@ -630,10 +654,7 @@ export class Database {
         .get()
     },
 
-    update: (
-      id: SpotifyTrackDownload['id'],
-      data: Partial<Omit<InsertSpotifyTrackDownload, 'id'>>
-    ) => {
+    update: (id: SpotifyTrackDownload['id'], data: UpdateData<InsertSpotifyTrackDownload>) => {
       const update = {
         ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
         ...(data.track !== undefined ? { track: data.track } : {}),
@@ -716,7 +737,7 @@ export class Database {
 
     update: (
       id: SoulseekReleaseDownload['id'],
-      data: Partial<Omit<InsertSoulseekReleaseDownload, 'id'>>
+      data: UpdateData<InsertSoulseekReleaseDownload>
     ) => {
       const update = {
         ...(data.username !== undefined ? { username: data.username } : {}),
@@ -777,10 +798,7 @@ export class Database {
         .get()
     },
 
-    update: (
-      id: SoulseekTrackDownload['id'],
-      data: Partial<Omit<InsertSoulseekTrackDownload, 'id'>>
-    ) => {
+    update: (id: SoulseekTrackDownload['id'], data: UpdateData<InsertSoulseekTrackDownload>) => {
       const update = {
         ...(data.username !== undefined ? { username: data.username } : {}),
         ...(data.file !== undefined ? { file: data.file } : {}),

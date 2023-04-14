@@ -1,20 +1,22 @@
 import type { InferModel } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
+export type Artist = InferModel<typeof artists>
+export type InsertArtist = InferModel<typeof artists, 'insert'>
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
 })
-export type Artist = InferModel<typeof artists>
-export type InsertArtist = InferModel<typeof artists, 'insert'>
 
+export type Release = InferModel<typeof releases>
+export type InsertRelease = InferModel<typeof releases, 'insert'>
 export const releases = sqliteTable('releases', {
   id: integer('id').primaryKey(),
   title: text('title'),
 })
-export type Release = InferModel<typeof releases>
-export type InsertRelease = InferModel<typeof releases, 'insert'>
 
+export type ReleaseArtist = InferModel<typeof releaseArtists>
+export type InsertReleaseArtist = InferModel<typeof releaseArtists, 'insert'>
 export const releaseArtists = sqliteTable(
   'release_artists',
   {
@@ -30,9 +32,9 @@ export const releaseArtists = sqliteTable(
     releaseArtistsPrimaryKey: primaryKey(releaseArtists.releaseId, releaseArtists.artistId),
   })
 )
-export type ReleaseArtist = InferModel<typeof releaseArtists>
-export type InsertReleaseArtist = InferModel<typeof releaseArtists, 'insert'>
 
+export type Track = InferModel<typeof tracks>
+export type InsertTrack = InferModel<typeof tracks, 'insert'>
 export const tracks = sqliteTable(
   'tracks',
   {
@@ -49,9 +51,9 @@ export const tracks = sqliteTable(
     pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),
   })
 )
-export type Track = InferModel<typeof tracks>
-export type InsertTrack = InferModel<typeof tracks, 'insert'>
 
+export type TrackArtist = InferModel<typeof trackArtists>
+export type InsertTrackArtist = InferModel<typeof trackArtists, 'insert'>
 export const trackArtists = sqliteTable(
   'track_artists',
   {
@@ -67,5 +69,3 @@ export const trackArtists = sqliteTable(
     trackArtistsPrimaryKey: primaryKey(trackArtists.trackId, trackArtists.artistId),
   })
 )
-export type TrackArtist = InferModel<typeof trackArtists>
-export type InsertTrackArtist = InferModel<typeof trackArtists, 'insert'>
