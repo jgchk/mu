@@ -1,4 +1,4 @@
-import type { RouterOptions, TRPCClient } from '$lib/trpc'
+import type { RouterInput, RouterOptions, TRPCClient } from '$lib/trpc'
 
 export const createSystemStatusQuery = (
   trpc: TRPCClient,
@@ -42,3 +42,14 @@ export const createRestartSoulseekMutation = (
       await options?.onSettled?.(...args)
     },
   })
+
+export const createConfigQuery = (trpc: TRPCClient) => trpc.system.config.query()
+
+export const prefetchConfigQuery = (trpc: TRPCClient) => trpc.system.config.prefetchQuery()
+
+export const fetchConfigQuery = (trpc: TRPCClient) => trpc.system.config.fetchQuery()
+
+export const createConfigMutation = (trpc: TRPCClient) => trpc.system.updateConfig.mutation()
+
+export const mutateConfig = (trpc: TRPCClient, input: RouterInput['system']['updateConfig']) =>
+  trpc.system.updateConfig.mutate(input)

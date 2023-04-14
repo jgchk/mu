@@ -1,3 +1,11 @@
+CREATE TABLE `config` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`last_fm_key` text,
+	`last_fm_secret` text,
+	`last_fm_username` text,
+	`last_fm_password` text
+);
+--> statement-breakpoint
 CREATE TABLE `soulseek_release_downloads` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,

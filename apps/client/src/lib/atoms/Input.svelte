@@ -1,6 +1,8 @@
 <script lang="ts">
   import { cn } from '$lib/utils/classes'
 
+  import { getInputGroupErrors } from './InputGroup'
+
   export let value = ''
   export let type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' = 'text'
   export let name: string | undefined = undefined
@@ -17,7 +19,11 @@
   export let maxlength: number | undefined = undefined
   let class_: string | undefined = undefined
   export { class_ as class }
-  export let errors: string[] | undefined = undefined
+
+  let propErrors: string[] | undefined = undefined
+  export { propErrors as errors }
+  const contextErrors = getInputGroupErrors()
+  $: errors = propErrors || ($contextErrors && $contextErrors.length > 0)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface $$Events {

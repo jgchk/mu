@@ -13,6 +13,11 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
+  import type { PageServerData } from './$types'
+  import ConfigForm from './ConfigForm.svelte'
+
+  export let data: PageServerData
+
   const trpc = getContextClient()
   const toast = getContextToast()
 
@@ -108,3 +113,5 @@
 {:else}
   <p>Loading...</p>
 {/if}
+
+<ConfigForm formData={data.form} />

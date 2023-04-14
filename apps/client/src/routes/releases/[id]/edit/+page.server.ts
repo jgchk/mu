@@ -37,10 +37,10 @@ const schema = z.object({
     .array(),
 })
 
-export const load: PageServerLoad = async (event) => {
-  const id = paramNumber(event.params.id, 'Release ID must be a number')
+export const load: PageServerLoad = async ({ params, fetch }) => {
+  const id = paramNumber(params.id, 'Release ID must be a number')
 
-  const trpc = createClient(event.fetch)
+  const trpc = createClient(fetch)
   const data = await fetchReleaseWithTracksAndArtistsQuery(trpc, id)
   const art = await fetchReleaseCoverArtQuery(trpc, id)
 
@@ -74,9 +74,7 @@ export const actions: Actions = {
     const formData = await request.formData()
     const form = await superValidate(formData, schema)
 
-    // Convenient validation check:
     if (!form.valid) {
-      // Again, always return { form } and things will just work.
       return fail(400, { form })
     }
 

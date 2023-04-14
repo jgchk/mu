@@ -1,9 +1,48 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "d0dcd104-7574-4d75-8915-4dd1cf073039",
+  "id": "ffc331fe-7130-418f-8fe2-fcb40128bcc4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "config": {
+      "name": "config",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_fm_key": {
+          "name": "last_fm_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_fm_secret": {
+          "name": "last_fm_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_fm_username": {
+          "name": "last_fm_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_fm_password": {
+          "name": "last_fm_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
     "soulseek_release_downloads": {
       "name": "soulseek_release_downloads",
       "columns": {
