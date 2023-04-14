@@ -18,7 +18,7 @@
     <h2 class="mb-4 mt-4 text-2xl font-bold">Releases</h2>
     <FlowGrid>
       {#each $artistQuery.data.releases as release (release.id)}
-        <div class="w-full space-y-1">
+        <div class="w-full">
           <a href="/releases/{release.id}" class="w-full">
             <CoverArt
               src={release.coverArtHash
@@ -28,7 +28,7 @@
           </a>
           <a
             href="/releases/{release.id}"
-            class="block truncate text-sm font-medium hover:underline"
+            class="mt-1 block truncate font-medium hover:underline"
             title={release.title}
           >
             {release.title}
@@ -40,7 +40,7 @@
     <h2 class="mb-4 mt-16 text-2xl font-bold">Tracks</h2>
     <FlowGrid>
       {#each $artistQuery.data.tracks as track (track.id)}
-        <div class="w-full space-y-1">
+        <div class="w-full">
           <a href="/releases/{track.releaseId}" class="w-full">
             <CoverArt
               src={track.coverArtHash
@@ -51,7 +51,7 @@
           </a>
           <a
             href="/releases/{track.releaseId}"
-            class="block truncate text-sm font-medium hover:underline"
+            class="mt-1 block truncate font-medium hover:underline"
             title={track.title}
           >
             {track.title}

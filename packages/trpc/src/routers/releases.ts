@@ -18,6 +18,13 @@ export const releasesRouter = router({
         ?.coverArtHash,
     }))
   ),
+  getAllWithArtists: publicProcedure.query(({ ctx }) =>
+    ctx.db.releases.getAllWithArtists().map((release) => ({
+      ...release,
+      coverArtHash: ctx.db.tracks.getByReleaseId(release.id).find((track) => track.coverArtHash)
+        ?.coverArtHash,
+    }))
+  ),
   getWithTracksAndArtists: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {

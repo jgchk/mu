@@ -2,25 +2,39 @@
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
   import { makeReleaseCoverArtUrl } from '$lib/cover-art'
-  import { createAllReleasesQuery } from '$lib/services/releases'
+  import { createAllReleasesWithArtistsQuery } from '$lib/services/releases'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const releasesQuery = createAllReleasesQuery(trpc)
+  const releasesQuery = createAllReleasesWithArtistsQuery(trpc)
 </script>
 
 {#if $releasesQuery.data}
   <FlowGrid class="p-4">
     {#each $releasesQuery.data as release (release.id)}
-      <a href="/releases/{release.id}" class="w-full overflow-hidden">
-        <CoverArt
-          src={release.coverArtHash
-            ? makeReleaseCoverArtUrl(release.id, release.coverArtHash, { size: 400 })
-            : undefined}
-          alt={release.title}
-        />
-        <div class="truncate text-sm font-bold" title={release.title}>{release.title}</div>
-      </a>
+      <div class="w-full">
+        <a href="/releases/{release.id}" class="w-full">
+          <CoverArt
+            src={release.coverArtHash
+              ? makeReleaseCoverArtUrl(release.id, release.coverArtHash)
+              : undefined}
+          />
+        </a>
+        <a
+          href="/releases/{release.id}"
+          class="mt-1 block truncate font-medium hover:underline"
+          title={release.title}
+        >
+          {release.title}
+        </a>
+        <ul class="comma-list text-sm text-gray-400">
+          {#each release.artists as artist (artist.id)}
+            <li class="flex">
+              <a class="hover:underline" href="/artists/{artist.id}">{artist.name}</a>
+            </li>
+          {/each}
+        </ul>
+      </div>
     {/each}
   </FlowGrid>
 {:else if $releasesQuery.error}

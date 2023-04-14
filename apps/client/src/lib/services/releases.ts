@@ -13,6 +13,12 @@ export const createAllReleasesQuery = (trpc: TRPCClient) => trpc.releases.getAll
 
 export const prefetchAllReleasesQuery = (trpc: TRPCClient) => trpc.releases.getAll.prefetchQuery()
 
+export const createAllReleasesWithArtistsQuery = (trpc: TRPCClient) =>
+  trpc.releases.getAllWithArtists.query()
+
+export const prefetchAllReleasesWithArtistsQuery = (trpc: TRPCClient) =>
+  trpc.releases.getAllWithArtists.prefetchQuery()
+
 export const fetchReleaseCoverArtQuery = (trpc: TRPCClient, id: number) =>
   trpc.releases.getCoverArt.fetchQuery({ id })
 

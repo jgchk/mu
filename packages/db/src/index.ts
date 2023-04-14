@@ -208,6 +208,18 @@ export class Database {
       return this.db.select().from(releases).all()
     },
 
+    getAllWithArtists: () => {
+      return this.db
+        .select()
+        .from(releases)
+        .orderBy(releases.title)
+        .all()
+        .map((release) => {
+          const artists = this.artists.getByReleaseId(release.id)
+          return { ...release, artists }
+        })
+    },
+
     get: (id: Release['id']) => {
       return this.db.select().from(releases).where(eq(releases.id, id)).get()
     },
