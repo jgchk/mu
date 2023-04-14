@@ -7,7 +7,6 @@ import { and, eq, isNull } from 'drizzle-orm/expressions'
 import { migrate } from './migrate'
 import type {
   Artist,
-  AutoCreatedAt,
   InsertArtist,
   InsertRelease,
   InsertReleaseArtist,
@@ -18,7 +17,6 @@ import type {
   InsertSpotifyAlbumDownload,
   InsertSpotifyTrackDownload,
   InsertTrackArtist,
-  InsertTrackPretty,
   Release,
   ReleaseArtist,
   SoulseekReleaseDownload,
@@ -32,8 +30,6 @@ import type {
 } from './schema'
 import {
   artists,
-  convertInsertTrack,
-  convertTrack,
   releaseArtists,
   releases,
   soulseekReleaseDownloads,
@@ -44,8 +40,9 @@ import {
   spotifyTrackDownloads,
   trackArtists,
   tracks,
-  withCreatedAt,
 } from './schema'
+import type { AutoCreatedAt, InsertTrackPretty } from './utils'
+import { convertInsertTrack, convertTrack, withCreatedAt } from './utils'
 
 export * from './schema'
 
