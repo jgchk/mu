@@ -91,7 +91,7 @@ export const importRouter = router({
         })
       )
 
-      const albumArtists =
+      const albumArtists_ =
         tracks.find((track) => track.metadata && track.metadata.albumArtists.length > 0)?.metadata
           ?.albumArtists ?? []
       const albumTitle =
@@ -106,15 +106,46 @@ export const importRouter = router({
         }
       }
 
+      const artists: Map<number, string> = new Map()
+
+      const artistMap: Map<string, { action: 'create' | 'connect'; id: number }> = new Map()
+
+      const getArtist = (name: string) => {
+        const artist = artistMap.get(name)
+
+        if (artist) {
+          return artist
+        } else {
+          const dbArtist = ctx.db.artists.getByNameCaseInsensitive(name).at(0)
+          if (dbArtist) {
+            const artist = { action: 'connect', id: dbArtist.id } as const
+            artistMap.set(name, artist)
+            return artist
+          } else {
+            const id = artists.size + 1
+            artists.set(id, name)
+
+            const artist = { action: 'create', id } as const
+            artistMap.set(name, artist)
+            return artist
+          }
+        }
+      }
+
+      const albumArtists = albumArtists_.map(getArtist)
+
       return {
+        artists,
         album: {
-          title: albumTitle,
+          title: albumTitle ?? undefined,
           artists: albumArtists,
           art: albumArt?.toString('base64'),
         },
         tracks: tracks.map((track) => ({
           id: track.id,
-          metadata: track.metadata,
+          title: track.metadata.title ?? undefined,
+          artists: track.metadata.artists.map(getArtist),
+          track: track.metadata.track ?? undefined,
         })),
       }
     }),

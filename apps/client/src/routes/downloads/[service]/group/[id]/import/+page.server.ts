@@ -41,52 +41,16 @@ export const load: PageServerLoad = async (event) => {
   const trpc = createClient(event.fetch)
   const data = await fetchGroupDownloadDataQuery(trpc, { service, id })
 
-  const artists: Map<number, string> = new Map()
-  const getArtistIdByName = (name: string) => {
-    return [...artists.entries()].find(([, artistName]) => artistName === name)?.[0]
-  }
-
-  const albumArtists = data.album.artists.map((name) => {
-    const id = getArtistIdByName(name)
-    if (id !== undefined) {
-      return id
-    } else {
-      const id = artists.size + 1
-      artists.set(id, name)
-      return id
-    }
-  })
-
-  const tracks = data.tracks.map((track) => {
-    const trackArtists = track.metadata.artists.map((name) => {
-      const id = getArtistIdByName(name)
-      if (id !== undefined) {
-        return id
-      } else {
-        const id = artists.size + 1
-        artists.set(id, name)
-        return id
-      }
-    })
-
-    return {
-      id: track.id,
-      title: track.metadata.title ?? undefined,
-      artists: trackArtists.map((id) => ({ action: 'create', id } as const)),
-      track: track.metadata.track ?? undefined,
-    }
-  })
-
   const form = await superValidate(
     {
       service,
       id,
-      artists: artists,
+      artists: data.artists,
       album: {
-        title: data.album.title ?? undefined,
-        artists: albumArtists.map((id) => ({ action: 'create', id } as const)),
+        title: data.album.title,
+        artists: data.album.artists,
       },
-      tracks,
+      tracks: data.tracks,
     },
     schema
   )

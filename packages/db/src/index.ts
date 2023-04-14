@@ -56,6 +56,11 @@ const makePreparedQueries = (db: BetterSQLite3Database) =>
       .from(artists)
       .where(sql`lower(${artists.name}) like ${placeholder('name')}`)
       .prepare(),
+    getArtistsByNameCaseInsensitive: db
+      .select()
+      .from(artists)
+      .where(sql`lower(${artists.name}) = lower(${placeholder('name')})`)
+      .prepare(),
     getTracksBySimilarTitle: db
       .select()
       .from(tracks)
@@ -101,6 +106,10 @@ export class Database {
 
     getByName: (name: Artist['name']) => {
       return this.db.select().from(artists).where(eq(artists.name, name)).all()
+    },
+
+    getByNameCaseInsensitive: (name: Artist['name']) => {
+      return this.preparedQueries.getArtistsByNameCaseInsensitive.all({ name })
     },
 
     getBySimilarName: (name: string) => {
