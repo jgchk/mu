@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { isDefined } from 'utils'
+import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
 import { fetchTrackDownloadDataQuery, mutateTrackDownloadManual } from '$lib/services/import'
@@ -13,12 +14,24 @@ const schema = z.object({
   service: z.enum(['soundcloud', 'spotify', 'soulseek']),
   id: z.number(),
   createArtists: z.map(z.number(), z.string()),
-  title: z.string().min(1).optional(),
-  artists: z
-    .object({ action: z.enum(['create', 'connect']), id: z.number() })
-    .optional()
+  album: z.object({
+    title: z.string().min(1).optional(),
+    artists: z
+      .object({ action: z.enum(['create', 'connect']), id: z.number() })
+      .optional()
+      .array(),
+  }),
+  tracks: z
+    .object({
+      id: z.number(),
+      title: z.string().optional(),
+      artists: z
+        .object({ action: z.enum(['create', 'connect']), id: z.number() })
+        .optional()
+        .array(),
+      track: z.number().optional(),
+    })
     .array(),
-  track: z.number().optional(),
 })
 
 export const load: PageServerLoad = async (event) => {
@@ -33,20 +46,29 @@ export const load: PageServerLoad = async (event) => {
       service,
       id,
       createArtists: data.createArtists,
-      title: data.title,
-      artists: data.artists,
-      track: data.track,
+      album: {
+        title: data.title,
+        artists: data.artists,
+      },
+      tracks: [
+        {
+          id: data.id,
+          title: data.title,
+          artists: data.artists,
+          track: 1,
+        },
+      ],
     },
     schema
   )
 
-  return { form }
+  return { form, art: data.art }
 }
 
 export const actions: Actions = {
-  default: async (event) => {
-    // Same syntax as in the load function
-    const form = await superValidate(event, schema)
+  default: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const form = await superValidate(formData, schema)
 
     // Convenient validation check:
     if (!form.valid) {
@@ -54,10 +76,31 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    const trpc = createClient(event.fetch)
+    const albumArtRaw = formData.get('albumArt')
+    let albumArt
+    if (albumArtRaw) {
+      if (!isFile(albumArtRaw)) {
+        return fail(400, { form, reason: 'Album art must be a File' })
+      } else {
+        const buffer = await albumArtRaw.arrayBuffer()
+        albumArt = Buffer.from(buffer).toString('base64')
+      }
+    } else {
+      albumArt = undefined
+    }
+
+    const trpc = createClient(fetch)
     const result = await mutateTrackDownloadManual(trpc, {
       ...form.data,
-      artists: form.data.artists.filter(isDefined),
+      album: {
+        ...form.data.album,
+        artists: form.data.album.artists.filter(isDefined),
+        art: albumArt,
+      },
+      track: {
+        ...form.data.tracks[0],
+        artists: form.data.tracks[0].artists.filter(isDefined),
+      },
     })
 
     throw redirect(303, `/releases/${result.release.id}`)

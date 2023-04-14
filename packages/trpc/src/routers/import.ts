@@ -154,24 +154,14 @@ export const importRouter = router({
         createArtists: z.map(z.number(), z.string()),
         album: z.object({
           title: z.string().optional(),
-          artists: z
-            .union([
-              z.object({ action: z.literal('connect'), id: z.number() }),
-              z.object({ action: z.literal('create'), id: z.number() }),
-            ])
-            .array(),
+          artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
           art: z.string().optional(),
         }),
         tracks: z
           .object({
             id: z.number(),
             title: z.string().optional(),
-            artists: z
-              .union([
-                z.object({ action: z.literal('connect'), id: z.number() }),
-                z.object({ action: z.literal('create'), id: z.number() }),
-              ])
-              .array(),
+            artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
             track: z.number().optional(),
           })
           .array(),
@@ -219,8 +209,6 @@ export const importRouter = router({
           ctx.db.artists.insert({ name }),
         ])
       )
-
-      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
 
       const albumTitle = input.album.title
       const albumArtists = input.album.artists.map((artist) => {
@@ -287,16 +275,16 @@ export const importRouter = router({
           }
           const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
-          if (albumArt) {
+          const coverArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
+          if (coverArt) {
             try {
-              await writeTrackCoverArt(newPath, albumArt)
+              await writeTrackCoverArt(newPath, coverArt)
             } catch {
               // OGG Files sometimes fail the first time then work the second time
-              await writeTrackCoverArt(newPath, albumArt)
+              await writeTrackCoverArt(newPath, coverArt)
             }
           }
-
-          const coverArtHash = ifNotNull(albumArt, md5)
+          const coverArtHash = ifNotNull(coverArt, md5)
 
           const lastFm = await ctx.lfm.getTrackInfoUser({
             track: metadata.title ?? '[untitled]',
@@ -403,12 +391,14 @@ export const importRouter = router({
         }
       }
 
+      const coverArt = await readTrackCoverArt(dbDownload.path)
+
       return {
         id: dbDownload.id,
         createArtists,
         title: metadata.title ?? undefined,
         artists: metadata.artists.map(getArtist),
-        track: metadata.track ?? undefined,
+        art: coverArt?.toString('base64'),
       }
     }),
   trackDownloadManual: publicProcedure
@@ -417,8 +407,15 @@ export const importRouter = router({
         service: z.enum(['soundcloud', 'spotify', 'soulseek']),
         id: z.number(),
         createArtists: z.map(z.number(), z.string()),
-        title: z.string().min(1).optional(),
-        artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
+        album: z.object({
+          title: z.string().optional(),
+          artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
+          art: z.string().optional(),
+        }),
+        track: z.object({
+          title: z.string().min(1).optional(),
+          artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
+        }),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -445,7 +442,7 @@ export const importRouter = router({
         ])
       )
 
-      const artists = input.artists.map((artist) => {
+      const albumArtists = input.album.artists.map((artist) => {
         if (artist.action === 'create') {
           const dbArtist = artistMap.get(artist.id)
           if (!dbArtist) {
@@ -456,20 +453,34 @@ export const importRouter = router({
           return ctx.db.artists.get(artist.id)
         }
       })
+      const trackArtists = input.track.artists.map((artist) => {
+        if (artist.action === 'create') {
+          const dbArtist = artistMap.get(artist.id)
+          if (!dbArtist) {
+            throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+          }
+          return dbArtist
+        } else {
+          return ctx.db.artists.get(artist.id)
+        }
+      })
+
       const dbRelease = ctx.db.releases.insertWithArtists({
-        title: input.title,
-        artists: artists.map((artist) => artist.id),
+        title: input.album.title,
+        artists: albumArtists.map((artist) => artist.id),
       })
 
       // track
-      const filename = `1 ${input.title ?? '[untitled]'}${path.extname(dbDownload.path)}`
+      const filename = `1 ${input.track.title ?? '[untitled]'}${path.extname(dbDownload.path)}`
 
       const newPath = path.join(
         ctx.musicDir,
         filenamify(
-          artists.length > 0 ? artists.map((artist) => artist.name).join(', ') : '[unknown]'
+          albumArtists.length > 0
+            ? albumArtists.map((artist) => artist.name).join(', ')
+            : '[unknown]'
         ),
-        filenamify(input.title ?? '[unknown]'),
+        filenamify(input.album.title ?? '[unknown]'),
         filenamify(filename)
       )
 
@@ -479,27 +490,38 @@ export const importRouter = router({
       }
 
       const metadata: Metadata = {
-        title: input.title ?? null,
-        artists: artists.map((artist) => artist.name),
+        title: input.track.title ?? null,
+        artists: trackArtists.map((artist) => artist.name),
         track: 1,
-        album: input.title ?? null,
-        albumArtists: artists.map((artist) => artist.name),
+        album: input.album.title ?? null,
+        albumArtists: albumArtists.map((artist) => artist.name),
       }
       const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
+      const coverArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
+      if (coverArt) {
+        try {
+          await writeTrackCoverArt(newPath, coverArt)
+        } catch {
+          // OGG Files sometimes fail the first time then work the second time
+          await writeTrackCoverArt(newPath, coverArt)
+        }
+      }
+      const coverArtHash = ifNotNull(coverArt, md5)
+
       const lastFm = await ctx.lfm.getTrackInfoUser({
         track: metadata.title ?? '[untitled]',
-        artist: artists.map((artist) => artist.name).join(', '),
+        artist: trackArtists.map((artist) => artist.name).join(', '),
       })
       const favorite = lastFm.userloved === '1'
 
       const dbTrack = ctx.db.tracks.insertWithArtists({
         title: metadata.title,
-        artists: artists.map((artist) => artist.id),
+        artists: trackArtists.map((artist) => artist.id),
         path: newPath,
         releaseId: dbRelease.id,
         trackNumber: metadata.track,
-        coverArtHash: null,
+        coverArtHash,
         duration: outputMetadata.length,
         favorite,
       })
