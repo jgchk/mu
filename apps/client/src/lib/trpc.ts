@@ -69,6 +69,8 @@ export const createClient = (fetchFn: typeof fetch) => {
     },
   })
 
+  const url = browser ? '/api/trpc' : `http://localhost:${process.env.SERVER_PORT}/api/trpc`
+
   const client = __createClient({
     queryClient,
     fetch: fetchFn,
@@ -87,12 +89,12 @@ export const createClient = (fetchFn: typeof fetch) => {
               }),
             }),
             false: httpBatchLink({
-              url: '/api/trpc',
+              url,
               fetch: fetchFn,
             }),
           })
         : httpBatchLink({
-            url: '/api/trpc',
+            url,
             fetch: fetchFn,
           }),
     ],
