@@ -51,7 +51,7 @@
 </script>
 
 <form method="POST" use:enhance>
-  <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
+  <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Last.fm</div>
     <div
       use:tooltip={{

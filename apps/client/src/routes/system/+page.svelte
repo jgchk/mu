@@ -53,7 +53,7 @@
 {#if $statusQuery.data}
   {@const status = $statusQuery.data}
 
-  <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
+  <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Soulseek</div>
     <div
       use:tooltip={{ content: capitalize(status.soulseek) }}
