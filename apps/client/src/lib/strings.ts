@@ -22,10 +22,10 @@ export const updateReleaseFail = (reason: unknown) =>
 export const updateReleaseError = (error: unknown) =>
   `Error updating release: ${toErrorString(error)}`
 
-export const updateConfigSuccess = () => 'Updated system config!'
-export const updateConfigFail = (reason: unknown) =>
-  `Failed to update system config: ${toErrorString(reason)}`
-export const updateConfigError = (error: unknown) =>
-  `Error updating system config: ${toErrorString(error)}`
+export const updateLastFmSuccess = () => 'Last.fm updated!'
+export const updateLastFmDegraded = () => 'Last.fm updated in degraded state: Login failed'
+export const updateLastFmNotLoggedIn = () => 'Last.fm updated. Not logged in.'
+export const updateLastFmError = (error: unknown) =>
+  `Error updating Last.fm: ${toErrorString(error)}`
 
 export const formErrors = () => 'Check the form for errors'

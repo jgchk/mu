@@ -7,11 +7,13 @@
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
+  import { createReloadLastFmMutation } from '$lib/services/system'
   import {
     formErrors,
-    updateConfigError,
-    updateConfigFail,
-    updateConfigSuccess,
+    updateLastFmDegraded,
+    updateLastFmError,
+    updateLastFmNotLoggedIn,
+    updateLastFmSuccess,
   } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -19,7 +21,7 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
-  import type { PageServerData } from './$types'
+  import type { ActionData, PageServerData } from './$types'
 
   export let formData: PageServerData['form']
   export let status: RouterOutput['system']['status']
@@ -29,23 +31,47 @@
   const toast = getContextToast()
   const trpc = getContextClient()
 
+  const notifyStatus = (status: RouterOutput['system']['status']['lastFm']) => {
+    if (status.available) {
+      if (status.loggedIn) {
+        toast.success(updateLastFmSuccess())
+      } else {
+        if (status.error) {
+          toast.warning(updateLastFmDegraded())
+        } else {
+          toast.warning(updateLastFmNotLoggedIn())
+        }
+      }
+    } else {
+      toast.error(updateLastFmError(status.error))
+    }
+  }
+
   const { form, enhance, errors, delayed, reset } = superForm(formData, {
     dataType: 'json',
     onResult: ({ result }) => {
-      void trpc.system.status.utils.invalidate()
-
-      if (result.type === 'redirect' || result.type === 'success') {
-        toast.success(updateConfigSuccess())
+      if (result.type === 'success') {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const status: RouterOutput['system']['status'] = (result.data as ActionData)!.status!
+        notifyStatus(status.lastFm)
         showLastFmConfig = false
-      } else if (result.type === 'failure') {
-        if (result.data?.reason) {
-          toast.error(updateConfigFail(result.data.reason))
-        } else {
+        void trpc.system.status.utils.setData(undefined, status)
+      } else {
+        void trpc.system.status.utils.invalidate()
+        if (result.type === 'failure') {
           toast.error(formErrors())
+        } else if (result.type === 'error') {
+          toast.error(updateLastFmError(result.error))
         }
-      } else if (result.type === 'error') {
-        toast.error(updateConfigError(result.error))
       }
+    },
+  })
+
+  const reloadLastFmMutation = createReloadLastFmMutation(trpc, {
+    showToast: false,
+    onSuccess: (data) => notifyStatus(data),
+    onError: (error) => {
+      toast.error(updateLastFmError(error))
     },
   })
 </script>
@@ -83,6 +109,11 @@
         </Button>
         <Button kind="outline" type="submit" loading={$delayed}>Save</Button>
       {:else}
+        <Button
+          kind="text"
+          on:click={() => $reloadLastFmMutation.mutate()}
+          loading={$reloadLastFmMutation.isLoading}>Reload</Button
+        >
         <Button kind="outline" on:click={() => (showLastFmConfig = true)}>Edit</Button>
       {/if}
     </div>

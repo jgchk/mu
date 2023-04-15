@@ -1,6 +1,8 @@
 import type { Config } from 'db'
+import { ifDefined, toErrorString } from 'utils'
 import { z } from 'zod'
 
+import type { ContextLastFm } from '../context'
 import { publicProcedure, router } from '../trpc'
 
 export const systemRouter = router({
@@ -16,24 +18,10 @@ export const systemRouter = router({
       soulseekStatus = 'stopped'
     }
 
-    const lastFmStatus:
-      | { available: false; error: Error }
-      | { available: true; error?: Error; loggedIn: false }
-      | { available: true; loggedIn: true } = ctx.lfm
-
     return {
       soulseek: soulseekStatus,
-      lastFm: lastFmStatus,
+      lastFm: formatLastFmStatus(ctx.lfm),
     }
-  }),
-  startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
-    await ctx.startSoulseek()
-  }),
-  stopSoulseek: publicProcedure.mutation(({ ctx }) => {
-    ctx.stopSoulseek()
-  }),
-  restartSoulseek: publicProcedure.mutation(async ({ ctx }) => {
-    await ctx.restartSoulseek()
   }),
   config: publicProcedure.query(({ ctx }) => {
     const config: Omit<Config, 'id'> = ctx.db.configs.get() ?? {
@@ -58,4 +46,28 @@ export const systemRouter = router({
       await ctx.updateLastFM()
       return updated
     }),
+  startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.startSoulseek()
+  }),
+  stopSoulseek: publicProcedure.mutation(({ ctx }) => {
+    ctx.stopSoulseek()
+  }),
+  restartSoulseek: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.restartSoulseek()
+  }),
+  reloadLastFm: publicProcedure.mutation(async ({ ctx }) => {
+    const status = await ctx.updateLastFM()
+    return formatLastFmStatus(status)
+  }),
 })
+
+const formatLastFmStatus = (status: ContextLastFm) =>
+  status.available
+    ? status.loggedIn
+      ? ({ available: true, loggedIn: true } as const)
+      : ({
+          available: true,
+          loggedIn: false,
+          error: ifDefined(status.error, toErrorString),
+        } as const)
+    : ({ available: false, error: toErrorString(status.error) } as const)

@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { z } from 'zod'
 
-import { fetchConfigQuery, mutateConfig } from '$lib/services/system'
+import { fetchConfigQuery, fetchSystemStatusQuery, mutateConfig } from '$lib/services/system'
 import type { RouterInput, RouterOutput } from '$lib/trpc'
 import { createClient } from '$lib/trpc'
 
@@ -50,7 +50,8 @@ export const actions: Actions = {
     const result = await mutateConfig(trpc, toServerData(form.data))
 
     form.data = fromServerData(result)
+    const status = await fetchSystemStatusQuery(trpc)
 
-    return { form }
+    return { form, status }
   },
 }

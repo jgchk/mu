@@ -14,7 +14,7 @@
   import { cn } from '$lib/utils/classes'
 
   import type { PageServerData } from './$types'
-  import ConfigForm from './ConfigForm.svelte'
+  import ConfigForm from './LastFmConfig.svelte'
 
   export let data: PageServerData
 
@@ -70,6 +70,7 @@
           kind="outline"
           on:click={() => {
             if (!$startSoulseekMutation.isLoading) {
+              toast.success('Starting Soulseek...')
               $startSoulseekMutation.mutate()
               $stopSoulseekMutation.reset()
               $restartSoulseekMutation.reset()
@@ -84,6 +85,7 @@
           kind="text"
           on:click={() => {
             if (!$restartSoulseekMutation.isLoading) {
+              toast.success('Restarting Soulseek...')
               $restartSoulseekMutation.mutate()
               $startSoulseekMutation.reset()
               $stopSoulseekMutation.reset()
@@ -97,6 +99,7 @@
           kind="outline"
           on:click={() => {
             if (!$stopSoulseekMutation.isLoading) {
+              toast.success('Stopping Soulseek...')
               $stopSoulseekMutation.mutate()
               $startSoulseekMutation.reset()
               $restartSoulseekMutation.reset()

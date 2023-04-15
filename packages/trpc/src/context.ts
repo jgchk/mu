@@ -18,7 +18,7 @@ export type Context = {
   stopSoulseek: () => void
   restartSoulseek: () => Promise<void>
 
-  updateLastFM: () => Promise<void>
+  updateLastFM: () => Promise<ContextLastFm>
 
   destroy: () => void
 }

@@ -67,6 +67,7 @@ export const makeContext = async (): Promise<Context> => {
     },
     updateLastFM: async () => {
       context.lfm = await getLfm()
+      return context.lfm
     },
     destroy: () => {
       context.db.close()
