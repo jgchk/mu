@@ -16,8 +16,14 @@ export const systemRouter = router({
       soulseekStatus = 'stopped'
     }
 
+    const lastFmStatus:
+      | { available: false; error: Error }
+      | { available: true; error?: Error; loggedIn: false }
+      | { available: true; loggedIn: true } = ctx.lfm
+
     return {
       soulseek: soulseekStatus,
+      lastFm: lastFmStatus,
     }
   }),
   startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
@@ -47,7 +53,9 @@ export const systemRouter = router({
         lastFmPassword: z.string().nullish(),
       })
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.db.configs.update(input)
+    .mutation(async ({ ctx, input }) => {
+      const updated = ctx.db.configs.update(input)
+      await ctx.updateLastFM()
+      return updated
     }),
 })
