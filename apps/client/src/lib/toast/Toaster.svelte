@@ -11,7 +11,9 @@
   const FLY_SIZE = 50
 </script>
 
-<ul class="absolute right-0 top-0 flex h-full flex-col items-end overflow-x-hidden">
+<ul
+  class="pointer-events-none absolute right-0 top-0 flex h-full flex-col items-end overflow-x-hidden"
+>
   {#each $toast as item (item.id)}
     <li
       in:fly|local={{ x: FLY_SIZE, duration: IN_DURATION }}
@@ -21,7 +23,7 @@
       <div
         in:slide|local={{ duration: IN_DURATION }}
         out:slide|local={{ duration: OUT_DURATION }}
-        class="mb-1.5 !overflow-visible group-last:mb-0"
+        class="pointer-events-auto mb-1.5 !overflow-visible group-last:mb-0"
       >
         <Toast {item} {toast} />
       </div>

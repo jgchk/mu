@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { capitalize, toErrorString } from 'utils'
+  import { capitalize } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
@@ -9,7 +9,6 @@
     createStopSoulseekMutation,
     createSystemStatusQuery,
   } from '$lib/services/system'
-  import { updateConfigError, updateConfigFail, updateConfigSuccess } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
@@ -68,6 +67,7 @@
     <div class="flex flex-1 items-center justify-end gap-1">
       {#if status.soulseek === 'stopped'}
         <Button
+          kind="outline"
           on:click={() => {
             if (!$startSoulseekMutation.isLoading) {
               $startSoulseekMutation.mutate()
@@ -81,18 +81,7 @@
         </Button>
       {:else}
         <Button
-          on:click={() => {
-            if (!$stopSoulseekMutation.isLoading) {
-              $stopSoulseekMutation.mutate()
-              $startSoulseekMutation.reset()
-              $restartSoulseekMutation.reset()
-            }
-          }}
-          loading={$stopSoulseekMutation.isLoading}
-        >
-          Stop
-        </Button>
-        <Button
+          kind="text"
           on:click={() => {
             if (!$restartSoulseekMutation.isLoading) {
               $restartSoulseekMutation.mutate()
@@ -104,48 +93,26 @@
         >
           Restart
         </Button>
+        <Button
+          kind="outline"
+          on:click={() => {
+            if (!$stopSoulseekMutation.isLoading) {
+              $stopSoulseekMutation.mutate()
+              $startSoulseekMutation.reset()
+              $restartSoulseekMutation.reset()
+            }
+          }}
+          loading={$stopSoulseekMutation.isLoading}
+        >
+          Stop
+        </Button>
       {/if}
     </div>
   </div>
 
-  <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
-    <div>Last.fm</div>
-    <div
-      use:tooltip={{
-        content: status.lastFm.available
-          ? status.lastFm.loggedIn
-            ? 'Running'
-            : status.lastFm.error
-            ? `Degraded: Login failed`
-            : 'Not logged in'
-          : `Stopped: ${toErrorString(status.lastFm.error)}`,
-      }}
-      class={cn(
-        'h-4 w-4 rounded-full transition',
-        status.lastFm.available && status.lastFm.loggedIn && 'bg-success-600',
-        status.lastFm.available && !status.lastFm.loggedIn && 'bg-warning-600',
-        !status.lastFm.available && 'bg-error-600'
-      )}
-    />
-  </div>
+  <ConfigForm formData={data.form} {status} />
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}
   <p>Loading...</p>
 {/if}
-
-<ConfigForm
-  formData={data.form}
-  on:success={() => {
-    toast.success(updateConfigSuccess())
-    void $statusQuery.refetch()
-  }}
-  on:failure={({ detail: { reason } }) => {
-    toast.error(updateConfigFail(reason))
-    void $statusQuery.refetch()
-  }}
-  on:error={({ detail: { error } }) => {
-    toast.error(updateConfigError(error))
-    void $statusQuery.refetch()
-  }}
-/>
