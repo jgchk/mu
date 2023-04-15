@@ -9,6 +9,7 @@
     createStopSoulseekMutation,
     createSystemStatusQuery,
   } from '$lib/services/system'
+  import { updateConfigError, updateConfigFail, updateConfigSuccess } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
@@ -114,4 +115,9 @@
   <p>Loading...</p>
 {/if}
 
-<ConfigForm formData={data.form} />
+<ConfigForm
+  formData={data.form}
+  on:success={() => toast.success(updateConfigSuccess())}
+  on:failure={({ detail: { reason } }) => toast.error(updateConfigFail(reason))}
+  on:error={({ detail: { error } }) => toast.error(updateConfigError(error))}
+/>
