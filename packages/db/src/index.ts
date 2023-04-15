@@ -96,23 +96,37 @@ export class Database {
       return this.db.insert(configs).values(config).returning().get()
     },
 
-    getAll: () => {
-      return this.db.select().from(configs).all()
+    get: () => {
+      return this.db.select().from(configs).limit(1).all().at(0) ?? this.configs.default
     },
 
-    get: (id: Config['id']) => {
-      return this.db.select().from(configs).where(eq(configs.id, id)).get()
-    },
-
-    update: (id: Config['id'], data: UpdateData<InsertConfig>) => {
-      const update = {
-        ...(data.lastFmKey !== undefined ? { lastFmKey: data.lastFmKey } : {}),
-        ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
-        ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
-        ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
+    update: (data: UpdateData<InsertConfig>) => {
+      const config = this.configs.get()
+      if ('id' in config) {
+        const update = {
+          ...(data.lastFmKey !== undefined ? { lastFmKey: data.lastFmKey } : {}),
+          ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
+          ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
+          ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
+        }
+        return this.db.update(configs).set(update).returning().get()
+      } else {
+        const insert: InsertConfig = {
+          lastFmKey: data.lastFmKey ?? this.configs.default.lastFmKey,
+          lastFmSecret: data.lastFmSecret ?? this.configs.default.lastFmSecret,
+          lastFmUsername: data.lastFmUsername ?? this.configs.default.lastFmUsername,
+          lastFmPassword: data.lastFmPassword ?? this.configs.default.lastFmPassword,
+        }
+        return this.db.insert(configs).values(insert).returning().get()
       }
-      return this.db.update(configs).set(update).where(eq(configs.id, id)).returning().get()
     },
+
+    default: {
+      lastFmKey: null,
+      lastFmSecret: null,
+      lastFmUsername: null,
+      lastFmPassword: null,
+    } satisfies Omit<Config, 'id'>,
   }
 
   artists = {

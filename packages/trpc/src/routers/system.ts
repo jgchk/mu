@@ -30,7 +30,7 @@ export const systemRouter = router({
     await ctx.restartSoulseek()
   }),
   config: publicProcedure.query(({ ctx }) => {
-    const config: Omit<Config, 'id'> = ctx.db.configs.getAll().at(0) ?? {
+    const config: Omit<Config, 'id'> = ctx.db.configs.get() ?? {
       lastFmKey: null,
       lastFmSecret: null,
       lastFmUsername: null,
@@ -48,11 +48,6 @@ export const systemRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
-      const config = ctx.db.configs.getAll().at(0)
-      if (config) {
-        return ctx.db.configs.update(config.id, input)
-      } else {
-        return ctx.db.configs.insert(input)
-      }
+      return ctx.db.configs.update(input)
     }),
 })
