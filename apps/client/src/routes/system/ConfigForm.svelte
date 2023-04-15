@@ -21,7 +21,7 @@
   }>()
 
   const toast = getContextToast()
-  const { form, enhance, errors, constraints, delayed } = superForm(formData, {
+  const { form, enhance, errors, delayed } = superForm(formData, {
     dataType: 'json',
     onResult: ({ result }) => {
       if (result.type === 'redirect' || result.type === 'success') {
@@ -42,30 +42,22 @@
 <form class="space-y-1 p-1" method="POST" use:enhance>
   <InputGroup errors={$errors.lastFmKey}>
     <Label for="last-fm-key">Last.fm API Key</Label>
-    <Input id="last-fm-key" bind:value={$form.lastFmKey} {...$constraints.lastFmKey} />
+    <Input id="last-fm-key" bind:value={$form.lastFmKey} />
   </InputGroup>
 
   <InputGroup errors={$errors.lastFmSecret}>
     <Label for="last-fm-secret">Last.fm API Secret</Label>
-    <Input id="last-fm-secret" bind:value={$form.lastFmSecret} {...$constraints.lastFmSecret} />
+    <Input id="last-fm-secret" bind:value={$form.lastFmSecret} />
   </InputGroup>
 
   <InputGroup errors={$errors.lastFmUsername}>
     <Label for="last-fm-username">Last.fm Username</Label>
-    <Input
-      id="last-fm-username"
-      bind:value={$form.lastFmUsername}
-      {...$constraints.lastFmUsername}
-    />
+    <Input id="last-fm-username" bind:value={$form.lastFmUsername} />
   </InputGroup>
 
   <InputGroup errors={$errors.lastFmPassword}>
     <Label for="last-fm-password">Last.fm Password</Label>
-    <Input
-      id="last-fm-password"
-      bind:value={$form.lastFmPassword}
-      {...$constraints.lastFmPassword}
-    />
+    <Input id="last-fm-password" bind:value={$form.lastFmPassword} />
   </InputGroup>
 
   <Button type="submit" kind="solid" loading={$delayed} class="mt-4">Submit</Button>
