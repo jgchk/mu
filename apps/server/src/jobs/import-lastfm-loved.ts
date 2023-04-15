@@ -7,7 +7,33 @@ import { makeDb } from '../context/db'
 import { makeLastFm } from '../context/lfm'
 
 const db = makeDb()
-const lfm = await makeLastFm()
+const config = db.configs.get()
+
+if (!config.lastFmKey) {
+  throw new Error('Last.fm API key is not configured')
+}
+
+const lfm = await makeLastFm({
+  apiKey: config.lastFmKey,
+  username: config.lastFmUsername,
+  password: config.lastFmPassword,
+  apiSecret: config.lastFmSecret,
+})
+
+if (!lfm.available) {
+  throw new Error('Last.fm is not available', {
+    cause: lfm.error,
+  })
+}
+if (!lfm.loggedIn) {
+  if (lfm.error) {
+    throw new Error('Last.fm login failed', {
+      cause: lfm.error,
+    })
+  } else {
+    throw new Error('Not logged in to Last.fm')
+  }
+}
 
 const lovedTracks = await lfm.getAllLovedTracks()
 console.log('Loved tracks:', lovedTracks.length)

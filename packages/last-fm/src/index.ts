@@ -59,7 +59,8 @@ const getSessionKey = async ({
   return MobileSession.parse(res).session.key
 }
 
-export class LastFM {
+export class LastFMBase {
+  loggedIn = false
   apiKey: string
 
   constructor({ apiKey }: { apiKey: string }) {
@@ -166,7 +167,12 @@ export class LastFM {
   }
 }
 
-export class LastFMAuthenticated extends LastFM {
+export class LastFM extends LastFMBase {
+  loggedIn = false as const
+}
+
+export class LastFMAuthenticated extends LastFMBase {
+  loggedIn = true as const
   apiSecret: string
   username: string
   password: string

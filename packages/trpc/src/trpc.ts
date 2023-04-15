@@ -13,7 +13,7 @@ import superjson from 'superjson'
 
 import type { Context } from './context'
 
-const t = initTRPC.context<Context>().create({
+export const t = initTRPC.context<Context>().create({
   /**
    * @see https://trpc.io/docs/v10/data-transformers
    */

@@ -15,10 +15,6 @@ const envSchema = z.object({
   SPOTIFY_DC_COOKIE: z.string(),
   SOULSEEK_USERNAME: z.string(),
   SOULSEEK_PASSWORD: z.string(),
-  LASTFM_KEY: z.string(),
-  LASTFM_SECRET: z.string(),
-  LASTFM_USERNAME: z.string(),
-  LASTFM_PASSWORD: z.string(),
 })
 
 const envRes = envSchema.safeParse(process.env)

@@ -1,5 +1,6 @@
 import { SlskClient } from 'soulseek-ts'
 import type { Context } from 'trpc'
+import type { ContextLastFm } from 'trpc/src/context'
 
 import { env } from '../env'
 import { makeDb } from './db'
@@ -9,13 +10,29 @@ import { makeSoundcloud } from './sc'
 import { makeSpotify } from './sp'
 
 export const makeContext = async (): Promise<Context> => {
+  const db = makeDb()
+
+  const getLfm = async (): Promise<ContextLastFm> => {
+    const config = db.configs.get()
+    if (config.lastFmKey) {
+      return makeLastFm({
+        apiKey: config.lastFmKey,
+        username: config.lastFmUsername,
+        password: config.lastFmPassword,
+        apiSecret: config.lastFmSecret,
+      })
+    } else {
+      return { available: false, error: new Error('API key is not configured') }
+    }
+  }
+
   const context: Context = {
-    db: makeDb(),
+    db,
     dl: makeDownloader(() => context),
     sc: makeSoundcloud(),
     sp: makeSpotify(),
     slsk: undefined,
-    lfm: await makeLastFm(),
+    lfm: await getLfm(),
     musicDir: env.MUSIC_DIR,
     startSoulseek: async () => {
       if (context.slsk) return
@@ -47,6 +64,9 @@ export const makeContext = async (): Promise<Context> => {
       }
 
       return context.startSoulseek()
+    },
+    updateLastFM: async () => {
+      context.lfm = await getLfm()
     },
     destroy: () => {
       context.db.close()

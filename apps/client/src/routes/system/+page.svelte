@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { capitalize } from 'utils'
+  import { capitalize, toErrorString } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
@@ -56,17 +56,15 @@
 
   <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
     <div>Soulseek</div>
-    <div>
-      <div
-        use:tooltip={{ content: capitalize(status.soulseek) }}
-        class={cn(
-          'h-4 w-4 rounded-full transition',
-          status.soulseek === 'stopped' && 'bg-error-600',
-          status.soulseek === 'starting' && 'bg-warning-600',
-          status.soulseek === 'running' && 'bg-success-600'
-        )}
-      />
-    </div>
+    <div
+      use:tooltip={{ content: capitalize(status.soulseek) }}
+      class={cn(
+        'h-4 w-4 rounded-full transition',
+        status.soulseek === 'stopped' && 'bg-error-600',
+        status.soulseek === 'starting' && 'bg-warning-600',
+        status.soulseek === 'running' && 'bg-success-600'
+      )}
+    />
     <div class="flex flex-1 items-center justify-end gap-1">
       {#if status.soulseek === 'stopped'}
         <Button
@@ -109,6 +107,27 @@
       {/if}
     </div>
   </div>
+
+  <div class="flex items-center gap-4 rounded p-1.5 pl-3 hover:bg-gray-700">
+    <div>Last.fm</div>
+    <div
+      use:tooltip={{
+        content: status.lastFm.available
+          ? status.lastFm.loggedIn
+            ? 'Running'
+            : status.lastFm.error
+            ? `Degraded: Login failed`
+            : 'Not logged in'
+          : `Stopped: ${toErrorString(status.lastFm.error)}`,
+      }}
+      class={cn(
+        'h-4 w-4 rounded-full transition',
+        status.lastFm.available && status.lastFm.loggedIn && 'bg-success-600',
+        status.lastFm.available && !status.lastFm.loggedIn && 'bg-warning-600',
+        !status.lastFm.available && 'bg-error-600'
+      )}
+    />
+  </div>
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}
@@ -117,7 +136,16 @@
 
 <ConfigForm
   formData={data.form}
-  on:success={() => toast.success(updateConfigSuccess())}
-  on:failure={({ detail: { reason } }) => toast.error(updateConfigFail(reason))}
-  on:error={({ detail: { error } }) => toast.error(updateConfigError(error))}
+  on:success={() => {
+    toast.success(updateConfigSuccess())
+    void $statusQuery.refetch()
+  }}
+  on:failure={({ detail: { reason } }) => {
+    toast.error(updateConfigFail(reason))
+    void $statusQuery.refetch()
+  }}
+  on:error={({ detail: { error } }) => {
+    toast.error(updateConfigError(error))
+    void $statusQuery.refetch()
+  }}
 />

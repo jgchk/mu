@@ -286,11 +286,14 @@ export const importRouter = router({
           }
           const coverArtHash = ifNotNull(coverArt, md5)
 
-          const lastFm = await ctx.lfm.getTrackInfoUser({
-            track: metadata.title ?? '[untitled]',
-            artist: artists.map((artist) => artist.name).join(', '),
-          })
-          const favorite = lastFm.userloved === '1'
+          let favorite = false
+          if (ctx.lfm.available && ctx.lfm.loggedIn) {
+            const lastFm = await ctx.lfm.getTrackInfoUser({
+              track: metadata.title ?? '[untitled]',
+              artist: artists.map((artist) => artist.name).join(', '),
+            })
+            favorite = lastFm.userloved === '1'
+          }
 
           const dbTrack = ctx.db.tracks.insertWithArtists({
             title: metadata.title,
@@ -509,11 +512,14 @@ export const importRouter = router({
       }
       const coverArtHash = ifNotNull(coverArt, md5)
 
-      const lastFm = await ctx.lfm.getTrackInfoUser({
-        track: metadata.title ?? '[untitled]',
-        artist: trackArtists.map((artist) => artist.name).join(', '),
-      })
-      const favorite = lastFm.userloved === '1'
+      let favorite = false
+      if (ctx.lfm.available && ctx.lfm.loggedIn) {
+        const lastFm = await ctx.lfm.getTrackInfoUser({
+          track: metadata.title ?? '[untitled]',
+          artist: trackArtists.map((artist) => artist.name).join(', '),
+        })
+        favorite = lastFm.userloved === '1'
+      }
 
       const dbTrack = ctx.db.tracks.insertWithArtists({
         title: metadata.title,

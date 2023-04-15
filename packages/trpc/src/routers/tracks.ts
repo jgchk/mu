@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { isLastFmAuthenticated } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const tracksRouter = router({
@@ -44,6 +45,7 @@ export const tracksRouter = router({
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseIdWithArtists(releaseId)),
   favorite: publicProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
+    .use(isLastFmAuthenticated)
     .mutation(async ({ input: { id, favorite }, ctx }) => {
       const dbTrack = ctx.db.tracks.update(id, { favorite })
 
