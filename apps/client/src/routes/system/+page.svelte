@@ -38,8 +38,8 @@
 
 {#if $statusQuery.data}
   {@const status = $statusQuery.data}
-  <SlskConfig data={data.slskForm} {status} />
   <LastFmConfig data={data.lastFmForm} {status} />
+  <SlskConfig data={data.slskForm} {status} />
   <SpotifyConfig data={data.spotifyForm} {status} />
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
