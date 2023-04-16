@@ -49,7 +49,12 @@ async fn main() -> anyhow::Result<()> {
             password,
             credentials_cache,
         } => {
-            streaming_client::StreamingClient::new(username, password, credentials_cache).await?;
+            let result =
+                streaming_client::StreamingClient::new(username, password, credentials_cache).await;
+            match result {
+                Ok(_) => println!("Login successful"),
+                Err(e) => eprintln!("{}", e),
+            }
         }
         Commands::Download {
             username,

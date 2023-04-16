@@ -52,6 +52,7 @@ export const makeContext = async (): Promise<Context> => {
       opts.downloads = {
         username: config.spotifyUsername,
         password: config.spotifyPassword,
+        devMode: env.NODE_ENV === 'development',
       }
     }
 
@@ -109,12 +110,10 @@ export const makeContext = async (): Promise<Context> => {
         }
       })(),
     ])
-    console.log('errors', errors)
 
     const numFailed = Object.keys(errors).length
     const allFailed = numFailed === enabledFeatures.length
     const someFailed = numFailed > 0
-    console.log({ numFailed, allFailed, someFailed })
     if (allFailed) {
       context.sp = { status: 'errored', errors }
     } else if (someFailed) {

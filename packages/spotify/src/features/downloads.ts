@@ -42,13 +42,13 @@ const DownloadsEnabledMixin =
       password = params.password
       devMode = params.devMode ?? false
       scriptPath = this.devMode
-        ? path.join(__dirname, '../downloader/target/debug/spotify-download')
-        : path.join(__dirname, '../downloader/target/release/spotify-download')
+        ? path.join(__dirname, '../../downloader/target/debug/spotify-download')
+        : path.join(__dirname, '../../downloader/target/release/spotify-download')
       credentialsCachePath =
-        params.credentialsCachePath ?? path.join(__dirname, '../credentials.json')
+        params.credentialsCachePath ?? path.join(__dirname, '../../credentials_cache')
 
       async checkCredentials() {
-        await execa(this.scriptPath, [
+        const { stderr } = await execa(this.scriptPath, [
           'check-login',
           '--username',
           this.username,
@@ -57,6 +57,9 @@ const DownloadsEnabledMixin =
           '--credentials-cache',
           this.credentialsCachePath,
         ])
+        if (stderr) {
+          throw new Error(stderr)
+        }
       }
 
       downloadTrack(
