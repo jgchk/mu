@@ -77,6 +77,7 @@
 <form method="POST" action="?/slsk" use:enhance>
   <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Soulseek</div>
+
     <div
       use:tooltip={{
         content:
@@ -96,7 +97,53 @@
         status.soulseek.status === 'logged-in' && 'bg-success-600'
       )}
     />
-    <div class="flex flex-1 items-center justify-end gap-1">
+
+    <div class="flex items-center justify-end gap-1">
+      {#if status.soulseek.status === 'logged-in'}
+        <Button
+          kind="text"
+          on:click={() => {
+            if (!$stopSoulseekMutation.isLoading) {
+              toast.success('Stopping Soulseek...')
+              $stopSoulseekMutation.mutate()
+              $startSoulseekMutation.reset()
+            }
+          }}
+          loading={$stopSoulseekMutation.isLoading}
+        >
+          Stop
+        </Button>
+        <Button
+          kind="text"
+          on:click={() => {
+            if (!$startSoulseekMutation.isLoading) {
+              toast.success('Restarting Soulseek...')
+              $startSoulseekMutation.reset()
+              $stopSoulseekMutation.reset()
+            }
+          }}
+          loading={$startSoulseekMutation.isLoading}
+        >
+          Restart
+        </Button>
+      {:else}
+        <Button
+          kind="text"
+          on:click={() => {
+            if (!$startSoulseekMutation.isLoading) {
+              toast.success('Starting Soulseek...')
+              $startSoulseekMutation.mutate()
+              $stopSoulseekMutation.reset()
+            }
+          }}
+          loading={$startSoulseekMutation.isLoading}
+        >
+          Start
+        </Button>
+      {/if}
+    </div>
+
+    <div class="ml-auto flex items-center gap-1">
       {#if showConfig}
         <Button
           kind="text"
@@ -109,48 +156,6 @@
         </Button>
         <Button kind="outline" type="submit" loading={$delayed}>Save</Button>
       {:else}
-        {#if status.soulseek.status === 'logged-in'}
-          <Button
-            kind="text"
-            on:click={() => {
-              if (!$startSoulseekMutation.isLoading) {
-                toast.success('Restarting Soulseek...')
-                $startSoulseekMutation.reset()
-                $stopSoulseekMutation.reset()
-              }
-            }}
-            loading={$startSoulseekMutation.isLoading}
-          >
-            Restart
-          </Button>
-          <Button
-            kind="outline"
-            on:click={() => {
-              if (!$stopSoulseekMutation.isLoading) {
-                toast.success('Stopping Soulseek...')
-                $stopSoulseekMutation.mutate()
-                $startSoulseekMutation.reset()
-              }
-            }}
-            loading={$stopSoulseekMutation.isLoading}
-          >
-            Stop
-          </Button>
-        {:else}
-          <Button
-            kind="outline"
-            on:click={() => {
-              if (!$startSoulseekMutation.isLoading) {
-                toast.success('Starting Soulseek...')
-                $startSoulseekMutation.mutate()
-                $stopSoulseekMutation.reset()
-              }
-            }}
-            loading={$startSoulseekMutation.isLoading}
-          >
-            Start
-          </Button>
-        {/if}
         <Button kind="outline" on:click={() => (showConfig = true)}>Edit</Button>
       {/if}
     </div>

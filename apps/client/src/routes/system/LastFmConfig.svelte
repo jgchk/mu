@@ -106,7 +106,15 @@
         status.lastFm.status === 'logged-in' && 'bg-success-600'
       )}
     />
-    <div class="flex flex-1 items-center justify-end gap-1">
+    <div class="flex items-center justify-end gap-1">
+      <Button
+        kind="text"
+        on:click={() => $reloadLastFmMutation.mutate()}
+        loading={$reloadLastFmMutation.isLoading}>Reload</Button
+      >
+    </div>
+
+    <div class="ml-auto flex items-center gap-1">
       {#if showConfig}
         <Button
           kind="text"
@@ -119,11 +127,6 @@
         </Button>
         <Button kind="outline" type="submit" loading={$delayed}>Save</Button>
       {:else}
-        <Button
-          kind="text"
-          on:click={() => $reloadLastFmMutation.mutate()}
-          loading={$reloadLastFmMutation.isLoading}>Reload</Button
-        >
         <Button kind="outline" on:click={() => (showConfig = true)}>Edit</Button>
       {/if}
     </div>
