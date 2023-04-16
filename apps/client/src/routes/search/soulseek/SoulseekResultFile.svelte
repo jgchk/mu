@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { addedToDownloads } from 'strings'
+
   import { tooltip } from '$lib/actions/tooltip'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import { createDownloadMutation } from '$lib/services/downloads'
-  import { addedToDownloads } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 

@@ -50,6 +50,9 @@ importers:
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
+      strings:
+        specifier: workspace:*
+        version: link:../../packages/strings
       superjson:
         specifier: ^1.12.2
         version: 1.12.2
@@ -374,6 +377,12 @@ importers:
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
+
+  packages/strings:
+    dependencies:
+      utils:
+        specifier: workspace:*
+        version: link:../utils
 
   packages/trpc:
     dependencies:

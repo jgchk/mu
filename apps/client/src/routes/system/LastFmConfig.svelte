@@ -1,4 +1,11 @@
 <script lang="ts">
+  import {
+    formErrors,
+    updateLastFmDegraded,
+    updateLastFmError,
+    updateLastFmNotLoggedIn,
+    updateLastFmSuccess,
+  } from 'strings'
   import { superForm } from 'sveltekit-superforms/client'
   import { toErrorString } from 'utils'
 
@@ -8,13 +15,6 @@
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import { createReloadLastFmMutation } from '$lib/services/system'
-  import {
-    formErrors,
-    updateLastFmDegraded,
-    updateLastFmError,
-    updateLastFmNotLoggedIn,
-    updateLastFmSuccess,
-  } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
   import type { RouterOutput } from '$lib/trpc'

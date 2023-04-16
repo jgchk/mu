@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { importReleaseError, importReleaseFail, importReleaseSuccess } from 'strings'
+
   import ReleaseForm from '$lib/components/ReleaseForm.svelte'
-  import { importReleaseError, importReleaseFail, importReleaseSuccess } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
 
   import type { PageServerData } from './$types'
