@@ -1,57 +1,62 @@
 import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
-import { z } from 'zod'
 
 import { fetchConfigQuery, fetchSystemStatusQuery, mutateConfig } from '$lib/services/system'
-import type { RouterInput, RouterOutput } from '$lib/trpc'
 import { createClient } from '$lib/trpc'
 
 import type { Actions, PageServerLoad } from './$types'
-
-type Schema = z.infer<typeof schema>
-const schema = z.object({
-  lastFmKey: z.string(),
-  lastFmSecret: z.string(),
-  lastFmUsername: z.string(),
-  lastFmPassword: z.string(),
-})
-
-const fromServerData = (data: RouterOutput['system']['config']): Schema => ({
-  lastFmKey: data.lastFmKey ?? '',
-  lastFmSecret: data.lastFmSecret ?? '',
-  lastFmUsername: data.lastFmUsername ?? '',
-  lastFmPassword: data.lastFmPassword ?? '',
-})
-
-const toServerData = (data: Schema): RouterInput['system']['updateConfig'] => ({
-  lastFmKey: data.lastFmKey || null,
-  lastFmSecret: data.lastFmSecret || null,
-  lastFmUsername: data.lastFmUsername || null,
-  lastFmPassword: data.lastFmPassword || null,
-})
+import {
+  lastFmFromServerData,
+  lastFmSchema,
+  lastFmToServerData,
+  slskFromServerData,
+  slskSchema,
+  slskToServerData,
+} from './schemas'
 
 export const load: PageServerLoad = async ({ fetch }) => {
   const trpc = createClient(fetch)
   const data = await fetchConfigQuery(trpc)
-  const form = await superValidate(fromServerData(data), schema)
-  return { form }
+  const lastFmForm = await superValidate(lastFmFromServerData(data), lastFmSchema, {
+    id: 'lastFmForm',
+  })
+  const slskForm = await superValidate(slskFromServerData(data), slskSchema, {
+    id: 'slskForm',
+  })
+  return { lastFmForm, slskForm }
 }
 
 export const actions: Actions = {
-  default: async ({ request, fetch }) => {
+  lastFm: async ({ request, fetch }) => {
     const formData = await request.formData()
-    const form = await superValidate(formData, schema)
+    const lastFmForm = await superValidate(formData, lastFmSchema)
 
-    if (!form.valid) {
-      return fail(400, { form })
+    if (!lastFmForm.valid) {
+      return fail(400, { lastFmForm })
     }
 
     const trpc = createClient(fetch)
-    const result = await mutateConfig(trpc, toServerData(form.data))
+    const result = await mutateConfig(trpc, lastFmToServerData(lastFmForm.data))
 
-    form.data = fromServerData(result)
+    lastFmForm.data = lastFmFromServerData(result)
     const status = await fetchSystemStatusQuery(trpc)
 
-    return { form, status }
+    return { lastFmForm, status }
+  },
+  slsk: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const slskForm = await superValidate(formData, slskSchema)
+
+    if (!slskForm.valid) {
+      return fail(400, { slskForm })
+    }
+
+    const trpc = createClient(fetch)
+    const result = await mutateConfig(trpc, slskToServerData(slskForm.data))
+
+    slskForm.data = slskFromServerData(result)
+    const status = await fetchSystemStatusQuery(trpc)
+
+    return { slskForm, status }
   },
 }

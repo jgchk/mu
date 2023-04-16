@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Validation } from 'sveltekit-superforms'
   import { superForm } from 'sveltekit-superforms/client'
   import { toErrorString } from 'utils'
 
@@ -15,17 +16,18 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
-  import type { ActionData, PageServerData } from './$types'
+  import type { ActionData } from './$types'
+  import type { LastFmSchema } from './schemas'
 
-  export let formData: PageServerData['form']
+  export let data: Validation<LastFmSchema>
   export let status: RouterOutput['system']['status']
 
-  let showLastFmConfig = false
+  let showConfig = false
 
   const toast = getContextToast()
   const trpc = getContextClient()
 
-  const updateLastFmError = (error: unknown) => `Error updating Last.fm: ${toErrorString(error)}`
+  const updateErrorMsg = (error: unknown) => `Error updating Last.fm: ${toErrorString(error)}`
   const notifyStatus = (status: RouterOutput['system']['status']['lastFm']) => {
     if (status.available) {
       if (status.loggedIn) {
@@ -34,29 +36,29 @@
         if (status.error) {
           toast.warning('Last.fm updated in degraded state: Login failed')
         } else {
-          toast.warning('Last.fm updated. Not logged in.')
+          toast.warning('Last.fm updated: Not logged in')
         }
       }
     } else {
-      toast.error(updateLastFmError(status.error))
+      toast.error(updateErrorMsg(status.error))
     }
   }
 
-  const { form, enhance, errors, delayed, reset } = superForm(formData, {
+  const { form, enhance, errors, delayed, reset } = superForm(data, {
     dataType: 'json',
     onResult: ({ result }) => {
       if (result.type === 'success') {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const status: RouterOutput['system']['status'] = (result.data as ActionData)!.status!
         notifyStatus(status.lastFm)
-        showLastFmConfig = false
+        showConfig = false
         void trpc.system.status.utils.setData(undefined, status)
       } else {
         void trpc.system.status.utils.invalidate()
         if (result.type === 'failure') {
           toast.error(formErrors())
         } else if (result.type === 'error') {
-          toast.error(updateLastFmError(result.error))
+          toast.error(updateErrorMsg(result.error))
         }
       }
     },
@@ -66,12 +68,12 @@
     showToast: false,
     onSuccess: (data) => notifyStatus(data),
     onError: (error) => {
-      toast.error(updateLastFmError(error))
+      toast.error(updateErrorMsg(error))
     },
   })
 </script>
 
-<form method="POST" use:enhance>
+<form method="POST" action="?/lastFm" use:enhance>
   <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Last.fm</div>
     <div
@@ -92,11 +94,11 @@
       )}
     />
     <div class="flex flex-1 items-center justify-end gap-1">
-      {#if showLastFmConfig}
+      {#if showConfig}
         <Button
           kind="text"
           on:click={() => {
-            showLastFmConfig = false
+            showConfig = false
             reset()
           }}
         >
@@ -109,30 +111,30 @@
           on:click={() => $reloadLastFmMutation.mutate()}
           loading={$reloadLastFmMutation.isLoading}>Reload</Button
         >
-        <Button kind="outline" on:click={() => (showLastFmConfig = true)}>Edit</Button>
+        <Button kind="outline" on:click={() => (showConfig = true)}>Edit</Button>
       {/if}
     </div>
   </div>
 
-  {#if showLastFmConfig}
+  {#if showConfig}
     <div class="space-y-1 p-4 pt-2" transition:slide|local={{ axis: 'y' }}>
       <InputGroup errors={$errors.lastFmKey}>
-        <Label for="last-fm-key">Last.fm API Key</Label>
+        <Label for="last-fm-key">API Key</Label>
         <Input id="last-fm-key" bind:value={$form.lastFmKey} />
       </InputGroup>
 
       <InputGroup errors={$errors.lastFmSecret}>
-        <Label for="last-fm-secret">Last.fm API Secret</Label>
+        <Label for="last-fm-secret">API Secret</Label>
         <Input id="last-fm-secret" bind:value={$form.lastFmSecret} />
       </InputGroup>
 
       <InputGroup errors={$errors.lastFmUsername}>
-        <Label for="last-fm-username">Last.fm Username</Label>
+        <Label for="last-fm-username">Username</Label>
         <Input id="last-fm-username" bind:value={$form.lastFmUsername} />
       </InputGroup>
 
       <InputGroup errors={$errors.lastFmPassword}>
-        <Label for="last-fm-password">Last.fm Password</Label>
+        <Label for="last-fm-password">Password</Label>
         <Input id="last-fm-password" bind:value={$form.lastFmPassword} />
       </InputGroup>
     </div>

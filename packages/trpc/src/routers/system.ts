@@ -26,11 +26,26 @@ export const systemRouter = router({
         lastFmSecret: z.string().nullish(),
         lastFmUsername: z.string().nullish(),
         lastFmPassword: z.string().nullish(),
+        soulseekUsername: z.string().nullish(),
+        soulseekPassword: z.string().nullish(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const updated = ctx.db.configs.update(input)
-      await ctx.updateLastFM()
+
+      if (
+        input.lastFmKey !== undefined ||
+        input.lastFmSecret !== undefined ||
+        input.lastFmUsername !== undefined ||
+        input.lastFmPassword !== undefined
+      ) {
+        await ctx.updateLastFM()
+      }
+
+      if (input.soulseekUsername !== undefined || input.soulseekPassword !== undefined) {
+        await ctx.startSoulseek()
+      }
+
       return updated
     }),
   startSoulseek: publicProcedure.mutation(async ({ ctx }) => {

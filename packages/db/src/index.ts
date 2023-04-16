@@ -108,6 +108,12 @@ export class Database {
           ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
           ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
           ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
+          ...(data.soulseekUsername !== undefined
+            ? { soulseekUsername: data.soulseekUsername }
+            : {}),
+          ...(data.soulseekPassword !== undefined
+            ? { soulseekPassword: data.soulseekPassword }
+            : {}),
         }
         return this.db.update(configs).set(update).returning().get()
       } else {
@@ -116,6 +122,8 @@ export class Database {
           lastFmSecret: data.lastFmSecret ?? this.configs.default.lastFmSecret,
           lastFmUsername: data.lastFmUsername ?? this.configs.default.lastFmUsername,
           lastFmPassword: data.lastFmPassword ?? this.configs.default.lastFmPassword,
+          soulseekUsername: data.soulseekUsername ?? this.configs.default.soulseekUsername,
+          soulseekPassword: data.soulseekPassword ?? this.configs.default.soulseekPassword,
         }
         return this.db.insert(configs).values(insert).returning().get()
       }
