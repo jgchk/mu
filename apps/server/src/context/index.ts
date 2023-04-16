@@ -1,6 +1,5 @@
 import { SlskClient } from 'soulseek-ts'
 import type { Context } from 'trpc'
-import type { ContextLastFm } from 'trpc/src/context'
 import { withProps } from 'utils'
 
 import { env } from '../env'
@@ -13,17 +12,29 @@ import { makeSpotify } from './sp'
 export const makeContext = async (): Promise<Context> => {
   const db = makeDb()
 
-  const getLfm = async (): Promise<ContextLastFm> => {
+  const updateLfm = async () => {
     const config = db.configs.get()
+
     if (config.lastFmKey) {
-      return makeLastFm({
-        apiKey: config.lastFmKey,
-        username: config.lastFmUsername,
-        password: config.lastFmPassword,
-        apiSecret: config.lastFmSecret,
-      })
+      const lfm = await makeLastFm(
+        {
+          apiKey: config.lastFmKey,
+          username: config.lastFmUsername,
+          password: config.lastFmPassword,
+          apiSecret: config.lastFmSecret,
+        },
+        {
+          onAuthenticating: (lfm) => {
+            context.lfm = withProps(lfm, { status: 'authenticating' } as const)
+          },
+          onLoggingIn: (lfm) => {
+            context.lfm = withProps(lfm, { status: 'logging-in' } as const)
+          },
+        }
+      )
+      context.lfm = lfm
     } else {
-      return { available: false, error: new Error('API key is not configured') }
+      context.lfm = { status: 'stopped' }
     }
   }
 
@@ -33,7 +44,7 @@ export const makeContext = async (): Promise<Context> => {
     sc: makeSoundcloud(),
     sp: makeSpotify(),
     slsk: { status: 'stopped' },
-    lfm: await getLfm(),
+    lfm: { status: 'stopped' },
     musicDir: env.MUSIC_DIR,
     startSoulseek: async () => {
       context.stopSoulseek()
@@ -90,7 +101,7 @@ export const makeContext = async (): Promise<Context> => {
       return context.slsk
     },
     updateLastFM: async () => {
-      context.lfm = await getLfm()
+      await updateLfm()
       return context.lfm
     },
     destroy: () => {
@@ -101,6 +112,8 @@ export const makeContext = async (): Promise<Context> => {
       }
     },
   }
+
+  await updateLfm()
 
   return context
 }

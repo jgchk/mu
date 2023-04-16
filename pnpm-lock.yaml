@@ -315,6 +315,9 @@ importers:
       got:
         specifier: ^12.6.0
         version: 12.6.0
+      utils:
+        specifier: workspace:*
+        version: link:../utils
       zod:
         specifier: ^3.21.4
         version: 3.21.4

@@ -23,9 +23,13 @@ export type Context = {
 }
 
 export type ContextLastFm =
-  | { available: false; error: unknown }
-  | ({ available: true; error?: unknown } & LastFM)
-  | ({ available: true } & LastFMAuthenticated)
+  | { status: 'stopped' }
+  | { status: 'errored'; error: unknown }
+  | ({ status: 'authenticating' } & LastFM)
+  | ({ status: 'authenticated' } & LastFM)
+  | ({ status: 'logging-in' } & LastFM)
+  | ({ status: 'degraded'; error: unknown } & LastFM)
+  | ({ status: 'logged-in' } & LastFMAuthenticated)
 
 export type ContextSlsk =
   | { status: 'stopped' }

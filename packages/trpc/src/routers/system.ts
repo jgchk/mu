@@ -1,5 +1,5 @@
 import type { Config } from 'db'
-import { ifDefined, toErrorString } from 'utils'
+import { toErrorString } from 'utils'
 import { z } from 'zod'
 
 import type { ContextLastFm, ContextSlsk } from '../context'
@@ -60,6 +60,21 @@ export const systemRouter = router({
   }),
 })
 
+const formatLastFmStatus = (status: ContextLastFm) =>
+  status.status === 'stopped'
+    ? ({ status: 'stopped' } as const)
+    : status.status === 'errored'
+    ? ({ status: 'errored', error: toErrorString(status.error) } as const)
+    : status.status === 'authenticating'
+    ? ({ status: 'authenticating' } as const)
+    : status.status === 'authenticated'
+    ? ({ status: 'authenticated' } as const)
+    : status.status === 'logging-in'
+    ? ({ status: 'logging-in' } as const)
+    : status.status === 'degraded'
+    ? ({ status: 'degraded', error: toErrorString(status.error) } as const)
+    : ({ status: 'logged-in' } as const)
+
 const formatSlskStatus = (status: ContextSlsk) =>
   status.status === 'stopped'
     ? ({ status: 'stopped' } as const)
@@ -68,14 +83,3 @@ const formatSlskStatus = (status: ContextSlsk) =>
     : status.status === 'logging-in'
     ? ({ status: 'logging-in' } as const)
     : ({ status: 'logged-in' } as const)
-
-const formatLastFmStatus = (status: ContextLastFm) =>
-  status.available
-    ? status.loggedIn
-      ? ({ available: true, loggedIn: true } as const)
-      : ({
-          available: true,
-          loggedIn: false,
-          error: ifDefined(status.error, toErrorString),
-        } as const)
-    : ({ available: false, error: toErrorString(status.error) } as const)

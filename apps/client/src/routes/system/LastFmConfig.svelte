@@ -29,18 +29,20 @@
 
   const updateErrorMsg = (error: unknown) => `Error updating Last.fm: ${toErrorString(error)}`
   const notifyStatus = (status: RouterOutput['system']['status']['lastFm']) => {
-    if (status.available) {
-      if (status.loggedIn) {
-        toast.success('Last.fm updated!')
-      } else {
-        if (status.error) {
-          toast.warning('Last.fm updated in degraded state: Login failed')
-        } else {
-          toast.warning('Last.fm updated: Not logged in')
-        }
-      }
-    } else {
+    if (status.status === 'stopped') {
+      toast.error('Last.fm updated: Not logged in')
+    } else if (status.status === 'errored') {
       toast.error(updateErrorMsg(status.error))
+    } else if (status.status === 'authenticating') {
+      toast.warning('Last.fm updated: Authenticating...')
+    } else if (status.status === 'authenticated') {
+      toast.warning('Last.fm updated: Authenticated')
+    } else if (status.status === 'logging-in') {
+      toast.warning('Last.fm updated: Logging in...')
+    } else if (status.status === 'degraded') {
+      toast.warning(`Last.fm updated: Degraded: ${status.error}`)
+    } else {
+      toast.success('Last.fm updated!')
     }
   }
 
@@ -78,19 +80,30 @@
     <div>Last.fm</div>
     <div
       use:tooltip={{
-        content: status.lastFm.available
-          ? status.lastFm.loggedIn
-            ? 'Running'
-            : status.lastFm.error
-            ? `Degraded: Login failed`
-            : 'Not logged in'
-          : `Stopped: ${toErrorString(status.lastFm.error)}`,
+        content:
+          status.lastFm.status === 'stopped'
+            ? 'Stopped'
+            : status.lastFm.status === 'errored'
+            ? `Error: ${status.lastFm.error}`
+            : status.lastFm.status === 'authenticating'
+            ? 'Authenticating...'
+            : status.lastFm.status === 'authenticated'
+            ? 'Authenticated'
+            : status.lastFm.status === 'logging-in'
+            ? 'Logging in...'
+            : status.lastFm.status === 'degraded'
+            ? `Degraded: ${status.lastFm.error}`
+            : 'Running',
       }}
       class={cn(
         'h-4 w-4 rounded-full transition',
-        status.lastFm.available && status.lastFm.loggedIn && 'bg-success-600',
-        status.lastFm.available && !status.lastFm.loggedIn && 'bg-warning-600',
-        !status.lastFm.available && 'bg-error-600'
+        status.lastFm.status === 'stopped' && 'bg-error-600',
+        status.lastFm.status === 'errored' && 'bg-error-600',
+        status.lastFm.status === 'authenticating' && 'bg-warning-600',
+        status.lastFm.status === 'authenticated' && 'bg-warning-600',
+        status.lastFm.status === 'logging-in' && 'bg-warning-600',
+        status.lastFm.status === 'degraded' && 'bg-warning-600',
+        status.lastFm.status === 'logged-in' && 'bg-success-600'
       )}
     />
     <div class="flex flex-1 items-center justify-end gap-1">

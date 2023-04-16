@@ -1,8 +1,7 @@
-const hasMessage = (error: unknown): error is { message: string } =>
-  typeof error === 'object' &&
-  error !== null &&
-  'message' in error &&
-  typeof error.message === 'string'
+import { isObject } from './object'
+
+export const hasMessage = (error: unknown): error is { message: string } =>
+  isObject(error) && 'message' in error && typeof error.message === 'string'
 
 export const toErrorString = (error: unknown) => {
   if (typeof error === 'string') {

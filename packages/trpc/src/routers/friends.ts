@@ -1,6 +1,6 @@
 import { ifDefined, undefIfEmpty, withinLastMinutes } from 'utils'
 
-import { isLastFmAvailable } from '../middleware'
+import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 type LastTrack = {
@@ -16,7 +16,7 @@ type LastTrack = {
 } & ({ nowPlaying: true } | { nowPlaying: false; date: Date })
 
 export const friendsRouter = router({
-  lastFm: publicProcedure.use(isLastFmAvailable).query(async ({ ctx }) => {
+  lastFm: publicProcedure.use(isLastFmLoggedIn).query(async ({ ctx }) => {
     const friends = await ctx.lfm.getFriends()
 
     const lastTracks = await Promise.all(

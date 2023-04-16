@@ -22,3 +22,6 @@ export const withProps = <T, P extends Record<string, unknown>>(something: T, pr
   }
   return something as T & P
 }
+
+export const isObject = (error: unknown): error is object =>
+  typeof error === 'object' && error !== null

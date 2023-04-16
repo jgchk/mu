@@ -1,6 +1,6 @@
 import type { Artist } from 'db'
 import { compareTwoStrings } from 'string-similarity'
-import { groupBy } from 'utils'
+import { groupBy, toErrorString } from 'utils'
 import { parentPort } from 'worker_threads'
 
 import { makeDb } from '../context/db'
@@ -20,19 +20,18 @@ const lfm = await makeLastFm({
   apiSecret: config.lastFmSecret,
 })
 
-if (!lfm.available) {
-  throw new Error('Last.fm is not available', {
-    cause: lfm.error,
-  })
-}
-if (!lfm.loggedIn) {
-  if (lfm.error) {
-    throw new Error('Last.fm login failed', {
-      cause: lfm.error,
-    })
-  } else {
-    throw new Error('Not logged in to Last.fm')
-  }
+if (lfm.status === 'stopped') {
+  throw new Error('Last.fm is not running')
+} else if (lfm.status === 'errored') {
+  throw new Error(`Last.fm ran into an error: ${toErrorString(lfm.error)}`, { cause: lfm.error })
+} else if (lfm.status === 'authenticating') {
+  throw new Error('Last.fm is authenticating')
+} else if (lfm.status === 'authenticated') {
+  throw new Error('Last.fm is authenticated, but not logged in')
+} else if (lfm.status === 'logging-in') {
+  throw new Error('Last.fm is logging in')
+} else if (lfm.status === 'degraded') {
+  throw new Error(`Last.fm is authenticated, but login failed: ${toErrorString(lfm.error)}`)
 }
 
 const lovedTracks = await lfm.getAllLovedTracks()

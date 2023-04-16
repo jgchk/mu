@@ -3,29 +3,41 @@ import { toErrorString } from 'utils'
 
 import { t } from './trpc'
 
-export const isLastFmAvailable = t.middleware(({ next, ctx }) => {
+export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
   const lfm = ctx.lfm
 
-  if (!lfm.available) {
+  if (lfm.status === 'stopped') {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Last.fm is not available',
+      message: 'Last.fm is not running',
+    })
+  } else if (lfm.status === 'errored') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Last.fm ran into an error: ${toErrorString(lfm.error)}`,
       cause: lfm.error,
     })
-  }
-  if (!lfm.loggedIn) {
-    if (lfm.error) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Last.fm login failed',
-        cause: lfm.error,
-      })
-    } else {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Not logged in to Last.fm',
-      })
-    }
+  } else if (lfm.status === 'authenticating') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Last.fm is authenticating',
+    })
+  } else if (lfm.status === 'authenticated') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Last.fm is authenticated, but not logged in',
+    })
+  } else if (lfm.status === 'logging-in') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Last.fm is logging in',
+    })
+  } else if (lfm.status === 'degraded') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Last.fm is authenticated, but login failed: ${toErrorString(lfm.error)}`,
+      cause: lfm.error,
+    })
   }
 
   return next({

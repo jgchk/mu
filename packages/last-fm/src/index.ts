@@ -1,5 +1,6 @@
 import crypto from 'crypto'
-import got from 'got'
+import got, { HTTPError } from 'got'
+import { hasMessage, isObject } from 'utils'
 
 import {
   Friends,
@@ -68,15 +69,35 @@ export class LastFMBase {
   }
 
   async login(info: { username: string; password: string; apiSecret: string }) {
-    const sessionKey = await getSessionKey({
-      ...info,
-      apiKey: this.apiKey,
-    })
-    return new LastFMAuthenticated({
-      ...info,
-      apiKey: this.apiKey,
-      sessionKey,
-    })
+    try {
+      const sessionKey = await getSessionKey({
+        ...info,
+        apiKey: this.apiKey,
+      })
+      return new LastFMAuthenticated({
+        ...info,
+        apiKey: this.apiKey,
+        sessionKey,
+      })
+    } catch (e) {
+      let error = e
+      if (e instanceof HTTPError && typeof e.response.body === 'string') {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const body = JSON.parse(e.response.body)
+          if (isObject(body)) {
+            if ('error' in body && typeof body.error === 'number' && body.error === 4) {
+              error = new Error('Invalid login')
+            } else if (hasMessage(body)) {
+              error = new Error(body.message)
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      throw error
+    }
   }
 
   async getFriends(username: string) {

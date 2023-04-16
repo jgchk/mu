@@ -287,7 +287,7 @@ export const importRouter = router({
           const coverArtHash = ifNotNull(coverArt, md5)
 
           let favorite = false
-          if (ctx.lfm.available && ctx.lfm.loggedIn) {
+          if (ctx.lfm.status === 'logged-in') {
             const lastFm = await ctx.lfm.getTrackInfoUser({
               track: metadata.title ?? '[untitled]',
               artist: artists.map((artist) => artist.name).join(', '),
@@ -513,7 +513,7 @@ export const importRouter = router({
       const coverArtHash = ifNotNull(coverArt, md5)
 
       let favorite = false
-      if (ctx.lfm.available && ctx.lfm.loggedIn) {
+      if (ctx.lfm.status === 'logged-in') {
         const lastFm = await ctx.lfm.getTrackInfoUser({
           track: metadata.title ?? '[untitled]',
           artist: trackArtists.map((artist) => artist.name).join(', '),

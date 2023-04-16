@@ -30,7 +30,7 @@
   const updateErrorMsg = (error: unknown) => `Error updating Soulseek: ${toErrorString(error)}`
   const notifyStatus = (status: RouterOutput['system']['status']['soulseek']) => {
     if (status.status === 'stopped') {
-      toast.error('Soulseek updated. Not logged in.')
+      toast.error('Soulseek updated: Not logged in')
     } else if (status.status === 'errored') {
       toast.error(updateErrorMsg(status.error))
     } else if (status.status === 'logging-in') {
