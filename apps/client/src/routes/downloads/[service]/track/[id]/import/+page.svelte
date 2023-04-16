@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { importTrackError, importTrackFail, importTrackSuccess } from 'strings'
+  import { toErrorString } from 'utils'
 
   import ReleaseForm from '$lib/components/ReleaseForm.svelte'
   import { getContextToast } from '$lib/toast/toast'
@@ -14,7 +14,9 @@
 <ReleaseForm
   formData={data.form}
   artData={data.art ?? null}
-  on:success={({ detail: { data } }) => toast.success(importTrackSuccess(data.album.title))}
-  on:failure={({ detail: { reason } }) => toast.error(importTrackFail(reason))}
-  on:error={({ detail: { error } }) => toast.error(importTrackError(error))}
+  on:success={({ detail: { data } }) => toast.success(`Imported ${data.album.title || 'track'}!`)}
+  on:failure={({ detail: { reason } }) =>
+    toast.error(`Failed to import track: ${toErrorString(reason)}`)}
+  on:error={({ detail: { error } }) =>
+    toast.error(`Error importing track: ${toErrorString(error)}`)}
 />

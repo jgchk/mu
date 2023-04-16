@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { updateReleaseError, updateReleaseFail, updateReleaseSuccess } from 'strings'
+  import { toErrorString } from 'utils'
 
   import ReleaseForm from '$lib/components/ReleaseForm.svelte'
   import { getContextToast } from '$lib/toast/toast'
@@ -14,7 +14,9 @@
 <ReleaseForm
   formData={data.form}
   artData={data.art}
-  on:success={({ detail: { data } }) => toast.success(updateReleaseSuccess(data.album.title))}
-  on:failure={({ detail: { reason } }) => toast.error(updateReleaseFail(reason))}
-  on:error={({ detail: { error } }) => toast.error(updateReleaseError(error))}
+  on:success={({ detail: { data } }) => toast.success(`Updated ${data.album.title || 'release'}!`)}
+  on:failure={({ detail: { reason } }) =>
+    toast.error(`Failed to update release: ${toErrorString(reason)}`)}
+  on:error={({ detail: { error } }) =>
+    toast.error(`Error updating release: ${toErrorString(error)}`)}
 />

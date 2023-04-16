@@ -1,11 +1,4 @@
 <script lang="ts">
-  import {
-    formErrors,
-    updateLastFmDegraded,
-    updateLastFmError,
-    updateLastFmNotLoggedIn,
-    updateLastFmSuccess,
-  } from 'strings'
   import { superForm } from 'sveltekit-superforms/client'
   import { toErrorString } from 'utils'
 
@@ -15,6 +8,7 @@
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import { createReloadLastFmMutation } from '$lib/services/system'
+  import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
   import type { RouterOutput } from '$lib/trpc'
@@ -31,15 +25,16 @@
   const toast = getContextToast()
   const trpc = getContextClient()
 
+  const updateLastFmError = (error: unknown) => `Error updating Last.fm: ${toErrorString(error)}`
   const notifyStatus = (status: RouterOutput['system']['status']['lastFm']) => {
     if (status.available) {
       if (status.loggedIn) {
-        toast.success(updateLastFmSuccess())
+        toast.success('Last.fm updated!')
       } else {
         if (status.error) {
-          toast.warning(updateLastFmDegraded())
+          toast.warning('Last.fm updated in degraded state: Login failed')
         } else {
-          toast.warning(updateLastFmNotLoggedIn())
+          toast.warning('Last.fm updated. Not logged in.')
         }
       }
     } else {

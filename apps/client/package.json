@@ -20,7 +20,6 @@
     "@tanstack/svelte-query": "^4.27.0",
     "@trpc/client": "^10.18.0",
     "isomorphic-ws": "^5.0.0",
-    "strings": "workspace:*",
     "superjson": "^1.12.2",
     "svelte-dnd-action": "^0.9.22",
     "svelte-inview": "^4.0.0",

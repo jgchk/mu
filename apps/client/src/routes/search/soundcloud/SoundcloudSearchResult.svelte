@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { addedToDownloads } from 'strings'
   import { followCursor } from 'tippy.js'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import { createDownloadMutation } from '$lib/services/downloads'
+  import { addedToDownloads } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'

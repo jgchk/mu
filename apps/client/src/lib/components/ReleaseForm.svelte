@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formErrors } from 'strings'
   import { createEventDispatcher, onMount } from 'svelte'
   import type { DndEvent } from 'svelte-dnd-action'
   import { dndzone } from 'svelte-dnd-action'
@@ -13,6 +12,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
