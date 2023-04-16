@@ -41,3 +41,29 @@ export const slskToServerData = (data: SlskData): RouterInput['system']['updateC
   soulseekUsername: data.soulseekUsername || null,
   soulseekPassword: data.soulseekPassword || null,
 })
+
+export type SpotifySchema = typeof spotifySchema
+type SpotifyData = z.infer<SpotifySchema>
+export const spotifySchema = z.object({
+  spotifyClientId: z.string(),
+  spotifyClientSecret: z.string(),
+  spotifyUsername: z.string(),
+  spotifyPassword: z.string(),
+  spotifyDcCookie: z.string(),
+})
+
+export const spotifyFromServerData = (data: RouterOutput['system']['config']): SpotifyData => ({
+  spotifyClientId: data.spotifyClientId ?? '',
+  spotifyClientSecret: data.spotifyClientSecret ?? '',
+  spotifyUsername: data.spotifyUsername ?? '',
+  spotifyPassword: data.spotifyPassword ?? '',
+  spotifyDcCookie: data.spotifyDcCookie ?? '',
+})
+
+export const spotifyToServerData = (data: SpotifyData): RouterInput['system']['updateConfig'] => ({
+  spotifyClientId: data.spotifyClientId || null,
+  spotifyClientSecret: data.spotifyClientSecret || null,
+  spotifyUsername: data.spotifyUsername || null,
+  spotifyPassword: data.spotifyPassword || null,
+  spotifyDcCookie: data.spotifyDcCookie || null,
+})

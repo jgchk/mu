@@ -1,6 +1,6 @@
 import { ifDefined, undefIfEmpty, withinLastMinutes } from 'utils'
 
-import { isLastFmLoggedIn } from '../middleware'
+import { isLastFmLoggedIn, isSpotifyFriendActivityAvailable } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 type LastTrack = {
@@ -80,7 +80,7 @@ export const friendsRouter = router({
       return b.date.getTime() - a.date.getTime()
     })
   }),
-  spotify: publicProcedure.query(async ({ ctx }) => {
+  spotify: publicProcedure.use(isSpotifyFriendActivityAvailable).query(async ({ ctx }) => {
     const friends = await ctx.sp.getFriendActivity()
     return friends.map((friend) => {
       const baseData = {

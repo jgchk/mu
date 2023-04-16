@@ -11,4 +11,9 @@ export const configs = sqliteTable('config', {
   lastFmPassword: text('last_fm_password'),
   soulseekUsername: text('soulseek_username'),
   soulseekPassword: text('soulseek_password'),
+  spotifyClientId: text('spotify_client_id'),
+  spotifyClientSecret: text('spotify_client_secret'),
+  spotifyUsername: text('spotify_username'),
+  spotifyPassword: text('spotify_password'),
+  spotifyDcCookie: text('spotify_dc_cookie'),
 })

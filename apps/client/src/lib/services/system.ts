@@ -63,3 +63,25 @@ export const createReloadLastFmMutation = (
       await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
     },
   })
+
+export const createStartSpotifyMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['startSpotify']
+) =>
+  trpc.system.startSpotify.mutation({
+    ...options,
+    onSettled: async (...args) => {
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    },
+  })
+
+export const createStopSpotifyMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['stopSpotify']
+) =>
+  trpc.system.stopSpotify.mutation({
+    ...options,
+    onSettled: async (...args) => {
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    },
+  })

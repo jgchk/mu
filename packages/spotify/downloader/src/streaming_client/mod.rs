@@ -33,9 +33,15 @@ impl StreamingClient {
             None,
         )?;
 
-        let credentials = cache.credentials().unwrap_or_else(|| {
+        let credentials = if let Some(c) = cache.credentials() {
+            if c.username == username {
+                c
+            } else {
+                librespot::core::authentication::Credentials::with_password(username, password)
+            }
+        } else {
             librespot::core::authentication::Credentials::with_password(username, password)
-        });
+        };
 
         let (session, _) = Session::connect(
             librespot::core::config::SessionConfig::default(),

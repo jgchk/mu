@@ -105,3 +105,13 @@ export const FriendActivity = z.object({
     ])
     .array(),
 })
+
+export type SearchType = 'track' | 'album'
+export type SearchResults<T extends SearchType[]> = {
+  [K in T[number] as `${K}s`]: K extends 'track' ? Pager<FullTrack> : Pager<SimplifiedAlbum>
+}
+
+export type SpotifyId = {
+  kind: string
+  id: string
+}

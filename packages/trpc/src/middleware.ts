@@ -74,3 +74,95 @@ export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
     },
   })
 })
+
+export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
+  const sp = ctx.sp
+
+  if (sp.status === 'stopped') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is not running',
+    })
+  } else if (sp.status === 'starting') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is starting',
+    })
+  } else if (sp.status === 'errored') {
+    if (sp.errors.webApi) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Spotify ran into an error: ${toErrorString(sp.errors.webApi)}`,
+        cause: sp.errors.webApi,
+      })
+    } else {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Spotify is not configured to use the Web API',
+      })
+    }
+  } else if (sp.status === 'degraded' && sp.errors.webApi) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Spotify ran into an error: ${toErrorString(sp.errors.webApi)}`,
+      cause: sp.errors.webApi,
+    })
+  } else if (!sp.webApi) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is not configured to use the Web API',
+    })
+  }
+
+  return next({
+    ctx: {
+      sp,
+    },
+  })
+})
+
+export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => {
+  const sp = ctx.sp
+
+  if (sp.status === 'stopped') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is not running',
+    })
+  } else if (sp.status === 'starting') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is starting',
+    })
+  } else if (sp.status === 'errored') {
+    if (sp.errors.friendActivity) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Spotify ran into an error: ${toErrorString(sp.errors.friendActivity)}`,
+        cause: sp.errors.friendActivity,
+      })
+    } else {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Spotify is not configured to use the Friend Activity API',
+      })
+    }
+  } else if (sp.status === 'degraded' && sp.errors.friendActivity) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Spotify ran into an error: ${toErrorString(sp.errors.friendActivity)}`,
+      cause: sp.errors.friendActivity,
+    })
+  } else if (!sp.friendActivity) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Spotify is not configured to use the Friend Activity API',
+    })
+  }
+
+  return next({
+    ctx: {
+      sp,
+    },
+  })
+})

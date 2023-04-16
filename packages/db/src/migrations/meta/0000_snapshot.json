@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "4c621671-45a8-4a46-b886-fb0795f6ba40",
+  "id": "5a1880b8-a303-4ba1-9b1f-ec73b8e2e70d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -46,6 +46,36 @@
         },
         "soulseek_password": {
           "name": "soulseek_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotify_client_id": {
+          "name": "spotify_client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotify_client_secret": {
+          "name": "spotify_client_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotify_username": {
+          "name": "spotify_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotify_password": {
+          "name": "spotify_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spotify_dc_cookie": {
+          "name": "spotify_dc_cookie",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -343,6 +373,12 @@
         },
         "album": {
           "name": "album",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
           "type": "blob",
           "primaryKey": false,
           "notNull": false

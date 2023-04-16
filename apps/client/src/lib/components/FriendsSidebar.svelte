@@ -17,7 +17,12 @@
 
   $: tab = createLocalStorage<Source>(
     'friends-tab',
-    $statusQuery.data?.lastFm.status === 'logged-in' ? 'lastfm' : 'spotify'
+    $statusQuery.data?.lastFm.status === 'logged-in'
+      ? 'lastfm'
+      : $statusQuery.data?.spotify.status === 'running' &&
+        $statusQuery.data?.spotify.features.friendActivity
+      ? 'spotify'
+      : undefined
   )
 </script>
 

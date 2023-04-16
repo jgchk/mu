@@ -61,6 +61,7 @@ export const spotifyAlbumDownloads = sqliteTable(
     id: integer('id').primaryKey(),
     albumId: text('album_id').notNull(),
     album: blob('album', { mode: 'json' }).$type<SpotifyFullAlbum>(),
+    error: blob('error', { mode: 'json' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (spotifyAlbumDownloads) => ({

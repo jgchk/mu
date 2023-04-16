@@ -5,6 +5,7 @@
   import Loader from '$lib/atoms/Loader.svelte'
   import { createLastFmFriendsQuery } from '$lib/services/friends'
   import { createSystemStatusQuery } from '$lib/services/system'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   import Delay from './Delay.svelte'
@@ -26,6 +27,8 @@
     editUrl.searchParams.set('last-fm', 'true')
     editLink = `${editUrl.pathname}${editUrl.search}`
   }
+
+  const toast = getContextToast()
 </script>
 
 {#if enabled}
@@ -45,26 +48,51 @@
 {:else}
   <div class="flex h-full max-h-72 items-center justify-center">
     <div class="text-center text-gray-600">
-      <a class="underline" href={editLink}>
-        {#if $statusQuery.data}
-          {@const status = $statusQuery.data.lastFm.status}
-          {#if status === 'stopped'}
-            Configure Last.fm
-          {:else if status === 'errored'}
-            Fix your Last.fm configuration
-          {:else if status === 'authenticating'}
-            Refresh
-          {:else if status === 'authenticated'}
-            Configure your Last.fm login
-          {:else if status === 'logging-in'}
-            Refresh
-          {:else if status === 'degraded'}
-            Fix your Last.fm configuration
+      {#if $statusQuery.data}
+        {@const status = $statusQuery.data.lastFm.status}
+        {#if status === 'stopped'}
+          <a class="underline" href={editLink}>Configure Last.fm</a>
+        {:else if status === 'errored'}
+          <a class="underline" href={editLink}>Fix your Last.fm configuration</a>
+        {:else if status === 'authenticating'}
+          <button
+            type="button"
+            class="inline underline"
+            on:click={() =>
+              $statusQuery
+                .refetch()
+                .then(() => toast.success('Refreshed Last.fm status'))
+                .catch(() => toast.error('Failed to refresh Last.fm status'))}>Refresh</button
+          >
+          {#if $statusQuery.isFetching}
+            <Delay>
+              <Loader class="ml-1 inline h-4 w-4" />
+            </Delay>
           {/if}
-        {:else}
-          Configure Last.fm
+        {:else if status === 'authenticated'}
+          <a class="underline" href={editLink}>Configure your Last.fm login</a>
+        {:else if status === 'logging-in'}
+          <button
+            type="button"
+            class="inline underline"
+            on:click={() =>
+              $statusQuery
+                .refetch()
+                .then(() => toast.success('Refreshed Last.fm status'))
+                .catch(() => toast.error('Failed to refresh Last.fm status'))}>Refresh</button
+          >
+          {#if $statusQuery.isFetching}
+            <Delay>
+              <Loader class="ml-1 inline h-4 w-4" />
+            </Delay>
+          {/if}
+        {:else if status === 'degraded'}
+          <a class="underline" href={editLink}>Fix your Last.fm configuration</a>
         {/if}
-      </a> to see your friends
+      {:else}
+        Configure Last.fm
+      {/if}
+      to see your friends
     </div>
   </div>
 {/if}

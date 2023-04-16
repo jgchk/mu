@@ -29,12 +29,23 @@ export type SoulseekDownload = {
 export type Context = {
   db: Database
   sc: Soundcloud
-  sp: Spotify
+  sp:
+    | { status: 'stopped' }
+    | { status: 'starting' }
+    | { status: 'errored'; errors: SpotifyErrors }
+    | ({ status: 'degraded'; errors: SpotifyErrors } & Spotify)
+    | ({ status: 'running' } & Spotify)
   slsk:
     | { status: 'stopped' }
     | { status: 'errored'; error: unknown }
     | ({ status: 'logging-in' } & SlskClient)
     | ({ status: 'logged-in' } & SlskClient)
+}
+
+export type SpotifyErrors = {
+  downloads?: unknown
+  friendActivity?: unknown
+  webApi?: unknown
 }
 
 export class Downloader {

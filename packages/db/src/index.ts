@@ -114,6 +114,13 @@ export class Database {
           ...(data.soulseekPassword !== undefined
             ? { soulseekPassword: data.soulseekPassword }
             : {}),
+          ...(data.spotifyClientId !== undefined ? { spotifyClientId: data.spotifyClientId } : {}),
+          ...(data.spotifyClientSecret !== undefined
+            ? { spotifyClientSecret: data.spotifyClientSecret }
+            : {}),
+          ...(data.spotifyUsername !== undefined ? { spotifyUsername: data.spotifyUsername } : {}),
+          ...(data.spotifyPassword !== undefined ? { spotifyPassword: data.spotifyPassword } : {}),
+          ...(data.spotifyDcCookie !== undefined ? { spotifyDcCookie: data.spotifyDcCookie } : {}),
         }
         return this.db.update(configs).set(update).returning().get()
       } else {
@@ -124,6 +131,11 @@ export class Database {
           lastFmPassword: data.lastFmPassword ?? this.configs.default.lastFmPassword,
           soulseekUsername: data.soulseekUsername ?? this.configs.default.soulseekUsername,
           soulseekPassword: data.soulseekPassword ?? this.configs.default.soulseekPassword,
+          spotifyClientId: data.spotifyClientId ?? this.configs.default.spotifyClientId,
+          spotifyClientSecret: data.spotifyClientSecret ?? this.configs.default.spotifyClientSecret,
+          spotifyUsername: data.spotifyUsername ?? this.configs.default.spotifyUsername,
+          spotifyPassword: data.spotifyPassword ?? this.configs.default.spotifyPassword,
+          spotifyDcCookie: data.spotifyDcCookie ?? this.configs.default.spotifyDcCookie,
         }
         return this.db.insert(configs).values(insert).returning().get()
       }
@@ -136,6 +148,11 @@ export class Database {
       lastFmPassword: null,
       soulseekUsername: null,
       soulseekPassword: null,
+      spotifyClientId: null,
+      spotifyClientSecret: null,
+      spotifyUsername: null,
+      spotifyPassword: null,
+      spotifyDcCookie: null,
     } satisfies Omit<Config, 'id'>,
   }
 
@@ -633,6 +650,7 @@ export class Database {
       const update = {
         ...(data.albumId !== undefined ? { albumId: data.albumId } : {}),
         ...(data.album !== undefined ? { album: data.album } : {}),
+        ...(data.error !== undefined ? { error: data.error } : {}),
       }
       return this.db
         .update(spotifyAlbumDownloads)

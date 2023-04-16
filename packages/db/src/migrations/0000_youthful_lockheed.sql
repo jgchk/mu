@@ -5,7 +5,12 @@ CREATE TABLE `config` (
 	`last_fm_username` text,
 	`last_fm_password` text,
 	`soulseek_username` text,
-	`soulseek_password` text
+	`soulseek_password` text,
+	`spotify_client_id` text,
+	`spotify_client_secret` text,
+	`spotify_username` text,
+	`spotify_password` text,
+	`spotify_dc_cookie` text
 );
 --> statement-breakpoint
 CREATE TABLE `soulseek_release_downloads` (
@@ -52,6 +57,7 @@ CREATE TABLE `spotify_album_downloads` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`album_id` text NOT NULL,
 	`album` blob,
+	`error` blob,
 	`created_at` integer NOT NULL
 );
 --> statement-breakpoint

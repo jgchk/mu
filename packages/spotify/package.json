@@ -17,6 +17,7 @@
   "dependencies": {
     "execa": "^7.1.1",
     "got": "^12.6.0",
+    "utils": "workspace:*",
     "zod": "^3.21.4"
   }
 }

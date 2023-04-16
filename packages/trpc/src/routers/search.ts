@@ -4,7 +4,7 @@ import { Soundcloud } from 'soundcloud'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { isSoulseekAvailable } from '../middleware'
+import { isSoulseekAvailable, isSpotifyWebApiAvailable } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const searchRouter = router({
@@ -32,6 +32,7 @@ export const searchRouter = router({
     }),
   spotify: publicProcedure
     .input(z.object({ query: z.string() }))
+    .use(isSpotifyWebApiAvailable)
     .query(async ({ input: { query }, ctx }) => {
       const results = await ctx.sp.search(query, ['track', 'album'])
       return {

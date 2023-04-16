@@ -204,37 +204,48 @@ export class DownloadQueue {
   async downloadSpotifyAlbum(albumId: number) {
     const { db, sp } = this.getContext()
 
-    const dbAlbum = db.spotifyAlbumDownloads.get(albumId)
+    try {
+      if (sp.status !== 'running') {
+        throw new Error('Spotify is not running')
+      }
+      if (!sp.webApi) {
+        throw new Error('Spotify is not configured to use the Web API')
+      }
 
-    let spotAlbum = dbAlbum.album
-    if (!spotAlbum) {
-      spotAlbum = await sp.getAlbum(dbAlbum.albumId)
-      db.spotifyAlbumDownloads.update(albumId, { album: spotAlbum })
-    }
+      const dbAlbum = db.spotifyAlbumDownloads.get(albumId)
 
-    const tracks = await sp.getAlbumTracks(spotAlbum.id)
+      let spotAlbum = dbAlbum.album
+      if (!spotAlbum) {
+        spotAlbum = await sp.getAlbum(dbAlbum.albumId)
+        db.spotifyAlbumDownloads.update(albumId, { album: spotAlbum })
+      }
 
-    const dbTracks = await Promise.all(
-      tracks.map((track) => {
-        const dbTrack =
-          db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(track.id, dbAlbum.id) ??
-          db.spotifyTrackDownloads.insert({
-            trackId: track.id,
-            albumDownloadId: dbAlbum.id,
-            status: 'pending',
-          })
+      const tracks = await sp.getAlbumTracks(spotAlbum.id)
 
-        const spotTrack = dbTrack.track
-        if (!spotTrack) {
-          db.spotifyTrackDownloads.update(dbTrack.id, { track: track })
-        }
+      const dbTracks = await Promise.all(
+        tracks.map((track) => {
+          const dbTrack =
+            db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(track.id, dbAlbum.id) ??
+            db.spotifyTrackDownloads.insert({
+              trackId: track.id,
+              albumDownloadId: dbAlbum.id,
+              status: 'pending',
+            })
 
-        return dbTrack
-      })
-    )
+          const spotTrack = dbTrack.track
+          if (!spotTrack) {
+            db.spotifyTrackDownloads.update(dbTrack.id, { track: track })
+          }
 
-    for (const dbTrack of dbTracks) {
-      void this.q.push({ service: 'spotify', type: 'track', dbId: dbTrack.id })
+          return dbTrack
+        })
+      )
+
+      for (const dbTrack of dbTracks) {
+        void this.q.push({ service: 'spotify', type: 'track', dbId: dbTrack.id })
+      }
+    } catch (error) {
+      db.spotifyAlbumDownloads.update(albumId, { error })
     }
   }
 
@@ -242,6 +253,16 @@ export class DownloadQueue {
     const { db, sp } = this.getContext()
 
     try {
+      if (sp.status !== 'running') {
+        throw new Error('Spotify is not running')
+      }
+      if (!sp.webApi) {
+        throw new Error('Spotify is not configured to use the Web API')
+      }
+      if (!sp.downloads) {
+        throw new Error('Spotify is not configured to download tracks')
+      }
+
       const dbTrack = db.spotifyTrackDownloads.get(trackId)
 
       if (dbTrack.status === 'done') {

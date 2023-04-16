@@ -1,18 +1,21 @@
 import { SlskClient } from 'soulseek-ts'
-import type { Context } from 'trpc'
-import { withProps } from 'utils'
+import type { SpotifyOptions } from 'spotify'
+import { Spotify } from 'spotify'
+import type { Context, ContextSpotifyErrors } from 'trpc'
+import { keys, withProps } from 'utils'
 
 import { env } from '../env'
 import { makeDb } from './db'
 import { makeDownloader } from './dl'
 import { makeLastFm } from './lfm'
 import { makeSoundcloud } from './sc'
-import { makeSpotify } from './sp'
 
 export const makeContext = async (): Promise<Context> => {
   const db = makeDb()
 
   const updateLfm = async () => {
+    context.lfm = { status: 'stopped' }
+
     const config = db.configs.get()
 
     if (config.lastFmKey) {
@@ -38,11 +41,94 @@ export const makeContext = async (): Promise<Context> => {
     }
   }
 
+  const updateSpotify = async () => {
+    context.lfm = { status: 'stopped' }
+
+    const config = db.configs.get()
+
+    const opts: SpotifyOptions = {}
+
+    if (config.spotifyUsername && config.spotifyPassword) {
+      opts.downloads = {
+        username: config.spotifyUsername,
+        password: config.spotifyPassword,
+      }
+    }
+
+    if (config.spotifyDcCookie) {
+      opts.friendActivity = {
+        dcCookie: config.spotifyDcCookie,
+      }
+    }
+
+    if (config.spotifyClientId && config.spotifyClientSecret) {
+      opts.webApi = {
+        clientId: config.spotifyClientId,
+        clientSecret: config.spotifyClientSecret,
+      }
+    }
+
+    const enabledFeatures = keys(opts)
+
+    if (enabledFeatures.length === 0) {
+      context.sp = { status: 'stopped' }
+      return
+    }
+
+    const spotify = Spotify(opts)
+
+    context.sp = { status: 'starting' }
+
+    const errors: ContextSpotifyErrors = {}
+    await Promise.all([
+      (async () => {
+        if (spotify.downloads) {
+          try {
+            await spotify.checkCredentials()
+          } catch (e) {
+            errors.downloads = e
+          }
+        }
+      })(),
+      (async () => {
+        if (spotify.friendActivity) {
+          try {
+            await spotify.getFriendActivity()
+          } catch (e) {
+            errors.friendActivity = e
+          }
+        }
+      })(),
+      (async () => {
+        if (spotify.webApi) {
+          try {
+            await spotify.getAccessToken()
+          } catch (e) {
+            errors.webApi = e
+          }
+        }
+      })(),
+    ])
+    console.log('errors', errors)
+
+    const numFailed = Object.keys(errors).length
+    const allFailed = numFailed === enabledFeatures.length
+    const someFailed = numFailed > 0
+    console.log({ numFailed, allFailed, someFailed })
+    if (allFailed) {
+      context.sp = { status: 'errored', errors }
+    } else if (someFailed) {
+      context.sp = withProps(spotify, { status: 'degraded', errors } as const)
+    } else {
+      context.sp = withProps(spotify, { status: 'running' } as const)
+    }
+  }
+
   const context: Context = {
     db,
     dl: makeDownloader(() => context),
     sc: makeSoundcloud(),
-    sp: makeSpotify(),
+    sp: { status: 'stopped' },
     slsk: { status: 'stopped' },
     lfm: { status: 'stopped' },
     musicDir: env.MUSIC_DIR,
@@ -108,6 +194,14 @@ export const makeContext = async (): Promise<Context> => {
       await updateLfm()
       return context.lfm
     },
+    startSpotify: async () => {
+      await updateSpotify()
+      return context.sp
+    },
+    stopSpotify: () => {
+      context.sp = { status: 'stopped' }
+      return context.sp
+    },
     destroy: () => {
       context.db.close()
       context.dl.close()
@@ -117,7 +211,7 @@ export const makeContext = async (): Promise<Context> => {
     },
   }
 
-  await updateLfm()
+  await Promise.all([updateSpotify(), updateLfm()])
 
   return context
 }

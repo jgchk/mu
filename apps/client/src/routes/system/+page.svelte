@@ -10,6 +10,7 @@
   import type { PageServerData } from './$types'
   import LastFmConfig from './LastFmConfig.svelte'
   import SlskConfig from './SlskConfig.svelte'
+  import SpotifyConfig from './SpotifyConfig.svelte'
 
   export let data: PageServerData
 
@@ -39,6 +40,7 @@
   {@const status = $statusQuery.data}
   <SlskConfig data={data.slskForm} {status} />
   <LastFmConfig data={data.lastFmForm} {status} />
+  <SpotifyConfig data={data.spotifyForm} {status} />
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}

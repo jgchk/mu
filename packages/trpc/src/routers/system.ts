@@ -1,24 +1,18 @@
-import type { Config } from 'db'
-import { toErrorString } from 'utils'
+import { ifDefined, toErrorString } from 'utils'
 import { z } from 'zod'
 
-import type { ContextLastFm, ContextSlsk } from '../context'
+import type {
+  Context,
+  ContextLastFm,
+  ContextSlsk,
+  ContextSpotify,
+  ContextSpotifyErrors,
+} from '../context'
 import { publicProcedure, router } from '../trpc'
 
 export const systemRouter = router({
-  status: publicProcedure.query(({ ctx }) => ({
-    soulseek: formatSlskStatus(ctx.slsk),
-    lastFm: formatLastFmStatus(ctx.lfm),
-  })),
-  config: publicProcedure.query(({ ctx }) => {
-    const config: Omit<Config, 'id'> = ctx.db.configs.get() ?? {
-      lastFmKey: null,
-      lastFmSecret: null,
-      lastFmUsername: null,
-      lastFmPassword: null,
-    }
-    return config
-  }),
+  status: publicProcedure.query(({ ctx }) => formatStatus(ctx)),
+  config: publicProcedure.query(({ ctx }) => ctx.db.configs.get()),
   updateConfig: publicProcedure
     .input(
       z.object({
@@ -28,6 +22,11 @@ export const systemRouter = router({
         lastFmPassword: z.string().nullish(),
         soulseekUsername: z.string().nullish(),
         soulseekPassword: z.string().nullish(),
+        spotifyClientId: z.string().nullish(),
+        spotifyClientSecret: z.string().nullish(),
+        spotifyUsername: z.string().nullish(),
+        spotifyPassword: z.string().nullish(),
+        spotifyDcCookie: z.string().nullish(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -46,18 +45,44 @@ export const systemRouter = router({
         await ctx.startSoulseek()
       }
 
-      return updated
+      if (
+        input.spotifyClientId !== undefined ||
+        input.spotifyClientSecret !== undefined ||
+        input.spotifyUsername !== undefined ||
+        input.spotifyPassword !== undefined ||
+        input.spotifyDcCookie !== undefined
+      ) {
+        await ctx.startSpotify()
+      }
+
+      return { config: updated, status: formatStatus(ctx) }
     }),
   startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
-    await ctx.startSoulseek()
+    const status = await ctx.startSoulseek()
+    return formatSlskStatus(status)
   }),
   stopSoulseek: publicProcedure.mutation(({ ctx }) => {
-    ctx.stopSoulseek()
+    const status = ctx.stopSoulseek()
+    return formatSlskStatus(status)
   }),
   reloadLastFm: publicProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.updateLastFM()
     return formatLastFmStatus(status)
   }),
+  startSpotify: publicProcedure.mutation(async ({ ctx }) => {
+    const status = await ctx.startSpotify()
+    return formatSpotifyStatus(status)
+  }),
+  stopSpotify: publicProcedure.mutation(({ ctx }) => {
+    const status = ctx.stopSpotify()
+    return formatSpotifyStatus(status)
+  }),
+})
+
+const formatStatus = (context: Context) => ({
+  lastFm: formatLastFmStatus(context.lfm),
+  soulseek: formatSlskStatus(context.slsk),
+  spotify: formatSpotifyStatus(context.sp),
 })
 
 const formatLastFmStatus = (status: ContextLastFm) =>
@@ -83,3 +108,35 @@ const formatSlskStatus = (status: ContextSlsk) =>
     : status.status === 'logging-in'
     ? ({ status: 'logging-in' } as const)
     : ({ status: 'logged-in' } as const)
+
+const formatSpotifyStatus = (status: ContextSpotify) =>
+  status.status === 'stopped'
+    ? ({ status: 'stopped' } as const)
+    : status.status === 'starting'
+    ? ({ status: 'starting' } as const)
+    : status.status === 'errored'
+    ? ({ status: 'errored', errors: formatSpotifyErrors(status.errors) } as const)
+    : status.status === 'degraded'
+    ? ({
+        status: 'degraded',
+        errors: formatSpotifyErrors(status.errors),
+        features: {
+          downloads: status.downloads,
+          friendActivity: status.friendActivity,
+          webApi: status.webApi,
+        },
+      } as const)
+    : ({
+        status: 'running',
+        features: {
+          downloads: status.downloads,
+          friendActivity: status.friendActivity,
+          webApi: status.webApi,
+        },
+      } as const)
+
+const formatSpotifyErrors = (errors: ContextSpotifyErrors) => ({
+  downloads: ifDefined(errors.downloads, toErrorString),
+  friendActivity: ifDefined(errors.friendActivity, toErrorString),
+  webApi: ifDefined(errors.webApi, toErrorString),
+})

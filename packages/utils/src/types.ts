@@ -33,3 +33,10 @@ export type Timeout = ReturnType<typeof setTimeout>
 
 export type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 export type DistributivePick<T, K extends keyof T> = T extends unknown ? Pick<T, K> : never
+
+export type EmptyObject = Record<string, never>
+
+type AllProperties<T> = { [K in keyof T]: T[K] }
+type NoProperties<T> = { [K in keyof T]?: never }
+
+export type AllOrNothing<T> = AllProperties<T> | NoProperties<T>

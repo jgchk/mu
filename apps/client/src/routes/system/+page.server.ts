@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 
-import { fetchConfigQuery, fetchSystemStatusQuery, mutateConfig } from '$lib/services/system'
+import { fetchConfigQuery, mutateConfig } from '$lib/services/system'
 import { createClient } from '$lib/trpc'
 
 import type { Actions, PageServerLoad } from './$types'
@@ -12,6 +12,9 @@ import {
   slskFromServerData,
   slskSchema,
   slskToServerData,
+  spotifyFromServerData,
+  spotifySchema,
+  spotifyToServerData,
 } from './schemas'
 
 export const load: PageServerLoad = async ({ fetch }) => {
@@ -23,7 +26,10 @@ export const load: PageServerLoad = async ({ fetch }) => {
   const slskForm = await superValidate(slskFromServerData(data), slskSchema, {
     id: 'slskForm',
   })
-  return { lastFmForm, slskForm }
+  const spotifyForm = await superValidate(spotifyFromServerData(data), spotifySchema, {
+    id: 'spotifyForm',
+  })
+  return { lastFmForm, slskForm, spotifyForm }
 }
 
 export const actions: Actions = {
@@ -38,10 +44,9 @@ export const actions: Actions = {
     const trpc = createClient(fetch)
     const result = await mutateConfig(trpc, lastFmToServerData(lastFmForm.data))
 
-    lastFmForm.data = lastFmFromServerData(result)
-    const status = await fetchSystemStatusQuery(trpc)
+    lastFmForm.data = lastFmFromServerData(result.config)
 
-    return { lastFmForm, status }
+    return { lastFmForm, status: result.status }
   },
   slsk: async ({ request, fetch }) => {
     const formData = await request.formData()
@@ -54,9 +59,23 @@ export const actions: Actions = {
     const trpc = createClient(fetch)
     const result = await mutateConfig(trpc, slskToServerData(slskForm.data))
 
-    slskForm.data = slskFromServerData(result)
-    const status = await fetchSystemStatusQuery(trpc)
+    slskForm.data = slskFromServerData(result.config)
 
-    return { slskForm, status }
+    return { slskForm, status: result.status }
+  },
+  spotify: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const spotifyForm = await superValidate(formData, spotifySchema)
+
+    if (!spotifyForm.valid) {
+      return fail(400, { spotifyForm })
+    }
+
+    const trpc = createClient(fetch)
+    const result = await mutateConfig(trpc, spotifyToServerData(spotifyForm.data))
+
+    spotifyForm.data = spotifyFromServerData(result.config)
+
+    return { spotifyForm, status: result.status }
   },
 }

@@ -8,11 +8,6 @@ const envSchema = z.object({
   MUSIC_DIR: z.string(),
   SOUNDCLOUD_AUTH_TOKEN: z.string(),
   SOUNDCLOUD_CLIENT_ID: z.string(),
-  SPOTIFY_CLIENT_ID: z.string(),
-  SPOTIFY_CLIENT_SECRET: z.string(),
-  SPOTIFY_USERNAME: z.string(),
-  SPOTIFY_PASSWORD: z.string(),
-  SPOTIFY_DC_COOKIE: z.string(),
 })
 
 const envRes = envSchema.safeParse(process.env)

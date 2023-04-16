@@ -9,7 +9,7 @@ export type Context = {
   db: Database
   dl: Downloader
   sc: Soundcloud
-  sp: Spotify
+  sp: ContextSpotify
   slsk: ContextSlsk
   lfm: ContextLastFm
   musicDir: string
@@ -18,6 +18,9 @@ export type Context = {
   stopSoulseek: () => ContextSlsk
 
   updateLastFM: () => Promise<ContextLastFm>
+
+  startSpotify: () => Promise<ContextSpotify>
+  stopSpotify: () => ContextSpotify
 
   destroy: () => void
 }
@@ -36,3 +39,16 @@ export type ContextSlsk =
   | { status: 'errored'; error: unknown }
   | ({ status: 'logging-in' } & SlskClient)
   | ({ status: 'logged-in' } & SlskClient)
+
+export type ContextSpotify =
+  | { status: 'stopped' }
+  | { status: 'starting' }
+  | { status: 'errored'; errors: ContextSpotifyErrors }
+  | ({ status: 'degraded'; errors: ContextSpotifyErrors } & Spotify)
+  | ({ status: 'running' } & Spotify)
+
+export type ContextSpotifyErrors = {
+  downloads?: unknown
+  friendActivity?: unknown
+  webApi?: unknown
+}
