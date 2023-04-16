@@ -12,7 +12,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
-  import { createStartSpotifyMutation } from '$lib/services/system'
+  import { createStartSpotifyMutation, createStopSpotifyMutation } from '$lib/services/system'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -85,6 +85,14 @@
       toast.error(updateErrorMsg(error))
     },
   })
+
+  const stopSpotifyMutation = createStopSpotifyMutation(trpc, {
+    showToast: false,
+    onSuccess: (data) => notifyStatus(data),
+    onError: (error) => {
+      toast.error(updateErrorMsg(error))
+    },
+  })
 </script>
 
 <form method="POST" action="?/spotify" use:enhance>
@@ -113,11 +121,26 @@
       )}
     />
     <div class="flex items-center justify-end gap-1">
+      {#if status.spotify.status !== 'stopped'}
+        <Button
+          kind="text"
+          on:click={() => $stopSpotifyMutation.mutate()}
+          loading={$stopSpotifyMutation.isLoading}
+        >
+          Stop
+        </Button>
+      {/if}
       <Button
         kind="text"
         on:click={() => $startSpotifyMutation.mutate()}
-        loading={$startSpotifyMutation.isLoading}>Reload</Button
+        loading={$startSpotifyMutation.isLoading}
       >
+        {#if status.spotify.status === 'stopped'}
+          Start
+        {:else}
+          Restart
+        {/if}
+      </Button>
     </div>
 
     <div class="ml-auto flex items-center gap-1">
