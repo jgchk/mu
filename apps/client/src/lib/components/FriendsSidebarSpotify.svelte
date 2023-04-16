@@ -15,7 +15,8 @@
   const statusQuery = createSystemStatusQuery(trpc)
 
   $: enabled =
-    $statusQuery.data?.spotify.status === 'running' &&
+    ($statusQuery.data?.spotify.status === 'running' ||
+      $statusQuery.data?.spotify.status === 'degraded') &&
     $statusQuery.data.spotify.features.friendActivity
 
   $: friendsQuery = createSpotifyFriendsQuery(trpc, { enabled })
@@ -49,10 +50,10 @@
   <div class="flex h-full max-h-72 items-center justify-center">
     <div class="text-center text-gray-600">
       {#if $statusQuery.data}
-        {@const status = $statusQuery.data.spotify.status}
-        {#if status === 'stopped'}
+        {@const status = $statusQuery.data.spotify}
+        {#if status.status === 'stopped'}
           <a class="underline" href={editLink}>Configure Spotify</a>
-        {:else if status === 'starting'}
+        {:else if status.status === 'starting'}
           <button
             type="button"
             class="inline underline"
@@ -67,9 +68,9 @@
               <Loader class="ml-1 inline h-4 w-4" />
             </Delay>
           {/if}
-        {:else if status === 'errored'}
+        {:else if status.status === 'errored'}
           <a class="underline" href={editLink}>Fix your Spotify configuration</a>
-        {:else if status === 'degraded'}
+        {:else if status.status === 'degraded' && !status.features.friendActivity}
           <a class="underline" href={editLink}>Fix your Spotify configuration</a>
         {/if}
       {:else}
