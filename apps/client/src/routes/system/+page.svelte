@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { capitalize } from 'utils'
-
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import {
-    createRestartSoulseekMutation,
     createStartSoulseekMutation,
     createStopSoulseekMutation,
     createSystemStatusQuery,
@@ -33,20 +30,10 @@
       toast.error(`Error stopping Soulseek: ${error.message}`)
     },
   })
-  const restartSoulseekMutation = createRestartSoulseekMutation(trpc, {
-    showToast: false,
-    onError: (error) => {
-      toast.error(`Error restarting Soulseek: ${error.message}`)
-    },
-  })
 
   $: statusQuery = createSystemStatusQuery(trpc, {
     refetchInterval:
-      $startSoulseekMutation.isLoading ||
-      $stopSoulseekMutation.isLoading ||
-      $restartSoulseekMutation.isLoading
-        ? 1000
-        : false,
+      $startSoulseekMutation.isLoading || $stopSoulseekMutation.isLoading ? 1000 : false,
   })
 </script>
 
@@ -56,42 +43,36 @@
   <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Soulseek</div>
     <div
-      use:tooltip={{ content: capitalize(status.soulseek) }}
+      use:tooltip={{
+        content:
+          status.soulseek.status === 'stopped'
+            ? 'Stopped'
+            : status.soulseek.status === 'errored'
+            ? `Error: ${status.soulseek.error}`
+            : status.soulseek.status === 'logging-in'
+            ? 'Logging in...'
+            : 'Running',
+      }}
       class={cn(
         'h-4 w-4 rounded-full transition',
-        status.soulseek === 'stopped' && 'bg-error-600',
-        status.soulseek === 'starting' && 'bg-warning-600',
-        status.soulseek === 'running' && 'bg-success-600'
+        status.soulseek.status === 'stopped' && 'bg-error-600',
+        status.soulseek.status === 'errored' && 'bg-error-600',
+        status.soulseek.status === 'logging-in' && 'bg-warning-600',
+        status.soulseek.status === 'logged-in' && 'bg-success-600'
       )}
     />
     <div class="flex flex-1 items-center justify-end gap-1">
-      {#if status.soulseek === 'stopped'}
-        <Button
-          kind="outline"
-          on:click={() => {
-            if (!$startSoulseekMutation.isLoading) {
-              toast.success('Starting Soulseek...')
-              $startSoulseekMutation.mutate()
-              $stopSoulseekMutation.reset()
-              $restartSoulseekMutation.reset()
-            }
-          }}
-          loading={$startSoulseekMutation.isLoading}
-        >
-          Start
-        </Button>
-      {:else}
+      {#if status.soulseek.status === 'logged-in'}
         <Button
           kind="text"
           on:click={() => {
-            if (!$restartSoulseekMutation.isLoading) {
+            if (!$startSoulseekMutation.isLoading) {
               toast.success('Restarting Soulseek...')
-              $restartSoulseekMutation.mutate()
               $startSoulseekMutation.reset()
               $stopSoulseekMutation.reset()
             }
           }}
-          loading={$restartSoulseekMutation.isLoading}
+          loading={$startSoulseekMutation.isLoading}
         >
           Restart
         </Button>
@@ -102,12 +83,25 @@
               toast.success('Stopping Soulseek...')
               $stopSoulseekMutation.mutate()
               $startSoulseekMutation.reset()
-              $restartSoulseekMutation.reset()
             }
           }}
           loading={$stopSoulseekMutation.isLoading}
         >
           Stop
+        </Button>
+      {:else}
+        <Button
+          kind="outline"
+          on:click={() => {
+            if (!$startSoulseekMutation.isLoading) {
+              toast.success('Starting Soulseek...')
+              $startSoulseekMutation.mutate()
+              $stopSoulseekMutation.reset()
+            }
+          }}
+          loading={$startSoulseekMutation.isLoading}
+        >
+          Start
         </Button>
       {/if}
     </div>

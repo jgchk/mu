@@ -1,5 +1,6 @@
 import { LastFM } from 'last-fm'
 import type { ContextLastFm } from 'trpc/src/context'
+import { withProps } from 'utils'
 
 export const makeLastFm = async (opts: {
   apiKey: string
@@ -22,29 +23,11 @@ export const makeLastFm = async (opts: {
         password: opts.password,
         apiSecret: opts.apiSecret,
       })
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      lfmAuthed.available = true
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return lfmAuthed
+      return withProps(lfmAuthed, { available: true } as const)
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      lfm.available = true
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      lfm.error = e
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return lfm
+      return withProps(lfm, { available: true, error: e } as const)
     }
   } else {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    lfm.available = true
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return lfm
+    return withProps(lfm, { available: true } as const)
   }
 }

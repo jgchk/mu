@@ -126,6 +126,8 @@ export class Database {
       lastFmSecret: null,
       lastFmUsername: null,
       lastFmPassword: null,
+      soulseekUsername: null,
+      soulseekPassword: null,
     } satisfies Omit<Config, 'id'>,
   }
 

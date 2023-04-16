@@ -1,13 +1,13 @@
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { isLastFmAuthenticated } from '../middleware'
+import { isLastFmAvailable } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const playbackRouter = router({
   updateNowPlaying: publicProcedure
     .input(z.object({ id: z.number() }))
-    .use(isLastFmAuthenticated)
+    .use(isLastFmAvailable)
     .mutation(({ ctx, input }) => {
       const dbTrack = ctx.db.tracks.getWithArtists(input.id)
 
@@ -45,7 +45,7 @@ export const playbackRouter = router({
         timestamp: z.date(),
       })
     )
-    .use(isLastFmAuthenticated)
+    .use(isLastFmAvailable)
     .mutation(({ ctx, input }) => {
       const dbTrack = ctx.db.tracks.getWithArtists(input.id)
 

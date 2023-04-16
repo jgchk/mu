@@ -30,7 +30,11 @@ export type Context = {
   db: Database
   sc: Soundcloud
   sp: Spotify
-  slsk: SlskClient | undefined
+  slsk:
+    | { status: 'stopped' }
+    | { status: 'errored'; error: unknown }
+    | ({ status: 'logging-in' } & SlskClient)
+    | ({ status: 'logged-in' } & SlskClient)
 }
 
 export class Downloader {

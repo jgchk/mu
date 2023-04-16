@@ -10,13 +10,12 @@ export type Context = {
   dl: Downloader
   sc: Soundcloud
   sp: Spotify
-  slsk: SlskClient | undefined
+  slsk: ContextSlsk
   lfm: ContextLastFm
   musicDir: string
 
-  startSoulseek: () => Promise<void>
-  stopSoulseek: () => void
-  restartSoulseek: () => Promise<void>
+  startSoulseek: () => Promise<ContextSlsk>
+  stopSoulseek: () => ContextSlsk
 
   updateLastFM: () => Promise<ContextLastFm>
 
@@ -24,6 +23,12 @@ export type Context = {
 }
 
 export type ContextLastFm =
-  | { available: false; error: Error }
-  | ({ available: true; error?: Error } & LastFM)
+  | { available: false; error: unknown }
+  | ({ available: true; error?: unknown } & LastFM)
   | ({ available: true } & LastFMAuthenticated)
+
+export type ContextSlsk =
+  | { status: 'stopped' }
+  | { status: 'errored'; error: unknown }
+  | ({ status: 'logging-in' } & SlskClient)
+  | ({ status: 'logged-in' } & SlskClient)

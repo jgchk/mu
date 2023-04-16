@@ -4,6 +4,7 @@ import { Soundcloud } from 'soundcloud'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
+import { isSoulseekAvailable } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const searchRouter = router({
@@ -40,11 +41,9 @@ export const searchRouter = router({
     }),
   soulseekSubscription: publicProcedure
     .input(z.object({ query: z.string() }))
+    .use(isSoulseekAvailable)
     .subscription(({ input: { query }, ctx }) => {
       const slsk = ctx.slsk
-      if (!slsk) {
-        throw new Error('Soulseek is not running')
-      }
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
         void slsk.search(query, { onResult: (result) => emit.next(result) })
       })

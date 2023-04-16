@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "7c956a84-4f67-40c2-8271-2bdb97a2ded9",
+  "id": "4c621671-45a8-4a46-b886-fb0795f6ba40",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -34,6 +34,18 @@
         },
         "last_fm_password": {
           "name": "last_fm_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "soulseek_username": {
+          "name": "soulseek_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "soulseek_password": {
+          "name": "soulseek_password",
           "type": "text",
           "primaryKey": false,
           "notNull": false

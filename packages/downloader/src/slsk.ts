@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
+import { toErrorString } from 'utils'
 import { fileExists } from 'utils/node'
 
 import type { Context } from '.'
@@ -26,8 +27,14 @@ export class SoulseekDownloadManager {
     const { slsk, db } = this.getContext()
 
     try {
-      if (!slsk) {
+      if (slsk.status === 'stopped') {
         throw new Error('Soulseek is not running')
+      } else if (slsk.status === 'errored') {
+        throw new Error(`Soulseek ran into an error: ${toErrorString(slsk.error)}`, {
+          cause: slsk.error,
+        })
+      } else if (slsk.status === 'logging-in') {
+        throw new Error('Soulseek is logging in')
       }
 
       const existingPipe = this.openFiles.get(dbId)

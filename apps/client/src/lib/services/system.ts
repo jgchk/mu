@@ -42,17 +42,6 @@ export const createStopSoulseekMutation = (
     },
   })
 
-export const createRestartSoulseekMutation = (
-  trpc: TRPCClient,
-  options?: RouterOptions['system']['restartSoulseek']
-) =>
-  trpc.system.restartSoulseek.mutation({
-    ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
-    },
-  })
-
 export const createReloadLastFmMutation = (
   trpc: TRPCClient,
   options?: RouterOptions['system']['reloadLastFm']

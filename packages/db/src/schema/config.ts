@@ -9,4 +9,6 @@ export const configs = sqliteTable('config', {
   lastFmSecret: text('last_fm_secret'),
   lastFmUsername: text('last_fm_username'),
   lastFmPassword: text('last_fm_password'),
+  soulseekUsername: text('soulseek_username'),
+  soulseekPassword: text('soulseek_password'),
 })

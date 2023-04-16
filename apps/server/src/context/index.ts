@@ -1,6 +1,7 @@
 import { SlskClient } from 'soulseek-ts'
 import type { Context } from 'trpc'
 import type { ContextLastFm } from 'trpc/src/context'
+import { withProps } from 'utils'
 
 import { env } from '../env'
 import { makeDb } from './db'
@@ -31,39 +32,62 @@ export const makeContext = async (): Promise<Context> => {
     dl: makeDownloader(() => context),
     sc: makeSoundcloud(),
     sp: makeSpotify(),
-    slsk: undefined,
+    slsk: { status: 'stopped' },
     lfm: await getLfm(),
     musicDir: env.MUSIC_DIR,
     startSoulseek: async () => {
-      if (context.slsk) return
+      context.stopSoulseek()
 
-      context.slsk = new SlskClient()
+      const { soulseekUsername: username, soulseekPassword: password } = db.configs.get()
 
-      try {
-        await context.slsk.login(env.SOULSEEK_USERNAME, env.SOULSEEK_PASSWORD)
-      } catch (e) {
-        context.slsk?.destroy()
-        context.slsk = undefined
-        throw e
+      if (!username) {
+        if (!password) {
+          context.slsk = {
+            status: 'errored',
+            error: new Error('Soulseek username & password are not configured'),
+          }
+          return context.slsk
+        } else {
+          context.slsk = {
+            status: 'errored',
+            error: new Error('Soulseek username is not configured'),
+          }
+          return context.slsk
+        }
+      } else {
+        if (!password) {
+          context.slsk = {
+            status: 'errored',
+            error: new Error('Soulseek password is not configured'),
+          }
+          return context.slsk
+        }
       }
 
+      const slsk = new SlskClient()
+      context.slsk = withProps(slsk, { status: 'logging-in' } as const)
+
+      try {
+        await slsk.login(username, password)
+      } catch (e) {
+        slsk.destroy()
+        context.slsk = { status: 'errored', error: e }
+        return context.slsk
+      }
+
+      context.slsk = withProps(slsk, { status: 'logged-in' } as const)
       context.slsk
         .on('listen-error', (error) => console.error('SLSK listen error', error))
         .on('server-error', (error) => console.error('SLSK server error', error))
         .on('client-error', (error) => console.error('SLSK client error', error))
+      return context.slsk
     },
     stopSoulseek: () => {
-      if (!context.slsk) return
-
-      context.slsk?.destroy()
-      context.slsk = undefined
-    },
-    restartSoulseek: async () => {
-      if (context.slsk) {
-        context.stopSoulseek()
+      if (context.slsk.status === 'logging-in' || context.slsk.status === 'logged-in') {
+        context.slsk.destroy()
       }
-
-      return context.startSoulseek()
+      context.slsk = { status: 'stopped' }
+      return context.slsk
     },
     updateLastFM: async () => {
       context.lfm = await getLfm()
@@ -72,7 +96,9 @@ export const makeContext = async (): Promise<Context> => {
     destroy: () => {
       context.db.close()
       context.dl.close()
-      context.slsk?.destroy()
+      if (context.slsk.status === 'logging-in' || context.slsk.status === 'logged-in') {
+        context.slsk.destroy()
+      }
     },
   }
 

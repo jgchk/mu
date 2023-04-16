@@ -2,27 +2,14 @@ import type { Config } from 'db'
 import { ifDefined, toErrorString } from 'utils'
 import { z } from 'zod'
 
-import type { ContextLastFm } from '../context'
+import type { ContextLastFm, ContextSlsk } from '../context'
 import { publicProcedure, router } from '../trpc'
 
 export const systemRouter = router({
-  status: publicProcedure.query(({ ctx }) => {
-    let soulseekStatus: 'stopped' | 'starting' | 'running'
-    if (ctx.slsk) {
-      if (ctx.slsk.loggedIn) {
-        soulseekStatus = 'running'
-      } else {
-        soulseekStatus = 'starting'
-      }
-    } else {
-      soulseekStatus = 'stopped'
-    }
-
-    return {
-      soulseek: soulseekStatus,
-      lastFm: formatLastFmStatus(ctx.lfm),
-    }
-  }),
+  status: publicProcedure.query(({ ctx }) => ({
+    soulseek: formatSlskStatus(ctx.slsk),
+    lastFm: formatLastFmStatus(ctx.lfm),
+  })),
   config: publicProcedure.query(({ ctx }) => {
     const config: Omit<Config, 'id'> = ctx.db.configs.get() ?? {
       lastFmKey: null,
@@ -52,14 +39,20 @@ export const systemRouter = router({
   stopSoulseek: publicProcedure.mutation(({ ctx }) => {
     ctx.stopSoulseek()
   }),
-  restartSoulseek: publicProcedure.mutation(async ({ ctx }) => {
-    await ctx.restartSoulseek()
-  }),
   reloadLastFm: publicProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.updateLastFM()
     return formatLastFmStatus(status)
   }),
 })
+
+const formatSlskStatus = (status: ContextSlsk) =>
+  status.status === 'stopped'
+    ? ({ status: 'stopped' } as const)
+    : status.status === 'errored'
+    ? ({ status: 'errored', error: toErrorString(status.error) } as const)
+    : status.status === 'logging-in'
+    ? ({ status: 'logging-in' } as const)
+    : ({ status: 'logged-in' } as const)
 
 const formatLastFmStatus = (status: ContextLastFm) =>
   status.available

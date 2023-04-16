@@ -3,7 +3,9 @@ CREATE TABLE `config` (
 	`last_fm_key` text,
 	`last_fm_secret` text,
 	`last_fm_username` text,
-	`last_fm_password` text
+	`last_fm_password` text,
+	`soulseek_username` text,
+	`soulseek_password` text
 );
 --> statement-breakpoint
 CREATE TABLE `soulseek_release_downloads` (
