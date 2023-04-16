@@ -82,7 +82,11 @@ export const makeContext = async (): Promise<Context> => {
         await slsk.login(username, password)
       } catch (e) {
         slsk.destroy()
-        context.slsk = { status: 'errored', error: e }
+        let error = e
+        if (e instanceof Error && e.message.includes('INVALIDPASS')) {
+          error = new Error('Invalid password')
+        }
+        context.slsk = { status: 'errored', error }
         return context.slsk
       }
 
