@@ -3,12 +3,22 @@
   import LastFmIcon from '$lib/icons/LastFmIcon.svelte'
   import SpotifyIcon from '$lib/icons/SpotifyIcon.svelte'
   import { createLocalStorage } from '$lib/local-storage'
+  import { createSystemStatusQuery } from '$lib/services/system'
+  import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
   import FriendsSidebarLastFm from './FriendsSidebarLastFm.svelte'
   import FriendsSidebarSpotify from './FriendsSidebarSpotify.svelte'
 
-  const tab = createLocalStorage<'lastfm' | 'spotify'>('friends-tab')
+  const trpc = getContextClient()
+  const statusQuery = createSystemStatusQuery(trpc)
+
+  type Source = 'lastfm' | 'spotify'
+
+  $: tab = createLocalStorage<Source>(
+    'friends-tab',
+    $statusQuery.data?.lastFm.status === 'logged-in' ? 'lastfm' : 'spotify'
+  )
 </script>
 
 <div class="flex w-72 shrink-0 flex-col overflow-hidden rounded bg-gray-900">

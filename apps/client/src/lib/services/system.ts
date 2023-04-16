@@ -2,8 +2,19 @@ import type { RouterInput, RouterOptions, TRPCClient } from '$lib/trpc'
 
 export const createSystemStatusQuery = (
   trpc: TRPCClient,
-  options?: RouterOptions['system']['status']
-) => trpc.system.status.query(undefined, options)
+  opts?: RouterOptions['system']['status']
+) =>
+  trpc.system.status.query(undefined, {
+    ...opts,
+    refetchInterval: (data) =>
+      data === undefined
+        ? false
+        : data.lastFm.status === 'authenticating' ||
+          data.lastFm.status === 'logging-in' ||
+          data.soulseek.status === 'logging-in'
+        ? 1000
+        : false,
+  })
 
 export const prefetchSystemStatusQuery = (trpc: TRPCClient) => trpc.system.status.prefetchQuery()
 

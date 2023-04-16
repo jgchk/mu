@@ -3,6 +3,9 @@
   import { superForm } from 'sveltekit-superforms/client'
   import { toErrorString } from 'utils'
 
+  import { browser } from '$app/environment'
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
@@ -23,6 +26,15 @@
   export let status: RouterOutput['system']['status']
 
   let showConfig = false
+  $: {
+    if ($page.url.searchParams.has('last-fm')) {
+      showConfig = true
+      $page.url.searchParams.delete('last-fm')
+      if (browser) {
+        void goto(`?${$page.url.search}`)
+      }
+    }
+  }
 
   const toast = getContextToast()
   const trpc = getContextClient()
