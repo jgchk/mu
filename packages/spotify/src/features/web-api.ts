@@ -1,4 +1,5 @@
-import got from 'got'
+import got, { HTTPError } from 'got'
+import { isObject } from 'utils'
 import { z } from 'zod'
 
 import type { SearchResults, SearchType } from '../model'
@@ -43,18 +44,45 @@ const WebApiEnabledMixin =
       clientSecret = params.clientSecret
 
       async getAccessToken() {
-        const res = await got
-          .post('https://accounts.spotify.com/api/token', {
-            headers: {
-              Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
-                'base64'
-              )}`,
-            },
-            form: { grant_type: 'client_credentials' },
-          })
-          .json()
-          .then((res) => AuthResponse.parse(res))
-        return res.access_token
+        try {
+          const res = await got
+            .post('https://accounts.spotify.com/api/token', {
+              headers: {
+                Authorization: `Basic ${Buffer.from(
+                  `${this.clientId}:${this.clientSecret}`
+                ).toString('base64')}`,
+              },
+              form: { grant_type: 'client_credentials' },
+            })
+            .json()
+            .then((res) => AuthResponse.parse(res))
+          return res.access_token
+        } catch (e) {
+          let error = e
+          if (e instanceof HTTPError && typeof e.response.body === 'string') {
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              const body = JSON.parse(e.response.body)
+              if (isObject(body)) {
+                if (
+                  'error' in body &&
+                  typeof body.error === 'string' &&
+                  body.error === 'invalid_client'
+                ) {
+                  error = new Error('Invalid client ID or secret')
+                } else if (
+                  'error_description' in body &&
+                  typeof body.error_description === 'string'
+                ) {
+                  error = new Error(body.error_description)
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+          throw error
+        }
       }
 
       async getTrack(trackId: string) {

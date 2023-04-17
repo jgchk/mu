@@ -92,7 +92,7 @@ export class LastFMBase {
               error = new Error(body.message)
             }
           }
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
