@@ -24,8 +24,25 @@
   {:else if status.status === 'stopped'}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
       <div class="text-2xl text-gray-500">Soundcloud is not running</div>
-      <div>
+      <Button
+        on:click={() => {
+          if (!$startSoundcloudMutation.isLoading) {
+            $startSoundcloudMutation.mutate()
+          }
+        }}
+        loading={$startSoundcloudMutation.isLoading}
+      >
+        Start
+      </Button>
+    </div>
+  {:else if status.status === 'errored'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Soundcloud ran into an error</div>
+      <div class="text-error-500 -mt-1 mb-1">{status.error}</div>
+      <div class="flex gap-1">
+        <LinkButton href={$editLink}>Edit Config</LinkButton>
         <Button
+          kind="outline"
           on:click={() => {
             if (!$startSoundcloudMutation.isLoading) {
               $startSoundcloudMutation.mutate()
@@ -33,15 +50,9 @@
           }}
           loading={$startSoundcloudMutation.isLoading}
         >
-          Start
+          Restart
         </Button>
       </div>
-    </div>
-  {:else if status.status === 'errored'}
-    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
-      <div class="text-gray-500 text-2xl">Soundcloud ran into an error</div>
-      <div class="text-error-500 -mt-1 mb-1">{status.error}</div>
-      <LinkButton href={$editLink}>Edit Config</LinkButton>
     </div>
   {:else}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">

@@ -24,8 +24,25 @@
   {:else if status.status === 'stopped'}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
       <div class="text-2xl text-gray-500">Spotify is not running</div>
-      <div>
+      <Button
+        on:click={() => {
+          if (!$startSpotifyMutation.isLoading) {
+            $startSpotifyMutation.mutate()
+          }
+        }}
+        loading={$startSpotifyMutation.isLoading}
+      >
+        Start
+      </Button>
+    </div>
+  {:else if status.errors.webApi}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Spotify ran into an error</div>
+      <div class="text-error-500 -mt-1 mb-1">{status.errors.webApi}</div>
+      <div class="flex gap-1">
+        <LinkButton href={$editLink}>Edit Config</LinkButton>
         <Button
+          kind="outline"
           on:click={() => {
             if (!$startSpotifyMutation.isLoading) {
               $startSpotifyMutation.mutate()
@@ -33,15 +50,9 @@
           }}
           loading={$startSpotifyMutation.isLoading}
         >
-          Start
+          Restart
         </Button>
       </div>
-    </div>
-  {:else if status.errors.webApi}
-    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
-      <div class="text-2xl text-gray-500">Spotify ran into an error</div>
-      <div class="text-error-500 -mt-1 mb-1">{status.errors.webApi}</div>
-      <LinkButton href={$editLink}>Edit Config</LinkButton>
     </div>
   {:else if status.status === 'starting'}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
