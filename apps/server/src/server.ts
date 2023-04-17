@@ -4,7 +4,6 @@ import cors from 'cors'
 import express from 'express'
 import { getMissingPythonDependencies } from 'music-metadata'
 import path from 'path'
-import type { Context } from 'trpc'
 import { appRouter } from 'trpc'
 import { fileURLToPath } from 'url'
 import { WebSocketServer } from 'ws'
@@ -27,8 +26,6 @@ const main = async () => {
   await bree.start()
 
   const ctx = await makeContext()
-
-  setConfigFromEnv(ctx)
 
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
@@ -74,25 +71,6 @@ const main = async () => {
     wss.close()
     server.close()
     ctx.destroy()
-  })
-}
-
-const setConfigFromEnv = (ctx: Context) => {
-  const config = ctx.db.configs.get()
-
-  ctx.db.configs.update({
-    soundcloudAuthToken: config.soundcloudAuthToken ?? env.SOUNDCLOUD_AUTH_TOKEN,
-    spotifyClientId: config.spotifyClientId ?? env.SPOTIFY_CLIENT_ID,
-    spotifyClientSecret: config.spotifyClientSecret ?? env.SPOTIFY_CLIENT_SECRET,
-    spotifyUsername: config.spotifyUsername ?? env.SPOTIFY_USERNAME,
-    spotifyPassword: config.spotifyPassword ?? env.SPOTIFY_PASSWORD,
-    spotifyDcCookie: config.spotifyDcCookie ?? env.SPOTIFY_DC_COOKIE,
-    soulseekUsername: config.soulseekUsername ?? env.SOULSEEK_USERNAME,
-    soulseekPassword: config.soulseekPassword ?? env.SOULSEEK_PASSWORD,
-    lastFmKey: config.lastFmKey ?? env.LASTFM_KEY,
-    lastFmSecret: config.lastFmSecret ?? env.LASTFM_SECRET,
-    lastFmUsername: config.lastFmUsername ?? env.LASTFM_USERNAME,
-    lastFmPassword: config.lastFmPassword ?? env.LASTFM_PASSWORD,
   })
 }
 

@@ -1,3 +1,4 @@
+import type { Database } from 'db'
 import { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
@@ -10,8 +11,28 @@ import { makeDb } from './db'
 import { makeDownloader } from './dl'
 import { makeLastFm } from './lfm'
 
+const setConfigFromEnv = (db: Database) => {
+  const config = db.configs.get()
+  db.configs.update({
+    soundcloudAuthToken: config.soundcloudAuthToken ?? env.SOUNDCLOUD_AUTH_TOKEN,
+    spotifyClientId: config.spotifyClientId ?? env.SPOTIFY_CLIENT_ID,
+    spotifyClientSecret: config.spotifyClientSecret ?? env.SPOTIFY_CLIENT_SECRET,
+    spotifyUsername: config.spotifyUsername ?? env.SPOTIFY_USERNAME,
+    spotifyPassword: config.spotifyPassword ?? env.SPOTIFY_PASSWORD,
+    spotifyDcCookie: config.spotifyDcCookie ?? env.SPOTIFY_DC_COOKIE,
+    soulseekUsername: config.soulseekUsername ?? env.SOULSEEK_USERNAME,
+    soulseekPassword: config.soulseekPassword ?? env.SOULSEEK_PASSWORD,
+    lastFmKey: config.lastFmKey ?? env.LASTFM_KEY,
+    lastFmSecret: config.lastFmSecret ?? env.LASTFM_SECRET,
+    lastFmUsername: config.lastFmUsername ?? env.LASTFM_USERNAME,
+    lastFmPassword: config.lastFmPassword ?? env.LASTFM_PASSWORD,
+  })
+}
+
 export const makeContext = async (): Promise<Context> => {
   const db = makeDb()
+
+  setConfigFromEnv(db)
 
   const updateLfm = async () => {
     context.lfm = { status: 'stopped' }
@@ -233,7 +254,12 @@ export const makeContext = async (): Promise<Context> => {
     },
   }
 
-  await Promise.all([updateSpotify(), updateLfm(), updateSoundcloud()])
+  await Promise.all([
+    updateSpotify(),
+    updateLfm(),
+    updateSoundcloud(),
+    ...(env.NODE_ENV === 'production' ? [context.startSoulseek()] : []),
+  ])
 
   return context
 }
