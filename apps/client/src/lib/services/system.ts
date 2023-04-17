@@ -57,16 +57,23 @@ export const createStartSoulseekMutation = (
   options: RouterOptions['system']['startSoulseek'] & { toast: ToastStore | false }
 ) =>
   trpc.system.startSoulseek.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySoulseekStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(soulseekErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, soulseek: data } : prev
+      )
+      if (options.toast) {
+        notifySoulseekStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(soulseekErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -75,16 +82,23 @@ export const createStopSoulseekMutation = (
   options: RouterOptions['system']['stopSoulseek'] & { toast: ToastStore | false }
 ) =>
   trpc.system.stopSoulseek.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySoulseekStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(soulseekErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, soulseek: data } : prev
+      )
+      if (options.toast) {
+        notifySoulseekStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(soulseekErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -116,16 +130,23 @@ export const createStartLastFmMutation = (
   options: RouterOptions['system']['startLastFm'] & { toast: ToastStore | false }
 ) =>
   trpc.system.startLastFm.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifyLastFmStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(lastFmErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, lastFm: data } : prev
+      )
+      if (options.toast) {
+        notifyLastFmStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(lastFmErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -134,16 +155,23 @@ export const createStopLastFmMutation = (
   options: RouterOptions['system']['stopLastFm'] & { toast: ToastStore | false }
 ) =>
   trpc.system.stopLastFm.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifyLastFmStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(lastFmErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, lastFm: data } : prev
+      )
+      if (options.toast) {
+        notifyLastFmStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(lastFmErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -173,16 +201,23 @@ export const createStartSpotifyMutation = (
   options: RouterOptions['system']['startSpotify'] & { toast: ToastStore | false }
 ) =>
   trpc.system.startSpotify.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySpotifyStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(spotifyErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, spotify: data } : prev
+      )
+      if (options.toast) {
+        notifySpotifyStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(spotifyErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -191,16 +226,23 @@ export const createStopSpotifyMutation = (
   options: RouterOptions['system']['stopSpotify'] & { toast: ToastStore | false }
 ) =>
   trpc.system.stopSpotify.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySpotifyStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(spotifyErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, spotify: data } : prev
+      )
+      if (options.toast) {
+        notifySpotifyStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(spotifyErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -226,16 +268,23 @@ export const createStartSoundcloudMutation = (
   options: RouterOptions['system']['startSoundcloud'] & { toast: ToastStore | false }
 ) =>
   trpc.system.startSoundcloud.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySoundcloudStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(soundcloudErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, soundcloud: data } : prev
+      )
+      if (options.toast) {
+        notifySoundcloudStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(soundcloudErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
 
@@ -244,15 +293,22 @@ export const createStopSoundcloudMutation = (
   options: RouterOptions['system']['stopSoundcloud'] & { toast: ToastStore | false }
 ) =>
   trpc.system.stopSoundcloud.mutation({
-    ...(options?.toast
-      ? {
-          showToast: false,
-          onSuccess: (data) => options.toast && notifySoundcloudStatus(options.toast, data),
-          onError: (error) => options.toast && options.toast.error(soundcloudErrorMessage(error)),
-        }
-      : {}),
+    ...(options?.toast ? { showToast: false } : {}),
     ...options,
-    onSettled: async (...args) => {
-      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    onSuccess: async (...args) => {
+      const data = args[0]
+      trpc.system.status.utils.setData(undefined, (prev) =>
+        prev ? { ...prev, soundcloud: data } : prev
+      )
+      if (options.toast) {
+        notifySoundcloudStatus(options.toast, data)
+      }
+      await options.onSuccess?.(...args)
+    },
+    onError: async (...args) => {
+      if (options.toast) {
+        options.toast.error(soundcloudErrorMessage(args[0]))
+      }
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onError?.(...args)])
     },
   })
