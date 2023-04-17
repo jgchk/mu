@@ -106,18 +106,18 @@ const formatStatus = (context: Context) => ({
 
 const formatLastFmStatus = (status: ContextLastFm) =>
   status.status === 'stopped'
-    ? ({ status: 'stopped' } as const)
+    ? ({ status: 'stopped', error: undefined } as const)
     : status.status === 'errored'
     ? ({ status: 'errored', error: toErrorString(status.error) } as const)
     : status.status === 'authenticating'
-    ? ({ status: 'authenticating' } as const)
+    ? ({ status: 'authenticating', error: undefined } as const)
     : status.status === 'authenticated'
-    ? ({ status: 'authenticated' } as const)
+    ? ({ status: 'authenticated', error: undefined } as const)
     : status.status === 'logging-in'
-    ? ({ status: 'logging-in' } as const)
+    ? ({ status: 'logging-in', error: undefined } as const)
     : status.status === 'degraded'
     ? ({ status: 'degraded', error: toErrorString(status.error) } as const)
-    : ({ status: 'logged-in' } as const)
+    : ({ status: 'logged-in', error: undefined } as const)
 
 const formatSlskStatus = (status: ContextSlsk) =>
   status.status === 'stopped'

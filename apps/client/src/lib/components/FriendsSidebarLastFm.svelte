@@ -43,12 +43,12 @@
   <div class="flex h-full max-h-72 items-center justify-center">
     <div class="text-center text-gray-600">
       {#if $statusQuery.data}
-        {@const status = $statusQuery.data.lastFm.status}
-        {#if status === 'stopped'}
+        {@const status = $statusQuery.data.lastFm}
+        {#if status.status === 'stopped'}
           <a class="underline" href={$editLink}>Configure Last.fm</a>
-        {:else if status === 'errored'}
+        {:else if status.error}
           <a class="underline" href={$editLink}>Fix your Last.fm configuration</a>
-        {:else if status === 'authenticating'}
+        {:else if status.status === 'authenticating' || status.status === 'logging-in'}
           <button
             type="button"
             class="inline underline"
@@ -63,28 +63,11 @@
               <Loader class="ml-1 inline h-4 w-4" />
             </Delay>
           {/if}
-        {:else if status === 'authenticated'}
+        {:else if status.status === 'authenticated'}
           <a class="underline" href={$editLink}>Configure your Last.fm login</a>
-        {:else if status === 'logging-in'}
-          <button
-            type="button"
-            class="inline underline"
-            on:click={() =>
-              $statusQuery
-                .refetch()
-                .then(() => toast.success('Refreshed Last.fm status'))
-                .catch(() => toast.error('Failed to refresh Last.fm status'))}>Refresh</button
-          >
-          {#if $statusQuery.isFetching}
-            <Delay>
-              <Loader class="ml-1 inline h-4 w-4" />
-            </Delay>
-          {/if}
-        {:else if status === 'degraded'}
-          <a class="underline" href={$editLink}>Fix your Last.fm configuration</a>
         {/if}
       {:else}
-        Configure Last.fm
+        <a class="underline" href={$editLink}>Configure Last.fm</a>
       {/if}
       to see your friends
     </div>

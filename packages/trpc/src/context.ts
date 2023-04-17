@@ -30,13 +30,13 @@ export type Context = {
 }
 
 export type ContextLastFm =
-  | { status: 'stopped' }
+  | { status: 'stopped'; error?: undefined }
   | { status: 'errored'; error: unknown }
-  | ({ status: 'authenticating' } & LastFM)
-  | ({ status: 'authenticated' } & LastFM)
-  | ({ status: 'logging-in' } & LastFM)
+  | ({ status: 'authenticating'; error?: undefined } & LastFM)
+  | ({ status: 'authenticated'; error?: undefined } & LastFM)
+  | ({ status: 'logging-in'; error?: undefined } & LastFM)
   | ({ status: 'degraded'; error: unknown } & LastFM)
-  | ({ status: 'logged-in' } & LastFMAuthenticated)
+  | ({ status: 'logged-in'; error?: undefined } & LastFMAuthenticated)
 
 export type ContextSlsk =
   | { status: 'stopped' }
