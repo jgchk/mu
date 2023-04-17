@@ -7,7 +7,7 @@
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
-  import { tooltip } from '$lib/actions/tooltip'
+  import { createPopperAction } from '$lib/actions/popper'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
@@ -93,33 +93,146 @@
       toast.error(updateErrorMsg(error))
     },
   })
+
+  const [popperElement, popperTooltip] = createPopperAction()
 </script>
 
 <form method="POST" action="?/spotify" use:enhance>
   <div class="flex items-center gap-4 rounded p-1.5 pl-3">
     <div>Spotify</div>
     <div
-      use:tooltip={{
-        content:
-          status.spotify.status === 'stopped'
-            ? 'Stopped'
-            : status.spotify.status === 'starting'
-            ? `Starting...`
-            : status.spotify.status === 'errored'
-            ? `Error: ${formatErrors(status.spotify.errors)}`
-            : status.spotify.status === 'degraded'
-            ? `Degraded: ${formatErrors(status.spotify.errors)}`
-            : 'Running',
-      }}
+      use:popperElement
       class={cn(
-        'h-4 w-4 rounded-full transition',
+        'group h-4 w-4 rounded-full transition',
         status.spotify.status === 'stopped' && 'bg-error-600',
         status.spotify.status === 'errored' && 'bg-error-600',
         status.spotify.status === 'starting' && 'bg-warning-600',
         status.spotify.status === 'degraded' && 'bg-warning-600',
         status.spotify.status === 'running' && 'bg-success-600'
       )}
-    />
+    >
+      <div
+        class="pointer-events-none absolute space-y-1 rounded border border-gray-600 bg-gray-700 p-3 py-2 text-sm opacity-0 shadow group-hover:pointer-events-auto group-hover:opacity-100"
+        use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] }}
+      >
+        <div class="flex items-center gap-2">
+          <div>Downloads</div>
+          <div
+            class={cn(
+              'h-3 w-3 rounded-full transition',
+              status.spotify.status === 'stopped' && 'bg-error-600',
+              status.spotify.status === 'errored' && 'bg-error-600',
+              status.spotify.status === 'starting' && 'bg-warning-600',
+              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
+                (status.spotify.features.downloads && !status.spotify.errors?.downloads
+                  ? 'bg-success-600'
+                  : 'bg-error-600')
+            )}
+          />
+          <div class="text-gray-400">
+            {#if status.spotify.status === 'stopped'}
+              Stopped
+            {:else if status.spotify.status === 'starting'}
+              Starting...
+            {:else if status.spotify.status === 'errored'}
+              Error: {status.spotify.errors.downloads}
+            {:else if status.spotify.status === 'degraded'}
+              {#if status.spotify.errors.downloads}
+                Error: {status.spotify.errors.downloads}
+              {:else if status.spotify.features.downloads}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {:else if status.spotify.status === 'running'}
+              {#if status.spotify.features.downloads}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {/if}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div>Friend Activity</div>
+          <div
+            class={cn(
+              'h-3 w-3 rounded-full transition',
+              status.spotify.status === 'stopped' && 'bg-error-600',
+              status.spotify.status === 'errored' && 'bg-error-600',
+              status.spotify.status === 'starting' && 'bg-warning-600',
+              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
+                (status.spotify.features.friendActivity && !status.spotify.errors?.friendActivity
+                  ? 'bg-success-600'
+                  : 'bg-error-600')
+            )}
+          />
+          <div class="text-gray-400">
+            {#if status.spotify.status === 'stopped'}
+              Stopped
+            {:else if status.spotify.status === 'starting'}
+              Starting...
+            {:else if status.spotify.status === 'errored'}
+              Error: {status.spotify.errors.friendActivity}
+            {:else if status.spotify.status === 'degraded'}
+              {#if status.spotify.errors.friendActivity}
+                Error: {status.spotify.errors.friendActivity}
+              {:else if status.spotify.features.friendActivity}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {:else if status.spotify.status === 'running'}
+              {#if status.spotify.features.friendActivity}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {/if}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div>Web API</div>
+          <div
+            class={cn(
+              'h-3 w-3 rounded-full transition',
+              status.spotify.status === 'stopped' && 'bg-error-600',
+              status.spotify.status === 'errored' && 'bg-error-600',
+              status.spotify.status === 'starting' && 'bg-warning-600',
+              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
+                (status.spotify.features.webApi && !status.spotify.errors?.webApi
+                  ? 'bg-success-600'
+                  : 'bg-error-600')
+            )}
+          />
+          <div class="text-gray-400">
+            {#if status.spotify.status === 'stopped'}
+              Stopped
+            {:else if status.spotify.status === 'starting'}
+              Starting...
+            {:else if status.spotify.status === 'errored'}
+              Error: {status.spotify.errors.webApi}
+            {:else if status.spotify.status === 'degraded'}
+              {#if status.spotify.errors.webApi}
+                Error: {status.spotify.errors.webApi}
+              {:else if status.spotify.features.webApi}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {:else if status.spotify.status === 'running'}
+              {#if status.spotify.features.webApi}
+                Running
+              {:else}
+                Stopped
+              {/if}
+            {/if}
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="flex items-center justify-end gap-1">
       {#if status.spotify.status !== 'stopped'}
         <Button
