@@ -15,6 +15,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
+  import { useEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
   import type { SlskSchema } from './schemas'
@@ -23,6 +24,7 @@
   export let status: RouterOutput['system']['status']['soulseek']
 
   let showConfig = false
+  useEditLink('soulseek', () => (showConfig = true))
 
   const toast = getContextToast()
   const trpc = getContextClient()
