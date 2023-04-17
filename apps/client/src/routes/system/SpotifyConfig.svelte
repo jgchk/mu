@@ -21,8 +21,8 @@
   import { cn } from '$lib/utils/classes'
 
   import type { ActionData } from './$types'
-  import ConfigSpotifyStatus from './ConfigSpotifyStatus.svelte'
   import type { SpotifySchema } from './schemas'
+  import SpotifyConfigStatus from './SpotifyConfigStatus.svelte'
 
   export let data: Validation<SpotifySchema>
   export let status: RouterOutput['system']['status']['spotify']
@@ -112,7 +112,7 @@
         status.status === 'running' && 'bg-success-600'
       )}
     >
-      <ConfigSpotifyStatus
+      <SpotifyConfigStatus
         {status}
         {popperTooltip}
         class="pointer-events-none opacity-0 transition duration-100 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:delay-300"
