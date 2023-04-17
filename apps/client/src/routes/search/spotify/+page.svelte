@@ -2,6 +2,7 @@
   import Button from '$lib/atoms/Button.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import { createStartSpotifyMutation, createSystemStatusQuery } from '$lib/services/system'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { createEditLink } from '$lib/utils/system-config'
 
@@ -11,8 +12,10 @@
   export let data: PageData
 
   const trpc = getContextClient()
+  const toast = getContextToast()
+
   const statusQuery = createSystemStatusQuery(trpc)
-  const startSpotifyMutation = createStartSpotifyMutation(trpc)
+  const startSpotifyMutation = createStartSpotifyMutation(trpc, { toast })
 
   const editLink = createEditLink('spotify')
 </script>

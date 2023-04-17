@@ -1,14 +1,18 @@
 <script lang="ts">
   import type { Validation } from 'sveltekit-superforms'
   import { superForm } from 'sveltekit-superforms/client'
-  import { toErrorString } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
-  import { createStartLastFmMutation, createStopLastFmMutation } from '$lib/services/system'
+  import {
+    createStartLastFmMutation,
+    createStopLastFmMutation,
+    lastFmErrorMessage,
+    notifyLastFmStatus,
+  } from '$lib/services/system'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -30,24 +34,8 @@
   const toast = getContextToast()
   const trpc = getContextClient()
 
-  const updateErrorMsg = (error: unknown) => `Error updating Last.fm: ${toErrorString(error)}`
-  const notifyStatus = (status: RouterOutput['system']['status']['lastFm']) => {
-    if (status.status === 'stopped') {
-      toast.error('Last.fm updated: Not logged in')
-    } else if (status.status === 'errored') {
-      toast.error(updateErrorMsg(status.error))
-    } else if (status.status === 'authenticating') {
-      toast.warning('Last.fm updated: Authenticating...')
-    } else if (status.status === 'authenticated') {
-      toast.warning('Last.fm updated: Authenticated')
-    } else if (status.status === 'logging-in') {
-      toast.warning('Last.fm updated: Logging in...')
-    } else if (status.status === 'degraded') {
-      toast.warning(`Last.fm updated: Degraded: ${status.error}`)
-    } else {
-      toast.success('Last.fm updated!')
-    }
-  }
+  const startLastFmMutation = createStartLastFmMutation(trpc, { toast })
+  const stopLastFmMutation = createStopLastFmMutation(trpc, { toast })
 
   const { form, enhance, errors, delayed, reset } = superForm(data, {
     dataType: 'json',
@@ -55,7 +43,7 @@
       if (result.type === 'success') {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const status: RouterOutput['system']['status'] = (result.data as ActionData)!.status!
-        notifyStatus(status.lastFm)
+        notifyLastFmStatus(toast, status.lastFm)
         showConfig = false
         void trpc.system.status.utils.setData(undefined, status)
       } else {
@@ -63,25 +51,9 @@
         if (result.type === 'failure') {
           toast.error(formErrors())
         } else if (result.type === 'error') {
-          toast.error(updateErrorMsg(result.error))
+          toast.error(lastFmErrorMessage(result.error))
         }
       }
-    },
-  })
-
-  const startLastFmMutation = createStartLastFmMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
-    },
-  })
-
-  const stopLastFmMutation = createStopLastFmMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
     },
   })
 </script>

@@ -1,14 +1,18 @@
 <script lang="ts">
   import type { Validation } from 'sveltekit-superforms'
   import { superForm } from 'sveltekit-superforms/client'
-  import { toErrorString } from 'utils'
 
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
-  import { createStartSoundcloudMutation, createStopSoundcloudMutation } from '$lib/services/system'
+  import {
+    createStartSoundcloudMutation,
+    createStopSoundcloudMutation,
+    notifySoundcloudStatus,
+    soundcloudErrorMessage,
+  } from '$lib/services/system'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -30,18 +34,8 @@
   const toast = getContextToast()
   const trpc = getContextClient()
 
-  const updateErrorMsg = (error: unknown) => `Error updating Soundcloud: ${toErrorString(error)}`
-  const notifyStatus = (status: RouterOutput['system']['status']['soundcloud']) => {
-    if (status.status === 'stopped') {
-      toast.error('Soundcloud updated: Stopped')
-    } else if (status.status === 'starting') {
-      toast.warning('Soundcloud updated: Starting...')
-    } else if (status.status === 'errored') {
-      toast.error(updateErrorMsg(status.error))
-    } else if (status.status === 'running') {
-      toast.success('Soundcloud updated!')
-    }
-  }
+  const startSoundcloudMutation = createStartSoundcloudMutation(trpc, { toast })
+  const stopSoundcloudMutation = createStopSoundcloudMutation(trpc, { toast })
 
   const { form, enhance, errors, delayed, reset } = superForm(data, {
     dataType: 'json',
@@ -49,7 +43,7 @@
       if (result.type === 'success') {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const status: RouterOutput['system']['status'] = (result.data as ActionData)!.status!
-        notifyStatus(status.soundcloud)
+        notifySoundcloudStatus(toast, status.soundcloud)
         showConfig = false
         void trpc.system.status.utils.setData(undefined, status)
       } else {
@@ -57,25 +51,9 @@
         if (result.type === 'failure') {
           toast.error(formErrors())
         } else if (result.type === 'error') {
-          toast.error(updateErrorMsg(result.error))
+          toast.error(soundcloudErrorMessage(result.error))
         }
       }
-    },
-  })
-
-  const startSoundcloudMutation = createStartSoundcloudMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
-    },
-  })
-
-  const stopSoundcloudMutation = createStopSoundcloudMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
     },
   })
 </script>

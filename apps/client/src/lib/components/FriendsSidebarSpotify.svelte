@@ -4,6 +4,7 @@
   import Loader from '$lib/atoms/Loader.svelte'
   import { createSpotifyFriendsQuery } from '$lib/services/friends'
   import { createStartSpotifyMutation, createSystemStatusQuery } from '$lib/services/system'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { createEditLink } from '$lib/utils/system-config'
 
@@ -11,8 +12,10 @@
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
 
   const trpc = getContextClient()
+  const toast = getContextToast()
+
   const statusQuery = createSystemStatusQuery(trpc)
-  const startSpotifyMutation = createStartSpotifyMutation(trpc)
+  const startSpotifyMutation = createStartSpotifyMutation(trpc, { toast })
 
   $: enabled = $statusQuery.data?.spotify.features.webApi
   $: friendsQuery = createSpotifyFriendsQuery(trpc, { enabled })

@@ -1,15 +1,18 @@
 <script lang="ts">
   import type { Validation } from 'sveltekit-superforms'
   import { superForm } from 'sveltekit-superforms/client'
-  import type { ContextSpotifyErrors } from 'trpc'
-  import { isDefined, toErrorString } from 'utils'
 
   import { createPopperAction } from '$lib/actions/popper'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
-  import { createStartSpotifyMutation, createStopSpotifyMutation } from '$lib/services/system'
+  import {
+    createStartSpotifyMutation,
+    createStopSpotifyMutation,
+    notifySpotifyStatus,
+    spotifyErrorMessage,
+  } from '$lib/services/system'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -32,23 +35,8 @@
   const toast = getContextToast()
   const trpc = getContextClient()
 
-  const updateErrorMsg = (error: unknown) => `Error updating Spotify: ${toErrorString(error)}`
-  const formatErrors = (errors: ContextSpotifyErrors) =>
-    Object.values(errors).filter(isDefined).map(toErrorString).join(', ')
-
-  const notifyStatus = (status: RouterOutput['system']['status']['spotify']) => {
-    if (status.status === 'stopped') {
-      toast.error('Spotify updated: Stopped')
-    } else if (status.status === 'starting') {
-      toast.warning('Spotify updated: Starting...')
-    } else if (status.status === 'errored') {
-      toast.error(`Spotify updated: ${formatErrors(status.errors)}`)
-    } else if (status.status === 'degraded') {
-      toast.warning(`Spotify updated: Degraded: ${formatErrors(status.errors)}`)
-    } else if (status.status === 'running') {
-      toast.success('Spotify updated!')
-    }
-  }
+  const startSpotifyMutation = createStartSpotifyMutation(trpc, { toast })
+  const stopSpotifyMutation = createStopSpotifyMutation(trpc, { toast })
 
   const { form, enhance, errors, delayed, reset } = superForm(data, {
     dataType: 'json',
@@ -56,7 +44,7 @@
       if (result.type === 'success') {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const status: RouterOutput['system']['status'] = (result.data as ActionData)!.status!
-        notifyStatus(status.spotify)
+        notifySpotifyStatus(toast, status.spotify)
         showConfig = false
         void trpc.system.status.utils.setData(undefined, status)
       } else {
@@ -64,25 +52,9 @@
         if (result.type === 'failure') {
           toast.error(formErrors())
         } else if (result.type === 'error') {
-          toast.error(updateErrorMsg(result.error))
+          toast.error(spotifyErrorMessage(result.error))
         }
       }
-    },
-  })
-
-  const startSpotifyMutation = createStartSpotifyMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
-    },
-  })
-
-  const stopSpotifyMutation = createStopSpotifyMutation(trpc, {
-    showToast: false,
-    onSuccess: (data) => notifyStatus(data),
-    onError: (error) => {
-      toast.error(updateErrorMsg(error))
     },
   })
 
