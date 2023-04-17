@@ -53,11 +53,22 @@ export const createStopSoulseekMutation = (
     },
   })
 
-export const createReloadLastFmMutation = (
+export const createStartLastFmMutation = (
   trpc: TRPCClient,
-  options?: RouterOptions['system']['reloadLastFm']
+  options?: RouterOptions['system']['startLastFm']
 ) =>
-  trpc.system.reloadLastFm.mutation({
+  trpc.system.startLastFm.mutation({
+    ...options,
+    onSettled: async (...args) => {
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    },
+  })
+
+export const createStopLastFmMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['stopLastFm']
+) =>
+  trpc.system.stopLastFm.mutation({
     ...options,
     onSettled: async (...args) => {
       await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])

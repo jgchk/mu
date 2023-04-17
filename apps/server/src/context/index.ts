@@ -225,8 +225,12 @@ export const makeContext = async (): Promise<Context> => {
       context.slsk = { status: 'stopped' }
       return context.slsk
     },
-    updateLastFM: async () => {
+    startLastFm: async () => {
       await updateLfm()
+      return context.lfm
+    },
+    stopLastFm: () => {
+      context.lfm = { status: 'stopped' }
       return context.lfm
     },
     startSpotify: async () => {

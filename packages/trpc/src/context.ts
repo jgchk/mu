@@ -17,7 +17,8 @@ export type Context = {
   startSoulseek: () => Promise<ContextSlsk>
   stopSoulseek: () => ContextSlsk
 
-  updateLastFM: () => Promise<ContextLastFm>
+  startLastFm: () => Promise<ContextLastFm>
+  stopLastFm: () => ContextLastFm
 
   startSpotify: () => Promise<ContextSpotify>
   stopSpotify: () => ContextSpotify

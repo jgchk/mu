@@ -40,7 +40,7 @@ export const systemRouter = router({
         input.lastFmUsername !== undefined ||
         input.lastFmPassword !== undefined
       ) {
-        await ctx.updateLastFM()
+        await ctx.startLastFm()
       }
 
       if (input.soulseekUsername !== undefined || input.soulseekPassword !== undefined) {
@@ -71,8 +71,12 @@ export const systemRouter = router({
     const status = ctx.stopSoulseek()
     return formatSlskStatus(status)
   }),
-  reloadLastFm: publicProcedure.mutation(async ({ ctx }) => {
-    const status = await ctx.updateLastFM()
+  startLastFm: publicProcedure.mutation(async ({ ctx }) => {
+    const status = await ctx.startLastFm()
+    return formatLastFmStatus(status)
+  }),
+  stopLastFm: publicProcedure.mutation(({ ctx }) => {
+    const status = ctx.stopLastFm()
     return formatLastFmStatus(status)
   }),
   startSpotify: publicProcedure.mutation(async ({ ctx }) => {

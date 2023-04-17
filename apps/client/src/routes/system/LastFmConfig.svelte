@@ -11,7 +11,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
-  import { createReloadLastFmMutation } from '$lib/services/system'
+  import { createStartLastFmMutation, createStopLastFmMutation } from '$lib/services/system'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { slide } from '$lib/transitions/slide'
@@ -78,7 +78,15 @@
     },
   })
 
-  const reloadLastFmMutation = createReloadLastFmMutation(trpc, {
+  const startLastFmMutation = createStartLastFmMutation(trpc, {
+    showToast: false,
+    onSuccess: (data) => notifyStatus(data),
+    onError: (error) => {
+      toast.error(updateErrorMsg(error))
+    },
+  })
+
+  const stopLastFmMutation = createStopLastFmMutation(trpc, {
     showToast: false,
     onSuccess: (data) => notifyStatus(data),
     onError: (error) => {
@@ -119,11 +127,26 @@
       )}
     />
     <div class="flex items-center justify-end gap-1">
+      {#if status.lastFm.status !== 'stopped'}
+        <Button
+          kind="text"
+          on:click={() => $stopLastFmMutation.mutate()}
+          loading={$stopLastFmMutation.isLoading}
+        >
+          Stop
+        </Button>
+      {/if}
       <Button
         kind="text"
-        on:click={() => $reloadLastFmMutation.mutate()}
-        loading={$reloadLastFmMutation.isLoading}>Reload</Button
+        on:click={() => $startLastFmMutation.mutate()}
+        loading={$startLastFmMutation.isLoading}
       >
+        {#if status.lastFm.status === 'stopped'}
+          Start
+        {:else}
+          Restart
+        {/if}
+      </Button>
     </div>
 
     <div class="ml-auto flex items-center gap-1">
