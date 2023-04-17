@@ -31,8 +31,7 @@
               $startSoundcloudMutation.mutate()
             }
           }}
-          loading={$startSoundcloudMutation.isLoading ||
-            $statusQuery.data?.soundcloud.status === 'starting'}
+          loading={$startSoundcloudMutation.isLoading}
         >
           Start
         </Button>

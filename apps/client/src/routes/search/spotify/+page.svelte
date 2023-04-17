@@ -31,8 +31,7 @@
               $startSpotifyMutation.mutate()
             }
           }}
-          loading={$startSpotifyMutation.isLoading ||
-            $statusQuery.data?.spotify.status === 'starting'}
+          loading={$startSpotifyMutation.isLoading}
         >
           Start
         </Button>
@@ -42,6 +41,10 @@
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
       <div class="text-error-500 text-2xl">Spotify ran into an error</div>
       <LinkButton href={$editLink}>Edit Config</LinkButton>
+    </div>
+  {:else if status.status === 'starting'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Spotify is starting...</div>
     </div>
   {:else}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
