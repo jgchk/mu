@@ -11,7 +11,8 @@ export const createSystemStatusQuery = (
         ? false
         : data.lastFm.status === 'authenticating' ||
           data.lastFm.status === 'logging-in' ||
-          data.soulseek.status === 'logging-in'
+          data.soulseek.status === 'logging-in' ||
+          data.spotify.status === 'starting'
         ? 1000
         : false,
   })

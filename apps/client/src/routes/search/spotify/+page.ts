@@ -1,4 +1,5 @@
 import { prefetchSearchSpotifyQuery } from '$lib/services/search'
+import { fetchSystemStatusQuery } from '$lib/services/system'
 
 import type { PageLoad } from './$types'
 
@@ -10,7 +11,13 @@ export const load: PageLoad = async ({ url, parent }) => {
 
   if (hasQuery) {
     const { trpc } = await parent()
-    await prefetchSearchSpotifyQuery(trpc, query)
+    const status = await fetchSystemStatusQuery(trpc)
+    if (
+      (status.spotify.status === 'degraded' && !status.spotify.errors.webApi) ||
+      (status.spotify.status === 'running' && status.spotify.features.webApi)
+    ) {
+      await prefetchSearchSpotifyQuery(trpc, query)
+    }
   }
 
   return { query, hasQuery }

@@ -1,39 +1,69 @@
 <script lang="ts">
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
-  import { createSearchSpotifyQuery } from '$lib/services/search'
+  import Button from '$lib/atoms/Button.svelte'
+  import LinkButton from '$lib/atoms/LinkButton.svelte'
+  import { createStartSpotifyMutation, createSystemStatusQuery } from '$lib/services/system'
   import { getContextClient } from '$lib/trpc'
+  import { createEditLink } from '$lib/utils/system-config'
 
   import type { PageData } from './$types'
-  import SpotifySearchResult from './SpotifySearchResult.svelte'
+  import Page from './Page.svelte'
 
   export let data: PageData
 
   const trpc = getContextClient()
-  $: spotifyQuery = createSearchSpotifyQuery(trpc, data.query)
+  const statusQuery = createSystemStatusQuery(trpc)
+  const startSpotifyMutation = createStartSpotifyMutation(trpc)
+
+  const editLink = createEditLink('spotify')
 </script>
 
-{#if data.hasQuery}
-  {#if $spotifyQuery.data}
-    <div class="p-4 pt-0">
-      <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>
-      <FlowGrid>
-        {#each $spotifyQuery.data.albums as album (album.id)}
-          <SpotifySearchResult result={album} />
-        {/each}
-      </FlowGrid>
-
-      <h2 class="mb-4 mt-16 text-2xl font-bold">Tracks</h2>
-      <FlowGrid>
-        {#each $spotifyQuery.data.tracks as track (track.id)}
-          <SpotifySearchResult result={track} />
-        {/each}
-      </FlowGrid>
+{#if $statusQuery.data}
+  {@const status = $statusQuery.data.spotify}
+  {#if status.status === 'stopped'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Spotify is not running</div>
+      <div>
+        <Button
+          on:click={() => {
+            if (!$startSpotifyMutation.isLoading) {
+              $startSpotifyMutation.mutate()
+            }
+          }}
+          loading={$startSpotifyMutation.isLoading ||
+            $statusQuery.data?.spotify.status === 'starting'}
+        >
+          Start
+        </Button>
+      </div>
     </div>
-  {:else if $spotifyQuery.error}
-    <div>{$spotifyQuery.error.message}</div>
+  {:else if status.status === 'starting'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Spotify is starting...</div>
+    </div>
+  {:else if status.status === 'errored'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-error-500 text-2xl">Spotify ran into an error</div>
+      <LinkButton href={$editLink}>Edit Config</LinkButton>
+    </div>
+  {:else if status.status === 'degraded'}
+    {#if status.errors.webApi}
+      <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+        <div class="text-error-500 text-2xl">Spotify ran into an error</div>
+        <LinkButton href={$editLink}>Edit Config</LinkButton>
+      </div>
+    {:else}
+      <Page {data} />
+    {/if}
+  {:else if !status.features.webApi}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-error-500 text-2xl">Spotify is not configured for search</div>
+      <LinkButton href={$editLink}>Edit Config</LinkButton>
+    </div>
   {:else}
-    <div>Loading...</div>
+    <Page {data} />
   {/if}
+{:else if $statusQuery.error}
+  <div class="text-2xl text-gray-500">Error loading status</div>
 {:else}
-  <div>Enter a search query</div>
+  <div>Loading...</div>
 {/if}

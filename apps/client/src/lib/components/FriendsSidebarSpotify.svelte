@@ -1,12 +1,12 @@
 <script lang="ts">
   import { fade } from 'svelte/transition'
 
-  import { page } from '$app/stores'
   import Loader from '$lib/atoms/Loader.svelte'
   import { createSpotifyFriendsQuery } from '$lib/services/friends'
   import { createSystemStatusQuery } from '$lib/services/system'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
+  import { createEditLink } from '$lib/utils/system-config'
 
   import Delay from './Delay.svelte'
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
@@ -21,13 +21,7 @@
 
   $: friendsQuery = createSpotifyFriendsQuery(trpc, { enabled })
 
-  let editLink: string
-  $: {
-    let editUrl = new URL($page.url)
-    editUrl.pathname = '/system'
-    editUrl.searchParams.set('spotify', 'true')
-    editLink = `${editUrl.pathname}${editUrl.search}`
-  }
+  const editLink = createEditLink('spotify')
 
   const toast = getContextToast()
 </script>
@@ -52,7 +46,7 @@
       {#if $statusQuery.data}
         {@const status = $statusQuery.data.spotify}
         {#if status.status === 'stopped'}
-          <a class="underline" href={editLink}>Configure Spotify</a>
+          <a class="underline" href={$editLink}>Configure Spotify</a>
         {:else if status.status === 'starting'}
           <button
             type="button"
@@ -69,9 +63,9 @@
             </Delay>
           {/if}
         {:else if status.status === 'errored'}
-          <a class="underline" href={editLink}>Fix your Spotify configuration</a>
+          <a class="underline" href={$editLink}>Fix your Spotify configuration</a>
         {:else if status.status === 'degraded' && !status.features.friendActivity}
-          <a class="underline" href={editLink}>Fix your Spotify configuration</a>
+          <a class="underline" href={$editLink}>Fix your Spotify configuration</a>
         {/if}
       {:else}
         Configure Spotify

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { fade } from 'svelte/transition'
 
-  import { page } from '$app/stores'
   import Loader from '$lib/atoms/Loader.svelte'
   import { createLastFmFriendsQuery } from '$lib/services/friends'
   import { createSystemStatusQuery } from '$lib/services/system'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
+  import { createEditLink } from '$lib/utils/system-config'
 
   import Delay from './Delay.svelte'
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
@@ -20,13 +20,7 @@
     enabled,
   })
 
-  let editLink: string
-  $: {
-    let editUrl = new URL($page.url)
-    editUrl.pathname = '/system'
-    editUrl.searchParams.set('last-fm', 'true')
-    editLink = `${editUrl.pathname}${editUrl.search}`
-  }
+  const editLink = createEditLink('last-fm')
 
   const toast = getContextToast()
 </script>
@@ -51,9 +45,9 @@
       {#if $statusQuery.data}
         {@const status = $statusQuery.data.lastFm.status}
         {#if status === 'stopped'}
-          <a class="underline" href={editLink}>Configure Last.fm</a>
+          <a class="underline" href={$editLink}>Configure Last.fm</a>
         {:else if status === 'errored'}
-          <a class="underline" href={editLink}>Fix your Last.fm configuration</a>
+          <a class="underline" href={$editLink}>Fix your Last.fm configuration</a>
         {:else if status === 'authenticating'}
           <button
             type="button"
@@ -70,7 +64,7 @@
             </Delay>
           {/if}
         {:else if status === 'authenticated'}
-          <a class="underline" href={editLink}>Configure your Last.fm login</a>
+          <a class="underline" href={$editLink}>Configure your Last.fm login</a>
         {:else if status === 'logging-in'}
           <button
             type="button"
@@ -87,7 +81,7 @@
             </Delay>
           {/if}
         {:else if status === 'degraded'}
-          <a class="underline" href={editLink}>Fix your Last.fm configuration</a>
+          <a class="underline" href={$editLink}>Fix your Last.fm configuration</a>
         {/if}
       {:else}
         Configure Last.fm
