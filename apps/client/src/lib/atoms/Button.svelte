@@ -23,7 +23,7 @@
     kind === 'outline' &&
       'border-primary-500 text-primary-500 bg-transparent hover:bg-gray-700 disabled:border-gray-500 disabled:bg-transparent disabled:text-gray-500',
     kind === 'text' &&
-      'text-primary-500 border-transparent bg-transparent hover:bg-gray-700 disabled:bg-transparent disabled:text-gray-500',
+      'text-primary-500 focus:border-primary-500 border-transparent bg-transparent hover:bg-gray-700 disabled:bg-transparent disabled:text-gray-500',
     class_
   )}
 >
