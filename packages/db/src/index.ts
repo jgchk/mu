@@ -121,6 +121,9 @@ export class Database {
           ...(data.spotifyUsername !== undefined ? { spotifyUsername: data.spotifyUsername } : {}),
           ...(data.spotifyPassword !== undefined ? { spotifyPassword: data.spotifyPassword } : {}),
           ...(data.spotifyDcCookie !== undefined ? { spotifyDcCookie: data.spotifyDcCookie } : {}),
+          ...(data.soundcloudAuthToken !== undefined
+            ? { soundcloudAuthToken: data.soundcloudAuthToken }
+            : {}),
         }
         return this.db.update(configs).set(update).returning().get()
       } else {
@@ -136,6 +139,7 @@ export class Database {
           spotifyUsername: data.spotifyUsername ?? this.configs.default.spotifyUsername,
           spotifyPassword: data.spotifyPassword ?? this.configs.default.spotifyPassword,
           spotifyDcCookie: data.spotifyDcCookie ?? this.configs.default.spotifyDcCookie,
+          soundcloudAuthToken: data.soundcloudAuthToken ?? this.configs.default.soundcloudAuthToken,
         }
         return this.db.insert(configs).values(insert).returning().get()
       }
@@ -153,6 +157,7 @@ export class Database {
       spotifyUsername: null,
       spotifyPassword: null,
       spotifyDcCookie: null,
+      soundcloudAuthToken: null,
     } satisfies Omit<Config, 'id'>,
   }
 
@@ -512,6 +517,7 @@ export class Database {
       const update = {
         ...(data.playlistId !== undefined ? { playlistId: data.playlistId } : {}),
         ...(data.playlist !== undefined ? { playlist: data.playlist } : {}),
+        ...(data.error !== undefined ? { error: data.error } : {}),
       }
       return this.db
         .update(soundcloudPlaylistDownloads)

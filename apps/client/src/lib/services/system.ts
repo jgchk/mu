@@ -85,3 +85,25 @@ export const createStopSpotifyMutation = (
       await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
     },
   })
+
+export const createStartSoundcloudMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['startSoundcloud']
+) =>
+  trpc.system.startSoundcloud.mutation({
+    ...options,
+    onSettled: async (...args) => {
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    },
+  })
+
+export const createStopSoundcloudMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['system']['stopSoundcloud']
+) =>
+  trpc.system.stopSoundcloud.mutation({
+    ...options,
+    onSettled: async (...args) => {
+      await Promise.all([trpc.system.status.utils.invalidate(), options?.onSettled?.(...args)])
+    },
+  })

@@ -4,12 +4,13 @@ import { Soundcloud } from 'soundcloud'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { isSoulseekAvailable, isSpotifyWebApiAvailable } from '../middleware'
+import { isSoulseekAvailable, isSoundcloudAvailable, isSpotifyWebApiAvailable } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const searchRouter = router({
   soundcloud: publicProcedure
     .input(z.object({ query: z.string() }))
+    .use(isSoundcloudAvailable)
     .query(async ({ input: { query }, ctx }) => {
       const [tracks, albums] = await Promise.all([
         ctx.sc.searchTracks(query),

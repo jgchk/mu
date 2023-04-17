@@ -5,7 +5,7 @@ import crypto from 'crypto'
 import { execa } from 'execa'
 import { fileTypeStream } from 'file-type'
 import fs from 'fs'
-import got from 'got'
+import got, { HTTPError } from 'got'
 import type { Manifest } from 'm3u8-parser'
 import { Parser } from 'm3u8-parser'
 import os from 'os'
@@ -26,19 +26,32 @@ export type DownloadOptions = {
 }
 
 export class Soundcloud {
-  private clientId: string
   private authToken: string
 
-  constructor({ clientId, authToken }: { clientId: string; authToken: string }) {
-    this.clientId = clientId
+  constructor(authToken: string) {
     this.authToken = authToken
+  }
+
+  async checkAuthToken() {
+    try {
+      await got('https://api-v2.soundcloud.com/me', {
+        headers: {
+          Authorization: `OAuth ${this.authToken}`,
+        },
+      }).json()
+    } catch (e) {
+      let error = e
+      if (error instanceof HTTPError && error.response.statusCode === 401) {
+        error = new Error('Invalid auth token')
+      }
+      throw error
+    }
   }
 
   async searchTracks(query: string) {
     const res = await got('https://api-v2.soundcloud.com/search/tracks', {
       searchParams: {
         q: query,
-        client_id: this.clientId,
       },
       headers: {
         Authorization: `OAuth ${this.authToken}`,
@@ -51,7 +64,6 @@ export class Soundcloud {
     const res = await got('https://api-v2.soundcloud.com/search/albums', {
       searchParams: {
         q: query,
-        client_id: this.clientId,
       },
       headers: {
         Authorization: `OAuth ${this.authToken}`,
@@ -62,9 +74,6 @@ export class Soundcloud {
 
   async getTrack(id: number) {
     const res = await got(`https://api-v2.soundcloud.com/tracks/${id}`, {
-      searchParams: {
-        client_id: this.clientId,
-      },
       headers: {
         Authorization: `OAuth ${this.authToken}`,
       },
@@ -74,9 +83,6 @@ export class Soundcloud {
 
   async getPlaylist(id: number) {
     const res = await got(`https://api-v2.soundcloud.com/playlists/${id}`, {
-      searchParams: {
-        client_id: this.clientId,
-      },
       headers: {
         Authorization: `OAuth ${this.authToken}`,
       },
@@ -123,7 +129,6 @@ export class Soundcloud {
   async getTrackOriginalDownload(trackId: number, secretToken?: string) {
     const result = await got(`https://api-v2.soundcloud.com/tracks/${trackId}/download`, {
       searchParams: {
-        client_id: this.clientId,
         secret_token: secretToken,
       },
       headers: {
@@ -208,7 +213,6 @@ export class Soundcloud {
 
   async getTranscodingData(transcoding: Transcoding) {
     const res = await got(transcoding.url, {
-      searchParams: { client_id: this.clientId },
       headers: {
         Authorization: `OAuth ${this.authToken}`,
       },

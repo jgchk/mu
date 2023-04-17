@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "5a1880b8-a303-4ba1-9b1f-ec73b8e2e70d",
+  "id": "138399a9-33d1-4425-9adb-a9a010303e3c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -76,6 +76,12 @@
         },
         "spotify_dc_cookie": {
           "name": "spotify_dc_cookie",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "soundcloud_auth_token": {
+          "name": "soundcloud_auth_token",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -243,6 +249,12 @@
         },
         "playlist": {
           "name": "playlist",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
           "type": "blob",
           "primaryKey": false,
           "notNull": false

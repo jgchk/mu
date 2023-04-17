@@ -70,38 +70,49 @@ export class DownloadQueue {
   async downloadSoundcloudPlaylist(playlistId: number) {
     const { db, sc } = this.getContext()
 
-    const dbPlaylist = db.soundcloudPlaylistDownloads.get(playlistId)
+    try {
+      if (sc.status !== 'running') {
+        throw new Error('Soundcloud is not running')
+      }
 
-    let scPlaylist = dbPlaylist.playlist
-    if (!scPlaylist) {
-      scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
-      db.soundcloudPlaylistDownloads.update(playlistId, { playlist: scPlaylist })
-    }
+      const dbPlaylist = db.soundcloudPlaylistDownloads.get(playlistId)
 
-    const tracks = uniqBy(scPlaylist.tracks, (track) => track.id)
+      let scPlaylist = dbPlaylist.playlist
+      if (!scPlaylist) {
+        scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
+        db.soundcloudPlaylistDownloads.update(playlistId, { playlist: scPlaylist })
+      }
 
-    const dbTracks = await Promise.all(
-      tracks.map(async (track) => {
-        const dbTrack =
-          db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(track.id, dbPlaylist.id) ??
-          db.soundcloudTrackDownloads.insert({
-            trackId: track.id,
-            playlistDownloadId: dbPlaylist.id,
-            status: 'pending',
-          })
+      const tracks = uniqBy(scPlaylist.tracks, (track) => track.id)
 
-        let scTrack = dbTrack.track
-        if (!scTrack) {
-          scTrack = await sc.getTrack(dbTrack.trackId)
-          db.soundcloudTrackDownloads.update(dbTrack.id, { track: scTrack })
-        }
+      const dbTracks = await Promise.all(
+        tracks.map(async (track) => {
+          const dbTrack =
+            db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(
+              track.id,
+              dbPlaylist.id
+            ) ??
+            db.soundcloudTrackDownloads.insert({
+              trackId: track.id,
+              playlistDownloadId: dbPlaylist.id,
+              status: 'pending',
+            })
 
-        return dbTrack
-      })
-    )
+          let scTrack = dbTrack.track
+          if (!scTrack) {
+            scTrack = await sc.getTrack(dbTrack.trackId)
+            db.soundcloudTrackDownloads.update(dbTrack.id, { track: scTrack })
+          }
 
-    for (const dbTrack of dbTracks) {
-      void this.q.push({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
+          return dbTrack
+        })
+      )
+
+      for (const dbTrack of dbTracks) {
+        void this.q.push({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
+      }
+    } catch (error) {
+      db.soundcloudPlaylistDownloads.update(playlistId, { error })
     }
   }
 
@@ -109,6 +120,10 @@ export class DownloadQueue {
     const { db, sc } = this.getContext()
 
     try {
+      if (sc.status !== 'running') {
+        throw new Error('Soundcloud is not running')
+      }
+
       const dbTrack = db.soundcloudTrackDownloads.get(trackId)
 
       if (dbTrack.status === 'done') {

@@ -5,6 +5,7 @@ import type {
   Context,
   ContextLastFm,
   ContextSlsk,
+  ContextSoundcloud,
   ContextSpotify,
   ContextSpotifyErrors,
 } from '../context'
@@ -27,6 +28,7 @@ export const systemRouter = router({
         spotifyUsername: z.string().nullish(),
         spotifyPassword: z.string().nullish(),
         spotifyDcCookie: z.string().nullish(),
+        soundcloudAuthToken: z.string().nullish(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -55,6 +57,10 @@ export const systemRouter = router({
         await ctx.startSpotify()
       }
 
+      if (input.soundcloudAuthToken !== undefined) {
+        await ctx.startSoundcloud()
+      }
+
       return { config: updated, status: formatStatus(ctx) }
     }),
   startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
@@ -77,11 +83,20 @@ export const systemRouter = router({
     const status = ctx.stopSpotify()
     return formatSpotifyStatus(status)
   }),
+  startSoundcloud: publicProcedure.mutation(async ({ ctx }) => {
+    const status = await ctx.startSoundcloud()
+    return formatSoundcloudStatus(status)
+  }),
+  stopSoundcloud: publicProcedure.mutation(({ ctx }) => {
+    const status = ctx.stopSoundcloud()
+    return formatSoundcloudStatus(status)
+  }),
 })
 
 const formatStatus = (context: Context) => ({
   lastFm: formatLastFmStatus(context.lfm),
   soulseek: formatSlskStatus(context.slsk),
+  soundcloud: formatSoundcloudStatus(context.sc),
   spotify: formatSpotifyStatus(context.sp),
 })
 
@@ -108,6 +123,15 @@ const formatSlskStatus = (status: ContextSlsk) =>
     : status.status === 'logging-in'
     ? ({ status: 'logging-in' } as const)
     : ({ status: 'logged-in' } as const)
+
+const formatSoundcloudStatus = (status: ContextSoundcloud) =>
+  status.status === 'stopped'
+    ? ({ status: 'stopped' } as const)
+    : status.status === 'starting'
+    ? ({ status: 'starting' } as const)
+    : status.status === 'errored'
+    ? ({ status: 'errored', error: toErrorString(status.error) } as const)
+    : ({ status: 'running' } as const)
 
 const formatSpotifyStatus = (status: ContextSpotify) =>
   status.status === 'stopped'

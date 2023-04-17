@@ -1,4 +1,5 @@
 import { SlskClient } from 'soulseek-ts'
+import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
 import { Spotify } from 'spotify'
 import type { Context, ContextSpotifyErrors } from 'trpc'
@@ -8,7 +9,6 @@ import { env } from '../env'
 import { makeDb } from './db'
 import { makeDownloader } from './dl'
 import { makeLastFm } from './lfm'
-import { makeSoundcloud } from './sc'
 
 export const makeContext = async (): Promise<Context> => {
   const db = makeDb()
@@ -36,8 +36,23 @@ export const makeContext = async (): Promise<Context> => {
         }
       )
       context.lfm = lfm
-    } else {
-      context.lfm = { status: 'stopped' }
+    }
+  }
+
+  const updateSoundcloud = async () => {
+    context.sc = { status: 'stopped' }
+
+    const config = db.configs.get()
+
+    if (config.soundcloudAuthToken) {
+      context.sc = { status: 'starting' }
+      const sc = new Soundcloud(config.soundcloudAuthToken)
+      try {
+        await sc.checkAuthToken()
+        context.sc = withProps(sc, { status: 'running' } as const)
+      } catch (e) {
+        context.sc = { status: 'errored', error: e }
+      }
     }
   }
 
@@ -126,7 +141,7 @@ export const makeContext = async (): Promise<Context> => {
   const context: Context = {
     db,
     dl: makeDownloader(() => context),
-    sc: makeSoundcloud(),
+    sc: { status: 'stopped' },
     sp: { status: 'stopped' },
     slsk: { status: 'stopped' },
     lfm: { status: 'stopped' },
@@ -201,6 +216,14 @@ export const makeContext = async (): Promise<Context> => {
       context.sp = { status: 'stopped' }
       return context.sp
     },
+    startSoundcloud: async () => {
+      await updateSoundcloud()
+      return context.sc
+    },
+    stopSoundcloud: () => {
+      context.sc = { status: 'stopped' }
+      return context.sc
+    },
     destroy: () => {
       context.db.close()
       context.dl.close()
@@ -210,7 +233,7 @@ export const makeContext = async (): Promise<Context> => {
     },
   }
 
-  await Promise.all([updateSpotify(), updateLfm()])
+  await Promise.all([updateSpotify(), updateLfm(), updateSoundcloud()])
 
   return context
 }

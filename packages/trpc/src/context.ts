@@ -8,7 +8,7 @@ import type { Spotify } from 'spotify'
 export type Context = {
   db: Database
   dl: Downloader
-  sc: Soundcloud
+  sc: ContextSoundcloud
   sp: ContextSpotify
   slsk: ContextSlsk
   lfm: ContextLastFm
@@ -21,6 +21,9 @@ export type Context = {
 
   startSpotify: () => Promise<ContextSpotify>
   stopSpotify: () => ContextSpotify
+
+  startSoundcloud: () => Promise<ContextSoundcloud>
+  stopSoundcloud: () => ContextSoundcloud
 
   destroy: () => void
 }
@@ -52,3 +55,9 @@ export type ContextSpotifyErrors = {
   friendActivity?: unknown
   webApi?: unknown
 }
+
+export type ContextSoundcloud =
+  | { status: 'stopped' }
+  | { status: 'starting' }
+  | { status: 'errored'; error: unknown }
+  | ({ status: 'running' } & Soundcloud)

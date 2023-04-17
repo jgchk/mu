@@ -19,6 +19,7 @@ export const soundcloudPlaylistDownloads = sqliteTable(
     id: integer('id').primaryKey(),
     playlistId: integer('playlist_id').notNull(),
     playlist: blob('playlist', { mode: 'json' }).$type<SoundcloudPlaylist>(),
+    error: blob('error', { mode: 'json' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (soundcloudPlaylistDownloads) => ({

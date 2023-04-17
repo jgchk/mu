@@ -12,6 +12,9 @@ import {
   slskFromServerData,
   slskSchema,
   slskToServerData,
+  soundcloudFromServerData,
+  soundcloudSchema,
+  soundcloudToServerData,
   spotifyFromServerData,
   spotifySchema,
   spotifyToServerData,
@@ -29,7 +32,10 @@ export const load: PageServerLoad = async ({ fetch }) => {
   const spotifyForm = await superValidate(spotifyFromServerData(data), spotifySchema, {
     id: 'spotifyForm',
   })
-  return { lastFmForm, slskForm, spotifyForm }
+  const soundcloudForm = await superValidate(soundcloudFromServerData(data), soundcloudSchema, {
+    id: 'soundcloudForm',
+  })
+  return { lastFmForm, slskForm, spotifyForm, soundcloudForm }
 }
 
 export const actions: Actions = {
@@ -77,5 +83,20 @@ export const actions: Actions = {
     spotifyForm.data = spotifyFromServerData(result.config)
 
     return { spotifyForm, status: result.status }
+  },
+  soundcloud: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const soundcloudForm = await superValidate(formData, soundcloudSchema)
+
+    if (!soundcloudForm.valid) {
+      return fail(400, { soundcloudForm })
+    }
+
+    const trpc = createClient(fetch)
+    const result = await mutateConfig(trpc, soundcloudToServerData(soundcloudForm.data))
+
+    soundcloudForm.data = soundcloudFromServerData(result.config)
+
+    return { soundcloudForm, status: result.status }
   },
 }

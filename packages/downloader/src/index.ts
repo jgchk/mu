@@ -28,7 +28,11 @@ export type SoulseekDownload = {
 
 export type Context = {
   db: Database
-  sc: Soundcloud
+  sc:
+    | { status: 'stopped' }
+    | { status: 'starting' }
+    | { status: 'errored'; error: unknown }
+    | ({ status: 'running' } & Soundcloud)
   sp:
     | { status: 'stopped' }
     | { status: 'starting' }

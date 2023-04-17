@@ -121,6 +121,34 @@ export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
   })
 })
 
+export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
+  const sc = ctx.sc
+
+  if (sc.status === 'stopped') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'SoundCloud is not running',
+    })
+  } else if (sc.status === 'starting') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'SoundCloud is starting',
+    })
+  } else if (sc.status === 'errored') {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `SoundCloud ran into an error: ${toErrorString(sc.error)}`,
+      cause: sc.error,
+    })
+  }
+
+  return next({
+    ctx: {
+      sc,
+    },
+  })
+})
+
 export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => {
   const sp = ctx.sp
 

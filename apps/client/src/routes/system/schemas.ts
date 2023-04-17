@@ -67,3 +67,21 @@ export const spotifyToServerData = (data: SpotifyData): RouterInput['system']['u
   spotifyPassword: data.spotifyPassword || null,
   spotifyDcCookie: data.spotifyDcCookie || null,
 })
+
+export type SoundcloudSchema = typeof soundcloudSchema
+type SoundcloudData = z.infer<SoundcloudSchema>
+export const soundcloudSchema = z.object({
+  soundcloudAuthToken: z.string(),
+})
+
+export const soundcloudFromServerData = (
+  data: RouterOutput['system']['config']
+): SoundcloudData => ({
+  soundcloudAuthToken: data.soundcloudAuthToken ?? '',
+})
+
+export const soundcloudToServerData = (
+  data: SoundcloudData
+): RouterInput['system']['updateConfig'] => ({
+  soundcloudAuthToken: data.soundcloudAuthToken || null,
+})
