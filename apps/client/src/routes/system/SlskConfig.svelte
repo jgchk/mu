@@ -20,7 +20,7 @@
   import type { SlskSchema } from './schemas'
 
   export let data: Validation<SlskSchema>
-  export let status: RouterOutput['system']['status']
+  export let status: RouterOutput['system']['status']['soulseek']
 
   let showConfig = false
 
@@ -81,25 +81,25 @@
     <div
       use:tooltip={{
         content:
-          status.soulseek.status === 'stopped'
+          status.status === 'stopped'
             ? 'Stopped'
-            : status.soulseek.status === 'errored'
-            ? `Error: ${status.soulseek.error}`
-            : status.soulseek.status === 'logging-in'
+            : status.status === 'errored'
+            ? `Error: ${status.error}`
+            : status.status === 'logging-in'
             ? 'Logging in...'
             : 'Running',
       }}
       class={cn(
         'h-4 w-4 rounded-full transition',
-        status.soulseek.status === 'stopped' && 'bg-error-600',
-        status.soulseek.status === 'errored' && 'bg-error-600',
-        status.soulseek.status === 'logging-in' && 'bg-warning-600',
-        status.soulseek.status === 'logged-in' && 'bg-success-600'
+        status.status === 'stopped' && 'bg-error-600',
+        status.status === 'errored' && 'bg-error-600',
+        status.status === 'logging-in' && 'bg-warning-600',
+        status.status === 'logged-in' && 'bg-success-600'
       )}
     />
 
     <div class="flex items-center justify-end gap-1">
-      {#if status.soulseek.status === 'logged-in'}
+      {#if status.status === 'logged-in'}
         <Button
           kind="text"
           on:click={() => {

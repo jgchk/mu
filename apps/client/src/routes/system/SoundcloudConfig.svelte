@@ -20,7 +20,7 @@
   import type { SoundcloudSchema } from './schemas'
 
   export let data: Validation<SoundcloudSchema>
-  export let status: RouterOutput['system']['status']
+  export let status: RouterOutput['system']['status']['soundcloud']
 
   let showConfig = false
 
@@ -83,24 +83,24 @@
     <div
       use:tooltip={{
         content:
-          status.soundcloud.status === 'stopped'
+          status.status === 'stopped'
             ? 'Stopped'
-            : status.soundcloud.status === 'starting'
+            : status.status === 'starting'
             ? `Starting...`
-            : status.soundcloud.status === 'errored'
-            ? `Error: ${status.soundcloud.error}`
+            : status.status === 'errored'
+            ? `Error: ${status.error}`
             : 'Running',
       }}
       class={cn(
         'h-4 w-4 rounded-full transition',
-        status.soundcloud.status === 'stopped' && 'bg-error-600',
-        status.soundcloud.status === 'errored' && 'bg-error-600',
-        status.soundcloud.status === 'starting' && 'bg-warning-600',
-        status.soundcloud.status === 'running' && 'bg-success-600'
+        status.status === 'stopped' && 'bg-error-600',
+        status.status === 'errored' && 'bg-error-600',
+        status.status === 'starting' && 'bg-warning-600',
+        status.status === 'running' && 'bg-success-600'
       )}
     />
     <div class="flex items-center justify-end gap-1">
-      {#if status.soundcloud.status !== 'stopped'}
+      {#if status.status !== 'stopped'}
         <Button
           kind="text"
           on:click={() => $stopSoundcloudMutation.mutate()}
@@ -114,7 +114,7 @@
         on:click={() => $startSoundcloudMutation.mutate()}
         loading={$startSoundcloudMutation.isLoading}
       >
-        {#if status.soundcloud.status === 'stopped'}
+        {#if status.status === 'stopped'}
           Start
         {:else}
           Restart

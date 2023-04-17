@@ -23,7 +23,7 @@
   import type { LastFmSchema } from './schemas'
 
   export let data: Validation<LastFmSchema>
-  export let status: RouterOutput['system']['status']
+  export let status: RouterOutput['system']['status']['lastFm']
 
   let showConfig = false
   $: {
@@ -101,33 +101,33 @@
     <div
       use:tooltip={{
         content:
-          status.lastFm.status === 'stopped'
+          status.status === 'stopped'
             ? 'Stopped'
-            : status.lastFm.status === 'errored'
-            ? `Error: ${status.lastFm.error}`
-            : status.lastFm.status === 'authenticating'
+            : status.status === 'errored'
+            ? `Error: ${status.error}`
+            : status.status === 'authenticating'
             ? 'Authenticating...'
-            : status.lastFm.status === 'authenticated'
+            : status.status === 'authenticated'
             ? 'Authenticated'
-            : status.lastFm.status === 'logging-in'
+            : status.status === 'logging-in'
             ? 'Logging in...'
-            : status.lastFm.status === 'degraded'
-            ? `Degraded: ${status.lastFm.error}`
+            : status.status === 'degraded'
+            ? `Degraded: ${status.error}`
             : 'Running',
       }}
       class={cn(
         'h-4 w-4 rounded-full transition',
-        status.lastFm.status === 'stopped' && 'bg-error-600',
-        status.lastFm.status === 'errored' && 'bg-error-600',
-        status.lastFm.status === 'authenticating' && 'bg-warning-600',
-        status.lastFm.status === 'authenticated' && 'bg-warning-600',
-        status.lastFm.status === 'logging-in' && 'bg-warning-600',
-        status.lastFm.status === 'degraded' && 'bg-warning-600',
-        status.lastFm.status === 'logged-in' && 'bg-success-600'
+        status.status === 'stopped' && 'bg-error-600',
+        status.status === 'errored' && 'bg-error-600',
+        status.status === 'authenticating' && 'bg-warning-600',
+        status.status === 'authenticated' && 'bg-warning-600',
+        status.status === 'logging-in' && 'bg-warning-600',
+        status.status === 'degraded' && 'bg-warning-600',
+        status.status === 'logged-in' && 'bg-success-600'
       )}
     />
     <div class="flex items-center justify-end gap-1">
-      {#if status.lastFm.status !== 'stopped'}
+      {#if status.status !== 'stopped'}
         <Button
           kind="text"
           on:click={() => $stopLastFmMutation.mutate()}
@@ -141,7 +141,7 @@
         on:click={() => $startLastFmMutation.mutate()}
         loading={$startLastFmMutation.isLoading}
       >
-        {#if status.lastFm.status === 'stopped'}
+        {#if status.status === 'stopped'}
           Start
         {:else}
           Restart

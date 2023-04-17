@@ -24,7 +24,7 @@
   import type { SpotifySchema } from './schemas'
 
   export let data: Validation<SpotifySchema>
-  export let status: RouterOutput['system']['status']
+  export let status: RouterOutput['system']['status']['spotify']
 
   let showConfig = false
   $: {
@@ -104,11 +104,11 @@
       use:popperElement
       class={cn(
         'group h-4 w-4 rounded-full transition',
-        status.spotify.status === 'stopped' && 'bg-error-600',
-        status.spotify.status === 'errored' && 'bg-error-600',
-        status.spotify.status === 'starting' && 'bg-warning-600',
-        status.spotify.status === 'degraded' && 'bg-warning-600',
-        status.spotify.status === 'running' && 'bg-success-600'
+        status.status === 'stopped' && 'bg-error-600',
+        status.status === 'errored' && 'bg-error-600',
+        status.status === 'starting' && 'bg-warning-600',
+        status.status === 'degraded' && 'bg-warning-600',
+        status.status === 'running' && 'bg-success-600'
       )}
     >
       <div
@@ -120,32 +120,32 @@
           <div
             class={cn(
               'h-3 w-3 rounded-full transition',
-              status.spotify.status === 'stopped' && 'bg-error-600',
-              status.spotify.status === 'errored' && 'bg-error-600',
-              status.spotify.status === 'starting' && 'bg-warning-600',
-              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
-                (status.spotify.features.downloads && !status.spotify.errors?.downloads
+              status.status === 'stopped' && 'bg-error-600',
+              status.status === 'errored' && 'bg-error-600',
+              status.status === 'starting' && 'bg-warning-600',
+              (status.status === 'degraded' || status.status === 'running') &&
+                (status.features.downloads && !status.errors?.downloads
                   ? 'bg-success-600'
                   : 'bg-error-600')
             )}
           />
           <div class="text-gray-400">
-            {#if status.spotify.status === 'stopped'}
+            {#if status.status === 'stopped'}
               Stopped
-            {:else if status.spotify.status === 'starting'}
+            {:else if status.status === 'starting'}
               Starting...
-            {:else if status.spotify.status === 'errored'}
-              Error: {status.spotify.errors.downloads}
-            {:else if status.spotify.status === 'degraded'}
-              {#if status.spotify.errors.downloads}
-                Error: {status.spotify.errors.downloads}
-              {:else if status.spotify.features.downloads}
+            {:else if status.status === 'errored'}
+              Error: {status.errors.downloads}
+            {:else if status.status === 'degraded'}
+              {#if status.errors.downloads}
+                Error: {status.errors.downloads}
+              {:else if status.features.downloads}
                 Running
               {:else}
                 Stopped
               {/if}
-            {:else if status.spotify.status === 'running'}
-              {#if status.spotify.features.downloads}
+            {:else if status.status === 'running'}
+              {#if status.features.downloads}
                 Running
               {:else}
                 Stopped
@@ -159,32 +159,32 @@
           <div
             class={cn(
               'h-3 w-3 rounded-full transition',
-              status.spotify.status === 'stopped' && 'bg-error-600',
-              status.spotify.status === 'errored' && 'bg-error-600',
-              status.spotify.status === 'starting' && 'bg-warning-600',
-              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
-                (status.spotify.features.friendActivity && !status.spotify.errors?.friendActivity
+              status.status === 'stopped' && 'bg-error-600',
+              status.status === 'errored' && 'bg-error-600',
+              status.status === 'starting' && 'bg-warning-600',
+              (status.status === 'degraded' || status.status === 'running') &&
+                (status.features.friendActivity && !status.errors?.friendActivity
                   ? 'bg-success-600'
                   : 'bg-error-600')
             )}
           />
           <div class="text-gray-400">
-            {#if status.spotify.status === 'stopped'}
+            {#if status.status === 'stopped'}
               Stopped
-            {:else if status.spotify.status === 'starting'}
+            {:else if status.status === 'starting'}
               Starting...
-            {:else if status.spotify.status === 'errored'}
-              Error: {status.spotify.errors.friendActivity}
-            {:else if status.spotify.status === 'degraded'}
-              {#if status.spotify.errors.friendActivity}
-                Error: {status.spotify.errors.friendActivity}
-              {:else if status.spotify.features.friendActivity}
+            {:else if status.status === 'errored'}
+              Error: {status.errors.friendActivity}
+            {:else if status.status === 'degraded'}
+              {#if status.errors.friendActivity}
+                Error: {status.errors.friendActivity}
+              {:else if status.features.friendActivity}
                 Running
               {:else}
                 Stopped
               {/if}
-            {:else if status.spotify.status === 'running'}
-              {#if status.spotify.features.friendActivity}
+            {:else if status.status === 'running'}
+              {#if status.features.friendActivity}
                 Running
               {:else}
                 Stopped
@@ -198,32 +198,32 @@
           <div
             class={cn(
               'h-3 w-3 rounded-full transition',
-              status.spotify.status === 'stopped' && 'bg-error-600',
-              status.spotify.status === 'errored' && 'bg-error-600',
-              status.spotify.status === 'starting' && 'bg-warning-600',
-              (status.spotify.status === 'degraded' || status.spotify.status === 'running') &&
-                (status.spotify.features.webApi && !status.spotify.errors?.webApi
+              status.status === 'stopped' && 'bg-error-600',
+              status.status === 'errored' && 'bg-error-600',
+              status.status === 'starting' && 'bg-warning-600',
+              (status.status === 'degraded' || status.status === 'running') &&
+                (status.features.webApi && !status.errors?.webApi
                   ? 'bg-success-600'
                   : 'bg-error-600')
             )}
           />
           <div class="text-gray-400">
-            {#if status.spotify.status === 'stopped'}
+            {#if status.status === 'stopped'}
               Stopped
-            {:else if status.spotify.status === 'starting'}
+            {:else if status.status === 'starting'}
               Starting...
-            {:else if status.spotify.status === 'errored'}
-              Error: {status.spotify.errors.webApi}
-            {:else if status.spotify.status === 'degraded'}
-              {#if status.spotify.errors.webApi}
-                Error: {status.spotify.errors.webApi}
-              {:else if status.spotify.features.webApi}
+            {:else if status.status === 'errored'}
+              Error: {status.errors.webApi}
+            {:else if status.status === 'degraded'}
+              {#if status.errors.webApi}
+                Error: {status.errors.webApi}
+              {:else if status.features.webApi}
                 Running
               {:else}
                 Stopped
               {/if}
-            {:else if status.spotify.status === 'running'}
-              {#if status.spotify.features.webApi}
+            {:else if status.status === 'running'}
+              {#if status.features.webApi}
                 Running
               {:else}
                 Stopped
@@ -234,7 +234,7 @@
       </div>
     </div>
     <div class="flex items-center justify-end gap-1">
-      {#if status.spotify.status !== 'stopped'}
+      {#if status.status !== 'stopped'}
         <Button
           kind="text"
           on:click={() => $stopSpotifyMutation.mutate()}
@@ -248,7 +248,7 @@
         on:click={() => $startSpotifyMutation.mutate()}
         loading={$startSpotifyMutation.isLoading}
       >
-        {#if status.spotify.status === 'stopped'}
+        {#if status.status === 'stopped'}
           Start
         {:else}
           Restart

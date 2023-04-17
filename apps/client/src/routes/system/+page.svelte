@@ -16,10 +16,10 @@
 
 {#if $statusQuery.data}
   {@const status = $statusQuery.data}
-  <LastFmConfig data={data.lastFmForm} {status} />
-  <SlskConfig data={data.slskForm} {status} />
-  <SoundcloudConfig data={data.soundcloudForm} {status} />
-  <SpotifyConfig data={data.spotifyForm} {status} />
+  <LastFmConfig data={data.lastFmForm} status={status.lastFm} />
+  <SlskConfig data={data.slskForm} status={status.soulseek} />
+  <SoundcloudConfig data={data.soundcloudForm} status={status.soundcloud} />
+  <SpotifyConfig data={data.spotifyForm} status={status.spotify} />
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}
