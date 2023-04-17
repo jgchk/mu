@@ -15,6 +15,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
+  import { useEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
   import type { SoundcloudSchema } from './schemas'
@@ -23,6 +24,7 @@
   export let status: RouterOutput['system']['status']['soundcloud']
 
   let showConfig = false
+  useEditLink('soundcloud', () => (showConfig = true))
 
   const toast = getContextToast()
   const trpc = getContextClient()

@@ -1,39 +1,56 @@
 <script lang="ts">
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
-  import { createSearchSoundcloudQuery } from '$lib/services/search'
+  import Button from '$lib/atoms/Button.svelte'
+  import LinkButton from '$lib/atoms/LinkButton.svelte'
+  import { createStartSoundcloudMutation, createSystemStatusQuery } from '$lib/services/system'
   import { getContextClient } from '$lib/trpc'
+  import { createEditLink } from '$lib/utils/system-config'
 
   import type { PageData } from './$types'
-  import SoundcloudSearchResult from './SoundcloudSearchResult.svelte'
+  import Page from './Page.svelte'
 
   export let data: PageData
 
   const trpc = getContextClient()
-  $: soundcloudQuery = createSearchSoundcloudQuery(trpc, data.query)
+  const statusQuery = createSystemStatusQuery(trpc)
+  const startSoundcloudMutation = createStartSoundcloudMutation(trpc)
+
+  const editLink = createEditLink('soundcloud')
 </script>
 
-{#if data.hasQuery}
-  {#if $soundcloudQuery.data}
-    <div class="p-4 pt-0">
-      <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>
-      <FlowGrid>
-        {#each $soundcloudQuery.data.albums as album (album.id)}
-          <SoundcloudSearchResult result={album} />
-        {/each}
-      </FlowGrid>
-
-      <h2 class="mb-4 mt-16 text-2xl font-bold">Tracks</h2>
-      <FlowGrid>
-        {#each $soundcloudQuery.data.tracks as track (track.id)}
-          <SoundcloudSearchResult result={track} />
-        {/each}
-      </FlowGrid>
+{#if $statusQuery.data}
+  {@const status = $statusQuery.data.soundcloud}
+  {#if status.status === 'running'}
+    <Page {data} />
+  {:else if status.status === 'stopped'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-2xl text-gray-500">Soundcloud is not running</div>
+      <div>
+        <Button
+          on:click={() => {
+            if (!$startSoundcloudMutation.isLoading) {
+              $startSoundcloudMutation.mutate()
+            }
+          }}
+          loading={$startSoundcloudMutation.isLoading ||
+            $statusQuery.data?.soundcloud.status === 'starting'}
+        >
+          Start
+        </Button>
+      </div>
     </div>
-  {:else if $soundcloudQuery.error}
-    <div>{$soundcloudQuery.error.message}</div>
+  {:else if status.status === 'errored'}
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-error-500 text-2xl">Soundcloud ran into an error</div>
+      <LinkButton href={$editLink}>Edit Config</LinkButton>
+    </div>
   {:else}
-    <div>Loading...</div>
+    <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
+      <div class="text-error-500 text-2xl">Spotify is not configured for search</div>
+      <LinkButton href={$editLink}>Edit Config</LinkButton>
+    </div>
   {/if}
+{:else if $statusQuery.error}
+  <div class="text-2xl text-gray-500">Error loading status</div>
 {:else}
-  <div>Enter a search query</div>
+  <div>Loading...</div>
 {/if}

@@ -4,9 +4,6 @@
   import type { ContextSpotifyErrors } from 'trpc'
   import { isDefined, toErrorString } from 'utils'
 
-  import { browser } from '$app/environment'
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import { createPopperAction } from '$lib/actions/popper'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
@@ -19,6 +16,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
+  import { useEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
   import type { SpotifySchema } from './schemas'
@@ -28,17 +26,7 @@
   export let status: RouterOutput['system']['status']['spotify']
 
   let showConfig = false
-  $: {
-    if ($page.url.searchParams.has('spotify')) {
-      showConfig = true
-
-      if (browser) {
-        let searchParams = new URLSearchParams($page.url.search)
-        searchParams.delete('spotify')
-        void goto(`${$page.url.pathname}${searchParams.toString()}`, { replaceState: true })
-      }
-    }
-  }
+  useEditLink('spotify', () => (showConfig = true))
 
   const toast = getContextToast()
   const trpc = getContextClient()

@@ -3,9 +3,6 @@
   import { superForm } from 'sveltekit-superforms/client'
   import { toErrorString } from 'utils'
 
-  import { browser } from '$app/environment'
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
@@ -18,6 +15,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
+  import { useEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
   import type { LastFmSchema } from './schemas'
@@ -26,17 +24,7 @@
   export let status: RouterOutput['system']['status']['lastFm']
 
   let showConfig = false
-  $: {
-    if ($page.url.searchParams.has('last-fm')) {
-      showConfig = true
-
-      if (browser) {
-        let searchParams = new URLSearchParams($page.url.search)
-        searchParams.delete('last-fm')
-        void goto(`${$page.url.pathname}${searchParams.toString()}`, { replaceState: true })
-      }
-    }
-  }
+  useEditLink('last-fm', () => (showConfig = true))
 
   const toast = getContextToast()
   const trpc = getContextClient()
