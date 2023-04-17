@@ -4,12 +4,25 @@ import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
 import { Spotify } from 'spotify'
 import type { Context, ContextSpotifyErrors } from 'trpc'
+import type { ContextSpotify, ContextSpotifyFeatures } from 'trpc/src/context'
 import { keys, withProps } from 'utils'
 
 import { env } from '../env'
 import { makeDb } from './db'
 import { makeDownloader } from './dl'
 import { makeLastFm } from './lfm'
+
+const spotifyNoFeatures: ContextSpotifyFeatures = {
+  downloads: false,
+  friendActivity: false,
+  webApi: false,
+}
+const spotifyNoErrors: ContextSpotifyErrors = {}
+const spotifyStopped: ContextSpotify = {
+  status: 'stopped',
+  features: spotifyNoFeatures,
+  errors: spotifyNoErrors,
+}
 
 const setConfigFromEnv = (db: Database) => {
   const config = db.configs.get()
@@ -78,7 +91,7 @@ export const makeContext = async (): Promise<Context> => {
   }
 
   const updateSpotify = async () => {
-    context.lfm = { status: 'stopped' }
+    context.sp = spotifyStopped
 
     const config = db.configs.get()
 
@@ -108,13 +121,17 @@ export const makeContext = async (): Promise<Context> => {
     const enabledFeatures = keys(opts)
 
     if (enabledFeatures.length === 0) {
-      context.sp = { status: 'stopped' }
+      context.sp = spotifyStopped
       return
     }
 
     const spotify = Spotify(opts)
 
-    context.sp = { status: 'starting' }
+    context.sp = {
+      status: 'starting',
+      features: spotifyNoFeatures,
+      errors: spotifyNoErrors,
+    }
 
     const errors: ContextSpotifyErrors = {}
     await Promise.all([
@@ -151,11 +168,31 @@ export const makeContext = async (): Promise<Context> => {
     const allFailed = numFailed === enabledFeatures.length
     const someFailed = numFailed > 0
     if (allFailed) {
-      context.sp = { status: 'errored', errors }
+      context.sp = {
+        status: 'errored',
+        errors,
+        features: spotifyNoFeatures,
+      }
     } else if (someFailed) {
-      context.sp = withProps(spotify, { status: 'degraded', errors } as const)
+      context.sp = withProps(spotify, {
+        status: 'degraded',
+        errors,
+        features: {
+          downloads: !errors.downloads && !!spotify.downloads,
+          friendActivity: !errors.friendActivity && !!spotify.friendActivity,
+          webApi: !errors.webApi && !!spotify.webApi,
+        },
+      } as const)
     } else {
-      context.sp = withProps(spotify, { status: 'running' } as const)
+      context.sp = withProps(spotify, {
+        status: 'running',
+        features: {
+          downloads: !!spotify.downloads,
+          friendActivity: !!spotify.friendActivity,
+          webApi: !!spotify.webApi,
+        },
+        errors: spotifyNoErrors,
+      } as const)
     }
   }
 
@@ -163,7 +200,7 @@ export const makeContext = async (): Promise<Context> => {
     db,
     dl: makeDownloader(() => context),
     sc: { status: 'stopped' },
-    sp: { status: 'stopped' },
+    sp: spotifyStopped,
     slsk: { status: 'stopped' },
     lfm: { status: 'stopped' },
     musicDir: env.MUSIC_DIR,
@@ -238,7 +275,7 @@ export const makeContext = async (): Promise<Context> => {
       return context.sp
     },
     stopSpotify: () => {
-      context.sp = { status: 'stopped' }
+      context.sp = spotifyStopped
       return context.sp
     },
     startSoundcloud: async () => {

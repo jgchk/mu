@@ -45,11 +45,25 @@ export type ContextSlsk =
   | ({ status: 'logged-in' } & SlskClient)
 
 export type ContextSpotify =
-  | { status: 'stopped' }
-  | { status: 'starting' }
-  | { status: 'errored'; errors: ContextSpotifyErrors }
-  | ({ status: 'degraded'; errors: ContextSpotifyErrors } & Spotify)
-  | ({ status: 'running' } & Spotify)
+  | { status: 'stopped'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
+  | { status: 'starting'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
+  | { status: 'errored'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
+  | ({
+      status: 'degraded'
+      features: ContextSpotifyFeatures
+      errors: ContextSpotifyErrors
+    } & Spotify)
+  | ({
+      status: 'running'
+      features: ContextSpotifyFeatures
+      errors: ContextSpotifyErrors
+    } & Spotify)
+
+export type ContextSpotifyFeatures = {
+  downloads: boolean
+  friendActivity: boolean
+  webApi: boolean
+}
 
 export type ContextSpotifyErrors = {
   downloads?: unknown

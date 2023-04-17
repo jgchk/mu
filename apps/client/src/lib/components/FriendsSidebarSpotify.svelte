@@ -3,8 +3,7 @@
 
   import Loader from '$lib/atoms/Loader.svelte'
   import { createSpotifyFriendsQuery } from '$lib/services/friends'
-  import { createSystemStatusQuery } from '$lib/services/system'
-  import { getContextToast } from '$lib/toast/toast'
+  import { createStartSpotifyMutation, createSystemStatusQuery } from '$lib/services/system'
   import { getContextClient } from '$lib/trpc'
   import { createEditLink } from '$lib/utils/system-config'
 
@@ -13,17 +12,12 @@
 
   const trpc = getContextClient()
   const statusQuery = createSystemStatusQuery(trpc)
+  const startSpotifyMutation = createStartSpotifyMutation(trpc)
 
-  $: enabled =
-    ($statusQuery.data?.spotify.status === 'running' ||
-      $statusQuery.data?.spotify.status === 'degraded') &&
-    $statusQuery.data.spotify.features.friendActivity
-
+  $: enabled = $statusQuery.data?.spotify.features.webApi
   $: friendsQuery = createSpotifyFriendsQuery(trpc, { enabled })
 
   const editLink = createEditLink('spotify')
-
-  const toast = getContextToast()
 </script>
 
 {#if enabled}
@@ -43,32 +37,19 @@
 {:else}
   <div class="flex h-full max-h-72 items-center justify-center">
     <div class="text-center text-gray-600">
-      {#if $statusQuery.data}
-        {@const status = $statusQuery.data.spotify}
-        {#if status.status === 'stopped'}
-          <a class="underline" href={$editLink}>Configure Spotify</a>
-        {:else if status.status === 'starting'}
-          <button
-            type="button"
-            class="inline underline"
-            on:click={() =>
-              $statusQuery
-                .refetch()
-                .then(() => toast.success('Refreshed Spotify status'))
-                .catch(() => toast.error('Failed to refresh Spotify status'))}>Refresh</button
-          >
-          {#if $statusQuery.isFetching}
-            <Delay>
-              <Loader class="ml-1 inline h-4 w-4" />
-            </Delay>
-          {/if}
-        {:else if status.status === 'errored'}
-          <a class="underline" href={$editLink}>Fix your Spotify configuration</a>
-        {:else if status.status === 'degraded' && !status.features.friendActivity}
-          <a class="underline" href={$editLink}>Fix your Spotify configuration</a>
+      {#if $statusQuery.data?.spotify.status === 'stopped'}
+        <button type="button" class="underline" on:click={() => $startSpotifyMutation.mutate()}>
+          Start Spotify
+        </button>
+        {#if $startSpotifyMutation.isLoading}
+          <Delay>
+            <Loader class="ml-1 inline h-4 w-4" />
+          </Delay>
         {/if}
+      {:else if $statusQuery.data?.spotify.errors.webApi}
+        <a class="underline" href={$editLink}>Fix your Spotify configuration</a>
       {:else}
-        Configure Spotify
+        <a class="underline" href={$editLink}>Configure Spotify</a>
       {/if}
       to see your friends
     </div>

@@ -139,28 +139,33 @@ const formatSoundcloudStatus = (status: ContextSoundcloud) =>
 
 const formatSpotifyStatus = (status: ContextSpotify) =>
   status.status === 'stopped'
-    ? ({ status: 'stopped' } as const)
+    ? ({
+        status: 'stopped',
+        features: status.features,
+        errors: formatSpotifyErrors(status.errors),
+      } as const)
     : status.status === 'starting'
-    ? ({ status: 'starting' } as const)
+    ? ({
+        status: 'starting',
+        features: status.features,
+        errors: formatSpotifyErrors(status.errors),
+      } as const)
     : status.status === 'errored'
-    ? ({ status: 'errored', errors: formatSpotifyErrors(status.errors) } as const)
+    ? ({
+        status: 'errored',
+        features: status.features,
+        errors: formatSpotifyErrors(status.errors),
+      } as const)
     : status.status === 'degraded'
     ? ({
         status: 'degraded',
+        features: status.features,
         errors: formatSpotifyErrors(status.errors),
-        features: {
-          downloads: status.downloads,
-          friendActivity: status.friendActivity,
-          webApi: status.webApi,
-        },
       } as const)
     : ({
         status: 'running',
-        features: {
-          downloads: status.downloads,
-          friendActivity: status.friendActivity,
-          webApi: status.webApi,
-        },
+        features: status.features,
+        errors: formatSpotifyErrors(status.errors),
       } as const)
 
 const formatSpotifyErrors = (errors: ContextSpotifyErrors) => ({

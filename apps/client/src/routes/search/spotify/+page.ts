@@ -12,10 +12,8 @@ export const load: PageLoad = async ({ url, parent }) => {
   if (hasQuery) {
     const { trpc } = await parent()
     const status = await fetchSystemStatusQuery(trpc)
-    if (
-      (status.spotify.status === 'degraded' && !status.spotify.errors.webApi) ||
-      (status.spotify.status === 'running' && status.spotify.features.webApi)
-    ) {
+
+    if (status.spotify.features.webApi) {
       await prefetchSearchSpotifyQuery(trpc, query)
     }
   }

@@ -26,9 +26,7 @@
         status.status === 'errored' && 'bg-error-600',
         status.status === 'starting' && 'bg-warning-600',
         (status.status === 'degraded' || status.status === 'running') &&
-          (status.features.downloads && !status.errors?.downloads
-            ? 'bg-success-600'
-            : 'bg-error-600')
+          (status.features.downloads ? 'bg-success-600' : 'bg-error-600')
       )}
     />
     <div class="text-gray-400">
@@ -65,9 +63,7 @@
         status.status === 'errored' && 'bg-error-600',
         status.status === 'starting' && 'bg-warning-600',
         (status.status === 'degraded' || status.status === 'running') &&
-          (status.features.friendActivity && !status.errors?.friendActivity
-            ? 'bg-success-600'
-            : 'bg-error-600')
+          (status.features.friendActivity ? 'bg-success-600' : 'bg-error-600')
       )}
     />
     <div class="text-gray-400">
@@ -104,7 +100,7 @@
         status.status === 'errored' && 'bg-error-600',
         status.status === 'starting' && 'bg-warning-600',
         (status.status === 'degraded' || status.status === 'running') &&
-          (status.features.webApi && !status.errors?.webApi ? 'bg-success-600' : 'bg-error-600')
+          (status.features.webApi ? 'bg-success-600' : 'bg-error-600')
       )}
     />
     <div class="text-gray-400">
