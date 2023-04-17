@@ -21,6 +21,7 @@
   import { cn } from '$lib/utils/classes'
 
   import type { ActionData } from './$types'
+  import ConfigSpotifyStatus from './ConfigSpotifyStatus.svelte'
   import type { SpotifySchema } from './schemas'
 
   export let data: Validation<SpotifySchema>
@@ -111,127 +112,11 @@
         status.status === 'running' && 'bg-success-600'
       )}
     >
-      <div
-        class="pointer-events-none absolute space-y-1 rounded border border-gray-600 bg-gray-700 p-3 py-2 text-sm opacity-0 shadow group-hover:pointer-events-auto group-hover:opacity-100"
-        use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] }}
-      >
-        <div class="flex items-center gap-2">
-          <div>Downloads</div>
-          <div
-            class={cn(
-              'h-3 w-3 rounded-full transition',
-              status.status === 'stopped' && 'bg-error-600',
-              status.status === 'errored' && 'bg-error-600',
-              status.status === 'starting' && 'bg-warning-600',
-              (status.status === 'degraded' || status.status === 'running') &&
-                (status.features.downloads && !status.errors?.downloads
-                  ? 'bg-success-600'
-                  : 'bg-error-600')
-            )}
-          />
-          <div class="text-gray-400">
-            {#if status.status === 'stopped'}
-              Stopped
-            {:else if status.status === 'starting'}
-              Starting...
-            {:else if status.status === 'errored'}
-              Error: {status.errors.downloads}
-            {:else if status.status === 'degraded'}
-              {#if status.errors.downloads}
-                Error: {status.errors.downloads}
-              {:else if status.features.downloads}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {:else if status.status === 'running'}
-              {#if status.features.downloads}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {/if}
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div>Friend Activity</div>
-          <div
-            class={cn(
-              'h-3 w-3 rounded-full transition',
-              status.status === 'stopped' && 'bg-error-600',
-              status.status === 'errored' && 'bg-error-600',
-              status.status === 'starting' && 'bg-warning-600',
-              (status.status === 'degraded' || status.status === 'running') &&
-                (status.features.friendActivity && !status.errors?.friendActivity
-                  ? 'bg-success-600'
-                  : 'bg-error-600')
-            )}
-          />
-          <div class="text-gray-400">
-            {#if status.status === 'stopped'}
-              Stopped
-            {:else if status.status === 'starting'}
-              Starting...
-            {:else if status.status === 'errored'}
-              Error: {status.errors.friendActivity}
-            {:else if status.status === 'degraded'}
-              {#if status.errors.friendActivity}
-                Error: {status.errors.friendActivity}
-              {:else if status.features.friendActivity}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {:else if status.status === 'running'}
-              {#if status.features.friendActivity}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {/if}
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div>Web API</div>
-          <div
-            class={cn(
-              'h-3 w-3 rounded-full transition',
-              status.status === 'stopped' && 'bg-error-600',
-              status.status === 'errored' && 'bg-error-600',
-              status.status === 'starting' && 'bg-warning-600',
-              (status.status === 'degraded' || status.status === 'running') &&
-                (status.features.webApi && !status.errors?.webApi
-                  ? 'bg-success-600'
-                  : 'bg-error-600')
-            )}
-          />
-          <div class="text-gray-400">
-            {#if status.status === 'stopped'}
-              Stopped
-            {:else if status.status === 'starting'}
-              Starting...
-            {:else if status.status === 'errored'}
-              Error: {status.errors.webApi}
-            {:else if status.status === 'degraded'}
-              {#if status.errors.webApi}
-                Error: {status.errors.webApi}
-              {:else if status.features.webApi}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {:else if status.status === 'running'}
-              {#if status.features.webApi}
-                Running
-              {:else}
-                Stopped
-              {/if}
-            {/if}
-          </div>
-        </div>
-      </div>
+      <ConfigSpotifyStatus
+        {status}
+        {popperTooltip}
+        class="pointer-events-none opacity-0 transition duration-100 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:delay-300"
+      />
     </div>
     <div class="flex items-center justify-end gap-1">
       {#if status.status !== 'stopped'}
