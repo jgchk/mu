@@ -48,7 +48,7 @@ export const notifySoulseekStatus = (
   } else if (status.status === 'logging-in') {
     toast.warning('Soulseek logging in...')
   } else {
-    toast.success('Soulseek started')
+    toast.success('Soulseek started!')
   }
 }
 
@@ -102,26 +102,25 @@ export const createStopSoulseekMutation = (
     },
   })
 
-export const lastFmErrorMessage = (error: unknown) =>
-  `Error updating Last.fm: ${toErrorString(error)}`
+export const lastFmErrorMessage = (error: unknown) => `Last.fm errored: ${toErrorString(error)}`
 export const notifyLastFmStatus = (
   toast: ToastStore,
   status: RouterOutput['system']['status']['lastFm']
 ) => {
   if (status.status === 'stopped') {
-    toast.error('Last.fm updated: Not logged in')
+    toast.error('Last.fm stopped')
   } else if (status.status === 'errored') {
     toast.error(lastFmErrorMessage(status.error))
   } else if (status.status === 'authenticating') {
-    toast.warning('Last.fm updated: Authenticating...')
+    toast.warning('Last.fm authenticating...')
   } else if (status.status === 'authenticated') {
-    toast.warning('Last.fm updated: Authenticated')
+    toast.warning('Last.fm authenticated')
   } else if (status.status === 'logging-in') {
-    toast.warning('Last.fm updated: Logging in...')
+    toast.warning('Last.fm logging in...')
   } else if (status.status === 'degraded') {
-    toast.warning(`Last.fm updated: Degraded: ${status.error}`)
+    toast.warning(`Last.fm partially authenticated: ${status.error}`)
   } else {
-    toast.success('Last.fm updated!')
+    toast.success('Last.fm started!')
   }
 }
 
@@ -175,8 +174,7 @@ export const createStopLastFmMutation = (
     },
   })
 
-export const spotifyErrorMessage = (error: unknown) =>
-  `Error updating Spotify: ${toErrorString(error)}`
+export const spotifyErrorMessage = (error: unknown) => `Spotify errored: ${toErrorString(error)}`
 const formatSpotifyErrors = (errors: ContextSpotifyErrors) =>
   Object.values(errors).filter(isDefined).map(toErrorString).join(', ')
 export const notifySpotifyStatus = (
@@ -184,15 +182,15 @@ export const notifySpotifyStatus = (
   status: RouterOutput['system']['status']['spotify']
 ) => {
   if (status.status === 'stopped') {
-    toast.error('Spotify updated: Stopped')
+    toast.error('Spotify stopped')
   } else if (status.status === 'starting') {
-    toast.warning('Spotify updated: Starting...')
+    toast.warning('Spotify starting...')
   } else if (status.status === 'errored') {
-    toast.error(`Spotify updated: ${formatSpotifyErrors(status.errors)}`)
+    toast.error(`Spotify errored: ${formatSpotifyErrors(status.errors)}`)
   } else if (status.status === 'degraded') {
-    toast.warning(`Spotify updated: Degraded: ${formatSpotifyErrors(status.errors)}`)
+    toast.warning(`Spotify partially started: ${formatSpotifyErrors(status.errors)}`)
   } else if (status.status === 'running') {
-    toast.success('Spotify updated!')
+    toast.success('Spotify started!')
   }
 }
 
@@ -247,19 +245,19 @@ export const createStopSpotifyMutation = (
   })
 
 export const soundcloudErrorMessage = (error: unknown) =>
-  `Error updating Soundcloud: ${toErrorString(error)}`
+  `Soundcloud errored: ${toErrorString(error)}`
 export const notifySoundcloudStatus = (
   toast: ToastStore,
   status: RouterOutput['system']['status']['soundcloud']
 ) => {
   if (status.status === 'stopped') {
-    toast.error('Soundcloud updated: Stopped')
+    toast.error('Soundcloud stopped')
   } else if (status.status === 'starting') {
-    toast.warning('Soundcloud updated: Starting...')
+    toast.warning('Soundcloud starting...')
   } else if (status.status === 'errored') {
     toast.error(soundcloudErrorMessage(status.error))
   } else if (status.status === 'running') {
-    toast.success('Soundcloud updated!')
+    toast.success('Soundcloud started!')
   }
 }
 
