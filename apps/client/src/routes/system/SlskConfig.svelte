@@ -64,14 +64,14 @@
 
   const startSoulseekMutation = createStartSoulseekMutation(trpc, {
     showToast: false,
-    onError: (error) => {
-      toast.error(`Error starting Soulseek: ${error.message}`)
-    },
+    onSuccess: (data) => notifyStatus(data),
+    onError: (error) => toast.error(updateErrorMsg(error)),
   })
   const stopSoulseekMutation = createStopSoulseekMutation(trpc, {
     showToast: false,
+    onSuccess: (data) => notifyStatus(data),
     onError: (error) => {
-      toast.error(`Error stopping Soulseek: ${error.message}`)
+      toast.error(updateErrorMsg(error))
     },
   })
 </script>
@@ -106,7 +106,6 @@
           kind="text"
           on:click={() => {
             if (!$stopSoulseekMutation.isLoading) {
-              toast.success('Stopping Soulseek...')
               $stopSoulseekMutation.mutate()
               $startSoulseekMutation.reset()
             }
@@ -119,8 +118,7 @@
           kind="text"
           on:click={() => {
             if (!$startSoulseekMutation.isLoading) {
-              toast.success('Restarting Soulseek...')
-              $startSoulseekMutation.reset()
+              $startSoulseekMutation.mutate()
               $stopSoulseekMutation.reset()
             }
           }}
@@ -133,7 +131,6 @@
           kind="text"
           on:click={() => {
             if (!$startSoulseekMutation.isLoading) {
-              toast.success('Starting Soulseek...')
               $startSoulseekMutation.mutate()
               $stopSoulseekMutation.reset()
             }
