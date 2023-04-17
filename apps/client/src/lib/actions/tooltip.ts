@@ -1,14 +1,7 @@
 import type { Instance, Props as TippyProps } from 'tippy.js'
 import tippy from 'tippy.js'
 
-interface ActionReturn<Parameter> {
-  update?: (parameter: Parameter) => void
-  destroy?: () => void
-}
-
-interface Action<Parameter = void, Return = ActionReturn<Parameter>> {
-  <Node extends HTMLElement>(node: Node, parameter: Parameter): Return | void
-}
+import type { Action } from './types'
 
 export type TooltipProps = Partial<TippyProps> & { enabled?: boolean }
 

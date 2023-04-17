@@ -1,9 +1,14 @@
+import type { Action } from './types'
+
 export type ClickOutsideHandler = (event: ClickOutsideEvent) => void
 export type ClickOutsideEvent = MouseEvent & {
   outside: Node
 }
 
-export function clickOutside(node: Node, handler_: ClickOutsideHandler) {
+export const clickOutside: Action<ClickOutsideHandler> = (
+  node: Node,
+  handler_: ClickOutsideHandler
+) => {
   let handler = handler_
 
   const handleClick = (event: MouseEvent) => {
