@@ -7,14 +7,14 @@
 
 <div class="flex h-full gap-2">
   <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
-    <ServiceLink service="Spotify">
-      <SpotifyIcon />
+    <ServiceLink service="Soulseek">
+      <SoulseekIcon />
     </ServiceLink>
     <ServiceLink service="Soundcloud">
       <SoundcloudIcon />
     </ServiceLink>
-    <ServiceLink service="Soulseek">
-      <SoulseekIcon />
+    <ServiceLink service="Spotify">
+      <SpotifyIcon />
     </ServiceLink>
   </div>
 
