@@ -24,6 +24,7 @@
 
   export let data: Validation<SpotifySchema>
   export let status: RouterOutput['system']['status']['spotify']
+  $: stopped = status.status === 'stopped' || status.status === 'errored'
 
   let showConfig = false
   useEditLink('spotify', () => (showConfig = true))
@@ -109,7 +110,7 @@
       />
     </div>
     <div class="flex items-center justify-end gap-1">
-      {#if status.status !== 'stopped'}
+      {#if !stopped}
         <Button
           kind="text"
           on:click={() => $stopSpotifyMutation.mutate()}
@@ -123,7 +124,7 @@
         on:click={() => $startSpotifyMutation.mutate()}
         loading={$startSpotifyMutation.isLoading}
       >
-        {#if status.status === 'stopped'}
+        {#if stopped}
           Start
         {:else}
           Restart

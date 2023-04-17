@@ -22,6 +22,7 @@
 
   export let data: Validation<SoundcloudSchema>
   export let status: RouterOutput['system']['status']['soundcloud']
+  $: stopped = status.status === 'stopped' || status.status === 'errored'
 
   let showConfig = false
   useEditLink('soundcloud', () => (showConfig = true))
@@ -102,7 +103,7 @@
       )}
     />
     <div class="flex items-center justify-end gap-1">
-      {#if status.status !== 'stopped'}
+      {#if !stopped}
         <Button
           kind="text"
           on:click={() => $stopSoundcloudMutation.mutate()}
@@ -116,7 +117,7 @@
         on:click={() => $startSoundcloudMutation.mutate()}
         loading={$startSoundcloudMutation.isLoading}
       >
-        {#if status.status === 'stopped'}
+        {#if stopped}
           Start
         {:else}
           Restart
