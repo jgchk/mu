@@ -8,7 +8,10 @@ import { page } from '$app/stores'
 export const createEditLink = (service: string) =>
   derived(page, (page) => {
     const editUrl = new URL(page.url)
-    editUrl.pathname = '/system'
+    if (editUrl.pathname !== '/system') {
+      editUrl.pathname = '/system'
+      editUrl.search = ''
+    }
     editUrl.searchParams.set(service, 'true')
     return `${editUrl.pathname}${editUrl.search}`
   })
