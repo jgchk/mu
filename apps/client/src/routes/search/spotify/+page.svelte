@@ -39,7 +39,8 @@
     </div>
   {:else if status.errors.webApi}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
-      <div class="text-error-500 text-2xl">Spotify ran into an error</div>
+      <div class="text-2xl text-gray-500">Spotify ran into an error</div>
+      <div class="text-error-500 -mt-1 mb-1">{status.errors.webApi}</div>
       <LinkButton href={$editLink}>Edit Config</LinkButton>
     </div>
   {:else if status.status === 'starting'}

@@ -39,7 +39,8 @@
     </div>
   {:else if status.status === 'errored'}
     <div class="flex h-full max-h-72 flex-col items-center justify-center gap-2">
-      <div class="text-error-500 text-2xl">Soundcloud ran into an error</div>
+      <div class="text-gray-500 text-2xl">Soundcloud ran into an error</div>
+      <div class="text-error-500 -mt-1 mb-1">{status.error}</div>
       <LinkButton href={$editLink}>Edit Config</LinkButton>
     </div>
   {:else}
