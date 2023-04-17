@@ -6,6 +6,18 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
   MUSIC_DIR: z.string(),
+  SOUNDCLOUD_AUTH_TOKEN: z.string().optional(),
+  SPOTIFY_CLIENT_ID: z.string().optional(),
+  SPOTIFY_CLIENT_SECRET: z.string().optional(),
+  SPOTIFY_USERNAME: z.string().optional(),
+  SPOTIFY_PASSWORD: z.string().optional(),
+  SPOTIFY_DC_COOKIE: z.string().optional(),
+  SOULSEEK_USERNAME: z.string().optional(),
+  SOULSEEK_PASSWORD: z.string().optional(),
+  LASTFM_KEY: z.string().optional(),
+  LASTFM_SECRET: z.string().optional(),
+  LASTFM_USERNAME: z.string().optional(),
+  LASTFM_PASSWORD: z.string().optional(),
 })
 
 const envRes = envSchema.safeParse(process.env)
