@@ -31,9 +31,11 @@
   $: {
     if ($page.url.searchParams.has('spotify')) {
       showConfig = true
-      $page.url.searchParams.delete('spotify')
+
       if (browser) {
-        void goto(`?${$page.url.search}`)
+        let searchParams = new URLSearchParams($page.url.search)
+        searchParams.delete('spotify')
+        void goto(`${$page.url.pathname}${searchParams.toString()}`, { replaceState: true })
       }
     }
   }

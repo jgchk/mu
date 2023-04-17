@@ -29,9 +29,11 @@
   $: {
     if ($page.url.searchParams.has('last-fm')) {
       showConfig = true
-      $page.url.searchParams.delete('last-fm')
+
       if (browser) {
-        void goto(`?${$page.url.search}`)
+        let searchParams = new URLSearchParams($page.url.search)
+        searchParams.delete('last-fm')
+        void goto(`${$page.url.pathname}${searchParams.toString()}`, { replaceState: true })
       }
     }
   }
