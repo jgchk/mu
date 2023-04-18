@@ -82,11 +82,11 @@ CREATE TABLE `artists` (
 );
 --> statement-breakpoint
 CREATE TABLE `playlist_tracks` (
+	`id` integer PRIMARY KEY NOT NULL,
 	`playlist_id` integer NOT NULL,
 	`track_id` integer NOT NULL,
 	`order` integer NOT NULL,
 	`created_at` integer NOT NULL,
-	PRIMARY KEY(`playlist_id`, `track_id`),
 	FOREIGN KEY (`playlist_id`) REFERENCES `playlists`(`id`),
 	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`)
 );

@@ -80,19 +80,14 @@ export const playlists = sqliteTable('playlists', {
 
 export type PlaylistTrack = InferModel<typeof playlistTracks>
 export type InsertPlaylistTrack = InferModel<typeof playlistTracks, 'insert'>
-export const playlistTracks = sqliteTable(
-  'playlist_tracks',
-  {
-    playlistId: integer('playlist_id')
-      .references(() => playlists.id)
-      .notNull(),
-    trackId: integer('track_id')
-      .references(() => tracks.id)
-      .notNull(),
-    order: integer('order').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  },
-  (playlistTracks) => ({
-    playlistTracksPrimaryKey: primaryKey(playlistTracks.playlistId, playlistTracks.trackId),
-  })
-)
+export const playlistTracks = sqliteTable('playlist_tracks', {
+  id: integer('id').primaryKey(),
+  playlistId: integer('playlist_id')
+    .references(() => playlists.id)
+    .notNull(),
+  trackId: integer('track_id')
+    .references(() => tracks.id)
+    .notNull(),
+  order: integer('order').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+})

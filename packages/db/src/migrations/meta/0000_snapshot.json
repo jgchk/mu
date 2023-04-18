@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "69326e8a-b600-4bde-a811-76e036cadd40",
+  "id": "be147490-79a6-4c4f-9b8c-aeddfdc372a8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -526,6 +526,13 @@
     "playlist_tracks": {
       "name": "playlist_tracks",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "playlist_id": {
           "name": "playlist_id",
           "type": "integer",
@@ -580,14 +587,7 @@
           ]
         }
       },
-      "compositePrimaryKeys": {
-        "playlist_tracks_playlist_id_track_id_pk": {
-          "columns": [
-            "playlist_id",
-            "track_id"
-          ]
-        }
-      }
+      "compositePrimaryKeys": {}
     },
     "playlists": {
       "name": "playlists",
