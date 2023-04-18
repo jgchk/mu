@@ -5,20 +5,38 @@
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import Input from '$lib/atoms/Input.svelte'
-  import { createNewPlaylistMutation, createPlaylistsQuery } from '$lib/services/playlists'
+  import {
+    createAddTrackToPlaylistMutation,
+    createNewPlaylistMutation,
+    createPlaylistsQuery,
+  } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
-
-  import AddToPlaylistDialogPlaylist from './AddToPlaylistDialogPlaylist.svelte'
 
   export let trackId: number
 
   const trpc = getContextClient()
   const playlistsQuery = createPlaylistsQuery(trpc)
   const newPlaylistMutation = createNewPlaylistMutation(trpc)
+  const addToPlaylistMutation = createAddTrackToPlaylistMutation(trpc)
 
   const handleNewPlaylist = async () => {
     if ($newPlaylistMutation.isLoading) return
     await $newPlaylistMutation.mutateAsync({ name: filter, tracks: [trackId] })
+    close()
+  }
+
+  let addingToPlaylistId: number | undefined = undefined
+  const handleAddToPlaylist = async (playlistId: number) => {
+    if ($addToPlaylistMutation.isLoading) return
+    addingToPlaylistId = playlistId
+    await $addToPlaylistMutation
+      .mutateAsync({ playlistId, trackId })
+      .then(() => {
+        addingToPlaylistId = undefined
+      })
+      .catch(() => {
+        addingToPlaylistId = undefined
+      })
     close()
   }
 
@@ -38,7 +56,11 @@
     autofocus
     on:keydown={(e) => {
       if (e.key === 'Enter') {
-        void handleNewPlaylist()
+        if (filteredPlaylists?.length) {
+          void handleAddToPlaylist(filteredPlaylists[0].id)
+        } else {
+          void handleNewPlaylist()
+        }
       }
     }}
   />
@@ -46,8 +68,18 @@
   <div class="max-h-xs mt-1 overflow-auto rounded border border-gray-700">
     {#if filteredPlaylists}
       {#each filteredPlaylists as playlist (playlist.id)}
-        <AddToPlaylistDialogPlaylist {playlist} {trackId} on:added={close} />
+        <Button
+          kind="text"
+          class="w-full rounded-none text-white !ring-0"
+          on:click={() => handleAddToPlaylist(playlist.id)}
+          loading={addingToPlaylistId === playlist.id}
+        >
+          {playlist.name}
+        </Button>
       {/each}
+      {#if filteredPlaylists.length === 0 && filter.length === 0}
+        <Button kind="text" disabled>Enter a playlist title...</Button>
+      {/if}
     {:else if $playlistsQuery.error}
       <Button
         kind="text"
@@ -60,7 +92,7 @@
         > loading playlists. Retry?
       </Button>
     {:else}
-      <div class="block w-full rounded p-1 px-2 text-left">Loading playlists...</div>
+      <div class="block w-full p-1 px-2 text-left text-sm text-gray-400">Loading playlists...</div>
     {/if}
     {#if filter.length > 0}
       <Button
