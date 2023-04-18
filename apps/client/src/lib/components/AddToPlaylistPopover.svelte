@@ -8,6 +8,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { createAddTrackToPlaylistMutation, createPlaylistsQuery } from '$lib/services/playlists'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
@@ -23,6 +24,7 @@
   const addToPlaylistMutation = createAddTrackToPlaylistMutation(trpc)
 
   const dialogs = getContextDialogs()
+  const toast = getContextToast()
 
   const handleNewPlaylist = () => {
     dialogs.open('new-playlist', { name: filter, tracks: [trackId] })
@@ -30,18 +32,24 @@
   }
 
   let addingToPlaylistId: number | undefined = undefined
-  const handleAddToPlaylist = async (playlistId: number) => {
+  const handleAddToPlaylist = (playlistId: number) => {
     if ($addToPlaylistMutation.isLoading) return
+
     addingToPlaylistId = playlistId
-    await $addToPlaylistMutation
-      .mutateAsync({ playlistId, trackId })
-      .then(() => {
-        addingToPlaylistId = undefined
-      })
-      .catch(() => {
-        addingToPlaylistId = undefined
-      })
-    close()
+
+    $addToPlaylistMutation.mutate(
+      { playlistId, trackId },
+      {
+        onSuccess: (data) => {
+          toast.success(`Added to ${data.playlist.name}!`)
+          addingToPlaylistId = undefined
+          close()
+        },
+        onError: () => {
+          addingToPlaylistId = undefined
+        },
+      }
+    )
   }
 
   const dispatch = createEventDispatcher<{ close: undefined }>()

@@ -10,9 +10,11 @@ export const playlistsRouter = router({
     ),
   addTrack: publicProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
-    .mutation(({ ctx, input: { playlistId, trackId } }) =>
-      ctx.db.playlists.addTrack(playlistId, trackId)
-    ),
+    .mutation(({ ctx, input: { playlistId, trackId } }) => {
+      const track = ctx.db.playlists.addTrack(playlistId, trackId)
+      const playlist = ctx.db.playlists.get(playlistId)
+      return { playlist, track }
+    }),
   getAll: publicProcedure.query(({ ctx }) => ctx.db.playlists.getAll()),
   getWithTracks: publicProcedure
     .input(z.object({ id: z.number() }))
