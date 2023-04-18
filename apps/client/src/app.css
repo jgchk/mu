@@ -22,6 +22,25 @@
   .comma-list > li + li::before {
     content: ',\00a0';
   }
+
+  .skeleton::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: shimmer 2s linear infinite;
+    background-image: linear-gradient(to right, transparent, theme(colors.gray.700), transparent);
+    width: 200%;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-110%);
+    }
+    100% {
+      transform: translateX(60%);
+    }
+  }
 }
 
 .tippy-box {

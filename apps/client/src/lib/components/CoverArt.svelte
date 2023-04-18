@@ -16,7 +16,7 @@
   }
 </script>
 
-<div class="relative w-full pt-[100%] shadow">
+<div class="relative w-full rounded pt-[100%] shadow">
   {#if src !== undefined}
     <img
       class={cn(
@@ -65,24 +65,3 @@
     </div>
   </div>
 </div>
-
-<style lang="postcss">
-  .skeleton::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    animation: shimmer 2s linear infinite;
-    background-image: linear-gradient(to right, transparent, theme(colors.gray.700), transparent);
-    width: 200%;
-  }
-
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-110%);
-    }
-    100% {
-      transform: translateX(60%);
-    }
-  }
-</style>
