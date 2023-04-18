@@ -4,7 +4,7 @@ import type { Metadata } from 'music-metadata'
 import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { ifDefined, numDigits } from 'utils'
-import { dirExists, ensureDir, md5 } from 'utils/node'
+import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
