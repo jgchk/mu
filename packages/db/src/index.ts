@@ -542,7 +542,7 @@ export class Database {
 
     getWithTracks: (id: Playlist['id']) => {
       const playlist = this.playlists.get(id)
-      const tracks = this.playlistTracks.getByPlaylistId(id)
+      const tracks = this.playlistTracks.getByPlaylistIdWithArtists(id)
       return { ...playlist, tracks }
     },
 
@@ -580,9 +580,24 @@ export class Database {
       return this.db
         .select()
         .from(playlistTracks)
+        .innerJoin(tracks, eq(playlistTracks.trackId, tracks.id))
         .where(eq(playlistTracks.playlistId, playlistId))
         .orderBy(playlistTracks.order)
         .all()
+        .map((track) => ({
+          ...track.playlist_tracks,
+          track: convertTrack(track.tracks),
+        }))
+    },
+
+    getByPlaylistIdWithArtists: (playlistId: PlaylistTrack['playlistId']) => {
+      return this.playlistTracks.getByPlaylistId(playlistId).map((playlistTrack) => ({
+        ...playlistTrack,
+        track: {
+          ...playlistTrack.track,
+          artists: this.artists.getByTrackId(playlistTrack.trackId),
+        },
+      }))
     },
 
     delete: (playlistId: PlaylistTrack['playlistId'], trackId: PlaylistTrack['trackId']) => {

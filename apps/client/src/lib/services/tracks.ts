@@ -29,6 +29,7 @@ export const createFavoriteTrackMutation = (
       'cursor'
     >
     getReleaseWithTracksAndArtistsQuery?: RouterInput['releases']['getWithTracksAndArtists']
+    getPlaylistQuery?: RouterInput['playlists']['getWithTracks']
   }
 ) =>
   trpc.tracks.favorite.mutation({
@@ -39,6 +40,7 @@ export const createFavoriteTrackMutation = (
           RouterOutput['tracks']['getAllWithArtistsAndRelease']
         >
         getReleaseWithTracksAndArtistsQuery?: RouterOutput['releases']['getWithTracksAndArtists']
+        getPlaylistQuery?: RouterOutput['playlists']['getWithTracks']
       } = {}
 
       if (optimistic?.getTrackByIdQuery) {
@@ -102,6 +104,28 @@ export const createFavoriteTrackMutation = (
         )
       }
 
+      if (optimistic?.getPlaylistQuery) {
+        console.log('hiiii', optimistic.getPlaylistQuery)
+        await trpc.playlists.getWithTracks.utils.cancel(optimistic.getPlaylistQuery)
+
+        output.getPlaylistQuery = trpc.playlists.getWithTracks.utils.getData(
+          optimistic.getPlaylistQuery
+        )
+
+        trpc.playlists.getWithTracks.utils.setData(optimistic.getPlaylistQuery, (old) =>
+          old
+            ? {
+                ...old,
+                tracks: old.tracks.map((track) =>
+                  track.track.id === input.id
+                    ? { ...track, track: { ...track.track, favorite: input.favorite } }
+                    : track
+                ),
+              }
+            : old
+        )
+      }
+
       return output
     },
     onError: (err, input, context) => {
@@ -128,6 +152,12 @@ export const createFavoriteTrackMutation = (
           context.getReleaseWithTracksAndArtistsQuery
         )
       }
+      if (optimistic?.getPlaylistQuery && context?.getPlaylistQuery) {
+        trpc.playlists.getWithTracks.utils.setData(
+          optimistic.getPlaylistQuery,
+          context.getPlaylistQuery
+        )
+      }
     },
     onSuccess: async () => {
       await Promise.all([
@@ -138,6 +168,7 @@ export const createFavoriteTrackMutation = (
         trpc.releases.getWithTracksAndArtists.utils.invalidate(
           optimistic?.getReleaseWithTracksAndArtistsQuery
         ),
+        trpc.playlists.getWithTracks.utils.invalidate(optimistic?.getPlaylistQuery),
       ])
     },
   })
