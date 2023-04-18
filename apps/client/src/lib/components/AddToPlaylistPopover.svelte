@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { fade } from 'svelte/transition'
 
   import type { PopperTooltipAction } from '$lib/actions/popper'
   import { tooltip } from '$lib/actions/tooltip'
@@ -54,7 +55,11 @@
 
 <div
   class={tw('w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
-  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 32] } }] }}
+  use:popperTooltip={{
+    modifiers: [{ name: 'offset', options: { offset: [0, 32] } }],
+    placement: 'top',
+  }}
+  transition:fade|local={{ duration: 75 }}
 >
   <PopoverArrow />
 
@@ -114,3 +119,12 @@
     {/if}
   </div>
 </div>
+
+<svelte:window
+  on:keydown={(e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      close()
+    }
+  }}
+/>
