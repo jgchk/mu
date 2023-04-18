@@ -32,7 +32,7 @@ export const createAddTrackToPlaylistMutation = (
     ...options,
     onSuccess: async (...args) => {
       await Promise.all([
-        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].playlistId }),
+        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].playlist.id }),
         options?.onSuccess?.(...args),
       ])
     },
