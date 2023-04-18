@@ -7,3 +7,8 @@ export const prefetchAllDownloadsQuery = (trpc: TRPCClient) => trpc.downloads.ge
 
 export const createDownloadMutation = (trpc: TRPCClient) =>
   trpc.downloads.download.mutation({ onSuccess: () => trpc.downloads.getAll.utils.invalidate() })
+
+export const createRetryTrackDownloadMutation = (trpc: TRPCClient) =>
+  trpc.downloads.retryTrackDownload.mutation({
+    onSuccess: () => trpc.downloads.getAll.utils.invalidate(),
+  })

@@ -128,6 +128,11 @@ export const downloadsRouter = router({
       }
     }
   }),
+  retryTrackDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(({ input: { service, id }, ctx }) => {
+      void ctx.dl.download({ service, type: 'track', dbId: id })
+    }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
       [
