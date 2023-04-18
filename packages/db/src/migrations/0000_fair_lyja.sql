@@ -81,6 +81,22 @@ CREATE TABLE `artists` (
 	`name` text NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `playlist_tracks` (
+	`playlist_id` integer NOT NULL,
+	`track_id` integer NOT NULL,
+	`order` integer NOT NULL,
+	`created_at` integer NOT NULL,
+	PRIMARY KEY(`playlist_id`, `track_id`),
+	FOREIGN KEY (`playlist_id`) REFERENCES `playlists`(`id`),
+	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `playlists` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`created_at` integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `release_artists` (
 	`release_id` integer NOT NULL,
 	`artist_id` integer NOT NULL,

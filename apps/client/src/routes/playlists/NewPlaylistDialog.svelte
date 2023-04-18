@@ -1,0 +1,38 @@
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
+  import Button from '$lib/atoms/Button.svelte'
+  import Dialog from '$lib/atoms/Dialog.svelte'
+  import Input from '$lib/atoms/Input.svelte'
+  import InputGroup from '$lib/atoms/InputGroup.svelte'
+  import Label from '$lib/atoms/Label.svelte'
+  import { createNewPlaylistMutation } from '$lib/services/playlists'
+  import { getContextClient } from '$lib/trpc'
+
+  const dispatch = createEventDispatcher<{ close: undefined }>()
+  const close = () => dispatch('close')
+
+  let name = ''
+
+  const trpc = getContextClient()
+  const newPlaylistMutation = createNewPlaylistMutation(trpc)
+
+  const handleSubmit = async () => {
+    await $newPlaylistMutation.mutateAsync({ name: name || 'Untitled Playlist' })
+    close()
+  }
+</script>
+
+<form on:submit|preventDefault={handleSubmit}>
+  <Dialog title="New Playlist" on:close={close}>
+    <InputGroup>
+      <Label for="playlist-name">Name</Label>
+      <Input id="playlist-name" bind:value={name} autofocus />
+    </InputGroup>
+
+    <svelte:fragment slot="buttons">
+      <Button type="submit" loading={$newPlaylistMutation.isLoading}>Save</Button>
+      <Button kind="outline" on:click={close}>Cancel</Button>
+    </svelte:fragment>
+  </Dialog>
+</form>

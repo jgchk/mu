@@ -23,11 +23,12 @@
   let input: HTMLInputElement | undefined
 </script>
 
-<nav class="flex items-center rounded bg-black p-2 px-3 text-white">
+<nav class="flex items-center overflow-auto rounded bg-black p-2 px-3 text-white">
   <NavLink href="/">Home</NavLink>
   <NavLink href="/tracks">Tracks</NavLink>
   <NavLink href="/releases">Releases</NavLink>
   <NavLink href="/artists">Artists</NavLink>
+  <NavLink href="/playlists">Playlists</NavLink>
   <NavLink href="/downloads">Downloads</NavLink>
   <NavLink href="/system">System</NavLink>
 

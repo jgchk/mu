@@ -10,6 +10,8 @@ import type {
   Config,
   InsertArtist,
   InsertConfig,
+  InsertPlaylist,
+  InsertPlaylistTrack,
   InsertRelease,
   InsertReleaseArtist,
   InsertSoulseekReleaseDownload,
@@ -19,6 +21,8 @@ import type {
   InsertSpotifyAlbumDownload,
   InsertSpotifyTrackDownload,
   InsertTrackArtist,
+  Playlist,
+  PlaylistTrack,
   Release,
   ReleaseArtist,
   SoulseekReleaseDownload,
@@ -33,6 +37,8 @@ import type {
 import {
   artists,
   configs,
+  playlists,
+  playlistTracks,
   releaseArtists,
   releases,
   soulseekReleaseDownloads,
@@ -498,6 +504,59 @@ export class Database {
 
     delete: (id: Track['id']) => {
       return this.db.delete(tracks).where(eq(tracks.id, id)).run()
+    },
+  }
+
+  playlists = {
+    insert: (playlist: AutoCreatedAt<InsertPlaylist>) => {
+      return this.db.insert(playlists).values(withCreatedAt(playlist)).returning().get()
+    },
+
+    get: (id: Playlist['id']) => {
+      return this.db.select().from(playlists).where(eq(playlists.id, id)).get()
+    },
+
+    getWithTracks: (id: Playlist['id']) => {
+      const playlist = this.playlists.get(id)
+      const tracks = this.playlistTracks.getByPlaylistId(id)
+      return { ...playlist, tracks }
+    },
+
+    getAll: () => {
+      return this.db.select().from(playlists).all()
+    },
+
+    update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => {
+      const update = {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+      }
+      return this.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
+    },
+
+    delete: (id: Playlist['id']) => {
+      return this.db.delete(playlists).where(eq(playlists.id, id)).run()
+    },
+  }
+
+  playlistTracks = {
+    insert: (playlistTrack: AutoCreatedAt<InsertPlaylistTrack>) => {
+      return this.db.insert(playlistTracks).values(withCreatedAt(playlistTrack)).returning().get()
+    },
+
+    getByPlaylistId: (playlistId: PlaylistTrack['playlistId']) => {
+      return this.db
+        .select()
+        .from(playlistTracks)
+        .where(eq(playlistTracks.playlistId, playlistId))
+        .orderBy(playlistTracks.order)
+        .all()
+    },
+
+    delete: (playlistId: PlaylistTrack['playlistId'], trackId: PlaylistTrack['trackId']) => {
+      return this.db
+        .delete(playlistTracks)
+        .where(and(eq(playlistTracks.playlistId, playlistId), eq(playlistTracks.trackId, trackId)))
+        .run()
     },
   }
 
