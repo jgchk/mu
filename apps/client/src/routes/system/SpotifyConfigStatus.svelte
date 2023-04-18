@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PopperTooltipAction } from '$lib/actions/popper'
+  import PopoverArrow from '$lib/components/PopoverArrow.svelte'
   import type { RouterOutput } from '$lib/trpc'
   import { cn, tw } from '$lib/utils/classes'
 
@@ -12,11 +13,13 @@
 
 <div
   class={tw(
-    'space-y-1 rounded-lg border border-gray-600 bg-gray-700 p-3 py-2 text-sm shadow-lg',
+    'space-y-1 rounded-lg border border-gray-600 bg-gray-700 px-3 pb-2 pt-1 text-sm shadow-lg',
     class_
   )}
   use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] }}
 >
+  <PopoverArrow />
+
   <div class="flex items-center gap-2">
     <div>Downloads</div>
     <div

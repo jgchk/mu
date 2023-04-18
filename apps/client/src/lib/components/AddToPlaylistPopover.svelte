@@ -10,6 +10,8 @@
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
+  import PopoverArrow from './PopoverArrow.svelte'
+
   export let trackId: number
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
@@ -54,6 +56,8 @@
   class={tw('w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
   use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 32] } }] }}
 >
+  <PopoverArrow />
+
   <div class="m-2 mb-0">
     <Input
       class="w-full"
