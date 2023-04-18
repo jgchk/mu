@@ -38,5 +38,24 @@ export type EmptyObject = Record<string, never>
 
 type AllProperties<T> = { [K in keyof T]: T[K] }
 type NoProperties<T> = { [K in keyof T]?: never }
-
 export type AllOrNothing<T> = AllProperties<T> | NoProperties<T>
+
+export type IsPropOptional<T, TypeIfTrue = true, TypeIfFalse = false> = undefined extends T
+  ? TypeIfTrue
+  : TypeIfFalse
+export type AreAllPropsOptional<T, TypeIfTrue = true, TypeIfFalse = false> = AreAllPropsTrue<
+  {
+    [K in keyof Required<T>]: IsPropOptional<T[K], true, false>
+  },
+  TypeIfTrue,
+  TypeIfFalse
+>
+
+type AllPropertiesTrue<T> = {
+  [K in keyof T]: T[K] extends true ? true : false
+}
+export type AreAllPropsTrue<
+  T,
+  TypeIfTrue = true,
+  TypeIfFalse = false
+> = AllPropertiesTrue<T> extends { [K in keyof T]: true } ? TypeIfTrue : TypeIfFalse

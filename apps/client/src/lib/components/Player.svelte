@@ -3,6 +3,8 @@
   import { raf } from 'svelte/internal'
   import { formatMilliseconds } from 'utils'
 
+  import { clickOutside } from '$lib/actions/clickOutside'
+  import { createPopperAction } from '$lib/actions/popper'
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import { makeTrackCoverArtUrl } from '$lib/cover-art'
@@ -22,7 +24,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
-  import AddToPlaylistDialog from './AddToPlaylistDialog.svelte'
+  import AddToPlaylistPopover from './AddToPlaylistPopover.svelte'
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
 
@@ -43,8 +45,6 @@
 
   let player: HTMLAudioElement | undefined
   let paused = false
-
-  let showAddToPlaylistDialog: { trackId: number } | false = false
 
   onDestroy(() => {
     player?.pause()
@@ -95,6 +95,9 @@
       unsubscribeNowPlayer()
     }
   })
+
+  let showAddToPlaylistDialog: { trackId: number } | false = false
+  const [popperElement, popperTooltip] = createPopperAction()
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">
@@ -130,13 +133,28 @@
           favorite={track.favorite}
           on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
         />
-        <IconButton
-          kind="text"
-          tooltip="Add to Playlist"
-          on:click={() => (showAddToPlaylistDialog = { trackId: track.id })}
-        >
-          <PlusIcon />
-        </IconButton>
+        <div use:popperElement use:clickOutside={() => (showAddToPlaylistDialog = false)}>
+          <IconButton
+            kind="text"
+            tooltip="Add to Playlist"
+            on:click={() => {
+              if (showAddToPlaylistDialog) {
+                showAddToPlaylistDialog = false
+              } else {
+                showAddToPlaylistDialog = { trackId: track.id }
+              }
+            }}
+          >
+            <PlusIcon />
+          </IconButton>
+          {#if showAddToPlaylistDialog}
+            <AddToPlaylistPopover
+              trackId={showAddToPlaylistDialog.trackId}
+              on:close={() => (showAddToPlaylistDialog = false)}
+              {popperTooltip}
+            />
+          {/if}
+        </div>
       </div>
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
@@ -247,11 +265,4 @@
       <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
     </audio>
   {/key}
-{/if}
-
-{#if showAddToPlaylistDialog}
-  <AddToPlaylistDialog
-    trackId={showAddToPlaylistDialog.trackId}
-    on:close={() => (showAddToPlaylistDialog = false)}
-  />
 {/if}

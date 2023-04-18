@@ -10,6 +10,8 @@
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
   import Player from '$lib/components/Player.svelte'
+  import { setContextDialogs } from '$lib/dialogs/dialogs'
+  import Dialogs from '$lib/dialogs/Dialogs.svelte'
   import { nowPlaying } from '$lib/now-playing'
   import { createToast, setContextToast } from '$lib/toast/toast'
   import Toaster from '$lib/toast/Toaster.svelte'
@@ -46,6 +48,8 @@
 
   const toast = createToast()
   setContextToast(toast)
+
+  setContextDialogs()
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
@@ -55,6 +59,7 @@
 
       <main class="relative flex-1 overflow-auto">
         <slot />
+        <Dialogs />
         <Toaster />
       </main>
 

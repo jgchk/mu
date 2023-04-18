@@ -1,10 +1,9 @@
-import type { Instance, Modifier, OptionsGeneric } from '@popperjs/core'
+import type { Instance, OptionsGeneric, StrictModifiers } from '@popperjs/core'
 import { createPopper } from '@popperjs/core'
 
 import type { Action } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type PopperParams = Partial<OptionsGeneric<Partial<Modifier<any, any>>>>
+export type PopperParams = Partial<OptionsGeneric<StrictModifiers>>
 
 export type PopperElementAction = Action
 export type PopperTooltipAction = Action<PopperParams>

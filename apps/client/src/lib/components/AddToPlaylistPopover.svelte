@@ -1,27 +1,28 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
+  import type { PopperTooltipAction } from '$lib/actions/popper'
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
-  import Dialog from '$lib/atoms/Dialog.svelte'
   import Input from '$lib/atoms/Input.svelte'
-  import {
-    createAddTrackToPlaylistMutation,
-    createNewPlaylistMutation,
-    createPlaylistsQuery,
-  } from '$lib/services/playlists'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
+  import { createAddTrackToPlaylistMutation, createPlaylistsQuery } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
+  import { tw } from '$lib/utils/classes'
 
   export let trackId: number
+  export let popperTooltip: PopperTooltipAction
+  let class_: string | undefined = undefined
+  export { class_ as class }
 
   const trpc = getContextClient()
   const playlistsQuery = createPlaylistsQuery(trpc)
-  const newPlaylistMutation = createNewPlaylistMutation(trpc)
   const addToPlaylistMutation = createAddTrackToPlaylistMutation(trpc)
 
-  const handleNewPlaylist = async () => {
-    if ($newPlaylistMutation.isLoading) return
-    await $newPlaylistMutation.mutateAsync({ name: filter, tracks: [trackId] })
+  const dialogs = getContextDialogs()
+
+  const handleNewPlaylist = () => {
+    dialogs.open('new-playlist', { name: filter, tracks: [trackId] })
     close()
   }
 
@@ -49,28 +50,40 @@
   )
 </script>
 
-<Dialog title="Add to Playlist" on:close={close} class="max-w-xs">
-  <Input
-    class="w-full"
-    bind:value={filter}
-    autofocus
-    on:keydown={(e) => {
-      if (e.key === 'Enter') {
-        if (filteredPlaylists?.length) {
-          void handleAddToPlaylist(filteredPlaylists[0].id)
-        } else {
-          void handleNewPlaylist()
+<div
+  class={tw('w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
+  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 32] } }] }}
+>
+  <div class="m-2 mb-0">
+    <Input
+      class="w-full"
+      layer={700}
+      bind:value={filter}
+      autofocus
+      placeholder="Find a playlist..."
+      on:keydown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          if (filteredPlaylists?.length) {
+            void handleAddToPlaylist(filteredPlaylists[0].id)
+          } else {
+            void handleNewPlaylist()
+          }
         }
-      }
-    }}
-  />
+      }}
+    />
+  </div>
 
-  <div class="max-h-xs mt-1 overflow-auto rounded border border-gray-700">
+  <div class="max-h-[calc(100vh/3)] overflow-auto p-2" tabindex="-1">
+    <Button kind="text" class="w-full text-white" layer={700} on:click={handleNewPlaylist}>
+      New Playlist
+    </Button>
     {#if filteredPlaylists}
       {#each filteredPlaylists as playlist (playlist.id)}
         <Button
           kind="text"
-          class="w-full rounded-none text-white !ring-0"
+          class="w-full text-white"
+          layer={700}
           on:click={() => handleAddToPlaylist(playlist.id)}
           loading={addingToPlaylistId === playlist.id}
         >
@@ -83,7 +96,8 @@
     {:else if $playlistsQuery.error}
       <Button
         kind="text"
-        class="w-full rounded-none text-white !ring-0"
+        class="w-full text-white"
+        layer={700}
         on:click={() => $playlistsQuery.refetch()}
         loading={$playlistsQuery.isFetching}
       >
@@ -94,19 +108,5 @@
     {:else}
       <div class="block w-full p-1 px-2 text-left text-sm text-gray-400">Loading playlists...</div>
     {/if}
-    {#if filter.length > 0}
-      <Button
-        kind="text"
-        class="w-full rounded-none text-white !ring-0"
-        on:click={handleNewPlaylist}
-        loading={$newPlaylistMutation.isLoading}
-      >
-        New Playlist "{filter}"
-      </Button>
-    {/if}
   </div>
-
-  <svelte:fragment slot="buttons">
-    <Button kind="outline" on:click={close}>Cancel</Button>
-  </svelte:fragment>
-</Dialog>
+</div>

@@ -1,15 +1,12 @@
 <script lang="ts">
   import Button from '$lib/atoms/Button.svelte'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import { createPlaylistsQuery, fetchPlaylistQuery } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
 
-  import NewPlaylistDialog from './NewPlaylistDialog.svelte'
-
   const trpc = getContextClient()
   const playlistsQuery = createPlaylistsQuery(trpc)
-
-  let showNewPlaylistDialog = false
 
   const playPlaylist = async (id: number) => {
     const playlist = await fetchPlaylistQuery(trpc, id)
@@ -18,10 +15,12 @@
       nextTracks: playlist.tracks.slice(1).map((t) => t.trackId),
     })
   }
+
+  const dialogs = getContextDialogs()
 </script>
 
 <div class="h-full gap-2 overflow-auto p-1">
-  <Button on:click={() => (showNewPlaylistDialog = true)}>New Playlist</Button>
+  <Button on:click={() => dialogs.open('new-playlist')}>New Playlist</Button>
 
   {#if $playlistsQuery.data}
     {@const playlists = $playlistsQuery.data}
@@ -45,7 +44,3 @@
     <div>Loading...</div>
   {/if}
 </div>
-
-{#if showNewPlaylistDialog}
-  <NewPlaylistDialog on:close={() => (showNewPlaylistDialog = false)} />
-{/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cn } from '$lib/utils/classes'
+  import { tw } from '$lib/utils/classes'
 
   import { getInputGroupErrors } from './InputGroup'
 
@@ -19,6 +19,7 @@
   export let maxlength: number | undefined = undefined
   let class_: string | undefined = undefined
   export { class_ as class }
+  export let layer: 700 | 800 = 800
 
   let propErrors: string[] | undefined = undefined
   export { propErrors as errors }
@@ -64,8 +65,10 @@
   {minlength}
   {maxlength}
   data-invalid={errors}
-  class={cn(
-    'focus:ring-primary-500 rounded bg-gray-700 px-2 py-1 text-white outline-none transition-all focus:ring-1',
+  class={tw(
+    'focus:ring-primary-500 rounded px-2 py-1 text-white outline-none transition-all focus:ring-1',
+    layer === 700 && 'bg-gray-600',
+    layer === 800 && 'bg-gray-700',
     class_
   )}
 />

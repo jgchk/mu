@@ -7,19 +7,30 @@
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import { createNewPlaylistMutation } from '$lib/services/playlists'
+  import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   const dispatch = createEventDispatcher<{ close: undefined }>()
   const close = () => dispatch('close')
 
-  let name = ''
+  export let name = ''
+  export let tracks: number[] | undefined = undefined
 
   const trpc = getContextClient()
   const newPlaylistMutation = createNewPlaylistMutation(trpc)
 
-  const handleSubmit = async () => {
-    await $newPlaylistMutation.mutateAsync({ name: name || 'Untitled Playlist' })
-    close()
+  const toast = getContextToast()
+
+  const handleSubmit = () => {
+    $newPlaylistMutation.mutate(
+      { name: name || 'Untitled Playlist', tracks },
+      {
+        onSuccess: (data) => {
+          toast.success(`Created ${data.name}!`)
+          close()
+        },
+      }
+    )
   }
 </script>
 
