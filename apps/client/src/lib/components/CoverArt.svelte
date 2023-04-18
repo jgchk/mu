@@ -16,7 +16,7 @@
   }
 </script>
 
-<div class="relative w-full rounded pt-[100%] shadow">
+<div class={cn('relative w-full pt-[100%] shadow', rounding)}>
   {#if src !== undefined}
     <img
       class={cn(
