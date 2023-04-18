@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { toErrorString } from 'utils'
-import { fileExists } from 'utils/node'
+import { ensureDir, fileExists } from 'utils/node'
 
 import type { Context } from '.'
 
@@ -67,7 +67,7 @@ export class SoulseekDownloadManager {
         db.soulseekTrackDownloads.update(dbId, { path: filePath })
       }
 
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await ensureDir(path.dirname(filePath))
 
       let downloadedBytes = 0
       const fileAlreadyExists = await fileExists(filePath)

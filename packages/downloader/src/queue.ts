@@ -9,7 +9,7 @@ import { Soundcloud } from 'soundcloud'
 import type { SimplifiedAlbum as SpotifySimplifiedAlbum } from 'spotify'
 import stream from 'stream'
 import { ifNotNull, uniqBy } from 'utils'
-import { fileExists } from 'utils/node'
+import { ensureDir, fileExists } from 'utils/node'
 
 import type { Context } from '.'
 
@@ -155,7 +155,7 @@ export class DownloadQueue {
         db.soundcloudTrackDownloads.update(trackId, { path: filePath })
       }
 
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await ensureDir(path.dirname(filePath))
 
       const fileAlreadyExists = await fileExists(filePath)
       if (fileAlreadyExists) {

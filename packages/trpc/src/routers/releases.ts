@@ -4,7 +4,7 @@ import type { Metadata } from 'music-metadata'
 import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { ifDefined, numDigits } from 'utils'
-import { dirExists, md5 } from 'utils/node'
+import { dirExists, ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
@@ -112,7 +112,7 @@ export const releasesRouter = router({
             )
 
             if (path.resolve(existingDbTrack.path) !== path.resolve(newPath)) {
-              await fs.mkdir(path.dirname(newPath), { recursive: true })
+              await ensureDir(path.dirname(newPath))
               await fs.rename(existingDbTrack.path, newPath)
             }
 
@@ -143,11 +143,7 @@ export const releasesRouter = router({
               imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
 
               const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
-              const imagesDir = path.dirname(imagePath)
-              const imagesDirExists = await dirExists(imagesDir)
-              if (!imagesDirExists) {
-                await fs.mkdir(imagesDir, { recursive: true })
-              }
+              await ensureDir(path.dirname(imagePath))
               await fs.writeFile(imagePath, albumArt)
 
               try {
