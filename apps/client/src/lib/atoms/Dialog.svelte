@@ -3,8 +3,12 @@
   import { fade, scale } from 'svelte/transition'
 
   import { trapFocus } from '$lib/actions/trapFocus'
+  import { tw } from '$lib/utils/classes'
 
   export let title: string | undefined = undefined
+
+  let class_: string | undefined = undefined
+  export { class_ as class }
 
   const dispatch = createEventDispatcher<{ close: undefined }>()
   const close = () => dispatch('close')
@@ -16,7 +20,7 @@
   }
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+<div class="fixed inset-0 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
   <button
     type="button"
     class="absolute h-full w-full cursor-default bg-black opacity-50"
@@ -26,9 +30,11 @@
   />
 
   <div
-    class="relative w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 shadow-lg"
+    class={tw(
+      'relative w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 shadow-lg',
+      class_
+    )}
     transition:scale|local={{ start: 0.95, duration: 125 }}
-    on:keydown={handleKeyDown}
     use:trapFocus
   >
     {#if title !== undefined}
@@ -44,3 +50,5 @@
     {/if}
   </div>
 </div>
+
+<svelte:window on:keydown={handleKeyDown} />

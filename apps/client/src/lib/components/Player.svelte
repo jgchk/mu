@@ -4,10 +4,12 @@
   import { formatMilliseconds } from 'utils'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import IconButton from '$lib/atoms/IconButton.svelte'
   import { makeTrackCoverArtUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import PlusIcon from '$lib/icons/PlusIcon.svelte'
   import RewindIcon from '$lib/icons/RewindIcon.svelte'
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
@@ -20,6 +22,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import Range from '../atoms/Range.svelte'
+  import AddToPlaylistDialog from './AddToPlaylistDialog.svelte'
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
 
@@ -40,6 +43,8 @@
 
   let player: HTMLAudioElement | undefined
   let paused = false
+
+  let showAddToPlaylistDialog: { trackId: number } | false = false
 
   onDestroy(() => {
     player?.pause()
@@ -119,11 +124,20 @@
         </div>
       </div>
 
-      <FavoriteButton
-        class="hover:bg-gray-900"
-        favorite={track.favorite}
-        on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
-      />
+      <div class="flex items-center gap-1">
+        <FavoriteButton
+          class="hover:bg-gray-900"
+          favorite={track.favorite}
+          on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+        />
+        <IconButton
+          kind="text"
+          tooltip="Add to Playlist"
+          on:click={() => (showAddToPlaylistDialog = { trackId: track.id })}
+        >
+          <PlusIcon />
+        </IconButton>
+      </div>
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
@@ -233,4 +247,11 @@
       <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
     </audio>
   {/key}
+{/if}
+
+{#if showAddToPlaylistDialog}
+  <AddToPlaylistDialog
+    trackId={showAddToPlaylistDialog.trackId}
+    on:close={() => (showAddToPlaylistDialog = false)}
+  />
 {/if}

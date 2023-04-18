@@ -12,7 +12,7 @@
 </script>
 
 <ul
-  class="pointer-events-none absolute right-0 top-0 flex h-full flex-col items-end overflow-x-hidden"
+  class="pointer-events-none absolute right-0 top-0 z-50 flex h-full flex-col items-end overflow-x-hidden"
 >
   {#each $toast as item (item.id)}
     <li

@@ -33,7 +33,7 @@
         >
           <div class="flex-1 truncate">
             <a href="/playlists/{playlist.id}" class="hover:underline">
-              {playlist.name || 'Untitled Playlist'}
+              {playlist.name}
             </a>
           </div>
         </div>

@@ -15,11 +15,25 @@ export const fetchPlaylistQuery = (trpc: TRPCClient, id: number) =>
 
 export const createNewPlaylistMutation = (
   trpc: TRPCClient,
-  options?: RouterOptions['playlists']['add']
+  options?: RouterOptions['playlists']['new']
 ) =>
-  trpc.playlists.add.mutation({
+  trpc.playlists.new.mutation({
     ...options,
     onSuccess: async (...args) => {
       await Promise.all([trpc.playlists.getAll.utils.invalidate(), options?.onSuccess?.(...args)])
+    },
+  })
+
+export const createAddTrackToPlaylistMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['playlists']['addTrack']
+) =>
+  trpc.playlists.addTrack.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].playlistId }),
+        options?.onSuccess?.(...args),
+      ])
     },
   })

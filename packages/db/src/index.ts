@@ -2,7 +2,7 @@ import SqliteDatabase from 'better-sqlite3'
 import { placeholder, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
-import { and, eq, isNull } from 'drizzle-orm/expressions'
+import { and, desc, eq, isNull } from 'drizzle-orm/expressions'
 
 import { migrate } from './migrate'
 import type {
@@ -512,6 +512,30 @@ export class Database {
       return this.db.insert(playlists).values(withCreatedAt(playlist)).returning().get()
     },
 
+    insertWithTracks: (playlist: AutoCreatedAt<InsertPlaylist>, trackIds?: Track['id'][]) => {
+      const insertedPlaylist = this.playlists.insert(playlist)
+      if (trackIds) {
+        this.playlistTracks.insertMany(
+          trackIds.map((trackId, order) => ({ playlistId: insertedPlaylist.id, trackId, order }))
+        )
+      }
+      const tracks = this.playlistTracks.getByPlaylistId(insertedPlaylist.id)
+      return { ...insertedPlaylist, tracks }
+    },
+
+    addTrack: (playlistId: Playlist['id'], trackId: Track['id']) => {
+      const lastTrack = this.db
+        .select()
+        .from(playlistTracks)
+        .where(eq(playlistTracks.playlistId, playlistId))
+        .orderBy(desc(playlistTracks.order))
+        .limit(1)
+        .all()
+        .at(0)
+      const order = lastTrack ? lastTrack.order + 1 : 0
+      return this.playlistTracks.insert({ playlistId, trackId, order })
+    },
+
     get: (id: Playlist['id']) => {
       return this.db.select().from(playlists).where(eq(playlists.id, id)).get()
     },
@@ -541,6 +565,15 @@ export class Database {
   playlistTracks = {
     insert: (playlistTrack: AutoCreatedAt<InsertPlaylistTrack>) => {
       return this.db.insert(playlistTracks).values(withCreatedAt(playlistTrack)).returning().get()
+    },
+
+    insertMany: (playlistTracks_: AutoCreatedAt<InsertPlaylistTrack>[]) => {
+      if (playlistTracks_.length === 0) return []
+      return this.db
+        .insert(playlistTracks)
+        .values(playlistTracks_.map(withCreatedAt))
+        .returning()
+        .all()
     },
 
     getByPlaylistId: (playlistId: PlaylistTrack['playlistId']) => {
