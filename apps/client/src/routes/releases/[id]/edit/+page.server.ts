@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { isDefined } from 'utils'
-import { blobToBase64, isFile } from 'utils/browser'
+import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
 import { makeImageUrl } from '$lib/cover-art'
@@ -45,8 +45,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
   let art: string | undefined = undefined
   if (data.imageId !== null && data.imageId !== undefined) {
-    const artBuffer = await fetch(makeImageUrl(data.imageId)).then((res) => res.blob())
-    art = await blobToBase64(artBuffer)
+    const artBuffer = await fetch(makeImageUrl(data.imageId))
+      .then((res) => res.blob())
+      .then((blob) => blob.arrayBuffer())
+    art = Buffer.from(artBuffer).toString('base64')
   }
 
   const form = await superValidate(

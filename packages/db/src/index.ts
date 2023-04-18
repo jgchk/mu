@@ -1029,6 +1029,15 @@ export class Database {
       return this.db.select().from(images).where(eq(images.id, id)).get()
     },
 
+    getNumberOfUses: (id: Image['id']) => {
+      return this.db
+        .select()
+        .from(images)
+        .where(eq(images.id, id))
+        .innerJoin(tracks, eq(images.id, tracks.imageId))
+        .all().length
+    },
+
     update: (id: Image['id'], data: UpdateData<InsertImage>) => {
       const update = {
         ...(data.hash !== undefined ? { hash: data.hash } : {}),

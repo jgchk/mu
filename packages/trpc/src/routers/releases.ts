@@ -86,6 +86,19 @@ export const releasesRouter = router({
 
       const existingDbTracks = ctx.db.tracks.getByReleaseId(dbRelease.id)
 
+      let image: { data: Buffer; id: number } | undefined = undefined
+      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
+      if (albumArt) {
+        image = {
+          data: albumArt,
+          id: ctx.db.images.insert({ hash: md5(albumArt) }).id,
+        }
+
+        const imagePath = path.resolve(path.join(ctx.imagesDir, image.id.toString()))
+        await ensureDir(path.dirname(imagePath))
+        await fs.writeFile(imagePath, albumArt)
+      }
+
       if (input.tracks) {
         await Promise.all(
           input.tracks.map(async (track) => {
@@ -137,20 +150,14 @@ export const releasesRouter = router({
             }
             await writeTrackMetadata(newPath, metadata)
 
-            let imageId: number | undefined = undefined
-            const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
-            if (albumArt) {
-              imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
+            const oldImageId = existingDbTrack.imageId
 
-              const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
-              await ensureDir(path.dirname(imagePath))
-              await fs.writeFile(imagePath, albumArt)
-
+            if (image) {
               try {
-                await writeTrackCoverArt(newPath, albumArt)
+                await writeTrackCoverArt(newPath, image.data)
               } catch {
                 // OGG Files sometimes fail the first time then work the second time
-                await writeTrackCoverArt(newPath, albumArt)
+                await writeTrackCoverArt(newPath, image.data)
               }
             }
 
@@ -160,8 +167,16 @@ export const releasesRouter = router({
               path: newPath,
               releaseId: dbRelease.id,
               trackNumber: metadata.track,
-              imageId,
+              imageId: image?.id,
             })
+
+            if (oldImageId !== null) {
+              const numUses = ctx.db.images.getNumberOfUses(oldImageId)
+              if (numUses === 0) {
+                await fs.rm(path.resolve(path.join(ctx.imagesDir, oldImageId.toString())))
+                ctx.db.images.delete(oldImageId)
+              }
+            }
           })
         )
       }
