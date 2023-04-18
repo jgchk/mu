@@ -63,10 +63,7 @@
 
 <div
   class={tw('w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
-  use:popperTooltip={{
-    modifiers: [{ name: 'offset', options: { offset: [0, 32] } }],
-    placement: 'top',
-  }}
+  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 32] } }] }}
   transition:fade|local={{ duration: 75 }}
 >
   <PopoverArrow />
