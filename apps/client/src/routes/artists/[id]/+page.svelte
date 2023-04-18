@@ -1,7 +1,7 @@
 <script lang="ts">
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
-  import { makeReleaseCoverArtUrl, makeTrackCoverArtUrl } from '$lib/cover-art'
+  import { makeImageUrl } from '$lib/cover-art'
   import { createFullArtistQuery } from '$lib/services/artists'
   import { getContextClient } from '$lib/trpc'
 
@@ -20,11 +20,7 @@
       {#each $artistQuery.data.releases as release (release.id)}
         <div class="w-full">
           <a href="/releases/{release.id}" class="w-full">
-            <CoverArt
-              src={release.coverArtHash
-                ? makeReleaseCoverArtUrl(release.id, release.coverArtHash)
-                : undefined}
-            />
+            <CoverArt src={release.imageId !== null ? makeImageUrl(release.imageId) : undefined} />
           </a>
           <a
             href="/releases/{release.id}"
@@ -43,9 +39,7 @@
         <div class="w-full">
           <a href="/releases/{track.releaseId}" class="w-full">
             <CoverArt
-              src={track.coverArtHash
-                ? makeTrackCoverArtUrl(track.id, track.coverArtHash)
-                : undefined}
+              src={track.imageId !== null ? makeImageUrl(track.imageId) : undefined}
               alt={track.title}
             />
           </a>

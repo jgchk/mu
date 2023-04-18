@@ -10,8 +10,9 @@ export const artistsRouter = router({
     const artist = ctx.db.artists.get(input.id)
     const releases = ctx.db.releases.getByArtistWithArtists(artist.id).map((release) => ({
       ...release,
-      coverArtHash: ctx.db.tracks.getByReleaseId(release.id).find((track) => track.coverArtHash)
-        ?.coverArtHash,
+      imageId:
+        ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
+        null,
     }))
     const tracks = ctx.db.tracks.getByArtistWithArtists(artist.id)
     return {

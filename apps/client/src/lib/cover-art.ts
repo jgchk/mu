@@ -4,11 +4,10 @@ export type CoverArtOptions = {
   size?: number
 }
 
-export const makeTrackCoverArtUrl = (id: number, hash: string, opts?: CoverArtOptions) => {
-  const pathname = `/api/tracks/${id}/cover-art`
+export const makeImageUrl = (id: number, opts?: CoverArtOptions) => {
+  const pathname = `/api/images/${id}`
 
   const searchParams = new URLSearchParams()
-  searchParams.append('hash', hash)
 
   if (opts?.size !== undefined) {
     searchParams.append('width', opts.size.toString())
@@ -22,26 +21,10 @@ export const makeTrackCoverArtUrl = (id: number, hash: string, opts?: CoverArtOp
     }
   }
 
-  return `${pathname}?${searchParams.toString()}`
-}
-
-export const makeReleaseCoverArtUrl = (id: number, hash: string, opts?: CoverArtOptions) => {
-  const pathname = `/api/releases/${id}/cover-art`
-
-  const searchParams = new URLSearchParams()
-  searchParams.append('hash', hash)
-
-  if (opts?.size !== undefined) {
-    searchParams.append('width', opts.size.toString())
-    searchParams.append('height', opts.size.toString())
-  } else {
-    if (opts?.width !== undefined) {
-      searchParams.append('width', opts.width.toString())
-    }
-    if (opts?.height !== undefined) {
-      searchParams.append('height', opts.height.toString())
-    }
+  let search = searchParams.toString()
+  if (search.length > 0) {
+    search = `?${search}`
   }
 
-  return `${pathname}?${searchParams.toString()}`
+  return `${pathname}${search}`
 }

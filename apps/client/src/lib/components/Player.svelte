@@ -7,7 +7,7 @@
   import { createPopperAction } from '$lib/actions/popper'
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import IconButton from '$lib/atoms/IconButton.svelte'
-  import { makeTrackCoverArtUrl } from '$lib/cover-art'
+  import { makeImageUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -106,9 +106,7 @@
       {@const track = $nowPlayingTrack.data}
       <div class="h-16 w-16 shrink-0">
         <CoverArt
-          src={track.coverArtHash
-            ? makeTrackCoverArtUrl(track.id, track.coverArtHash, { size: 128 })
-            : undefined}
+          src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
           hoverable={false}
           placeholderClass="text-[8px]"

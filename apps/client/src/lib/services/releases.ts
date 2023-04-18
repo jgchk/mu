@@ -19,9 +19,6 @@ export const createAllReleasesWithArtistsQuery = (trpc: TRPCClient) =>
 export const prefetchAllReleasesWithArtistsQuery = (trpc: TRPCClient) =>
   trpc.releases.getAllWithArtists.prefetchQuery()
 
-export const fetchReleaseCoverArtQuery = (trpc: TRPCClient, id: number) =>
-  trpc.releases.getCoverArt.fetchQuery({ id })
-
 export const mutateReleaseWithTracksAndArtists = (
   trpc: TRPCClient,
   input: RouterInput['releases']['updateWithTracksAndArtists']

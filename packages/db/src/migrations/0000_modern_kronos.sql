@@ -76,6 +76,12 @@ CREATE TABLE `spotify_track_downloads` (
 	FOREIGN KEY (`album_download_id`) REFERENCES `spotify_album_downloads`(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `images` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`hash` text NOT NULL,
+	`created_at` integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `artists` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL
@@ -126,10 +132,11 @@ CREATE TABLE `tracks` (
 	`title` text,
 	`release_id` integer,
 	`track_number` integer,
-	`cover_art_hash` text,
 	`duration` integer NOT NULL,
 	`favorite` integer NOT NULL,
-	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`)
+	`image_id` integer,
+	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`),
+	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `usernameDirUniqueIndex` ON `soulseek_release_downloads` (`username`,`name`);--> statement-breakpoint

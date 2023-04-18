@@ -13,7 +13,7 @@
 
 <ReleaseForm
   formData={data.form}
-  artData={data.art ?? null}
+  artData={data.art}
   on:success={({ detail: { data } }) => toast.success(`Imported ${data.album.title || 'track'}!`)}
   on:failure={({ detail: { reason } }) =>
     toast.error(`Failed to import track: ${toErrorString(reason)}`)}

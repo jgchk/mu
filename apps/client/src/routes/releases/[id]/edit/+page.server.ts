@@ -1,11 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { isDefined } from 'utils'
-import { isFile } from 'utils/browser'
+import { blobToBase64, isFile } from 'utils/browser'
 import { z } from 'zod'
 
+import { makeImageUrl } from '$lib/cover-art'
 import {
-  fetchReleaseCoverArtQuery,
   fetchReleaseWithTracksAndArtistsQuery,
   mutateReleaseWithTracksAndArtists,
 } from '$lib/services/releases'
@@ -42,7 +42,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
   const trpc = createClient(fetch)
   const data = await fetchReleaseWithTracksAndArtistsQuery(trpc, id)
-  const art = await fetchReleaseCoverArtQuery(trpc, id)
+
+  let art: string | undefined = undefined
+  if (data.imageId !== null && data.imageId !== undefined) {
+    const artBuffer = await fetch(makeImageUrl(data.imageId)).then((res) => res.blob())
+    art = await blobToBase64(artBuffer)
+  }
 
   const form = await superValidate(
     {

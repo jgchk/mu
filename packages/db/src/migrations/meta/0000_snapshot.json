@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "be147490-79a6-4c4f-9b8c-aeddfdc372a8",
+  "id": "5e519bb0-c43e-4212-9f60-6cf2fe8ebd5d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -502,6 +502,34 @@
       },
       "compositePrimaryKeys": {}
     },
+    "images": {
+      "name": "images",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
     "artists": {
       "name": "artists",
       "columns": {
@@ -792,12 +820,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "cover_art_hash": {
-          "name": "cover_art_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "duration": {
           "name": "duration",
           "type": "integer",
@@ -810,6 +832,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "image_id": {
+          "name": "image_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
@@ -829,6 +858,17 @@
           "tableTo": "releases",
           "columnsFrom": [
             "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        },
+        "tracks_image_id_images_id_fk": {
+          "name": "tracks_image_id_images_id_fk",
+          "tableFrom": "tracks",
+          "tableTo": "images",
+          "columnsFrom": [
+            "image_id"
           ],
           "columnsTo": [
             "id"

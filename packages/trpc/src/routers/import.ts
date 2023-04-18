@@ -18,8 +18,8 @@ import {
 } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
-import { ifNotNull, numDigits } from 'utils'
-import { md5 } from 'utils/node'
+import { numDigits } from 'utils'
+import { dirExists, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
@@ -275,16 +275,26 @@ export const importRouter = router({
           }
           const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
-          const coverArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
-          if (coverArt) {
+          let imageId: number | undefined = undefined
+          const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
+          if (albumArt) {
+            imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
+
+            const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
+            const imagesDir = path.dirname(imagePath)
+            const imagesDirExists = await dirExists(imagesDir)
+            if (!imagesDirExists) {
+              await fs.mkdir(imagesDir, { recursive: true })
+            }
+            await fs.writeFile(imagePath, albumArt)
+
             try {
-              await writeTrackCoverArt(newPath, coverArt)
+              await writeTrackCoverArt(newPath, albumArt)
             } catch {
               // OGG Files sometimes fail the first time then work the second time
-              await writeTrackCoverArt(newPath, coverArt)
+              await writeTrackCoverArt(newPath, albumArt)
             }
           }
-          const coverArtHash = ifNotNull(coverArt, md5)
 
           let favorite = false
           if (ctx.lfm.status === 'logged-in') {
@@ -301,7 +311,7 @@ export const importRouter = router({
             path: newPath,
             releaseId: dbRelease.id,
             trackNumber: metadata.track,
-            coverArtHash,
+            imageId,
             duration: outputMetadata.length,
             favorite,
           })
@@ -501,16 +511,26 @@ export const importRouter = router({
       }
       const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
-      const coverArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
-      if (coverArt) {
+      let imageId: number | undefined = undefined
+      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
+      if (albumArt) {
+        imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
+
+        const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
+        const imagesDir = path.dirname(imagePath)
+        const imagesDirExists = await dirExists(imagesDir)
+        if (!imagesDirExists) {
+          await fs.mkdir(imagesDir, { recursive: true })
+        }
+        await fs.writeFile(imagePath, albumArt)
+
         try {
-          await writeTrackCoverArt(newPath, coverArt)
+          await writeTrackCoverArt(newPath, albumArt)
         } catch {
           // OGG Files sometimes fail the first time then work the second time
-          await writeTrackCoverArt(newPath, coverArt)
+          await writeTrackCoverArt(newPath, albumArt)
         }
       }
-      const coverArtHash = ifNotNull(coverArt, md5)
 
       let favorite = false
       if (ctx.lfm.status === 'logged-in') {
@@ -527,7 +547,7 @@ export const importRouter = router({
         path: newPath,
         releaseId: dbRelease.id,
         trackNumber: metadata.track,
-        coverArtHash,
+        imageId,
         duration: outputMetadata.length,
         favorite,
       })

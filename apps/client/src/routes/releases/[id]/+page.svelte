@@ -4,7 +4,7 @@
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
-  import { makeReleaseCoverArtUrl } from '$lib/cover-art'
+  import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
@@ -52,10 +52,8 @@
       >
         <div class="relative w-64 shrink-0">
           <CoverArt
-            src={$releaseQuery.data.coverArtHash
-              ? makeReleaseCoverArtUrl($releaseQuery.data.id, $releaseQuery.data.coverArtHash, {
-                  size: 512,
-                })
+            src={$releaseQuery.data.imageId !== null
+              ? makeImageUrl($releaseQuery.data.imageId, { size: 512 })
               : undefined}
             alt={$releaseQuery.data.title}
             iconClass="w-16 h-16"

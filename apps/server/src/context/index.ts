@@ -204,6 +204,7 @@ export const makeContext = async (): Promise<Context> => {
     slsk: { status: 'stopped' },
     lfm: { status: 'stopped' },
     musicDir: env.MUSIC_DIR,
+    imagesDir: env.IMAGES_DIR,
     startSoulseek: async () => {
       context.stopSoulseek()
 

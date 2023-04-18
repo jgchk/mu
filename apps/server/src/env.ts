@@ -6,6 +6,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
   MUSIC_DIR: z.string(),
+  IMAGES_DIR: z.string(),
   SOUNDCLOUD_AUTH_TOKEN: z.string().optional(),
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),

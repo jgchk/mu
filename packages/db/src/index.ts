@@ -8,8 +8,10 @@ import { migrate } from './migrate'
 import type {
   Artist,
   Config,
+  Image,
   InsertArtist,
   InsertConfig,
+  InsertImage,
   InsertPlaylist,
   InsertPlaylistTrack,
   InsertRelease,
@@ -37,6 +39,7 @@ import type {
 import {
   artists,
   configs,
+  images,
   playlists,
   playlistTracks,
   releaseArtists,
@@ -374,7 +377,7 @@ export class Database {
         ...(data.path !== undefined ? { path: data.path } : {}),
         ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
-        ...(data.coverArtHash !== undefined ? { coverArtHash: data.coverArtHash } : {}),
+        ...(data.imageId !== undefined ? { imageId: data.imageId } : {}),
         ...(data.favorite !== undefined ? { favorite: data.favorite ? 1 : 0 } : {}),
       }
       return convertTrack(
@@ -1014,6 +1017,27 @@ export class Database {
 
     delete: (id: SoulseekTrackDownload['id']) => {
       return this.db.delete(soulseekTrackDownloads).where(eq(soulseekTrackDownloads.id, id)).run()
+    },
+  }
+
+  images = {
+    insert: (image: AutoCreatedAt<InsertImage>) => {
+      return this.db.insert(images).values(withCreatedAt(image)).returning().get()
+    },
+
+    get: (id: Image['id']) => {
+      return this.db.select().from(images).where(eq(images.id, id)).get()
+    },
+
+    update: (id: Image['id'], data: UpdateData<InsertImage>) => {
+      const update = {
+        ...(data.hash !== undefined ? { hash: data.hash } : {}),
+      }
+      return this.db.update(images).set(update).where(eq(images.id, id)).returning().get()
+    },
+
+    delete: (id: Image['id']) => {
+      return this.db.delete(images).where(eq(images.id, id)).run()
     },
   }
 }

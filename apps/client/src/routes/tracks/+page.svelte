@@ -5,7 +5,7 @@
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
-  import { makeTrackCoverArtUrl } from '$lib/cover-art'
+  import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import {
@@ -81,9 +81,7 @@
               on:click={() => playTrack(track.id, makeQueueData(i))}
             >
               <CoverArt
-                src={track.coverArtHash
-                  ? makeTrackCoverArtUrl(track.id, track.coverArtHash, { size: 80 })
-                  : undefined}
+                src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
                 alt={track.title}
                 iconClass="w-5 h-5"
                 placeholderClass="text-[5px]"

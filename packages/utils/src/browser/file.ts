@@ -6,6 +6,14 @@ export const fileToBase64 = (file: File): Promise<string> =>
     reader.onerror = (error) => reject(error)
   })
 
+export const blobToBase64 = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(blob)
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (error) => reject(error)
+  })
+
 export const base64ToBlob = (base64String: string) => {
   const arr = base64String.split(',')
   let mime: string | undefined

@@ -10,6 +10,15 @@ export async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
+export async function dirExists(dirPath: string): Promise<boolean> {
+  try {
+    const stats = await fs.stat(dirPath)
+    return stats.isDirectory()
+  } catch (error) {
+    return false
+  }
+}
+
 export async function getFileSize(filePath: string): Promise<number> {
   const stats = await fs.stat(filePath)
   return stats.size

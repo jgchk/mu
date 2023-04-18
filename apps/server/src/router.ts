@@ -4,14 +4,18 @@ import { Router } from 'express'
 import asyncHandler from 'express-async-handler'
 import { fileTypeFromBuffer, fileTypeFromFile, fileTypeStream } from 'file-type'
 import fs from 'fs'
-import { isAnimatedGif } from 'is-animated-gif'
+import { isAnimatedGifStream } from 'is-animated-gif'
 import mime from 'mime-types'
 import { readTrackCoverArt } from 'music-metadata'
 import path from 'path'
 import sharp from 'sharp'
+import type { Readable } from 'stream'
+import { PassThrough } from 'stream'
 import type { Context } from 'trpc'
 import { appRouter } from 'trpc'
 import { z } from 'zod'
+
+import { env } from './env'
 
 type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -22,32 +26,34 @@ const isDownloadComplete = <T extends { path: string | null }>(
   return dl.path !== null
 }
 
-const handleResize = async (
-  buffer: Buffer,
+const handleResizeStream = async (
+  stream: Readable,
   { width, height }: { width?: number; height?: number }
-): Promise<{ output: Buffer; contentType?: string }> => {
+): Promise<{ output: Readable; contentType?: string }> => {
   if (width !== undefined || height !== undefined) {
-    const fileType = await fileTypeFromBuffer(buffer)
-    if (fileType?.mime === 'image/gif') {
-      const animated = isAnimatedGif(buffer)
+    const ftStream = await fileTypeStream(stream)
+    if (ftStream.fileType?.mime === 'image/gif') {
+      const animated = await isAnimatedGifStream(ftStream)
       if (animated) {
         // resizing animated gifs is super slow. just return the original
-        return { output: buffer, contentType: 'image/gif' }
+        return { output: ftStream, contentType: 'image/gif' }
       } else {
-        const resizedBuffer = await sharp(buffer).resize(width, height).gif().toBuffer()
-        return { output: resizedBuffer, contentType: 'image/gif' }
+        const resizerStream = sharp().resize(width, height).gif()
+        const resizedStream = ftStream.pipe(resizerStream).pipe(new PassThrough())
+        return { output: resizedStream, contentType: 'image/gif' }
       }
     } else {
-      const resizedBuffer = await sharp(buffer).resize(width, height).png().toBuffer()
-      return { output: resizedBuffer, contentType: 'image/png' }
+      const resizerStream = sharp().resize(width, height).png()
+      const resizedStream = ftStream.pipe(resizerStream).pipe(new PassThrough())
+      return { output: resizedStream, contentType: 'image/png' }
     }
   } else {
     let contentType: string | undefined
-    const fileType = await fileTypeFromBuffer(buffer)
-    if (fileType) {
-      contentType = mime.contentType(fileType.mime) || undefined
+    const ftStream = await fileTypeStream(stream)
+    if (ftStream.fileType) {
+      contentType = mime.contentType(ftStream.fileType.mime) || undefined
     }
-    return { output: buffer, contentType }
+    return { output: ftStream, contentType }
   }
 }
 
@@ -179,6 +185,26 @@ export const makeRouter = (ctx: Context) => {
       })
     )
     .get(
+      '/api/images/:id',
+      asyncHandler(async (req, res) => {
+        const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
+        const { width, height } = z
+          .object({
+            width: z.coerce.number().optional(),
+            height: z.coerce.number().optional(),
+          })
+          .parse(req.query)
+        const imagePath = path.resolve(path.join(env.IMAGES_DIR, id.toString()))
+        const readStream = fs.createReadStream(imagePath)
+        const { output, contentType } = await handleResizeStream(readStream, { width, height })
+        if (contentType) {
+          res.set('Content-Type', contentType)
+        }
+        res.set('Cache-Control', 'public, max-age=31536000, immutable')
+        output.pipe(res)
+      })
+    )
+    .get(
       '/api/tracks/:id/cover-art',
       asyncHandler(async (req, res) => {
         const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
@@ -190,22 +216,18 @@ export const makeRouter = (ctx: Context) => {
           .parse(req.query)
 
         const track = ctx.db.tracks.get(id)
-        if (!track.coverArtHash) {
+        if (track.imageId === null) {
           throw new Error('Track does not have cover art')
         }
 
-        const coverArt = await readTrackCoverArt(track.path)
-
-        if (coverArt === undefined) {
-          throw new Error('Track does not have cover art')
-        }
-
-        const { output, contentType } = await handleResize(coverArt, { width, height })
+        const imagePath = path.resolve(path.join(env.IMAGES_DIR, track.imageId.toString()))
+        const readStream = fs.createReadStream(imagePath)
+        const { output, contentType } = await handleResizeStream(readStream, { width, height })
         if (contentType) {
           res.set('Content-Type', contentType)
         }
         res.set('Cache-Control', 'public, max-age=31536000, immutable')
-        res.send(output)
+        output.pipe(res)
       })
     )
     .get(
@@ -223,17 +245,16 @@ export const makeRouter = (ctx: Context) => {
         const tracks = ctx.db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {
-          if (track.coverArtHash) {
-            const coverArt = await readTrackCoverArt(track.path)
-            if (coverArt !== undefined) {
-              const { output, contentType } = await handleResize(coverArt, { width, height })
-              if (contentType) {
-                res.set('Content-Type', contentType)
-              }
-              res.set('Cache-Control', 'public, max-age=31536000, immutable')
-              res.send(output)
-              return
+          if (track.imageId !== null) {
+            const imagePath = path.resolve(env.IMAGES_DIR, track.imageId.toString())
+            const readStream = fs.createReadStream(imagePath)
+            const { output, contentType } = await handleResizeStream(readStream, { width, height })
+            if (contentType) {
+              res.set('Content-Type', contentType)
             }
+            res.set('Cache-Control', 'public, max-age=31536000, immutable')
+            output.pipe(res)
+            return
           }
         }
 

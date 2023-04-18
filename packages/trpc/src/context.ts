@@ -12,6 +12,7 @@ export type Context = {
   sp: ContextSpotify
   slsk: ContextSlsk
   lfm: ContextLastFm
+  imagesDir: string
   musicDir: string
 
   startSoulseek: () => Promise<ContextSlsk>

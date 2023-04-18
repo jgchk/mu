@@ -1,10 +1,10 @@
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
-import { readTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
+import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { ifDefined, ifNotNull, numDigits } from 'utils'
-import { md5 } from 'utils/node'
+import { ifDefined, numDigits } from 'utils'
+import { dirExists, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
@@ -14,15 +14,17 @@ export const releasesRouter = router({
   getAll: publicProcedure.query(({ ctx }) =>
     ctx.db.releases.getAll().map((release) => ({
       ...release,
-      coverArtHash: ctx.db.tracks.getByReleaseId(release.id).find((track) => track.coverArtHash)
-        ?.coverArtHash,
+      imageId:
+        ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
+        null,
     }))
   ),
   getAllWithArtists: publicProcedure.query(({ ctx }) =>
     ctx.db.releases.getAllWithArtists().map((release) => ({
       ...release,
-      coverArtHash: ctx.db.tracks.getByReleaseId(release.id).find((track) => track.coverArtHash)
-        ?.coverArtHash,
+      imageId:
+        ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
+        null,
     }))
   ),
   getWithTracksAndArtists: publicProcedure
@@ -31,22 +33,10 @@ export const releasesRouter = router({
       const release = ctx.db.releases.getWithTracksAndArtists(id)
       return {
         ...release,
-        coverArtHash: release.tracks.find((track) => track.coverArtHash)?.coverArtHash,
+        imageId:
+          ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)
+            ?.imageId ?? null,
       }
-    }),
-  getCoverArt: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ input: { id }, ctx }) => {
-      const tracks = ctx.db.tracks.getByReleaseId(id)
-      for (const track of tracks) {
-        if (track.coverArtHash) {
-          const coverArt = await readTrackCoverArt(track.path)
-          if (coverArt !== undefined) {
-            return coverArt.toString('base64')
-          }
-        }
-      }
-      return null
     }),
   updateWithTracksAndArtists: publicProcedure
     .input(
@@ -75,8 +65,6 @@ export const releasesRouter = router({
           ctx.db.artists.insert({ name }),
         ])
       )
-
-      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
 
       const albumTitle = input.album.title
       const albumArtists = input.album.artists.map((artist) => {
@@ -149,7 +137,19 @@ export const releasesRouter = router({
             }
             await writeTrackMetadata(newPath, metadata)
 
+            let imageId: number | undefined = undefined
+            const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
             if (albumArt) {
+              imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
+
+              const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
+              const imagesDir = path.dirname(imagePath)
+              const imagesDirExists = await dirExists(imagesDir)
+              if (!imagesDirExists) {
+                await fs.mkdir(imagesDir, { recursive: true })
+              }
+              await fs.writeFile(imagePath, albumArt)
+
               try {
                 await writeTrackCoverArt(newPath, albumArt)
               } catch {
@@ -158,15 +158,13 @@ export const releasesRouter = router({
               }
             }
 
-            const coverArtHash = ifNotNull(albumArt, md5)
-
             ctx.db.tracks.updateWithArtists(existingDbTrack.id, {
               title: metadata.title,
               artists: artists.map((artist) => artist.id),
               path: newPath,
               releaseId: dbRelease.id,
               trackNumber: metadata.track,
-              coverArtHash,
+              imageId,
             })
           })
         )
