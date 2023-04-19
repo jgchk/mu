@@ -9,6 +9,7 @@ import { z } from 'zod'
 
 import { getMetadataFromTrack } from '../services/music-metadata'
 import { publicProcedure, router } from '../trpc'
+import { cleanupImage, getImagePath } from '../utils'
 
 export const releasesRouter = router({
   getAll: publicProcedure.query(({ ctx }) =>
@@ -94,7 +95,7 @@ export const releasesRouter = router({
           id: ctx.db.images.insert({ hash: md5(albumArt) }).id,
         }
 
-        const imagePath = path.resolve(path.join(ctx.imagesDir, image.id.toString()))
+        const imagePath = getImagePath(ctx, image.id)
         await ensureDir(path.dirname(imagePath))
         await fs.writeFile(imagePath, albumArt)
       }
@@ -171,11 +172,7 @@ export const releasesRouter = router({
             })
 
             if (oldImageId !== null) {
-              const numUses = ctx.db.images.getNumberOfUses(oldImageId)
-              if (numUses === 0) {
-                await fs.rm(path.resolve(path.join(ctx.imagesDir, oldImageId.toString())))
-                ctx.db.images.delete(oldImageId)
-              }
+              await cleanupImage(ctx, oldImageId)
             }
           })
         )

@@ -23,6 +23,7 @@ import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { getImagePath } from '../utils'
 
 type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -280,7 +281,7 @@ export const importRouter = router({
           if (albumArt) {
             imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
 
-            const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
+            const imagePath = getImagePath(ctx, imageId)
             await ensureDir(path.dirname(imagePath))
             await fs.writeFile(imagePath, albumArt)
 
@@ -512,7 +513,7 @@ export const importRouter = router({
       if (albumArt) {
         imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
 
-        const imagePath = path.resolve(path.join(ctx.imagesDir, imageId.toString()))
+        const imagePath = getImagePath(ctx, imageId)
         await ensureDir(path.dirname(imagePath))
         await fs.writeFile(imagePath, albumArt)
 
