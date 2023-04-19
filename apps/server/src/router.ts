@@ -26,9 +26,6 @@ export const makeRouter = (ctx: Context) => {
         createContext: () => ctx,
       })
     )
-    .get('/api/ping', (req, res) => {
-      res.send('pong!')
-    })
     .get('/api/tracks/:id/stream', (req, res) => {
       const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
       const track = ctx.db.tracks.get(id)
