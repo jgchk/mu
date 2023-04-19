@@ -22,7 +22,7 @@
   {disabled}
   {type}
   class={tw(
-    'focus:ring-primary-500 center group/icon-button h-8 w-8 rounded-full border p-[7px] outline-none transition focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-800',
+    'focus-visible:ring-primary-500 center group/icon-button h-8 w-8 rounded-full border p-[7px] outline-none transition focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:ring-offset-gray-800',
     kind === 'solid' &&
       'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&
@@ -35,7 +35,7 @@
       ),
     kind === 'text' &&
       cn(
-        'focus:border-primary-500 border-transparent bg-transparent text-gray-300 disabled:bg-transparent disabled:text-gray-500',
+        'focus-visible:border-primary-500 border-transparent bg-transparent text-gray-300 disabled:bg-transparent disabled:text-gray-500',
         layer === 700 && 'hover:bg-gray-600',
         layer === 800 && 'hover:bg-gray-700',
         layer === 900 && 'hover:bg-gray-800',

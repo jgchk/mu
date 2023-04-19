@@ -66,7 +66,7 @@
   {maxlength}
   data-invalid={errors}
   class={tw(
-    'focus:ring-primary-500 rounded px-2 py-1 text-white outline-none transition-all focus:ring-1',
+    'focus-visible:ring-primary-500 rounded px-2 py-1 text-white outline-none transition-all focus-visible:ring-1',
     layer === 700 && 'bg-gray-600',
     layer === 800 && 'bg-gray-700',
     class_
