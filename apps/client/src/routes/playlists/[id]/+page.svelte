@@ -2,7 +2,9 @@
   import { formatMilliseconds } from 'utils'
 
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
+  import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
+  import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createPlaylistQuery } from '$lib/services/playlists'
@@ -58,16 +60,21 @@
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
           on:dblclick={() => playTrack(track.id, makeQueueData(i))}
         >
-          <div class="center w-8">
-            <div class="text-gray-400 group-hover:opacity-0">{i + 1}</div>
-            <button
-              type="button"
-              class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-              on:click={() => playTrack(track.id, makeQueueData(i))}
+          <button
+            type="button"
+            class="relative h-11 w-11 shadow"
+            on:click={() => playTrack(track.id, makeQueueData(i))}
+          >
+            <CoverArt
+              src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
+              alt={track.title}
+              iconClass="w-5 h-5"
+              placeholderClass="text-[5px]"
+              rounding="rounded-sm"
             >
               <PlayIcon />
-            </button>
-          </div>
+            </CoverArt>
+          </button>
           <div class="flex-1 truncate">
             {track.title}
             <ul class="comma-list text-sm text-gray-400">
