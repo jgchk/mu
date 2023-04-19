@@ -105,7 +105,6 @@ export const createFavoriteTrackMutation = (
       }
 
       if (optimistic?.getPlaylistQuery) {
-        console.log('hiiii', optimistic.getPlaylistQuery)
         await trpc.playlists.getWithTracks.utils.cancel(optimistic.getPlaylistQuery)
 
         output.getPlaylistQuery = trpc.playlists.getWithTracks.utils.getData(

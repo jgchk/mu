@@ -21,7 +21,6 @@
       { playlistId, trackId },
       {
         onSuccess: (data) => {
-          console.log('done', data)
           toast.success(`Added to ${data.playlist.name}!`)
           close()
         },

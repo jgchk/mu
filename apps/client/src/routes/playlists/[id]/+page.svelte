@@ -18,7 +18,6 @@
 
   const trpc = getContextClient()
   const playlistQuery = createPlaylistQuery(trpc, data.id)
-  $: console.log($playlistQuery.data)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getPlaylistQuery: { id: data.id },
