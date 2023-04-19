@@ -117,7 +117,13 @@
           kind="text"
           class="w-full text-white"
           layer={700}
-          on:click={() => handleAddToPlaylist(playlist.id)}
+          on:click={() => {
+            if (playlist.hasTrack) {
+              dialogs.open('confirm-duplicate-playlist-track', { playlistId: playlist.id, trackId })
+            } else {
+              handleAddToPlaylist(playlist.id)
+            }
+          }}
           loading={addingToPlaylistId === playlist.id}
         >
           <div class="flex w-full items-center justify-between">

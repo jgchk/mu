@@ -8,6 +8,10 @@ export type AllDialogs = {
     name?: string
     tracks?: number[]
   }
+  'confirm-duplicate-playlist-track': {
+    playlistId: number
+    trackId: number
+  }
 }
 
 export type Dialogs = {
@@ -19,13 +23,11 @@ export type OpenDialog = {
   } & AllDialogs[K]
 }[keyof AllDialogs]
 
-export type OpenFunc<
-  K extends keyof AllDialogs = keyof AllDialogs,
-  P extends AllDialogs[K] = AllDialogs[K]
-> = AreAllPropsOptional<P, (kind: K, params?: P) => void, (kind: K, params: P) => void>
-
 export type DialogsStore = Writable<Dialogs> & {
-  open: OpenFunc
+  open: <K extends keyof AllDialogs, P extends AllDialogs[K]>(
+    kind: K,
+    ...params: AreAllPropsOptional<P, [P?], [P]>
+  ) => void
   close: (kind: keyof AllDialogs) => void
 }
 
@@ -33,8 +35,10 @@ export const createDialogs = (): DialogsStore => {
   const store = writable<Dialogs>({ currentDialog: undefined })
   return {
     ...store,
-    open: (kind, params) => {
-      store.set({ currentDialog: { _tag: kind, ...params } })
+    open: (kind, ...params) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - we know better than the compiler :)
+      store.set({ currentDialog: { _tag: kind, ...params[0] } })
     },
     close: (kind) => {
       store.update((dialogs) => {

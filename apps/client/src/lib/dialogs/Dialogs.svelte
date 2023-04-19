@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
 
   import { getContextDialogs } from './dialogs'
@@ -13,6 +14,12 @@
       name={dialog.name}
       tracks={dialog.tracks}
       on:close={() => dialogs.close('new-playlist')}
+    />
+  {:else if dialog._tag === 'confirm-duplicate-playlist-track'}
+    <AddToPlaylistConfimDuplicateDialog
+      playlistId={dialog.playlistId}
+      trackId={dialog.trackId}
+      on:close={() => dialogs.close('confirm-duplicate-playlist-track')}
     />
   {/if}
 {/if}

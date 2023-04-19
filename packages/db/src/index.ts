@@ -583,8 +583,7 @@ export class Database {
       return this.db
         .select()
         .from(playlistTracks)
-        .where(eq(playlistTracks.playlistId, playlistId))
-        .where(eq(playlistTracks.trackId, trackId))
+        .where(and(eq(playlistTracks.playlistId, playlistId), eq(playlistTracks.trackId, trackId)))
         .limit(1)
         .all()
         .at(0)
