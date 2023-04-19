@@ -1,5 +1,6 @@
 <script lang="ts">
-  import NewPlaylistDialog from '../../routes/playlists/NewPlaylistDialog.svelte'
+  import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
+
   import { getContextDialogs } from './dialogs'
 
   const dialogs = getContextDialogs()
