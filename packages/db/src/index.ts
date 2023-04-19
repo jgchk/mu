@@ -556,6 +556,7 @@ export class Database {
     update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => {
       const update = {
         ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.imageId !== undefined ? { imageId: data.imageId } : {}),
       }
       return this.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
     },
