@@ -62,3 +62,47 @@ export const createEditPlaylistMutation = (
       ])
     },
   })
+
+export const createEditPlaylistTrackOrderMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['playlists']['editTrackOrder']
+) =>
+  trpc.playlists.editTrackOrder.mutation({
+    ...options,
+    onMutate: async (input) => {
+      await trpc.playlists.getWithTracks.utils.cancel({ id: input.playlistId })
+
+      const previousPlaylist = trpc.playlists.getWithTracks.utils.getData({
+        id: input.playlistId,
+      })
+
+      trpc.playlists.getWithTracks.utils.setData({ id: input.playlistId }, (old) => {
+        if (!old) return old
+
+        const getTrackOrder = (id: number) => input.playlistTrackIds.indexOf(id) + 1
+
+        return {
+          ...old,
+          tracks: old.tracks
+            .map((track) => ({ ...track, order: getTrackOrder(track.id) }))
+            .sort((a, b) => a.order - b.order),
+        }
+      })
+
+      return { previousPlaylist }
+    },
+    onError: (err, input, context) => {
+      trpc.playlists.getWithTracks.utils.setData(
+        { id: input.playlistId },
+        context?.previousPlaylist
+      )
+    },
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].id }),
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })

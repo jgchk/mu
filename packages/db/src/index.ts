@@ -573,6 +573,12 @@ export class Database {
       return this.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
     },
 
+    updateTrackOrder: (playlistTrackIds: PlaylistTrack['id'][]) => {
+      playlistTrackIds.forEach((playlistTrackId, i) => {
+        this.playlistTracks.update(playlistTrackId, { order: i + 1 })
+      })
+    },
+
     delete: (id: Playlist['id']) => {
       return this.db.delete(playlists).where(eq(playlists.id, id)).run()
     },
@@ -590,6 +596,18 @@ export class Database {
         .values(playlistTracks_.map(withCreatedAt))
         .returning()
         .all()
+    },
+
+    update: (id: PlaylistTrack['id'], data: UpdateData<InsertPlaylistTrack>) => {
+      const update = {
+        ...(data.order !== undefined ? { order: data.order } : {}),
+      }
+      return this.db
+        .update(playlistTracks)
+        .set(update)
+        .where(eq(playlistTracks.id, id))
+        .returning()
+        .get()
     },
 
     find: (playlistId: PlaylistTrack['playlistId'], trackId: PlaylistTrack['trackId']) => {

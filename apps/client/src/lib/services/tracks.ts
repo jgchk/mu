@@ -128,33 +128,28 @@ export const createFavoriteTrackMutation = (
       return output
     },
     onError: (err, input, context) => {
-      if (optimistic?.getTrackByIdQuery && context?.getTrackByIdQuery) {
-        trpc.tracks.getById.utils.setData(optimistic.getTrackByIdQuery, context.getTrackByIdQuery)
+      if (optimistic?.getTrackByIdQuery) {
+        trpc.tracks.getById.utils.setData(optimistic.getTrackByIdQuery, context?.getTrackByIdQuery)
       }
 
-      if (
-        optimistic?.getAllTracksWithArtistsAndReleaseQuery &&
-        context?.getAllTracksWithArtistsAndReleaseQuery
-      ) {
+      if (optimistic?.getAllTracksWithArtistsAndReleaseQuery) {
         trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(
           optimistic.getAllTracksWithArtistsAndReleaseQuery,
-          context.getAllTracksWithArtistsAndReleaseQuery
+          context?.getAllTracksWithArtistsAndReleaseQuery
         )
       }
 
-      if (
-        optimistic?.getReleaseWithTracksAndArtistsQuery &&
-        context?.getReleaseWithTracksAndArtistsQuery
-      ) {
+      if (optimistic?.getReleaseWithTracksAndArtistsQuery) {
         trpc.releases.getWithTracksAndArtists.utils.setData(
           optimistic.getReleaseWithTracksAndArtistsQuery,
-          context.getReleaseWithTracksAndArtistsQuery
+          context?.getReleaseWithTracksAndArtistsQuery
         )
       }
-      if (optimistic?.getPlaylistQuery && context?.getPlaylistQuery) {
+
+      if (optimistic?.getPlaylistQuery) {
         trpc.playlists.getWithTracks.utils.setData(
           optimistic.getPlaylistQuery,
-          context.getPlaylistQuery
+          context?.getPlaylistQuery
         )
       }
     },

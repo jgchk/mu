@@ -67,4 +67,10 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+  editTrackOrder: publicProcedure
+    .input(z.object({ playlistId: z.number(), playlistTrackIds: z.number().array() }))
+    .mutation(({ ctx, input }) => {
+      ctx.db.playlists.updateTrackOrder(input.playlistTrackIds)
+      return ctx.db.playlists.getWithTracks(input.playlistId)
+    }),
 })
