@@ -7,7 +7,10 @@
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { createAddTrackToPlaylistMutation, createPlaylistsQuery } from '$lib/services/playlists'
+  import {
+    createAddTrackToPlaylistMutation,
+    createPlaylistsHasTrackQuery,
+  } from '$lib/services/playlists'
   import { getContextToast } from '$lib/toast/toast'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -24,7 +27,7 @@
   export let id: string | undefined = undefined
 
   const trpc = getContextClient()
-  const playlistsQuery = createPlaylistsQuery(trpc)
+  const playlistsQuery = createPlaylistsHasTrackQuery(trpc, trackId)
   const addToPlaylistMutation = createAddTrackToPlaylistMutation(trpc)
 
   const dialogs = getContextDialogs()
@@ -60,7 +63,7 @@
   const close = () => dispatch('close')
 
   let filter = ''
-  let filteredPlaylists: RouterOutput['playlists']['getAll'] | undefined = undefined
+  let filteredPlaylists: RouterOutput['playlists']['getAllHasTrack'] | undefined = undefined
   $: {
     const playlists = $playlistsQuery.data
     if (playlists) {
@@ -117,7 +120,12 @@
           on:click={() => handleAddToPlaylist(playlist.id)}
           loading={addingToPlaylistId === playlist.id}
         >
-          {playlist.name}
+          <div class="flex w-full items-center justify-between">
+            <div>{playlist.name}</div>
+            {#if playlist.hasTrack}
+              <div class="text-error-500 text-xs">Already added</div>
+            {/if}
+          </div>
         </Button>
       {/each}
     {:else if $playlistsQuery.error}

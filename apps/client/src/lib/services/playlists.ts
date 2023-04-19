@@ -4,6 +4,9 @@ export const createPlaylistsQuery = (trpc: TRPCClient) => trpc.playlists.getAll.
 
 export const prefetchPlaylistsQuery = (trpc: TRPCClient) => trpc.playlists.getAll.prefetchQuery()
 
+export const createPlaylistsHasTrackQuery = (trpc: TRPCClient, trackId: number) =>
+  trpc.playlists.getAllHasTrack.query({ trackId })
+
 export const createPlaylistQuery = (trpc: TRPCClient, id: number) =>
   trpc.playlists.getWithTracks.query({ id })
 

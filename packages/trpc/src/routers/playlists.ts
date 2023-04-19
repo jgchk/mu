@@ -16,6 +16,15 @@ export const playlistsRouter = router({
       return { playlist, track }
     }),
   getAll: publicProcedure.query(({ ctx }) => ctx.db.playlists.getAll()),
+  getAllHasTrack: publicProcedure
+    .input(z.object({ trackId: z.number() }))
+    .query(({ input: { trackId }, ctx }) => {
+      const playlists = ctx.db.playlists.getAll()
+      return playlists.map((playlist) => {
+        const hasTrack = !!ctx.db.playlistTracks.find(playlist.id, trackId)
+        return { ...playlist, hasTrack }
+      })
+    }),
   getWithTracks: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.db.playlists.getWithTracks(input.id)),

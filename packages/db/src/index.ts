@@ -579,6 +579,17 @@ export class Database {
         .all()
     },
 
+    find: (playlistId: PlaylistTrack['playlistId'], trackId: PlaylistTrack['trackId']) => {
+      return this.db
+        .select()
+        .from(playlistTracks)
+        .where(eq(playlistTracks.playlistId, playlistId))
+        .where(eq(playlistTracks.trackId, trackId))
+        .limit(1)
+        .all()
+        .at(0)
+    },
+
     getByPlaylistId: (playlistId: PlaylistTrack['playlistId']) => {
       return this.db
         .select()
