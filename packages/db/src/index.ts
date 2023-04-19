@@ -3,6 +3,7 @@ import { placeholder, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { and, desc, eq, isNull } from 'drizzle-orm/expressions'
+import { isNotNull, uniq } from 'utils'
 
 import { migrate } from './migrate'
 import type {
@@ -550,7 +551,17 @@ export class Database {
     },
 
     getAll: () => {
-      return this.db.select().from(playlists).all()
+      return this.db
+        .select()
+        .from(playlists)
+        .all()
+        .map((playlist) => {
+          const tracks = this.playlistTracks.getByPlaylistId(playlist.id)
+          const collageImageIds = uniq(
+            tracks.map((row) => row.track.imageId).filter(isNotNull)
+          ).slice(0, 4)
+          return { ...playlist, collageImageIds }
+        })
     },
 
     update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => {
@@ -1042,7 +1053,7 @@ export class Database {
 
     getNumberOfUses: (id: Image['id']) => {
       return this.db
-        .select()
+        .select({ id: images.id })
         .from(images)
         .where(eq(images.id, id))
         .innerJoin(tracks, eq(images.id, tracks.imageId))

@@ -238,6 +238,9 @@ importers:
       superjson:
         specifier: ^1.12.2
         version: 1.12.2
+      utils:
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       dotenv-cli:
         specifier: ^7.1.0

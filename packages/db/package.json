@@ -21,6 +21,7 @@
     "drizzle-orm": "^0.23.11",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
-    "superjson": "^1.12.2"
+    "superjson": "^1.12.2",
+    "utils": "workspace:*"
   }
 }

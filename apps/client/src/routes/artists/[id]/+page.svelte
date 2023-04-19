@@ -20,7 +20,11 @@
       {#each $artistQuery.data.releases as release (release.id)}
         <div class="w-full">
           <a href="/releases/{release.id}" class="w-full">
-            <CoverArt src={release.imageId !== null ? makeImageUrl(release.imageId, {size: 512}) : undefined} />
+            <CoverArt
+              src={release.imageId !== null
+                ? makeImageUrl(release.imageId, { size: 512 })
+                : undefined}
+            />
           </a>
           <a
             href="/releases/{release.id}"
@@ -39,7 +43,7 @@
         <div class="w-full">
           <a href="/releases/{track.releaseId}" class="w-full">
             <CoverArt
-              src={track.imageId !== null ? makeImageUrl(track.imageId, {size: 512}) : undefined}
+              src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 512 }) : undefined}
               alt={track.title}
             />
           </a>

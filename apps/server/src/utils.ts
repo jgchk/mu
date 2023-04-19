@@ -62,12 +62,6 @@ export const ResizeOptions = z.object({
   size: z.coerce.number().optional(),
 })
 
-export type CollageOptions = z.infer<typeof CollageOptions>
-export const CollageOptions = z
-  .object({ width: z.coerce.number(), height: z.coerce.number() })
-  .or(z.object({ size: z.coerce.number() }))
-  .and(z.object({ images: z.coerce.number().array().min(1).max(4) }))
-
 export type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
   path: NonNullable<T['path']>
 }
@@ -83,10 +77,16 @@ const getResizedImageBuffers = async (images: number[], opts?: ResizeOptions) =>
   return resizedBuffers
 }
 
+export type CollageOptions = z.infer<typeof CollageOptions>
+export const CollageOptions = z
+  .object({ width: z.coerce.number(), height: z.coerce.number() })
+  .or(z.object({ size: z.coerce.number() }))
+  .and(z.object({ images: z.union([z.coerce.number().array(), z.coerce.number()]) }))
+
 export const handleCreateCollage = async (
   opts_: CollageOptions
 ): Promise<{ output: Readable; contentType?: string }> => {
-  const images = opts_.images
+  const images = (Array.isArray(opts_.images) ? opts_.images : [opts_.images]).slice(0, 4)
   const sizeOpts = 'size' in opts_ ? { width: opts_.size, height: opts_.size } : opts_
 
   let composite: OverlayOptions[]
