@@ -108,7 +108,7 @@
             </CoverArt>
           </button>
         {:else}
-          <FileDrop class="h-full w-full" on:drop={(e) => void handleFileDrop(e)} />
+          <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
         {/if}
       </div>
 

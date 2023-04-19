@@ -26,7 +26,7 @@
     type="button"
     class="absolute h-full w-full cursor-default bg-black opacity-50"
     on:click={close}
-    transition:fade|local={{ duration: 125 }}
+    transition:fade={{ duration: 125 }}
     tabindex="-1"
   />
 
@@ -35,7 +35,7 @@
       'relative w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 shadow-lg',
       class_
     )}
-    transition:scale|local={{ start: 0.95, duration: 125 }}
+    transition:scale={{ start: 0.95, duration: 125 }}
     use:trapFocus
   >
     {#if title !== undefined}

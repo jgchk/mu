@@ -567,6 +567,7 @@ export class Database {
     update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => {
       const update = {
         ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
         ...(data.imageId !== undefined ? { imageId: data.imageId } : {}),
       }
       return this.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
@@ -1057,7 +1058,7 @@ export class Database {
         .from(images)
         .where(eq(images.id, id))
         .innerJoin(tracks, eq(images.id, tracks.imageId))
-        .innerJoin(playlists, eq(tracks.id, playlists.imageId))
+        .innerJoin(playlists, eq(images.id, playlists.imageId))
         .all().length
     },
 

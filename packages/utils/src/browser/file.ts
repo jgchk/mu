@@ -1,18 +1,28 @@
-export const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = (error) => reject(error)
-  })
+export const dataUrlToBase64 = (dataUrl: string) => {
+  const arr = dataUrl.split(',')
+  if (arr.length === 1) {
+    return arr[0]
+  } else if (arr.length > 1) {
+    return arr[1]
+  } else {
+    throw new Error('Invalid dataUrl string')
+  }
+}
 
-export const blobToBase64 = (blob: Blob): Promise<string> =>
+export const fileToDataUrl = (file: File): Promise<string> => blobToDataUrl(file)
+export const blobToDataUrl = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.readAsDataURL(blob)
     reader.onload = () => resolve(reader.result as string)
     reader.onerror = (error) => reject(error)
   })
+
+export const fileToBase64 = (file: File) => blobToBase64(file)
+export const blobToBase64 = async (blob: Blob) => {
+  const dataUrl = await blobToDataUrl(blob)
+  return dataUrlToBase64(dataUrl)
+}
 
 export const base64ToBlob = (base64String: string) => {
   const arr = base64String.split(',')

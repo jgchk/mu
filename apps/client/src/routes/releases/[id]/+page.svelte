@@ -42,7 +42,8 @@
 </script>
 
 {#if $releaseQuery.data}
-  {@const tracks = $releaseQuery.data.tracks}
+  {@const release = $releaseQuery.data}
+  {@const tracks = release.tracks}
 
   <div class="space-y-4 p-4">
     <div class="relative flex items-end gap-6">
@@ -53,10 +54,10 @@
       >
         <div class="relative w-64 shrink-0">
           <CoverArt
-            src={$releaseQuery.data.imageId !== null
-              ? makeImageUrl($releaseQuery.data.imageId, { size: 512 })
+            src={release.imageId !== null
+              ? makeImageUrl(release.imageId, { size: 512 })
               : undefined}
-            alt={$releaseQuery.data.title}
+            alt={release.title}
             iconClass="w-16 h-16"
           >
             <PlayIcon />
@@ -65,11 +66,14 @@
       </button>
 
       <div class="space-y-1 pb-2">
-        <h1 class="line-clamp-2 text-6xl font-bold leading-[1.19]" title={$releaseQuery.data.title}>
-          {$releaseQuery.data.title}
+        <h1
+          class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]"
+          title={release.title}
+        >
+          {release.title}
         </h1>
         <ul class="comma-list text-sm font-bold">
-          {#each $releaseQuery.data.artists as artist (artist.id)}
+          {#each release.artists as artist (artist.id)}
             <li class="flex">
               <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
                 >{artist.name}</a
@@ -79,15 +83,13 @@
         </ul>
       </div>
 
-      <LinkButton
-        href="/releases/{$releaseQuery.data.id}/edit"
-        kind="outline"
-        class="absolute right-0 top-0">Edit</LinkButton
+      <LinkButton href="/releases/{release.id}/edit" kind="outline" class="absolute right-0 top-0"
+        >Edit</LinkButton
       >
     </div>
 
     <div>
-      {#each tracks as track, i (track.id)}
+      {#each release.tracks as track, i (track.id)}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
           on:dblclick={() => playTrack(track.id, makeQueueData(i))}

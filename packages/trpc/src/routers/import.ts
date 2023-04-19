@@ -276,7 +276,7 @@ export const importRouter = router({
           }
           const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
-          let imageId: number | undefined = undefined
+          let imageId: number | null = null
           const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
           if (albumArt) {
             imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
@@ -508,7 +508,7 @@ export const importRouter = router({
       }
       const outputMetadata = await writeTrackMetadata(newPath, metadata)
 
-      let imageId: number | undefined = undefined
+      let imageId: number | null = null
       const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
       if (albumArt) {
         imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id

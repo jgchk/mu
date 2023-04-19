@@ -12,6 +12,9 @@ export type AllDialogs = {
     playlistId: number
     trackId: number
   }
+  'edit-playlist': {
+    playlistId: number
+  }
 }
 
 export type Dialogs = {

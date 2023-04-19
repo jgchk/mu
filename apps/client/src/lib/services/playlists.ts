@@ -23,7 +23,11 @@ export const createNewPlaylistMutation = (
   trpc.playlists.new.mutation({
     ...options,
     onSuccess: async (...args) => {
-      await Promise.all([trpc.playlists.getAll.utils.invalidate(), options?.onSuccess?.(...args)])
+      await Promise.all([
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
     },
   })
 
@@ -36,6 +40,24 @@ export const createAddTrackToPlaylistMutation = (
     onSuccess: async (...args) => {
       await Promise.all([
         trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].playlist.id }),
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
+export const createEditPlaylistMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['playlists']['edit']
+) =>
+  trpc.playlists.edit.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].id }),
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
         options?.onSuccess?.(...args),
       ])
     },

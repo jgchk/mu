@@ -1,10 +1,12 @@
 <script lang="ts">
   import { formatMilliseconds, isNotNull, uniq } from 'utils'
 
+  import Button from '$lib/atoms/Button.svelte'
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createPlaylistQuery } from '$lib/services/playlists'
@@ -45,11 +47,14 @@
 
     return makeCollageUrl(uniqueImageIds, { size: 512 })
   }
+
+  const dialogs = getContextDialogs()
 </script>
 
 {#if $playlistQuery.data}
   {@const playlist = $playlistQuery.data}
   {@const tracks = playlist.tracks}
+
   <div class="space-y-4 p-4">
     <div class="relative flex items-end gap-6">
       <button
@@ -71,10 +76,26 @@
       </button>
 
       <div class="space-y-1 pb-2">
-        <h1 class="line-clamp-2 text-6xl font-bold leading-[1.19]" title={playlist.name}>
+        <h1
+          class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]"
+          title={playlist.name}
+        >
           {playlist.name}
         </h1>
+        {#if playlist.description}
+          <h1 class="line-clamp-5 leading-[1.19] text-gray-400" title={playlist.description}>
+            {playlist.description}
+          </h1>
+        {/if}
       </div>
+
+      <Button
+        kind="outline"
+        class="absolute right-0 top-0"
+        on:click={() => dialogs.open('edit-playlist', { playlistId: data.id })}
+      >
+        Edit
+      </Button>
     </div>
 
     <div>

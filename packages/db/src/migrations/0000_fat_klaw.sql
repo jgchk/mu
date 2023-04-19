@@ -100,6 +100,7 @@ CREATE TABLE `playlist_tracks` (
 CREATE TABLE `playlists` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
+	`description` text,
 	`image_id` integer,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)

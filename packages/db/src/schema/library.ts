@@ -77,6 +77,7 @@ export type InsertPlaylist = InferModel<typeof playlists, 'insert'>
 export const playlists = sqliteTable('playlists', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
+  description: text('description'),
   imageId: integer('image_id').references(() => images.id),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })

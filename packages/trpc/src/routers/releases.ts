@@ -168,7 +168,7 @@ export const releasesRouter = router({
               path: newPath,
               releaseId: dbRelease.id,
               trackNumber: metadata.track,
-              imageId: image?.id,
+              imageId: image?.id ?? null,
             })
 
             if (oldImageId !== null) {

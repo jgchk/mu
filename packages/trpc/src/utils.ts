@@ -9,7 +9,7 @@ export const getImagePath = (ctx: Context, id: number) =>
 export const cleanupImage = async (ctx: Context, id: number) => {
   const numUses = ctx.db.images.getNumberOfUses(id)
   if (numUses === 0) {
-    await fs.rm(getImagePath(ctx, id))
     ctx.db.images.delete(id)
+    await fs.rm(getImagePath(ctx, id))
   }
 }
