@@ -9,7 +9,7 @@
   import { playTrack } from '$lib/now-playing'
   import { createPlaylistQuery } from '$lib/services/playlists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
-  import { getContextToast } from '$lib/toast/toast'
+  import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -17,27 +17,19 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  const playlistQuery = createPlaylistQuery(trpc, data.id)
+  $: playlistQuery = createPlaylistQuery(trpc, data.id)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getPlaylistQuery: { id: data.id },
   })
 
-  const toast = getContextToast()
-  function makeQueueData(trackIndex: number) {
-    if (!$playlistQuery.data) {
-      toast.warning('Could not queue additional tracks')
-      return {
-        previousTracks: [],
-        nextTracks: [],
-      }
-    }
-
-    return {
-      previousTracks: $playlistQuery.data.tracks.slice(0, trackIndex).map((t) => t.track.id),
-      nextTracks: $playlistQuery.data.tracks.slice(trackIndex + 1).map((t) => t.track.id),
-    }
-  }
+  const makeQueueData = (
+    playlist: RouterOutput['playlists']['getWithTracks'],
+    trackIndex: number
+  ) => ({
+    previousTracks: playlist.tracks.slice(0, trackIndex).map((t) => t.trackId),
+    nextTracks: playlist.tracks.slice(trackIndex + 1).map((t) => t.trackId),
+  })
 
   function makePlaylistCollageUrl() {
     if (!$playlistQuery.data) {
@@ -63,7 +55,7 @@
       <button
         type="button"
         disabled={tracks.length === 0}
-        on:click={() => playTrack(tracks[0].id, makeQueueData(0))}
+        on:click={() => playTrack(tracks[0].trackId, makeQueueData(playlist, 0))}
       >
         <div class="relative w-64 shrink-0">
           <CoverArt
@@ -90,12 +82,12 @@
         {@const track = playlistTrack.track}
         <div
           class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-          on:dblclick={() => playTrack(track.id, makeQueueData(i))}
+          on:dblclick={() => playTrack(track.id, makeQueueData(playlist, i))}
         >
           <button
             type="button"
             class="relative h-11 w-11 shadow"
-            on:click={() => playTrack(track.id, makeQueueData(i))}
+            on:click={() => playTrack(track.id, makeQueueData(playlist, i))}
           >
             <CoverArt
               src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
