@@ -14,7 +14,11 @@
     {#each $releasesQuery.data as release (release.id)}
       <div class="w-full">
         <a href="/releases/{release.id}" class="w-full">
-          <CoverArt src={release.imageId !== null ? makeImageUrl(release.imageId) : undefined} />
+          <CoverArt
+            src={release.imageId !== null
+              ? makeImageUrl(release.imageId, { size: 512 })
+              : undefined}
+          />
         </a>
         <a
           href="/releases/{release.id}"
