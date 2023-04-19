@@ -97,25 +97,27 @@
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <div class="h-16 w-16 shrink-0">
+      <a href="/releases/{track.releaseId}" class="h-16 w-16 shrink-0">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
-          hoverable={false}
           placeholderClass="text-[8px]"
         />
-      </div>
+      </a>
 
       <div class="overflow-hidden">
         <div class="truncate">
           {track.title}
         </div>
-        <div class="text-sm text-gray-400">
-          {track.artists
-            .sort((a, b) => a.order - b.order)
-            .map((artist) => artist.name)
-            .join(', ')}
-        </div>
+        <ul class="comma-list text-sm text-gray-400">
+          {#each track.artists as artist (artist.id)}
+            <li class="flex">
+              <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
+                >{artist.name}</a
+              >
+            </li>
+          {/each}
+        </ul>
       </div>
 
       <div class="flex items-center gap-1">
