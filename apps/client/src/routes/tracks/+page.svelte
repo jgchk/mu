@@ -3,6 +3,7 @@
   import { formatMilliseconds, ifDefined } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'
+  import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
   import { makeImageUrl } from '$lib/cover-art'
@@ -118,10 +119,15 @@
             <div class="text-sm text-gray-400">
               {formatMilliseconds(track.duration)}
             </div>
-            <FavoriteButton
-              favorite={track.favorite}
-              on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
-            />
+            <div class="flex items-center gap-1">
+              <FavoriteButton
+                layer={700}
+                favorite={track.favorite}
+                on:click={() =>
+                  $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+              />
+              <AddToPlaylistButton trackId={track.id} layer={700} />
+            </div>
           </div>
         {/each}
 

@@ -3,6 +3,7 @@ export interface ActionReturn<Parameter> {
   destroy?: () => void
 }
 
-export interface Action<Parameter = void, Return = ActionReturn<Parameter>> {
-  <Node extends HTMLElement>(node: Node, parameter: Parameter): Return | void
-}
+export type Action<Parameter = void, Return = ActionReturn<Parameter>> = <Node extends HTMLElement>(
+  node: Node,
+  parameter: Parameter
+) => Return | void

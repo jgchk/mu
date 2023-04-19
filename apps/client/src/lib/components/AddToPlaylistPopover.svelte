@@ -9,6 +9,7 @@
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { createAddTrackToPlaylistMutation, createPlaylistsQuery } from '$lib/services/playlists'
   import { getContextToast } from '$lib/toast/toast'
+  import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
@@ -18,6 +19,9 @@
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
   export { class_ as class }
+  export let offset = 8
+  export let excludePlaylistId: number | undefined = undefined
+  export let id: string | undefined = undefined
 
   const trpc = getContextClient()
   const playlistsQuery = createPlaylistsQuery(trpc)
@@ -56,14 +60,26 @@
   const close = () => dispatch('close')
 
   let filter = ''
-  $: filteredPlaylists = $playlistsQuery.data?.filter((p) =>
-    p.name.toLowerCase().includes(filter.toLowerCase())
-  )
+  let filteredPlaylists: RouterOutput['playlists']['getAll'] | undefined = undefined
+  $: {
+    const playlists = $playlistsQuery.data
+    if (playlists) {
+      filteredPlaylists = playlists.filter((p) =>
+        p.name.toLowerCase().includes(filter.toLowerCase())
+      )
+      if (excludePlaylistId !== undefined) {
+        filteredPlaylists = playlists.filter((p) => p.id !== excludePlaylistId)
+      }
+    } else {
+      filteredPlaylists = undefined
+    }
+  }
 </script>
 
 <div
-  class={tw('w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
-  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 32] } }] }}
+  {id}
+  class={tw('z-40 w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
+  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, offset] } }] }}
   transition:fade|local={{ duration: 75 }}
 >
   <PopoverArrow />
@@ -104,9 +120,6 @@
           {playlist.name}
         </Button>
       {/each}
-      {#if filteredPlaylists.length === 0 && filter.length === 0}
-        <Button kind="text" disabled>Enter a playlist title...</Button>
-      {/if}
     {:else if $playlistsQuery.error}
       <Button
         kind="text"

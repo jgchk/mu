@@ -1,3 +1,5 @@
+import { withProps } from 'utils'
+
 import type { Action } from './types'
 
 export type ClickOutsideHandler = (event: ClickOutsideEvent) => void
@@ -18,7 +20,7 @@ export const clickOutside: Action<ClickOutsideHandler> = (
       !node.contains(event.target) &&
       !event.defaultPrevented
     ) {
-      handler({ ...event, outside: node })
+      handler(withProps(event, { outside: node }))
     }
   }
 

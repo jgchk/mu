@@ -13,6 +13,8 @@
   export let kind: 'solid' | 'outline' | 'text' = 'solid'
   let class_: string | undefined = undefined
   export { class_ as class }
+
+  export let layer: 700 | 800 | 900 | 'black' = 800
 </script>
 
 <button
@@ -20,13 +22,25 @@
   {disabled}
   {type}
   class={tw(
-    'focus:ring-primary-500 center group/icon-button h-8 w-8 rounded-full border p-[7px] transition',
+    'focus:ring-primary-500 center group/icon-button h-8 w-8 rounded-full border p-[7px] outline-none transition focus:ring-1 focus:ring-offset-1 focus:ring-offset-gray-800',
     kind === 'solid' &&
       'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&
-      'border-primary-500 text-primary-500 bg-transparent hover:bg-gray-700 disabled:border-gray-500 disabled:bg-transparent disabled:text-gray-500',
+      cn(
+        'border-primary-500 text-primary-500 bg-transparent disabled:border-gray-500 disabled:bg-transparent disabled:text-gray-500',
+        layer === 700 && 'hover:bg-gray-600',
+        layer === 800 && 'hover:bg-gray-700',
+        layer === 900 && 'hover:bg-gray-800',
+        layer === 'black' && 'hover:bg-gray-900'
+      ),
     kind === 'text' &&
-      'border-transparent bg-transparent text-gray-300 hover:bg-gray-700 disabled:bg-transparent disabled:text-gray-500',
+      cn(
+        'focus:border-primary-500 border-transparent bg-transparent text-gray-300 disabled:bg-transparent disabled:text-gray-500',
+        layer === 700 && 'hover:bg-gray-600',
+        layer === 800 && 'hover:bg-gray-700',
+        layer === 900 && 'hover:bg-gray-800',
+        layer === 'black' && 'hover:bg-gray-900'
+      ),
     class_
   )}
   use:tooltipAction={{ content: tooltip }}
