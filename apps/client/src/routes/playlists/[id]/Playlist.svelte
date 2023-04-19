@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { DndEvent } from 'svelte-dnd-action'
-  import { dndzone } from 'svelte-dnd-action'
   import { formatMilliseconds, isNotNull, uniq, uniqBy } from 'utils'
 
+  import { dnd } from '$lib/actions/dnd'
   import Button from '$lib/atoms/Button.svelte'
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
@@ -103,7 +103,7 @@
   </div>
 
   <div
-    use:dndzone={{ items: tracks }}
+    use:dnd={{ items: tracks }}
     on:consider={(e) => (tracks = uniqBy(e.detail.items, (i) => i.id))}
     on:finalize={handleReorderTracks}
   >

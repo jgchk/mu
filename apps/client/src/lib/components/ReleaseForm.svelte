@@ -1,11 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import type { DndEvent } from 'svelte-dnd-action'
-  import { dndzone } from 'svelte-dnd-action'
   import { superForm } from 'sveltekit-superforms/client'
   import { base64ToBlob } from 'utils/browser'
 
   import { dev } from '$app/environment'
+  import { dnd } from '$lib/actions/dnd'
   import Button from '$lib/atoms/Button.svelte'
   import FileDrop from '$lib/atoms/FileDrop.svelte'
   import IconButton from '$lib/atoms/IconButton.svelte'
@@ -176,7 +176,7 @@
     <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
     <div
       class="space-y-2"
-      use:dndzone={{ items: $form.tracks }}
+      use:dnd={{ items: $form.tracks }}
       on:consider={(e) => ($form.tracks = e.detail.items)}
       on:finalize={handleReorderTracks}
     >
