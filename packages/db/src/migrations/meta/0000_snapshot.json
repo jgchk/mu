@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "5e519bb0-c43e-4212-9f60-6cf2fe8ebd5d",
+  "id": "4dd15eef-3346-4913-b051-d41eab62eb26",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -633,6 +633,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "image_id": {
+          "name": "image_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -642,7 +649,19 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "playlists_image_id_images_id_fk": {
+          "name": "playlists_image_id_images_id_fk",
+          "tableFrom": "playlists",
+          "tableTo": "images",
+          "columnsFrom": [
+            "image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
       "compositePrimaryKeys": {}
     },
     "release_artists": {

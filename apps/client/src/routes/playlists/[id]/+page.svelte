@@ -46,6 +46,24 @@
   {@const tracks = playlist.tracks}
   <div class="space-y-4 p-4">
     <div class="relative flex items-end gap-6">
+      <button
+        type="button"
+        disabled={tracks.length === 0}
+        on:click={() => playTrack(tracks[0].id, makeQueueData(0))}
+      >
+        <div class="relative w-64 shrink-0">
+          <CoverArt
+            src={playlist.imageId !== null
+              ? makeImageUrl(playlist.imageId, { size: 512 })
+              : undefined}
+            alt={playlist.name}
+            iconClass="w-16 h-16"
+          >
+            <PlayIcon />
+          </CoverArt>
+        </div>
+      </button>
+
       <div class="space-y-1 pb-2">
         <h1 class="line-clamp-2 text-6xl font-bold leading-[1.19]" title={playlist.name}>
           {playlist.name}

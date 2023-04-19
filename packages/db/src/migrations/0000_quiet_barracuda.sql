@@ -100,7 +100,9 @@ CREATE TABLE `playlist_tracks` (
 CREATE TABLE `playlists` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`created_at` integer NOT NULL
+	`image_id` integer,
+	`created_at` integer NOT NULL,
+	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `release_artists` (
