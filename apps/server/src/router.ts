@@ -11,7 +11,13 @@ import type { Context } from 'trpc'
 import { appRouter } from 'trpc'
 import { z } from 'zod'
 
-import { handleResizeImage, isDownloadComplete, ResizeOptions } from './utils'
+import {
+  CollageOptions,
+  handleCreateCollage,
+  handleResizeImage,
+  isDownloadComplete,
+  ResizeOptions,
+} from './utils'
 
 const IMAGE_CACHE_HEADER = 'public, max-age=31536000, immutable'
 
@@ -140,6 +146,19 @@ export const makeRouter = (ctx: Context) => {
       })
     )
     .get(
+      '/api/images/collage',
+      asyncHandler(async (req, res) => {
+        const opts = CollageOptions.parse(req.query)
+
+        const { output, contentType } = await handleCreateCollage(opts)
+        if (contentType) {
+          res.set('Content-Type', contentType)
+        }
+        res.set('Cache-Control', IMAGE_CACHE_HEADER)
+        output.pipe(res)
+      })
+    )
+    .get(
       '/api/images/:id',
       asyncHandler(async (req, res) => {
         const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
@@ -157,12 +176,7 @@ export const makeRouter = (ctx: Context) => {
       '/api/tracks/:id/cover-art',
       asyncHandler(async (req, res) => {
         const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
-        const { width, height } = z
-          .object({
-            width: z.coerce.number().optional(),
-            height: z.coerce.number().optional(),
-          })
-          .parse(req.query)
+        const { width, height } = ResizeOptions.parse(req.query)
 
         const track = ctx.db.tracks.get(id)
         if (track.imageId === null) {
@@ -181,12 +195,7 @@ export const makeRouter = (ctx: Context) => {
       '/api/releases/:id/cover-art',
       asyncHandler(async (req, res) => {
         const { id } = z.object({ id: z.coerce.number() }).parse(req.params)
-        const { width, height } = z
-          .object({
-            width: z.coerce.number().optional(),
-            height: z.coerce.number().optional(),
-          })
-          .parse(req.query)
+        const { width, height } = ResizeOptions.parse(req.query)
 
         const release = ctx.db.releases.get(id)
         const tracks = ctx.db.tracks.getByReleaseId(release.id)

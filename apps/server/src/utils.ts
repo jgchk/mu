@@ -3,17 +3,22 @@ import fs from 'fs'
 import { isAnimatedGifStream } from 'is-animated-gif'
 import mime from 'mime-types'
 import path from 'path'
+import type { OverlayOptions } from 'sharp'
 import sharp from 'sharp'
 import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
+import { streamToBuffer } from 'utils/node'
 import { z } from 'zod'
 
 import { env } from './env'
 
 const handleResizeStream = async (
   stream: Readable,
-  { width, height }: ResizeOptions = {}
+  opts_: ResizeOptions = {}
 ): Promise<{ output: Readable; contentType?: string }> => {
+  const width = opts_.width ?? opts_.size
+  const height = opts_.height ?? opts_.size
+
   if (width !== undefined || height !== undefined) {
     const ftStream = await fileTypeStream(stream)
     if (ftStream.fileType?.mime === 'image/gif') {
@@ -54,7 +59,14 @@ export type ResizeOptions = z.infer<typeof ResizeOptions>
 export const ResizeOptions = z.object({
   width: z.coerce.number().optional(),
   height: z.coerce.number().optional(),
+  size: z.coerce.number().optional(),
 })
+
+export type CollageOptions = z.infer<typeof CollageOptions>
+export const CollageOptions = z
+  .object({ width: z.coerce.number(), height: z.coerce.number() })
+  .or(z.object({ size: z.coerce.number() }))
+  .and(z.object({ images: z.coerce.number().array().min(1).max(4) }))
 
 export type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -63,4 +75,65 @@ export const isDownloadComplete = <T extends { path: string | null }>(
   dl: T | Complete<T>
 ): dl is Complete<T> => {
   return dl.path !== null
+}
+
+const getResizedImageBuffers = async (images: number[], opts?: ResizeOptions) => {
+  const resizedStreams = await Promise.all(images.map((image) => handleResizeImage(image, opts)))
+  const resizedBuffers = await Promise.all(resizedStreams.map((res) => streamToBuffer(res.output)))
+  return resizedBuffers
+}
+
+export const handleCreateCollage = async (
+  opts_: CollageOptions
+): Promise<{ output: Readable; contentType?: string }> => {
+  const images = opts_.images
+  const sizeOpts = 'size' in opts_ ? { width: opts_.size, height: opts_.size } : opts_
+
+  let composite: OverlayOptions[]
+  if (images.length === 0) {
+    throw new Error('No images provided')
+  } else if (images.length === 1) {
+    return handleResizeImage(images[0], sizeOpts)
+  } else {
+    const resizedImages = await getResizedImageBuffers(images, {
+      width: sizeOpts.width / 2,
+      height: sizeOpts.height / 2,
+    })
+
+    if (images.length === 2) {
+      composite = [
+        { input: resizedImages[0], gravity: 'northwest' },
+        { input: resizedImages[0], gravity: 'northeast' },
+        { input: resizedImages[1], gravity: 'southwest' },
+        { input: resizedImages[1], gravity: 'southeast' },
+      ]
+    } else if (images.length === 3) {
+      composite = [
+        { input: resizedImages[0], gravity: 'northwest' },
+        { input: resizedImages[1], gravity: 'northeast' },
+        { input: resizedImages[2], gravity: 'southwest' },
+        { input: resizedImages[2], gravity: 'southeast' },
+      ]
+    } else {
+      composite = [
+        { input: resizedImages[0], gravity: 'northwest' },
+        { input: resizedImages[1], gravity: 'northeast' },
+        { input: resizedImages[2], gravity: 'southwest' },
+        { input: resizedImages[3], gravity: 'southeast' },
+      ]
+    }
+  }
+
+  const collage = sharp({
+    create: {
+      width: sizeOpts.width,
+      height: sizeOpts.height,
+      channels: 3,
+      background: { r: 0, g: 0, b: 0 },
+    },
+  })
+    .composite(composite)
+    .png()
+
+  return { output: collage, contentType: 'image/png' }
 }

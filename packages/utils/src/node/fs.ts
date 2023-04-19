@@ -1,5 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
+import type { Stream } from 'stream'
 
 export async function fileExists(filePath: string): Promise<boolean> {
   try {
@@ -41,4 +42,15 @@ export async function* walkDir(dir: string): AsyncGenerator<string> {
       yield filePath // yield file path
     }
   }
+}
+
+export async function streamToBuffer(stream: Stream): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const _buf = Array<any>()
+
+    stream.on('data', (chunk) => _buf.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(_buf)))
+    stream.on('error', reject)
+  })
 }

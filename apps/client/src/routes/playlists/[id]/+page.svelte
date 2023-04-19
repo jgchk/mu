@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { formatMilliseconds } from 'utils'
+  import { formatMilliseconds, isNotNull, uniq } from 'utils'
 
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
+  import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createPlaylistQuery } from '$lib/services/playlists'
@@ -39,6 +39,21 @@
       nextTracks: $playlistQuery.data.tracks.slice(trackIndex + 1).map((t) => t.track.id),
     }
   }
+
+  function makePlaylistCollageUrl() {
+    if (!$playlistQuery.data) {
+      return undefined
+    }
+
+    const imageIds = $playlistQuery.data.tracks.map((t) => t.track.imageId).filter(isNotNull)
+    if (imageIds.length === 0) {
+      return undefined
+    }
+
+    const uniqueImageIds = uniq(imageIds)
+
+    return makeCollageUrl(uniqueImageIds, { size: 512 })
+  }
 </script>
 
 {#if $playlistQuery.data}
@@ -55,7 +70,7 @@
           <CoverArt
             src={playlist.imageId !== null
               ? makeImageUrl(playlist.imageId, { size: 512 })
-              : undefined}
+              : makePlaylistCollageUrl()}
             alt={playlist.name}
             iconClass="w-16 h-16"
           >

@@ -21,3 +21,14 @@ export const uniqBy = <T, O>(array: T[], key: (item: T) => O): T[] => {
     return true
   })
 }
+
+export const uniq = <T>(array: T[]): T[] => {
+  const seen = new Set<T>()
+  return array.filter((item) => {
+    if (seen.has(item)) {
+      return false
+    }
+    seen.add(item)
+    return true
+  })
+}
