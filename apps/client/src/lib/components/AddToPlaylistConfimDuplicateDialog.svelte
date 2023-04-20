@@ -21,7 +21,7 @@
       { playlistId, trackId },
       {
         onSuccess: (data) => {
-          toast.success(`Added to ${data.playlist.name}!`)
+          toast.success(`Added to ${data.name}!`)
           close()
         },
       }
