@@ -22,7 +22,7 @@
   <IconButton
     {layer}
     kind="text"
-    tooltip="Add to Playlist"
+    tooltip="Add to playlist"
     on:click={() => {
       if (showAddToPlaylistDialog) {
         showAddToPlaylistDialog = false

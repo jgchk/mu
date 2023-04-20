@@ -39,7 +39,47 @@ export const createAddTrackToPlaylistMutation = (
     ...options,
     onSuccess: async (...args) => {
       await Promise.all([
-        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].playlist.id }),
+        trpc.playlists.getWithTracks.utils.setData({ id: args[0].id }, args[0]),
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
+export const createRemoveTrackFromPlaylistMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['playlists']['removeTrack']
+) =>
+  trpc.playlists.removeTrack.mutation({
+    ...options,
+    onMutate: async (input) => {
+      await trpc.playlists.getWithTracks.utils.cancel({ id: input.playlistId })
+
+      const previousPlaylist = trpc.playlists.getWithTracks.utils.getData({
+        id: input.playlistId,
+      })
+
+      trpc.playlists.getWithTracks.utils.setData({ id: input.playlistId }, (old) => {
+        if (!old) return old
+
+        return {
+          ...old,
+          tracks: old.tracks.filter((track) => track.id !== input.playlistTrackId),
+        }
+      })
+
+      return { previousPlaylist }
+    },
+    onError: (err, input, context) => {
+      trpc.playlists.getWithTracks.utils.setData(
+        { id: input.playlistId },
+        context?.previousPlaylist
+      )
+    },
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.playlists.getWithTracks.utils.invalidate({ id: args[0].id }),
         trpc.playlists.getAll.utils.invalidate(),
         trpc.playlists.getAllHasTrack.utils.invalidate(),
         options?.onSuccess?.(...args),

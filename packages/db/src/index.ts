@@ -642,11 +642,8 @@ export class Database {
       }))
     },
 
-    delete: (playlistId: PlaylistTrack['playlistId'], trackId: PlaylistTrack['trackId']) => {
-      return this.db
-        .delete(playlistTracks)
-        .where(and(eq(playlistTracks.playlistId, playlistId), eq(playlistTracks.trackId, trackId)))
-        .run()
+    delete: (id: PlaylistTrack['id']) => {
+      return this.db.delete(playlistTracks).where(eq(playlistTracks.id, id)).run()
     },
   }
 
