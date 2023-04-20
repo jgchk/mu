@@ -48,6 +48,7 @@
               : undefined}
             alt={release.title}
             iconClass="w-16 h-16"
+            hoverable={tracks.length > 0}
           >
             <PlayIcon />
           </CoverArt>

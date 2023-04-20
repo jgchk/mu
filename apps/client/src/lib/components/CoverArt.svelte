@@ -55,13 +55,15 @@
       rounding
     )}
   >
-    <div
-      class={tw(
-        'group-active:text-primary-500 h-8 w-8 text-white opacity-0 transition group-hover:opacity-100',
-        iconClass
-      )}
-    >
-      <slot />
-    </div>
+    {#if $$slots.default && hoverable}
+      <div
+        class={tw(
+          'group-active:text-primary-500 h-8 w-8 text-white opacity-0 transition group-hover:opacity-100',
+          iconClass
+        )}
+      >
+        <slot />
+      </div>
+    {/if}
   </div>
 </div>

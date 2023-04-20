@@ -43,6 +43,7 @@
             : makePlaylistCollageUrl()}
           alt={playlist.name}
           iconClass="w-16 h-16"
+          hoverable={playlist.tracks.length > 0}
         >
           <PlayIcon />
         </CoverArt>
