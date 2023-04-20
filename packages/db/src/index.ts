@@ -224,7 +224,8 @@ export class Database {
     update: (id: Artist['id'], data: UpdateData<InsertArtist>) => {
       const update = {
         ...(data.name !== undefined ? { name: data.name } : {}),
-        ...(data.imageId !== undefined ? { image: data.imageId } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.imageId !== undefined ? { imageId: data.imageId } : {}),
       }
       return this.db.update(artists).set(update).where(eq(artists.id, id)).returning().get()
     },

@@ -12,18 +12,18 @@
   import TextArea from '$lib/atoms/TextArea.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
-  import { createEditPlaylistMutation, createPlaylistQuery } from '$lib/services/playlists'
+  import { createArtistQuery, createEditArtistMutation } from '$lib/services/artists'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   import CoverArt from './CoverArt.svelte'
 
-  export let playlistId: number
+  export let artistId: number
 
   const trpc = getContextClient()
   const toast = getContextToast()
 
-  const playlistQuery = createPlaylistQuery(trpc, playlistId)
+  const artistQuery = createArtistQuery(trpc, artistId)
 
   let data:
     | {
@@ -33,16 +33,16 @@
       }
     | undefined = undefined
   $: {
-    if ($playlistQuery.data && !data) {
-      const playlist = $playlistQuery.data
+    if ($artistQuery.data && !data) {
+      const artist = $artistQuery.data
       data = {
-        name: playlist.name,
-        description: playlist.description ?? undefined,
+        name: artist.name,
+        description: artist.description ?? undefined,
         art: undefined,
       }
 
-      if (playlist.imageId !== null) {
-        void fetch(makeImageUrl(playlist.imageId))
+      if (artist.imageId !== null) {
+        void fetch(makeImageUrl(artist.imageId))
           .then((res) => res.blob())
           .then((blob) => {
             if (data) {
@@ -53,18 +53,18 @@
     }
   }
 
-  const editPlaylistMutation = createEditPlaylistMutation(trpc)
-  const handleEditPlaylist = async () => {
-    if ($editPlaylistMutation.isLoading) return
+  const editArtistMutation = createEditArtistMutation(trpc)
+  const handleEditArtist = async () => {
+    if ($editArtistMutation.isLoading) return
     if (!data) {
-      toast.error('Playlist data is not loaded yet')
+      toast.error('Artist data is not loaded yet')
       return
     }
 
-    $editPlaylistMutation.mutate(
+    $editArtistMutation.mutate(
       {
-        id: playlistId,
-        data: { name: data.name || 'Untitled Playlist', description: data.description || null },
+        id: artistId,
+        data: { name: data.name || '[unknown]', description: data.description || null },
         art: await ifDefined(data.art, blobToBase64),
       },
       {
@@ -80,7 +80,7 @@
   const close = () => dispatch('close')
 </script>
 
-<form on:submit|preventDefault={handleEditPlaylist}>
+<form on:submit|preventDefault={handleEditArtist}>
   <Dialog title="Edit details" class="max-w-lg" on:close={close}>
     <div class="flex items-center gap-3">
       <div class="h-44 w-44">
@@ -113,25 +113,25 @@
       </div>
       <div class="flex-1 space-y-2">
         <InputGroup>
-          <Label for="playlist-edit-name">Name</Label>
+          <Label for="artist-edit-name">Name</Label>
           {#if data}
-            <Input id="playlist-edit-name" class="w-full" bind:value={data.name} autofocus />
+            <Input id="artist-edit-name" class="w-full" bind:value={data.name} autofocus />
           {:else}
-            <Input id="playlist-edit-name" class="skeleton w-full" disabled />
+            <Input id="artist-edit-name" class="skeleton w-full" disabled />
           {/if}
         </InputGroup>
         <InputGroup>
-          <Label for="playlist-edit-description">Description</Label>
+          <Label for="artist-edit-description">Description</Label>
           {#if data}
             <TextArea
-              id="playlist-edit-description"
+              id="artist-edit-description"
               class="w-full"
               bind:value={data.description}
               rows={3}
               placeholder="Optional"
             />
           {:else}
-            <TextArea id="playlist-edit-description" class="skeleton w-full" disabled />
+            <TextArea id="artist-edit-description" class="skeleton w-full" disabled />
           {/if}
         </InputGroup>
       </div>
@@ -141,7 +141,7 @@
       <Button
         type="submit"
         on:click={close}
-        loading={$editPlaylistMutation.isLoading}
+        loading={$editArtistMutation.isLoading}
         disabled={!data}>Save</Button
       >
       <Button kind="outline" on:click={close}>Cancel</Button>

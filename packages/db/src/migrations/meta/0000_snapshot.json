@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "dd46a458-2179-44ab-8ecf-50ea5ee4adee",
+  "id": "2a5b4fab-4383-4b24-943d-ab995fc01944",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -545,6 +545,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "image_id": {
           "name": "image_id",

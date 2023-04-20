@@ -8,6 +8,7 @@ export type InsertArtist = InferModel<typeof artists, 'insert'>
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
+  description: text('description'),
   imageId: integer('image_id').references(() => images.id),
 })
 

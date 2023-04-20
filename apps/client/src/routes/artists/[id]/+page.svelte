@@ -1,10 +1,12 @@
 <script lang="ts">
   import { isNotNull } from 'utils'
 
+  import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import { createFullArtistQuery } from '$lib/services/artists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
@@ -29,6 +31,8 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
+
+  const dialogs = getContextDialogs()
 </script>
 
 {#if $artistQuery.data}
@@ -58,7 +62,20 @@
         >
           {artist.name}
         </h1>
+        {#if artist.description}
+          <h1 class="line-clamp-5 leading-[1.19] text-gray-400" title={artist.description}>
+            {artist.description}
+          </h1>
+        {/if}
       </div>
+
+      <Button
+        kind="outline"
+        class="absolute right-0 top-0"
+        on:click={() => dialogs.open('edit-artist', { artistId: artist.id })}
+      >
+        Edit
+      </Button>
     </div>
 
     <h2 class="mb-4 mt-8 text-2xl font-bold">Releases</h2>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
+  import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
   import EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
 
@@ -27,5 +28,7 @@
       playlistId={dialog.playlistId}
       on:close={() => dialogs.close('edit-playlist')}
     />
+  {:else if dialog._tag === 'edit-artist'}
+    <EditArtistDialog artistId={dialog.artistId} on:close={() => dialogs.close('edit-artist')} />
   {/if}
 {/if}

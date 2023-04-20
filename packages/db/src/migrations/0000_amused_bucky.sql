@@ -85,6 +85,7 @@ CREATE TABLE `images` (
 CREATE TABLE `artists` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
+	`description` text,
 	`image_id` integer,
 	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );

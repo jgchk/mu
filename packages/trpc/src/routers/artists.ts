@@ -1,12 +1,54 @@
+import fs from 'fs/promises'
+import path from 'path'
 import { isNotNull } from 'utils'
+import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { cleanupImage, getImagePath } from '../utils'
 
 export const artistsRouter = router({
   add: publicProcedure
     .input(z.object({ name: z.string() }))
     .mutation(({ ctx, input }) => ctx.db.artists.insert({ name: input.name })),
+  edit: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        data: z.object({ name: z.string().min(1), description: z.string().nullable() }),
+        art: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const oldImageId = ctx.db.artists.get(input.id).imageId
+
+      let image: { data: Buffer; id: number } | undefined = undefined
+      const art = input.art ? Buffer.from(input.art, 'base64') : null
+      if (art) {
+        image = {
+          data: art,
+          id: ctx.db.images.insert({ hash: md5(art) }).id,
+        }
+
+        const imagePath = getImagePath(ctx, image.id)
+        await ensureDir(path.dirname(imagePath))
+        await fs.writeFile(imagePath, art)
+      }
+
+      const artist = ctx.db.artists.update(input.id, {
+        ...input.data,
+        imageId: image?.id ?? null,
+      })
+
+      if (oldImageId !== null) {
+        await cleanupImage(ctx, oldImageId)
+      }
+
+      return artist
+    }),
+  get: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => ctx.db.artists.get(input.id)),
   getFull: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.db.artists.get(input.id)
     const releases = ctx.db.releases.getByArtistWithArtists(artist.id).map((release) => ({
