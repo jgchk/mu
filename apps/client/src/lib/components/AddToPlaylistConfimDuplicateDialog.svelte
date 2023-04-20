@@ -7,6 +7,8 @@
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
+  import AddToPlaylistSuccessToast from './AddToPlaylistSuccessToast.svelte'
+
   export let playlistId: number
   export let trackId: number
 
@@ -21,7 +23,12 @@
       { playlistId, trackId },
       {
         onSuccess: (data) => {
-          toast.success(`Added to ${data.name}!`)
+          toast.success(AddToPlaylistSuccessToast, {
+            props: {
+              id: data.id,
+              name: data.name,
+            },
+          })
           close()
         },
       }
