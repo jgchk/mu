@@ -390,8 +390,8 @@ importers:
   packages/trpc:
     dependencies:
       '@trpc/server':
-        specifier: ^10.18.0
-        version: 10.18.0
+        specifier: ^10.20.0
+        version: 10.20.0
       '@types/content-disposition':
         specifier: ^0.5.5
         version: 0.5.5
@@ -448,8 +448,8 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.11
-        version: 18.15.11
+        specifier: ^18.15.12
+        version: 18.15.12
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
@@ -1164,10 +1164,6 @@ packages:
       '@trpc/server': 10.20.0
     dev: false
 
-  /@trpc/server@10.18.0:
-    resolution: {integrity: sha512-nVMqdDIF9YLOeC3g6RdAvdCPqkHFjpshSqZGThZ+fyjiWSUXj2ZKCduhJFnY77TjtgODojeaaghmzcnjxb+Onw==}
-    dev: false
-
   /@trpc/server@10.20.0:
     resolution: {integrity: sha512-pbrdgw2mO8lWygyZjGLbOq/EoWFWEJvLaxp8JmGsivMIh/IZR5mksPJdywAGQ4TBrbcqssKhuoJ/8OE9mhaveg==}
     dev: false
@@ -1251,6 +1247,7 @@ packages:
 
   /@types/node@18.15.11:
     resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
+    dev: false
 
   /@types/node@18.15.12:
     resolution: {integrity: sha512-Wha1UwsB3CYdqUm2PPzh/1gujGCNtWVUYF0mB00fJFoR4gTyWTDPjSm+zBF787Ahw8vSGgBja90MkgFwvB86Dg==}
