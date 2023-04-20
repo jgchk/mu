@@ -24,3 +24,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm run ci
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: jgchk/mu
