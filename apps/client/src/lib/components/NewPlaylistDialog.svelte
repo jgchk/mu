@@ -10,6 +10,8 @@
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
+  import LinkToast from './LinkToast.svelte'
+
   const dispatch = createEventDispatcher<{ close: undefined }>()
   const close = () => dispatch('close')
 
@@ -26,7 +28,11 @@
       { name: name || 'Untitled Playlist', tracks },
       {
         onSuccess: (data) => {
-          toast.success(`Created ${data.name}!`)
+          toast.success(LinkToast, {
+            props: {
+              message: ['Created ', { href: `/playlists/${data.id}`, text: data.name }, '!'],
+            },
+          })
           close()
         },
       }

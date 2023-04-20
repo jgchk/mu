@@ -5,10 +5,11 @@
   import CoverArt from '$lib/components/CoverArt.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import { createDownloadMutation } from '$lib/services/downloads'
-  import { addedToDownloads } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
+
+  import { showSuccessToast } from '../toasts'
 
   type SearchResult =
     | RouterOutput['search']['spotify']['albums'][0]
@@ -37,11 +38,7 @@
   const handleDownload = () => {
     $downloadMutation.mutate(
       { service: 'spotify', id: result.id, kind: result.type },
-      {
-        onSuccess: () => {
-          toast.success(addedToDownloads(result.name))
-        },
-      }
+      { onSuccess: () => showSuccessToast(toast, result.name) }
     )
   }
 </script>

@@ -2,11 +2,11 @@
   import { tooltip } from '$lib/actions/tooltip'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import { createDownloadMutation } from '$lib/services/downloads'
-  import { addedToDownloads } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
+  import { showSuccessToast } from '../toasts'
   import SoulseekResultFile from './SoulseekResultFile.svelte'
   import type { SortedSoulseekUserResults } from './types'
 
@@ -45,11 +45,7 @@
         kind: 'tracks',
         tracks: item.files.map((f) => ({ username: item.username, file: f.filename })),
       },
-      {
-        onSuccess: () => {
-          toast.success(addedToDownloads(dirpart))
-        },
-      }
+      { onSuccess: () => showSuccessToast(toast, dirpart) }
     )
   }
 </script>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { toErrorString } from 'utils'
 
+  import LinkToast from '$lib/components/LinkToast.svelte'
   import ReleaseForm from '$lib/components/ReleaseForm.svelte'
   import { getContextToast } from '$lib/toast/toast'
 
@@ -14,7 +15,16 @@
 <ReleaseForm
   formData={data.form}
   artData={data.art}
-  on:success={({ detail: { data } }) => toast.success(`Updated ${data.album.title || 'release'}!`)}
+  on:success={({ detail: { data } }) =>
+    toast.success(LinkToast, {
+      props: {
+        message: [
+          'Updated ',
+          { href: `/releases/${data.id}`, text: data.album.title || 'release' },
+          '!',
+        ],
+      },
+    })}
   on:failure={({ detail: { reason } }) =>
     toast.error(`Failed to update release: ${toErrorString(reason)}`)}
   on:error={({ detail: { error } }) =>

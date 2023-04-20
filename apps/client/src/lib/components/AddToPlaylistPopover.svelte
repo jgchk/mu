@@ -16,6 +16,7 @@
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
+  import LinkToast from './LinkToast.svelte'
   import PopoverArrow from './PopoverArrow.svelte'
 
   export let trackId: number
@@ -48,7 +49,11 @@
       { playlistId, trackId },
       {
         onSuccess: (data) => {
-          toast.success(`Added to ${data.name}!`)
+          toast.success(LinkToast, {
+            props: {
+              message: ['Added to ', { href: `/playlists/${data.id}`, text: data.name }, '!'],
+            },
+          })
           addingToPlaylistId = undefined
           close()
         },
