@@ -9,6 +9,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
+  import TextArea from '$lib/atoms/TextArea.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import { createEditPlaylistMutation, createPlaylistQuery } from '$lib/services/playlists'
@@ -80,9 +81,9 @@
 </script>
 
 <form on:submit|preventDefault={handleEditPlaylist}>
-  <Dialog title="Edit details" on:close={close}>
+  <Dialog title="Edit details" class="max-w-lg" on:close={close}>
     <div class="flex items-center gap-3">
-      <div class="h-32 w-32">
+      <div class="h-44 w-44">
         {#if data}
           {#if data.art}
             <button
@@ -110,25 +111,27 @@
           {/if}
         {/if}
       </div>
-      <div class="space-y-2">
+      <div class="flex-1 space-y-2">
         <InputGroup>
           <Label for="playlist-edit-name">Name</Label>
           {#if data}
-            <Input id="playlist-edit-name" bind:value={data.name} />
+            <Input id="playlist-edit-name" class="w-full" bind:value={data.name} />
           {:else}
-            <Input id="playlist-edit-name" class="skeleton" disabled />
+            <Input id="playlist-edit-name" class="skeleton w-full" disabled />
           {/if}
         </InputGroup>
         <InputGroup>
           <Label for="playlist-edit-description">Description</Label>
           {#if data}
-            <Input
+            <TextArea
               id="playlist-edit-description"
+              class="w-full"
               bind:value={data.description}
+              rows={3}
               placeholder="Optional"
             />
           {:else}
-            <Input id="playlist-edit-description" class="skeleton" disabled />
+            <TextArea id="playlist-edit-description" class="skeleton w-full" disabled />
           {/if}
         </InputGroup>
       </div>
