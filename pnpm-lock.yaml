@@ -71,9 +71,6 @@ importers:
       trpc:
         specifier: workspace:*
         version: link:../../packages/trpc
-      ui:
-        specifier: workspace:*
-        version: link:../../packages/ui
       utils:
         specifier: workspace:*
         version: link:../../packages/utils
@@ -453,15 +450,6 @@ importers:
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
-
-  packages/ui:
-    devDependencies:
-      eslint-config-custom:
-        specifier: workspace:*
-        version: link:../eslint-config-custom
-      svelte:
-        specifier: ^3.58.0
-        version: 3.58.0
 
   packages/utils:
     dependencies:
