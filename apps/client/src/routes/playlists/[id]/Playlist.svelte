@@ -57,7 +57,7 @@
 
     <div class="space-y-1 pb-2">
       <h1
-        class="line-clamp-2 mr-11 break-all text-6xl font-bold leading-[1.19]"
+        class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]"
         title={playlist.name}
       >
         {playlist.name}

@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import type { DndEvent } from 'svelte-dnd-action'
-  import { formatMilliseconds, hasDuplicates } from 'utils'
+  import { formatMilliseconds } from 'utils'
 
   import { dnd } from '$lib/actions/dnd'
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
