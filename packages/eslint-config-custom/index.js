@@ -9,7 +9,12 @@ module.exports = {
     'prettier',
     'plugin:svelte/prettier',
   ],
-  plugins: ['@typescript-eslint', 'simple-import-sort', 'import', 'deprecation'],
+  plugins: [
+    '@typescript-eslint',
+    'simple-import-sort',
+    'import',
+    // 'deprecation'
+  ],
   ignorePatterns: ['*.cjs'],
   overrides: [
     {
@@ -56,6 +61,6 @@ module.exports = {
 
     'svelte/button-has-type': 'error',
 
-    'deprecation/deprecation': 'warn',
+    // 'deprecation/deprecation': 'warn',
   },
 }

@@ -29,11 +29,9 @@ export const base64ToBlob = (base64String: string) => {
   let mime: string | undefined
   let bstr: string
   if (arr.length === 1) {
-    // eslint-disable-next-line deprecation/deprecation
     bstr = atob(arr[0])
   } else if (arr.length > 1) {
     mime = arr[0].match(/:(.*?);/)?.[1]
-    // eslint-disable-next-line deprecation/deprecation
     bstr = atob(arr[1])
   } else {
     throw new Error('Invalid base64 string')
