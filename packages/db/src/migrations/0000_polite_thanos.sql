@@ -84,7 +84,9 @@ CREATE TABLE `images` (
 --> statement-breakpoint
 CREATE TABLE `artists` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`name` text NOT NULL
+	`name` text NOT NULL,
+	`image_id` integer,
+	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `playlist_tracks` (

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "d59e9125-c6fe-4492-ae64-2dbab6563272",
+  "id": "dd46a458-2179-44ab-8ecf-50ea5ee4adee",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -545,10 +545,29 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "image_id": {
+          "name": "image_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "artists_image_id_images_id_fk": {
+          "name": "artists_image_id_images_id_fk",
+          "tableFrom": "artists",
+          "tableTo": "images",
+          "columnsFrom": [
+            "image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
       "compositePrimaryKeys": {}
     },
     "playlist_tracks": {

@@ -220,6 +220,14 @@ export class Database {
           order: row.track_artists.order,
         }))
     },
+
+    update: (id: Artist['id'], data: UpdateData<InsertArtist>) => {
+      const update = {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.imageId !== undefined ? { image: data.imageId } : {}),
+      }
+      return this.db.update(artists).set(update).where(eq(artists.id, id)).returning().get()
+    },
   }
 
   releaseArtists = {
@@ -1064,6 +1072,7 @@ export class Database {
         .where(eq(images.id, id))
         .innerJoin(tracks, eq(images.id, tracks.imageId))
         .innerJoin(playlists, eq(images.id, playlists.imageId))
+        .innerJoin(tracks, eq(images.id, artists.imageId))
         .all().length
     },
 
