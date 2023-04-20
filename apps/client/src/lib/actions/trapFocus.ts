@@ -5,8 +5,8 @@ import type { Action } from './types'
 let trapFocusList: HTMLElement[] = []
 
 if (browser) {
-  const isNext = (event: KeyboardEvent) => event.keyCode === 9 && !event.shiftKey
-  const isPrevious = (event: KeyboardEvent) => event.keyCode === 9 && event.shiftKey
+  const isNext = (event: KeyboardEvent) => event.key === 'Tab' && !event.shiftKey
+  const isPrevious = (event: KeyboardEvent) => event.key === 'Tab' && event.shiftKey
   const trapFocusListener = (event: KeyboardEvent) => {
     if (event.target === window) {
       return

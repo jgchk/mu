@@ -225,11 +225,7 @@ export class Database {
   releaseArtists = {
     insertMany: (releaseArtists_: InsertReleaseArtist[]) => {
       if (releaseArtists_.length === 0) return []
-      return this.db
-        .insert(releaseArtists)
-        .values(...releaseArtists_)
-        .returning()
-        .all()
+      return this.db.insert(releaseArtists).values(releaseArtists_).returning().all()
     },
 
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => {
@@ -338,11 +334,7 @@ export class Database {
   trackArtists = {
     insertMany: (trackArtists_: InsertTrackArtist[]) => {
       if (trackArtists_.length === 0) return []
-      return this.db
-        .insert(trackArtists)
-        .values(...trackArtists_)
-        .returning()
-        .all()
+      return this.db.insert(trackArtists).values(trackArtists_).returning().all()
     },
 
     getByTrackId: (trackId: TrackArtist['trackId']) => {
