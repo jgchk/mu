@@ -460,8 +460,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config-custom
       svelte:
-        specifier: ^3.57.0
-        version: 3.57.0
+        specifier: ^3.58.0
+        version: 3.58.0
 
   packages/utils:
     dependencies:
@@ -5172,11 +5172,6 @@ packages:
       strip-indent: 3.0.0
       svelte: 3.58.0
       typescript: 5.0.4
-    dev: true
-
-  /svelte@3.57.0:
-    resolution: {integrity: sha512-WMXEvF+RtAaclw0t3bPDTUe19pplMlfyKDsixbHQYgCWi9+O9VN0kXU1OppzrB9gPAvz4NALuoca2LfW2bOjTQ==}
-    engines: {node: '>= 8'}
     dev: true
 
   /svelte@3.58.0:
