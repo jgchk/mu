@@ -72,7 +72,7 @@
       <Button
         kind="outline"
         class="absolute right-0 top-0"
-        on:click={() => dialogs.open('edit-artist', { artistId: artist.id })}
+        on:click={() => dialogs.open('edit-artist', { artist })}
       >
         Edit
       </Button>

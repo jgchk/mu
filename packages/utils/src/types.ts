@@ -29,6 +29,19 @@ export const ifNotNull = <T, O>(value: T | null, fn: (value: T) => O): O | null 
   }
 }
 
+export const isNotNullOrUndefined = <T>(value: T | null | undefined): value is T =>
+  value !== null && value !== undefined
+export const ifNotNullOrUndefined = <T, O>(
+  value: T | null | undefined,
+  fn: (value: T) => O
+): O | null | undefined => {
+  if (isNotNullOrUndefined(value)) {
+    return fn(value)
+  } else {
+    return value
+  }
+}
+
 export type Timeout = ReturnType<typeof setTimeout>
 
 export type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never

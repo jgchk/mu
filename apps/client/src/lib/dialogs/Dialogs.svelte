@@ -29,6 +29,6 @@
       on:close={() => dialogs.close('edit-playlist')}
     />
   {:else if dialog._tag === 'edit-artist'}
-    <EditArtistDialog artistId={dialog.artistId} on:close={() => dialogs.close('edit-artist')} />
+    <EditArtistDialog artist={dialog.artist} on:close={() => dialogs.close('edit-artist')} />
   {/if}
 {/if}

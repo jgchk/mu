@@ -16,13 +16,14 @@ export const artistsRouter = router({
       z.object({
         id: z.number(),
         data: z.object({ name: z.string().min(1), description: z.string().nullable() }),
-        art: z.string().optional(),
+        art: z.string().nullish(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const oldImageId = ctx.db.artists.get(input.id).imageId
 
-      let image: { data: Buffer; id: number } | undefined = undefined
+      let image: { data: Buffer; id: number } | null | undefined =
+        input.art === null ? null : undefined
       const art = input.art ? Buffer.from(input.art, 'base64') : null
       if (art) {
         image = {
@@ -35,12 +36,13 @@ export const artistsRouter = router({
         await fs.writeFile(imagePath, art)
       }
 
+      const imageId = image === null ? null : image?.id
       const artist = ctx.db.artists.update(input.id, {
         ...input.data,
-        imageId: image?.id ?? null,
+        imageId,
       })
 
-      if (oldImageId !== null) {
+      if (imageId !== undefined && oldImageId !== null) {
         await cleanupImage(ctx, oldImageId)
       }
 
