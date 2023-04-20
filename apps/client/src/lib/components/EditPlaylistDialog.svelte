@@ -63,7 +63,7 @@
     $editPlaylistMutation.mutate(
       {
         id: playlistId,
-        data: { name: data.name, description: data.description || null },
+        data: { name: data.name || 'Untitled Playlist', description: data.description || null },
         art: await ifDefined(data.art, blobToBase64),
       },
       {
