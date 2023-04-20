@@ -63,9 +63,12 @@
           {artist.name}
         </h1>
         {#if artist.description}
-          <h1 class="line-clamp-5 leading-[1.19] text-gray-400" title={artist.description}>
+          <p
+            class="line-clamp-5 whitespace-pre-wrap leading-[1.19] text-gray-400"
+            title={artist.description}
+          >
             {artist.description}
-          </h1>
+          </p>
         {/if}
       </div>
 

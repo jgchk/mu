@@ -57,9 +57,12 @@
         {playlist.name}
       </h1>
       {#if playlist.description}
-        <h1 class="line-clamp-5 leading-[1.19] text-gray-400" title={playlist.description}>
+        <p
+          class="line-clamp-5 whitespace-pre-wrap leading-[1.19] text-gray-400"
+          title={playlist.description}
+        >
           {playlist.description}
-        </h1>
+        </p>
       {/if}
     </div>
 
