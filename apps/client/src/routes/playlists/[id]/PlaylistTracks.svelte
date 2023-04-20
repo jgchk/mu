@@ -47,7 +47,6 @@
       },
       {
         onError: () => {
-          console.log('c', hasDuplicates(e.detail.items.map((track) => track.id)))
           tracks = previousTracks
         },
       }

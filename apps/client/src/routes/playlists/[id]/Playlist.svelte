@@ -12,7 +12,6 @@
   import PlaylistTracks from './PlaylistTracks.svelte'
 
   export let playlist: RouterOutput['playlists']['getWithTracks']
-  $: console.log('playlist tracks', playlist.tracks)
 
   const dialogs = getContextDialogs()
 
