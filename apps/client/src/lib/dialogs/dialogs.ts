@@ -5,6 +5,7 @@ import { writable } from 'svelte/store'
 import type { AreAllPropsOptional } from 'utils'
 
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
+import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
 
 export type AllDialogs = {
   'new-playlist': {
@@ -15,9 +16,7 @@ export type AllDialogs = {
     playlistId: number
     trackId: number
   }
-  'edit-playlist': {
-    playlistId: number
-  }
+  'edit-playlist': ComponentProps<EditPlaylistDialog>
   'edit-artist': ComponentProps<EditArtistDialog>
 }
 

@@ -123,12 +123,7 @@
     </div>
 
     <svelte:fragment slot="buttons">
-      <Button
-        type="submit"
-        on:click={close}
-        loading={$editArtistMutation.isLoading}
-        disabled={!data}>Save</Button
-      >
+      <Button type="submit" on:click={close} loading={$editArtistMutation.isLoading}>Save</Button>
       <Button kind="outline" on:click={close}>Cancel</Button>
     </svelte:fragment>
   </Dialog>

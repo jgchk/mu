@@ -66,7 +66,7 @@
     <Button
       kind="outline"
       class="absolute right-0 top-0"
-      on:click={() => dialogs.open('edit-playlist', { playlistId: playlist.id })}
+      on:click={() => dialogs.open('edit-playlist', { playlist })}
     >
       Edit
     </Button>

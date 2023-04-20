@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { ifDefined } from 'utils'
+  import { ifNotNullOrUndefined } from 'utils'
   import { blobToBase64 } from 'utils/browser'
 
   import Button from '$lib/atoms/Button.svelte'
@@ -12,60 +12,41 @@
   import TextArea from '$lib/atoms/TextArea.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
-  import { createEditPlaylistMutation, createPlaylistQuery } from '$lib/services/playlists'
+  import { createEditPlaylistMutation } from '$lib/services/playlists'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   import CoverArt from './CoverArt.svelte'
 
-  export let playlistId: number
+  export let playlist: {
+    id: number
+    name: string
+    description: string | null
+    imageId: number | null
+  }
 
   const trpc = getContextClient()
   const toast = getContextToast()
 
-  const playlistQuery = createPlaylistQuery(trpc, playlistId)
-
-  let data:
-    | {
-        name: string
-        description: string | undefined
-        art: Blob | undefined
-      }
-    | undefined = undefined
-  $: {
-    if ($playlistQuery.data && !data) {
-      const playlist = $playlistQuery.data
-      data = {
-        name: playlist.name,
-        description: playlist.description ?? undefined,
-        art: undefined,
-      }
-
-      if (playlist.imageId !== null) {
-        void fetch(makeImageUrl(playlist.imageId))
-          .then((res) => res.blob())
-          .then((blob) => {
-            if (data) {
-              data.art = blob
-            }
-          })
-      }
-    }
+  let data: {
+    name: string
+    description: string | undefined
+    art: Blob | null | undefined
+  } = {
+    name: playlist.name,
+    description: playlist.description ?? undefined,
+    art: playlist.imageId === null ? null : undefined,
   }
 
   const editPlaylistMutation = createEditPlaylistMutation(trpc)
   const handleEditPlaylist = async () => {
     if ($editPlaylistMutation.isLoading) return
-    if (!data) {
-      toast.error('Playlist data is not loaded yet')
-      return
-    }
 
     $editPlaylistMutation.mutate(
       {
-        id: playlistId,
+        id: playlist.id,
         data: { name: data.name || 'Untitled Playlist', description: data.description || null },
-        art: await ifDefined(data.art, blobToBase64),
+        art: await ifNotNullOrUndefined(data.art, blobToBase64),
       },
       {
         onSuccess: (data) => {
@@ -84,66 +65,65 @@
   <Dialog title="Edit details" class="max-w-lg" on:close={close}>
     <div class="flex items-center gap-3">
       <div class="h-44 w-44">
-        {#if data}
-          {#if data.art}
-            <button
-              type="button"
-              class="relative h-full w-full shadow"
-              on:click={() => {
-                if (data) {
-                  data.art = undefined
-                }
-              }}
-            >
-              <CoverArt src={URL.createObjectURL(data.art)} alt="Album Art">
-                <DeleteIcon />
-              </CoverArt>
-            </button>
-          {:else}
-            <FileDrop
-              class="h-full w-full text-xs"
-              on:drop={(e) => {
-                if (data) {
-                  data.art = e.detail.at(0)
-                }
-              }}
-            />
-          {/if}
+        {#if data.art === undefined && playlist.imageId}
+          <button
+            type="button"
+            class="relative h-full w-full shadow"
+            on:click={() => {
+              if (data) {
+                data.art = null
+              }
+            }}
+          >
+            <CoverArt src={makeImageUrl(playlist.imageId, { size: 512 })} alt="Album Art">
+              <DeleteIcon />
+            </CoverArt>
+          </button>
+        {:else if data.art}
+          <button
+            type="button"
+            class="relative h-full w-full shadow"
+            on:click={() => {
+              if (data) {
+                data.art = undefined
+              }
+            }}
+          >
+            <CoverArt src={URL.createObjectURL(data.art)} alt="Album Art">
+              <DeleteIcon />
+            </CoverArt>
+          </button>
+        {:else}
+          <FileDrop
+            class="h-full w-full text-xs"
+            on:drop={(e) => {
+              if (data) {
+                data.art = e.detail.at(0) ?? null
+              }
+            }}
+          />
         {/if}
       </div>
       <div class="flex-1 space-y-2">
         <InputGroup>
           <Label for="playlist-edit-name">Name</Label>
-          {#if data}
-            <Input id="playlist-edit-name" class="w-full" bind:value={data.name} autofocus />
-          {:else}
-            <Input id="playlist-edit-name" class="skeleton w-full" disabled />
-          {/if}
+          <Input id="playlist-edit-name" class="w-full" bind:value={data.name} autofocus />
         </InputGroup>
         <InputGroup>
           <Label for="playlist-edit-description">Description</Label>
-          {#if data}
-            <TextArea
-              id="playlist-edit-description"
-              class="w-full"
-              bind:value={data.description}
-              rows={3}
-              placeholder="Optional"
-            />
-          {:else}
-            <TextArea id="playlist-edit-description" class="skeleton w-full" disabled />
-          {/if}
+          <TextArea
+            id="playlist-edit-description"
+            class="w-full"
+            bind:value={data.description}
+            rows={3}
+            placeholder="Optional"
+          />
         </InputGroup>
       </div>
     </div>
 
     <svelte:fragment slot="buttons">
-      <Button
-        type="submit"
-        on:click={close}
-        loading={$editPlaylistMutation.isLoading}
-        disabled={!data}>Save</Button
-      >
+      <Button type="submit" on:click={close} loading={$editPlaylistMutation.isLoading}>Save</Button>
       <Button kind="outline" on:click={close}>Cancel</Button>
     </svelte:fragment>
   </Dialog>
