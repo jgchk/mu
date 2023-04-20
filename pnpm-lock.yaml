@@ -221,14 +221,14 @@ importers:
   packages/db:
     dependencies:
       '@types/better-sqlite3':
-        specifier: ^7.6.3
-        version: 7.6.3
+        specifier: ^7.6.4
+        version: 7.6.4
       better-sqlite3:
-        specifier: ^8.2.0
-        version: 8.2.0
+        specifier: ^8.3.0
+        version: 8.3.0
       drizzle-orm:
-        specifier: ^0.23.11
-        version: 0.23.11(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0)
+        specifier: ^0.24.4
+        version: 0.24.4(@types/better-sqlite3@7.6.4)(better-sqlite3@8.3.0)
       soundcloud:
         specifier: workspace:*
         version: link:../soundcloud
@@ -243,11 +243,11 @@ importers:
         version: link:../utils
     devDependencies:
       dotenv-cli:
-        specifier: ^7.1.0
-        version: 7.1.0
+        specifier: ^7.2.1
+        version: 7.2.1
       drizzle-kit:
-        specifier: ^0.17.4
-        version: 0.17.4
+        specifier: ^0.17.5
+        version: 0.17.5
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
@@ -1172,10 +1172,10 @@ packages:
     resolution: {integrity: sha512-pbrdgw2mO8lWygyZjGLbOq/EoWFWEJvLaxp8JmGsivMIh/IZR5mksPJdywAGQ4TBrbcqssKhuoJ/8OE9mhaveg==}
     dev: false
 
-  /@types/better-sqlite3@7.6.3:
-    resolution: {integrity: sha512-YS64N9SNDT/NAvou3QNdzAu3E2om/W/0dhORimtPGLef+zSK5l1vDzfsWb4xgXOgfhtOI5ZDTRxnvRPb22AIVQ==}
+  /@types/better-sqlite3@7.6.4:
+    resolution: {integrity: sha512-dzrRZCYPXIXfSR1/surNbJ/grU3scTaygS0OMzjlGf71i9sc2fGyHPXXiXmEvNIoE0cGwsanEFMVJxPXmco9Eg==}
     dependencies:
-      '@types/node': 18.15.11
+      '@types/node': 18.15.12
     dev: false
 
   /@types/body-parser@1.19.2:
@@ -1251,6 +1251,10 @@ packages:
 
   /@types/node@18.15.11:
     resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
+
+  /@types/node@18.15.12:
+    resolution: {integrity: sha512-Wha1UwsB3CYdqUm2PPzh/1gujGCNtWVUYF0mB00fJFoR4gTyWTDPjSm+zBF787Ahw8vSGgBja90MkgFwvB86Dg==}
+    dev: false
 
   /@types/pug@2.0.6:
     resolution: {integrity: sha512-SnHmG9wN1UVmagJOnyo/qkk0Z7gejYxOYYmaAwr5u2yFYfsupN3sg10kyzN8Hep/2zbHxCnsumxOoRIRMBwKCg==}
@@ -1579,14 +1583,6 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: false
-
-  /better-sqlite3@8.2.0:
-    resolution: {integrity: sha512-8eTzxGk9535SB3oSNu0tQ6I4ZffjVCBUjKHN9QeeIFtphBX0sEd0NxAuglBNR9TO5ThnxBB7GqzfcYo9kjadJQ==}
-    requiresBuild: true
-    dependencies:
-      bindings: 1.5.0
-      prebuild-install: 7.1.1
     dev: false
 
   /better-sqlite3@8.3.0:
@@ -2133,16 +2129,6 @@ packages:
     resolution: {integrity: sha512-6QvTW9mrGeIegrFXdtQi9pk7O/nSK6lSdXW2eqUspN5LWD7UTji2Fqw5V2YLjBpHEoU9Xl/eUWNpDeZvoyOv2w==}
     dev: false
 
-  /dotenv-cli@7.1.0:
-    resolution: {integrity: sha512-motytjZFQB3ZtGTIN4c0vnFgv4kuNZ2WxVnGY6PVFiygCzkm3IFBBguDUzezd9HgNA0OYYd6vNCWlozs0Q1Zxg==}
-    hasBin: true
-    dependencies:
-      cross-spawn: 7.0.3
-      dotenv: 16.0.3
-      dotenv-expand: 10.0.0
-      minimist: 1.2.8
-    dev: true
-
   /dotenv-cli@7.2.1:
     resolution: {integrity: sha512-ODHbGTskqRtXAzZapDPvgNuDVQApu4oKX8lZW7Y0+9hKA6le1ZJlyRS687oU9FXjOVEDU/VFV6zI125HzhM1UQ==}
     hasBin: true
@@ -2151,7 +2137,6 @@ packages:
       dotenv: 16.0.3
       dotenv-expand: 10.0.0
       minimist: 1.2.8
-    dev: false
 
   /dotenv-expand@10.0.0:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
@@ -2168,8 +2153,8 @@ packages:
       wordwrap: 1.0.0
     dev: true
 
-  /drizzle-kit@0.17.4:
-    resolution: {integrity: sha512-9OuHsZBxS1IkWnF9vFeTWR5XH9UCv4SclfPaFt7he8TPVzDka5vpGmhNh9Oaj+OZg6Pf4PSV2Yt8X3c44ayHVA==}
+  /drizzle-kit@0.17.5:
+    resolution: {integrity: sha512-oS4qG3d4m7RUHqdhPZSjYh6QSarxbHKyalBeW1cBpJp2F5DB5xvEan6qfaKdasYkI10DNdPuvXcZOR31tiRIGA==}
     hasBin: true
     dependencies:
       camelcase: 7.0.1
@@ -2185,8 +2170,8 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.23.11(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0):
-    resolution: {integrity: sha512-uqebUff9QeDo0ZI+s5XurmHjFNDuQMbnNObWIClzotU+iI0RfA1RSEXbK3lSp1FNp/HeUy23yIv8lkYzU9278A==}
+  /drizzle-orm@0.24.4(@types/better-sqlite3@7.6.4)(better-sqlite3@8.3.0):
+    resolution: {integrity: sha512-mQzuqEHqc2NGN20ACc0NAaFaHlQlTZquoK42xJ8TRSntzAVz4iSDksozVJKBXig+qKgZA9C7KpWCDRo9+NMgng==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -2241,8 +2226,8 @@ packages:
       sqlite3:
         optional: true
     dependencies:
-      '@types/better-sqlite3': 7.6.3
-      better-sqlite3: 8.2.0
+      '@types/better-sqlite3': 7.6.4
+      better-sqlite3: 8.3.0
     dev: false
 
   /ee-first@1.1.1:
