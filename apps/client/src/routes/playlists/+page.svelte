@@ -5,20 +5,12 @@
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { createPlaylistsQuery } from '$lib/services/playlists'
-  import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
   const playlistsQuery = createPlaylistsQuery(trpc)
 
   const dialogs = getContextDialogs()
-
-  function makePlaylistCollageUrl(playlist: RouterOutput['playlists']['getAll'][number]) {
-    if (playlist.collageImageIds.length === 0) {
-      return undefined
-    }
-    return makeCollageUrl(playlist.collageImageIds, { size: 512 })
-  }
 </script>
 
 <div class="h-full gap-2 overflow-auto p-1">
@@ -34,7 +26,7 @@
             <CoverArt
               src={playlist.imageId !== null
                 ? makeImageUrl(playlist.imageId, { size: 512 })
-                : makePlaylistCollageUrl(playlist)}
+                : makeCollageUrl(playlist.imageIds, { size: 512 })}
             />
           </a>
           <a

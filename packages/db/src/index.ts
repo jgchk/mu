@@ -557,10 +557,8 @@ export class Database {
         .all()
         .map((playlist) => {
           const tracks = this.playlistTracks.getByPlaylistId(playlist.id)
-          const collageImageIds = uniq(
-            tracks.map((row) => row.track.imageId).filter(isNotNull)
-          ).slice(0, 4)
-          return { ...playlist, collageImageIds }
+          const imageIds = uniq(tracks.map((row) => row.track.imageId).filter(isNotNull))
+          return { ...playlist, imageIds }
         })
     },
 

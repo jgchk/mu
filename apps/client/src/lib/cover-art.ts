@@ -1,3 +1,5 @@
+import { uniq } from 'utils'
+
 export type CoverArtOptions = {
   width?: number
   height?: number
@@ -37,6 +39,8 @@ export type CollageOptions =
     }
 
 export const makeCollageUrl = (images: number[], opts: CollageOptions) => {
+  if (images.length === 0) return
+
   const pathname = `/api/images/collage`
 
   const searchParams = new URLSearchParams()
@@ -48,7 +52,7 @@ export const makeCollageUrl = (images: number[], opts: CollageOptions) => {
     searchParams.append('height', opts.height.toString())
   }
 
-  for (const image of images.slice(0, 4)) {
+  for (const image of uniq(images).slice(0, 4)) {
     searchParams.append('images', image.toString())
   }
 

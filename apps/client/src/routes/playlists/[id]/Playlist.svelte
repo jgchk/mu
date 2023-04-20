@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isNotNull, uniq } from 'utils'
+  import { isNotNull } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
@@ -25,13 +25,7 @@
 
   function makePlaylistCollageUrl() {
     const imageIds = playlist.tracks.map((t) => t.track.imageId).filter(isNotNull)
-    if (imageIds.length === 0) {
-      return undefined
-    }
-
-    const uniqueImageIds = uniq(imageIds)
-
-    return makeCollageUrl(uniqueImageIds, { size: 512 })
+    return makeCollageUrl(imageIds, { size: 512 })
   }
 </script>
 
@@ -57,7 +51,7 @@
 
     <div class="space-y-1 pb-2">
       <h1
-        class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]"
+        class="line-clamp-2 mr-11 break-all text-6xl font-bold leading-[1.19]"
         title={playlist.name}
       >
         {playlist.name}

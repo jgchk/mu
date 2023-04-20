@@ -59,3 +59,13 @@ export const equalOrderless = <T>(a: T[], b: T[]): boolean => {
   }
   return true
 }
+
+export const withoutRuns = <T>(array: T[]): T[] => {
+  const result = []
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] !== array[i + 1]) {
+      result.push(array[i])
+    }
+  }
+  return result
+}
