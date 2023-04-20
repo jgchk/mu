@@ -15,15 +15,15 @@
     "db:remigrate": "cd packages/db && pnpm db:remigrate"
   },
   "devDependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "^8.38.0",
     "eslint-config-custom": "workspace:*",
     "prettier": "^2.8.7",
     "prettier-plugin-svelte": "^2.10.0",
-    "prettier-plugin-tailwindcss": "^0.2.5",
+    "prettier-plugin-tailwindcss": "^0.2.7",
     "turbo": "1.6.3"
   },
   "packageManager": "pnpm@8.0.0",
   "dependencies": {
-    "dotenv-cli": "^7.1.0"
+    "dotenv-cli": "^7.2.1"
   }
 }
