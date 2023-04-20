@@ -11,7 +11,7 @@
     "format": "prettier --write --ignore-path=../../.prettierignore . && cd downloader && cargo fmt"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
+    "@types/node": "^18.15.12",
     "chokidar-cli": "^3.0.0"
   },
   "dependencies": {

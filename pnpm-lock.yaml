@@ -381,8 +381,8 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.11
-        version: 18.15.11
+        specifier: ^18.15.12
+        version: 18.15.12
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
