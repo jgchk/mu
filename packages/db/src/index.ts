@@ -1091,7 +1091,7 @@ export class Database {
         .where(eq(images.id, id))
         .innerJoin(tracks, eq(images.id, tracks.imageId))
         .innerJoin(playlists, eq(images.id, playlists.imageId))
-        .innerJoin(tracks, eq(images.id, artists.imageId))
+        .innerJoin(artists, eq(images.id, artists.imageId))
         .all().length
     },
 
