@@ -74,7 +74,11 @@
 
   <div class="relative flex flex-col rounded-r-lg border border-l-0 border-gray-700 bg-gray-800">
     <div class="px-3 py-2">
-      {item.msg}
+      {#if typeof item.msg === 'string'}
+        {item.msg}
+      {:else}
+        <svelte:component this={item.msg} {...item.props} toast={item} />
+      {/if}
     </div>
 
     {#if duration !== Infinity}
