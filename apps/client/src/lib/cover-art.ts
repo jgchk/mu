@@ -40,6 +40,7 @@ export type CollageOptions =
 
 export const makeCollageUrl = (images: number[], opts: CollageOptions) => {
   if (images.length === 0) return
+  if (images.length === 1) return makeImageUrl(images[0], opts)
 
   const pathname = `/api/images/collage`
 

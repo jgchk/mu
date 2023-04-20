@@ -314,17 +314,22 @@ export class Database {
       return { ...release, artists }
     },
 
-    getByArtistWithArtists: (artistId: ReleaseArtist['artistId']) => {
-      const releases_ = this.db
+    getByArtist: (artistId: ReleaseArtist['artistId']) => {
+      return this.db
         .select()
         .from(releases)
         .innerJoin(releaseArtists, eq(releases.id, releaseArtists.releaseId))
         .where(eq(releaseArtists.artistId, artistId))
         .orderBy(releases.title)
         .all()
+        .map((row) => row.releases)
+    },
+
+    getByArtistWithArtists: (artistId: ReleaseArtist['artistId']) => {
+      const releases_ = this.releases.getByArtist(artistId)
       return releases_.map((row) => {
-        const artists = this.artists.getByReleaseId(row.releases.id)
-        return { ...row.releases, artists }
+        const artists = this.artists.getByReleaseId(row.id)
+        return { ...row, artists }
       })
     },
 
@@ -403,6 +408,17 @@ export class Database {
 
     getBySimilarTitle: (title: NonNullable<Track['title']>) => {
       return this.preparedQueries.getTracksBySimilarTitle.all({ title: `%${title.toLowerCase()}%` })
+    },
+
+    getByArtist: (artistId: Artist['id']) => {
+      return this.db
+        .select()
+        .from(tracks)
+        .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
+        .where(eq(trackArtists.artistId, artistId))
+        .orderBy(tracks.title)
+        .all()
+        .map((track) => convertTrack(track.tracks))
     },
 
     getByArtistAndSimilarTitle: (artistId: Artist['id'], title: NonNullable<Track['title']>) => {
