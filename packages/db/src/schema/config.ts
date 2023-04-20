@@ -44,7 +44,6 @@ export const defaultConfig: Omit<Config, 'id'> = {
 
 export type ConfigMixin = {
   config: {
-    insert: (config: InsertConfig) => Config
     get: () => Omit<Config, 'id'>
     update: (data: UpdateData<InsertConfig>) => Config
   }
@@ -55,10 +54,6 @@ export const ConfigMixin = <TBase extends Constructor<DatabaseBase>>(
 ): Constructor<ConfigMixin> & TBase =>
   class extends Base implements ConfigMixin {
     config: ConfigMixin['config'] = {
-      insert: (config) => {
-        return this.db.insert(configs).values(config).returning().get()
-      },
-
       get: () => {
         return this.db.select().from(configs).limit(1).all().at(0) ?? defaultConfig
       },
