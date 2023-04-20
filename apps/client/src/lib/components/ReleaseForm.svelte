@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
+  import { flip } from 'svelte/animate'
   import type { DndEvent } from 'svelte-dnd-action'
   import { superForm } from 'sveltekit-superforms/client'
   import { base64ToBlob } from 'utils/browser'
@@ -181,7 +182,10 @@
       on:finalize={handleReorderTracks}
     >
       {#each $form.tracks as track, i (track.id)}
-        <div class="flex items-center rounded bg-gray-900 p-4 pl-0">
+        <div
+          class="flex items-center rounded bg-gray-900 p-4 pl-0"
+          animate:flip={{ duration: dnd.defaults.flipDurationMs }}
+        >
           <div class="center w-12 text-gray-500">{track.track ?? ''}</div>
           <div class="flex-1 space-y-1">
             <Input

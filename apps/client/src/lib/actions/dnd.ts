@@ -1,5 +1,6 @@
 import type { Options } from 'svelte-dnd-action'
 import { dndzone } from 'svelte-dnd-action'
+import { withProps } from 'utils'
 
 import type { Action } from './types'
 
@@ -9,19 +10,23 @@ export type DndOptions = Omit<Options, 'dropTargetClasses'> & {
 
 const makeOptions = ({ dropTargetClass, ...options }: DndOptions): Options => ({
   ...options,
-  dropTargetStyle: options.dropTargetStyle ?? {},
-  dropTargetClasses: dropTargetClass?.split(' ') ?? [
-    'rounded',
-    'outline',
-    'outline-1',
-    'outline-primary-500',
-  ],
+  dropTargetStyle: options.dropTargetStyle ?? dnd.defaults.dropTargetStyle,
+  dropTargetClasses: (dropTargetClass ?? dnd.defaults.dropTargetClass).split(' '),
+  flipDurationMs: options.flipDurationMs ?? dnd.defaults.flipDurationMs,
 })
 
-export const dnd: Action<DndOptions> = (node, options) => {
+const dndBase: Action<DndOptions> = (node, options) => {
   const action = dndzone(node, makeOptions(options))
   return {
     ...action,
     update: (options) => action.update(makeOptions(options)),
   }
 }
+
+export const dnd = withProps(dndBase, {
+  defaults: {
+    dropTargetStyle: {},
+    dropTargetClass: 'rounded outline outline-1 outline-primary-500',
+    flipDurationMs: 200,
+  },
+} as const)

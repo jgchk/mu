@@ -32,3 +32,30 @@ export const uniq = <T>(array: T[]): T[] => {
     return true
   })
 }
+
+export const hasDuplicates = <T>(array: T[]): boolean => {
+  const seen = new Set<T>()
+  for (const item of array) {
+    if (seen.has(item)) {
+      return true
+    }
+    seen.add(item)
+  }
+  return false
+}
+
+export const equalOrderless = <T>(a: T[], b: T[]): boolean => {
+  if (a.length !== b.length) {
+    return false
+  }
+  const seen = new Set<T>()
+  for (const item of a) {
+    seen.add(item)
+  }
+  for (const item of b) {
+    if (!seen.has(item)) {
+      return false
+    }
+  }
+  return true
+}
