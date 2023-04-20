@@ -508,18 +508,21 @@ export class Database {
       return { ...track, artists }
     },
 
-    getByArtistWithArtists: (artistId: Artist['id']) => {
+    getByArtistWithArtistsAndRelease: (artistId: Artist['id']) => {
       const tracks_ = this.db
         .select()
         .from(tracks)
         .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
         .where(eq(trackArtists.artistId, artistId))
+        .leftJoin(releases, eq(tracks.releaseId, releases.id))
         .orderBy(tracks.title)
         .all()
-      return tracks_.map((row) => {
-        const artists = this.artists.getByTrackId(row.tracks.id)
-        return { ...convertTrack(row.tracks), artists }
-      })
+
+      return tracks_.map((row) => ({
+        ...convertTrack(row.tracks),
+        release: row.releases,
+        artists: this.artists.getByTrackId(row.tracks.id),
+      }))
     },
 
     delete: (id: Track['id']) => {

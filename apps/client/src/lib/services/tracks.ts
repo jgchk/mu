@@ -30,6 +30,7 @@ export const createFavoriteTrackMutation = (
     >
     getReleaseWithTracksAndArtistsQuery?: RouterInput['releases']['getWithTracksAndArtists']
     getPlaylistQuery?: RouterInput['playlists']['getWithTracks']
+    getFullArtistQuery?: RouterInput['artists']['getFull']
   }
 ) =>
   trpc.tracks.favorite.mutation({
@@ -41,6 +42,7 @@ export const createFavoriteTrackMutation = (
         >
         getReleaseWithTracksAndArtistsQuery?: RouterOutput['releases']['getWithTracksAndArtists']
         getPlaylistQuery?: RouterOutput['playlists']['getWithTracks']
+        getFullArtistQuery?: RouterOutput['artists']['getFull']
       } = {}
 
       if (optimistic?.getTrackByIdQuery) {
@@ -125,6 +127,25 @@ export const createFavoriteTrackMutation = (
         )
       }
 
+      if (optimistic?.getFullArtistQuery) {
+        await trpc.artists.getFull.utils.cancel(optimistic.getFullArtistQuery)
+
+        output.getFullArtistQuery = trpc.artists.getFull.utils.getData(
+          optimistic.getFullArtistQuery
+        )
+
+        trpc.artists.getFull.utils.setData(optimistic.getFullArtistQuery, (old) =>
+          old
+            ? {
+                ...old,
+                tracks: old.tracks.map((track) =>
+                  track.id === input.id ? { ...track, favorite: input.favorite } : track
+                ),
+              }
+            : old
+        )
+      }
+
       return output
     },
     onError: (err, input, context) => {
@@ -152,6 +173,13 @@ export const createFavoriteTrackMutation = (
           context?.getPlaylistQuery
         )
       }
+
+      if (optimistic?.getFullArtistQuery) {
+        trpc.artists.getFull.utils.setData(
+          optimistic.getFullArtistQuery,
+          context?.getFullArtistQuery
+        )
+      }
     },
     onSuccess: async () => {
       await Promise.all([
@@ -163,6 +191,7 @@ export const createFavoriteTrackMutation = (
           optimistic?.getReleaseWithTracksAndArtistsQuery
         ),
         trpc.playlists.getWithTracks.utils.invalidate(optimistic?.getPlaylistQuery),
+        trpc.artists.getFull.utils.invalidate(optimistic?.getFullArtistQuery),
       ])
     },
   })

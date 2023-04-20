@@ -15,7 +15,7 @@ export const artistsRouter = router({
         ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
         null,
     }))
-    const tracks = ctx.db.tracks.getByArtistWithArtists(artist.id)
+    const tracks = ctx.db.tracks.getByArtistWithArtistsAndRelease(artist.id)
     return {
       ...artist,
       releases,
