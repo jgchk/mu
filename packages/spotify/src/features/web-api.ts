@@ -1,4 +1,5 @@
 import got, { HTTPError } from 'got'
+import type { Constructor } from 'utils'
 import { isObject } from 'utils'
 import { z } from 'zod'
 
@@ -12,7 +13,6 @@ import {
   SimplifiedTrack,
 } from '../model'
 import type { SpotifyBase } from './base'
-import type { Constructor } from './types'
 
 export type WebApiFeature = WebApiEnabled | WebApiDisabled
 export type WebApiEnabled = {

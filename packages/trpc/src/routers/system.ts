@@ -13,7 +13,7 @@ import { publicProcedure, router } from '../trpc'
 
 export const systemRouter = router({
   status: publicProcedure.query(({ ctx }) => formatStatus(ctx)),
-  config: publicProcedure.query(({ ctx }) => ctx.db.configs.get()),
+  config: publicProcedure.query(({ ctx }) => ctx.db.config.get()),
   updateConfig: publicProcedure
     .input(
       z.object({
@@ -32,7 +32,7 @@ export const systemRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const updated = ctx.db.configs.update(input)
+      const updated = ctx.db.config.update(input)
 
       if (
         input.lastFmKey !== undefined ||

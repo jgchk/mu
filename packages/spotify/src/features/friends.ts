@@ -1,8 +1,8 @@
 import got from 'got'
+import type { Constructor } from 'utils'
 
 import { FriendActivity, WebTokenResponse } from '../model'
 import type { SpotifyBase } from './base'
-import type { Constructor } from './types'
 
 export type FriendActivityFeature = FriendActivityEnabled | FriendActivityDisabled
 export type FriendActivityEnabled = {

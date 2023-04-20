@@ -1,17 +1,12 @@
-import SqliteDatabase from 'better-sqlite3'
 import { placeholder, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { and, desc, eq, isNull } from 'drizzle-orm/expressions'
-import { isNotNull, uniq } from 'utils'
+import { isNotNull, pipe, uniq } from 'utils'
 
-import { migrate } from './migrate'
 import type {
   Artist,
-  Config,
   Image,
   InsertArtist,
-  InsertConfig,
   InsertImage,
   InsertPlaylist,
   InsertPlaylistTrack,
@@ -39,7 +34,7 @@ import type {
 } from './schema'
 import {
   artists,
-  configs,
+  ConfigMixin,
   images,
   playlists,
   playlistTracks,
@@ -54,6 +49,7 @@ import {
   trackArtists,
   tracks,
 } from './schema'
+import { DatabaseBase } from './schema/base'
 import type { AutoCreatedAt, InsertTrackPretty, UpdateData } from './utils'
 import { convertInsertTrack, convertTrack, withCreatedAt } from './utils'
 
@@ -84,91 +80,16 @@ const makePreparedQueries = (db: BetterSQLite3Database) =>
       .prepare(),
   } as const)
 
-export class Database {
-  private sqlite: SqliteDatabase.Database
-  private db: BetterSQLite3Database
+class DatabaseOriginal extends DatabaseBase {
   private preparedQueries: ReturnType<typeof makePreparedQueries>
 
   constructor(url: string) {
-    this.sqlite = new SqliteDatabase(url)
-    this.db = drizzle(this.sqlite)
-    migrate(this.db)
-
+    super(url)
     this.preparedQueries = makePreparedQueries(this.db)
   }
 
   close() {
     this.sqlite.close()
-  }
-
-  configs = {
-    insert: (config: InsertConfig) => {
-      return this.db.insert(configs).values(config).returning().get()
-    },
-
-    get: () => {
-      return this.db.select().from(configs).limit(1).all().at(0) ?? this.configs.default
-    },
-
-    update: (data: UpdateData<InsertConfig>) => {
-      const config = this.configs.get()
-      if ('id' in config) {
-        const update = {
-          ...(data.lastFmKey !== undefined ? { lastFmKey: data.lastFmKey } : {}),
-          ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
-          ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
-          ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
-          ...(data.soulseekUsername !== undefined
-            ? { soulseekUsername: data.soulseekUsername }
-            : {}),
-          ...(data.soulseekPassword !== undefined
-            ? { soulseekPassword: data.soulseekPassword }
-            : {}),
-          ...(data.spotifyClientId !== undefined ? { spotifyClientId: data.spotifyClientId } : {}),
-          ...(data.spotifyClientSecret !== undefined
-            ? { spotifyClientSecret: data.spotifyClientSecret }
-            : {}),
-          ...(data.spotifyUsername !== undefined ? { spotifyUsername: data.spotifyUsername } : {}),
-          ...(data.spotifyPassword !== undefined ? { spotifyPassword: data.spotifyPassword } : {}),
-          ...(data.spotifyDcCookie !== undefined ? { spotifyDcCookie: data.spotifyDcCookie } : {}),
-          ...(data.soundcloudAuthToken !== undefined
-            ? { soundcloudAuthToken: data.soundcloudAuthToken }
-            : {}),
-        }
-        return this.db.update(configs).set(update).returning().get()
-      } else {
-        const insert: InsertConfig = {
-          lastFmKey: data.lastFmKey ?? this.configs.default.lastFmKey,
-          lastFmSecret: data.lastFmSecret ?? this.configs.default.lastFmSecret,
-          lastFmUsername: data.lastFmUsername ?? this.configs.default.lastFmUsername,
-          lastFmPassword: data.lastFmPassword ?? this.configs.default.lastFmPassword,
-          soulseekUsername: data.soulseekUsername ?? this.configs.default.soulseekUsername,
-          soulseekPassword: data.soulseekPassword ?? this.configs.default.soulseekPassword,
-          spotifyClientId: data.spotifyClientId ?? this.configs.default.spotifyClientId,
-          spotifyClientSecret: data.spotifyClientSecret ?? this.configs.default.spotifyClientSecret,
-          spotifyUsername: data.spotifyUsername ?? this.configs.default.spotifyUsername,
-          spotifyPassword: data.spotifyPassword ?? this.configs.default.spotifyPassword,
-          spotifyDcCookie: data.spotifyDcCookie ?? this.configs.default.spotifyDcCookie,
-          soundcloudAuthToken: data.soundcloudAuthToken ?? this.configs.default.soundcloudAuthToken,
-        }
-        return this.db.insert(configs).values(insert).returning().get()
-      }
-    },
-
-    default: {
-      lastFmKey: null,
-      lastFmSecret: null,
-      lastFmUsername: null,
-      lastFmPassword: null,
-      soulseekUsername: null,
-      soulseekPassword: null,
-      spotifyClientId: null,
-      spotifyClientSecret: null,
-      spotifyUsername: null,
-      spotifyPassword: null,
-      spotifyDcCookie: null,
-      soundcloudAuthToken: null,
-    } satisfies Omit<Config, 'id'>,
   }
 
   artists = {
@@ -1108,3 +1029,10 @@ export class Database {
     },
   }
 }
+
+export function Database(url: string) {
+  const Database = pipe(DatabaseOriginal, ConfigMixin)
+  return new Database(url)
+}
+
+export type Database = ReturnType<typeof Database>

@@ -25,8 +25,8 @@ const spotifyStopped: ContextSpotify = {
 }
 
 const setConfigFromEnv = (db: Database) => {
-  const config = db.configs.get()
-  db.configs.update({
+  const config = db.config.get()
+  db.config.update({
     soundcloudAuthToken: config.soundcloudAuthToken ?? env.SOUNDCLOUD_AUTH_TOKEN,
     spotifyClientId: config.spotifyClientId ?? env.SPOTIFY_CLIENT_ID,
     spotifyClientSecret: config.spotifyClientSecret ?? env.SPOTIFY_CLIENT_SECRET,
@@ -50,7 +50,7 @@ export const makeContext = async (): Promise<Context> => {
   const updateLfm = async () => {
     context.lfm = { status: 'stopped' }
 
-    const config = db.configs.get()
+    const config = db.config.get()
 
     if (config.lastFmKey) {
       const lfm = await makeLastFm(
@@ -76,7 +76,7 @@ export const makeContext = async (): Promise<Context> => {
   const updateSoundcloud = async () => {
     context.sc = { status: 'stopped' }
 
-    const config = db.configs.get()
+    const config = db.config.get()
 
     if (config.soundcloudAuthToken) {
       context.sc = { status: 'starting' }
@@ -93,7 +93,7 @@ export const makeContext = async (): Promise<Context> => {
   const updateSpotify = async () => {
     context.sp = spotifyStopped
 
-    const config = db.configs.get()
+    const config = db.config.get()
 
     const opts: SpotifyOptions = {}
 
@@ -208,7 +208,7 @@ export const makeContext = async (): Promise<Context> => {
     startSoulseek: async () => {
       context.stopSoulseek()
 
-      const { soulseekUsername: username, soulseekPassword: password } = db.configs.get()
+      const { soulseekUsername: username, soulseekPassword: password } = db.config.get()
 
       if (!username) {
         if (!password) {

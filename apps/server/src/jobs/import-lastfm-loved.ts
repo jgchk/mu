@@ -7,7 +7,7 @@ import { makeDb } from '../context/db'
 import { makeLastFm } from '../context/lfm'
 
 const db = makeDb()
-const config = db.configs.get()
+const config = db.config.get()
 
 if (!config.lastFmKey) {
   throw new Error('Last.fm API key is not configured')

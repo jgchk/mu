@@ -2,9 +2,9 @@ import { execa } from 'execa'
 import path from 'path'
 import type { Readable } from 'stream'
 import { PassThrough, Transform } from 'stream'
+import type { Constructor } from 'utils'
 
 import type { SpotifyBase } from './base'
-import type { Constructor } from './types'
 
 export type DownloadsFeature = DownloadsEnabled | DownloadsDisabled
 export type DownloadsEnabled = {

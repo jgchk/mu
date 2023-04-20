@@ -72,3 +72,8 @@ export type AreAllPropsTrue<
   TypeIfTrue = true,
   TypeIfFalse = false
 > = AllPropertiesTrue<T> extends { [K in keyof T]: true } ? TypeIfTrue : TypeIfFalse
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<TResult = any, TParams extends any[] = any[]> = new (
+  ...params: TParams
+) => TResult
