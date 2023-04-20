@@ -36,8 +36,6 @@ COPY packages/spotify/package.json ./packages/spotify/
 COPY packages/spotify/pnpm-*.yaml ./packages/spotify/
 COPY packages/trpc/package.json ./packages/trpc/
 COPY packages/trpc/pnpm-*.yaml ./packages/trpc/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/ui/pnpm-*.yaml ./packages/ui/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/utils/pnpm-*.yaml ./packages/utils/
 RUN pnpm install
