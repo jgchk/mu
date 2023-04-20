@@ -1,16 +1,13 @@
 <script lang="ts">
-  import { formatMilliseconds } from 'utils'
-
   import LinkButton from '$lib/atoms/LinkButton.svelte'
-  import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import FavoriteButton from '$lib/components/FavoriteButton.svelte'
+  import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
-  import { getContextToast } from '$lib/toast/toast'
+  import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -24,21 +21,13 @@
     getReleaseWithTracksAndArtistsQuery: { id: data.id },
   })
 
-  const toast = getContextToast()
-  function makeQueueData(trackIndex: number) {
-    if (!$releaseQuery.data) {
-      toast.warning('Could not queue additional tracks')
-      return {
-        previousTracks: [],
-        nextTracks: [],
-      }
-    }
-
-    return {
-      previousTracks: $releaseQuery.data.tracks.slice(0, trackIndex).map((t) => t.id),
-      nextTracks: $releaseQuery.data.tracks.slice(trackIndex + 1).map((t) => t.id),
-    }
-  }
+  const makeQueueData = (
+    tracks: RouterOutput['releases']['getWithTracksAndArtists']['tracks'],
+    trackIndex: number
+  ) => ({
+    previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
+    nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
+  })
 </script>
 
 {#if $releaseQuery.data}
@@ -50,7 +39,7 @@
       <button
         type="button"
         disabled={tracks.length === 0}
-        on:click={() => playTrack(tracks[0].id, makeQueueData(0))}
+        on:click={() => playTrack(tracks[0].id, makeQueueData(tracks, 0))}
       >
         <div class="relative w-64 shrink-0">
           <CoverArt
@@ -88,48 +77,12 @@
       >
     </div>
 
-    <div>
-      {#each release.tracks as track, i (track.id)}
-        <div
-          class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-          on:dblclick={() => playTrack(track.id, makeQueueData(i))}
-        >
-          <div class="center w-8">
-            <div class="text-gray-400 group-hover:opacity-0">{track.trackNumber}</div>
-            <button
-              type="button"
-              class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-              on:click={() => playTrack(track.id, makeQueueData(i))}
-            >
-              <PlayIcon />
-            </button>
-          </div>
-          <div class="flex-1 truncate">
-            {track.title}
-            <ul class="comma-list text-sm text-gray-400">
-              {#each track.artists as artist (artist.id)}
-                <li class="flex">
-                  <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
-                    >{artist.name}</a
-                  >
-                </li>
-              {/each}
-            </ul>
-          </div>
-          <div class="text-sm text-gray-400">
-            {formatMilliseconds(track.duration)}
-          </div>
-          <div class="flex items-center gap-1">
-            <FavoriteButton
-              layer={700}
-              favorite={track.favorite}
-              on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
-            />
-            <AddToPlaylistButton trackId={track.id} layer={700} />
-          </div>
-        </div>
-      {/each}
-    </div>
+    <TrackList
+      {tracks}
+      on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+      on:favorite={(e) =>
+        $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
+    />
   </div>
 {:else if $releaseQuery.error}
   <div>{$releaseQuery.error.message}</div>
