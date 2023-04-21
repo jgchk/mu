@@ -2,7 +2,7 @@ import LinkToast from '$lib/components/LinkToast.svelte'
 import type { ToastStore } from '$lib/toast/toast'
 
 export const showSuccessToast = (toast: ToastStore, title: string | undefined) =>
-  toast.show(LinkToast, {
+  toast.success(LinkToast, {
     props: {
       message: [
         'Added ',
