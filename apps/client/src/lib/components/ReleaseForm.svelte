@@ -18,7 +18,7 @@
   import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
 
-  import type { PageServerData } from '../../routes/releases/[id]/edit/$types'
+  import type { PageServerData } from '../../routes/(library)/releases/[id]/edit/$types'
   import CoverArt from './CoverArt.svelte'
 
   export let formData: PageServerData['form']
