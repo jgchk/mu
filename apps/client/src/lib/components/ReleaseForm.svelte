@@ -5,7 +5,6 @@
   import { superForm } from 'sveltekit-superforms/client'
   import { base64ToBlob } from 'utils/browser'
 
-  import { dev } from '$app/environment'
   import { dnd } from '$lib/actions/dnd'
   import Button from '$lib/atoms/Button.svelte'
   import FileDrop from '$lib/atoms/FileDrop.svelte'
@@ -15,7 +14,6 @@
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
-  import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
 
   import type { PageServerData } from '../../routes/(library)/releases/[id]/edit/$types'
@@ -94,7 +92,7 @@
 </script>
 
 <div class="h-full overflow-auto">
-  <form class={cn('p-4', dev && 'mb-8')} method="POST" use:enhance>
+  <form class="p-4" method="POST" use:enhance>
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="flex gap-4">
       <div class="h-64 w-64">
@@ -257,13 +255,3 @@
     <Button type="submit" kind="solid" loading={$delayed} class="mt-4">Submit</Button>
   </form>
 </div>
-
-{#if dev}
-  {#await import('$lib/components/SuperformDebug.svelte')}
-    <div class="absolute bottom-0 left-0 flex w-full justify-center p-1 text-gray-400">
-      Loading Debug...
-    </div>
-  {:then Debug}
-    <Debug.default data={$form} />
-  {/await}
-{/if}
