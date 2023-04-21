@@ -12,6 +12,7 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
+  import Layout from '../+layout.svelte'
   import type { PageData } from './$types'
   import { makeTracksQueryInput } from './common'
 
@@ -42,8 +43,8 @@
   })
 </script>
 
-<div class="flex h-full gap-2">
-  <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
+<Layout>
+  <svelte:fragment slot="sidebar">
     <a
       href={data.favoritesOnly ? '/tracks' : '/tracks?favorites=true'}
       class={cn(
@@ -53,35 +54,34 @@
     >
       Favorites
     </a>
-  </div>
-  <div class="h-full flex-1 overflow-auto">
-    {#if $tracksQuery.data}
-      {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
-      <TrackList
-        {tracks}
-        class="p-4"
-        on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-        on:favorite={(e) =>
-          $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-      >
-        <svelte:fragment slot="footer">
-          {#if $tracksQuery.hasNextPage}
-            <div
-              class="m-1 flex justify-center"
-              use:inview
-              on:inview_change={(event) => (inView = event.detail.inView)}
-            >
-              <Button kind="outline" on:click={() => $tracksQuery.fetchNextPage()}>
-                {$tracksQuery.isFetchingNextPage ? 'Loading...' : 'Load More'}
-              </Button>
-            </div>
-          {/if}
-        </svelte:fragment>
-      </TrackList>
-    {:else if $tracksQuery.error}
-      <div>{$tracksQuery.error.message}</div>
-    {:else}
-      <div>Loading...</div>
-    {/if}
-  </div>
-</div>
+  </svelte:fragment>
+
+  {#if $tracksQuery.data}
+    {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
+    <TrackList
+      {tracks}
+      class="p-4"
+      on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+      on:favorite={(e) =>
+        $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
+    >
+      <svelte:fragment slot="footer">
+        {#if $tracksQuery.hasNextPage}
+          <div
+            class="m-1 flex justify-center"
+            use:inview
+            on:inview_change={(event) => (inView = event.detail.inView)}
+          >
+            <Button kind="outline" on:click={() => $tracksQuery.fetchNextPage()}>
+              {$tracksQuery.isFetchingNextPage ? 'Loading...' : 'Load More'}
+            </Button>
+          </div>
+        {/if}
+      </svelte:fragment>
+    </TrackList>
+  {:else if $tracksQuery.error}
+    <div>{$tracksQuery.error.message}</div>
+  {:else}
+    <div>Loading...</div>
+  {/if}
+</Layout>

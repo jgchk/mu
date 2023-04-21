@@ -1,8 +1,9 @@
 <script lang="ts">
-  import ServiceLink from '$lib/components/ServiceLink.svelte'
   import SoulseekIcon from '$lib/icons/SoulseekIcon.svelte'
   import SoundcloudIcon from '$lib/icons/SoundcloudIcon.svelte'
   import SpotifyIcon from '$lib/icons/SpotifyIcon.svelte'
+
+  import ServiceLink from './ServiceLink.svelte'
 </script>
 
 <div class="flex h-full gap-2">
