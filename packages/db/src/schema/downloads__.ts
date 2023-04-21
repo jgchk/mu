@@ -1,25 +1,9 @@
 import type { InferModel } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
-export type DownloadStatus = 'pending' | 'downloading' | 'done' | 'error'
+import { soulseekReleaseDownloads } from './downloads/soulseek-release-downloads'
 
-export type SoulseekReleaseDownload = InferModel<typeof soulseekReleaseDownloads>
-export type InsertSoulseekReleaseDownload = InferModel<typeof soulseekReleaseDownloads, 'insert'>
-export const soulseekReleaseDownloads = sqliteTable(
-  'soulseek_release_downloads',
-  {
-    id: integer('id').primaryKey(),
-    username: text('username').notNull(),
-    dir: text('name').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  },
-  (soulseekReleaseDownloads) => ({
-    usernameDirUniqueIndex: uniqueIndex('usernameDirUniqueIndex').on(
-      soulseekReleaseDownloads.username,
-      soulseekReleaseDownloads.dir
-    ),
-  })
-)
+export type DownloadStatus = 'pending' | 'downloading' | 'done' | 'error'
 
 export type SoulseekTrackDownload = InferModel<typeof soulseekTrackDownloads>
 export type InsertSoulseekTrackDownload = InferModel<typeof soulseekTrackDownloads, 'insert'>

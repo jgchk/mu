@@ -1,16 +1,11 @@
 import { and, eq, isNull } from 'drizzle-orm/expressions'
 import { pipe } from 'utils'
 
-import type {
-  InsertSoulseekReleaseDownload,
-  InsertSoulseekTrackDownload,
-  SoulseekReleaseDownload,
-  SoulseekTrackDownload,
-} from './schema'
+import type { InsertSoulseekTrackDownload, SoulseekTrackDownload } from './schema'
 import {
   ConfigMixin,
   ImagesMixin,
-  soulseekReleaseDownloads,
+  SoulseekReleaseDownloadsMixin,
   soulseekTrackDownloads,
 } from './schema'
 import { ArtistsMixin } from './schema/artists'
@@ -31,65 +26,6 @@ import { makeUpdate, withCreatedAt } from './utils'
 export * from './schema'
 
 class DatabaseOriginal extends DatabaseBase {
-  soulseekReleaseDownloads = {
-    insert: (soulseekReleaseDownload: AutoCreatedAt<InsertSoulseekReleaseDownload>) => {
-      return this.db
-        .insert(soulseekReleaseDownloads)
-        .values(withCreatedAt(soulseekReleaseDownload))
-        .returning()
-        .get()
-    },
-
-    update: (
-      id: SoulseekReleaseDownload['id'],
-      data: UpdateData<InsertSoulseekReleaseDownload>
-    ) => {
-      return this.db
-        .update(soulseekReleaseDownloads)
-        .set(makeUpdate(data))
-        .where(eq(soulseekReleaseDownloads.id, id))
-        .returning()
-        .get()
-    },
-
-    get: (id: SoulseekReleaseDownload['id']) => {
-      return this.db
-        .select()
-        .from(soulseekReleaseDownloads)
-        .where(eq(soulseekReleaseDownloads.id, id))
-        .get()
-    },
-
-    getByUsernameAndDir: (
-      username: SoulseekReleaseDownload['username'],
-      dir: SoulseekReleaseDownload['dir']
-    ) => {
-      return this.db
-        .select()
-        .from(soulseekReleaseDownloads)
-        .where(
-          and(
-            eq(soulseekReleaseDownloads.username, username),
-            eq(soulseekReleaseDownloads.dir, dir)
-          )
-        )
-        .limit(1)
-        .all()
-        .at(0)
-    },
-
-    getAll: () => {
-      return this.db.select().from(soulseekReleaseDownloads).all()
-    },
-
-    delete: (id: SoulseekReleaseDownload['id']) => {
-      return this.db
-        .delete(soulseekReleaseDownloads)
-        .where(eq(soulseekReleaseDownloads.id, id))
-        .run()
-    },
-  }
-
   soulseekTrackDownloads = {
     insert: (soulseekTrackDownload: AutoCreatedAt<InsertSoulseekTrackDownload>) => {
       return this.db
@@ -167,7 +103,8 @@ const DatabaseClass = pipe(
   SoundcloudPlaylistDownloadsMixin,
   SoundcloudTrackDownloadsMixin,
   SpotifyAlbumDownloadsMixin,
-  SpotifyTrackDownloadsMixin
+  SpotifyTrackDownloadsMixin,
+  SoulseekReleaseDownloadsMixin
 )
 
 export const Database = (url: string) => new DatabaseClass(url)
