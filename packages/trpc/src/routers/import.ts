@@ -163,7 +163,6 @@ export const importRouter = router({
             id: z.number(),
             title: z.string().optional(),
             artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
-            track: z.number().optional(),
           })
           .array(),
       })
@@ -232,13 +231,13 @@ export const importRouter = router({
       )
 
       const dbTracks = await Promise.all(
-        downloads.map(async (download) => {
+        downloads.map(async (download, i) => {
+          const trackNumber = i + 1
+
           let filename = ''
-          if (download.metadata.track !== undefined) {
-            const numDigitsInTrackNumber = numDigits(downloads.length)
-            filename += download.metadata.track.toString().padStart(numDigitsInTrackNumber, '0')
-            filename += ' '
-          }
+          const numDigitsInTrackNumber = numDigits(downloads.length)
+          filename += trackNumber.toString().padStart(numDigitsInTrackNumber, '0')
+          filename += ' '
           filename += download.metadata.title ?? '[untitled]'
           filename += path.extname(download.dbDownload.path)
 
@@ -273,7 +272,7 @@ export const importRouter = router({
           const metadata: Metadata = {
             title: download.metadata.title ?? null,
             artists: artists.map((artist) => artist.name),
-            track: download.metadata.track ?? null,
+            track: trackNumber,
             album: albumTitle ?? null,
             albumArtists: albumArtists.map((artist) => artist.name),
           }
@@ -309,7 +308,7 @@ export const importRouter = router({
             title: metadata.title,
             path: newPath,
             releaseId: dbRelease.id,
-            trackNumber: metadata.track,
+            order: i,
             imageId,
             duration: outputMetadata.length,
             favorite,
@@ -547,7 +546,7 @@ export const importRouter = router({
         title: metadata.title,
         path: newPath,
         releaseId: dbRelease.id,
-        trackNumber: metadata.track,
+        order: 0,
         imageId,
         duration: outputMetadata.length,
         favorite,

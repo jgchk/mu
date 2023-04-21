@@ -32,7 +32,6 @@ const schema = z.object({
         .object({ action: z.enum(['create', 'connect']), id: z.number() })
         .optional()
         .array(),
-      track: z.number().optional(),
     })
     .array(),
 })
@@ -63,7 +62,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         id: track.id,
         title: track.title ?? undefined,
         artists: data.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
-        track: track.trackNumber ?? undefined,
       })),
     },
     schema

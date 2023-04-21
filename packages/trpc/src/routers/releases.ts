@@ -3,11 +3,10 @@ import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { ifDefined, numDigits } from 'utils'
+import { numDigits } from 'utils'
 import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
-import { getMetadataFromTrack } from '../services/music-metadata'
 import { publicProcedure, router } from '../trpc'
 import { cleanupImage, getImagePath } from '../utils'
 
@@ -60,7 +59,6 @@ export const releasesRouter = router({
             id: z.number(),
             title: z.string().optional(),
             artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
-            track: z.number().optional(),
           })
           .array(),
       })
@@ -111,15 +109,15 @@ export const releasesRouter = router({
 
       if (input.tracks) {
         await Promise.all(
-          input.tracks.map(async (track) => {
+          input.tracks.map(async (track, i) => {
             const existingDbTrack = ctx.db.tracks.get(track.id)
 
+            const trackNumber = i + 1
+
             let filename = ''
-            if (track.track !== undefined) {
-              const numDigitsInTrackNumber = numDigits(existingDbTracks.length)
-              filename += track.track.toString().padStart(numDigitsInTrackNumber, '0')
-              filename += ' '
-            }
+            const numDigitsInTrackNumber = numDigits(existingDbTracks.length)
+            filename += trackNumber.toString().padStart(numDigitsInTrackNumber, '0')
+            filename += ' '
             filename += track.title ?? '[untitled]'
             filename += path.extname(existingDbTrack.path)
 
@@ -154,7 +152,7 @@ export const releasesRouter = router({
             const metadata: Metadata = {
               title: track.title ?? null,
               artists: artists.map((artist) => artist.name),
-              track: track.track ?? null,
+              track: trackNumber,
               album: albumTitle ?? null,
               albumArtists: albumArtists.map((artist) => artist.name),
             }
@@ -175,7 +173,7 @@ export const releasesRouter = router({
               title: metadata.title,
               path: newPath,
               releaseId: dbRelease.id,
-              trackNumber: metadata.track,
+              order: i,
               imageId: image?.id ?? null,
             })
             ctx.db.trackArtists.updateByTrackId(
@@ -198,40 +196,5 @@ export const releasesRouter = router({
         tracks,
         artists,
       }
-    }),
-  updateMetadata: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        data: z.object({
-          title: z.string(),
-          artists: z.union([z.number(), z.string()]).array().optional(),
-        }),
-      })
-    )
-    .mutation(async ({ input: { id, data }, ctx }) => {
-      const artists = ifDefined(data.artists, (artists) =>
-        artists.map((artist) => {
-          if (typeof artist === 'number') {
-            return artist
-          } else {
-            return ctx.db.artists.insert({ name: artist }).id
-          }
-        })
-      )
-
-      const release = ctx.db.releases.update(id, data)
-      if (artists) {
-        ctx.db.releaseArtists.updateByReleaseId(id, artists)
-      }
-      const tracks = ctx.db.tracks.getByReleaseId(release.id)
-
-      await Promise.all(
-        tracks.map((track) =>
-          writeTrackMetadata(track.path, getMetadataFromTrack(ctx.db, track.id))
-        )
-      )
-
-      return release
     }),
 })

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "4a15fc62-62f7-4853-802d-617dc8e08b60",
+  "id": "7ae49f2a-4b30-4771-bd75-6840d16206a0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -863,11 +863,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "track_number": {
-          "name": "track_number",
+        "order": {
+          "name": "order",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "duration": {

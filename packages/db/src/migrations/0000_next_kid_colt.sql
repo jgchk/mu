@@ -137,7 +137,7 @@ CREATE TABLE `tracks` (
 	`path` text NOT NULL,
 	`title` text,
 	`release_id` integer,
-	`track_number` integer,
+	`order` integer NOT NULL,
 	`duration` integer NOT NULL,
 	`favorite` integer NOT NULL,
 	`image_id` integer,

@@ -32,8 +32,7 @@ export const playbackRouter = router({
         artist: artists,
         track: track.title ?? '[untitled]',
         album: release?.title ?? undefined,
-        trackNumber:
-          ifNotNull(track.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
+        trackNumber: track.order + 1,
         duration: track.duration / 1000,
         albumArtist: albumArtists ?? undefined,
       })
@@ -71,8 +70,7 @@ export const playbackRouter = router({
         artist: artists,
         track: track.title ?? '[untitled]',
         album: release?.title ?? undefined,
-        trackNumber:
-          ifNotNull(track.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
+        trackNumber: track.order + 1,
         albumArtist: albumArtists ?? undefined,
         duration: track.duration / 1000,
         timestamp: input.timestamp,

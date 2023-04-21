@@ -85,7 +85,7 @@
       target: EventTarget & HTMLDivElement
     }
   ) => {
-    $form.tracks = e.detail.items.map((track, i) => ({ ...track, track: i + 1 }))
+    $form.tracks = e.detail.items
   }
 
   const handleFileDrop = (e: CustomEvent<File[]>) => {
@@ -178,7 +178,7 @@
     <div
       class="space-y-2"
       use:dnd={{ items: $form.tracks }}
-      on:consider={(e) => ($form.tracks = e.detail.items)}
+      on:consider={handleReorderTracks}
       on:finalize={handleReorderTracks}
     >
       {#each $form.tracks as track, i (track.id)}
@@ -186,7 +186,7 @@
           class="flex items-center rounded bg-gray-900 p-4 pl-0"
           animate:flip={{ duration: dnd.defaults.flipDurationMs }}
         >
-          <div class="center w-12 text-gray-500">{track.track ?? ''}</div>
+          <div class="center w-12 text-gray-500">{i + 1}</div>
           <div class="flex-1 space-y-1">
             <Input
               bind:value={track.title}

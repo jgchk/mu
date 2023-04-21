@@ -25,7 +25,7 @@ export const tracks = sqliteTable(
     path: text('path').notNull(),
     title: text('title'),
     releaseId: integer('release_id').references(() => releases.id),
-    trackNumber: integer('track_number'),
+    order: integer('order').notNull(),
     duration: integer('duration').notNull(),
     favorite: integer('favorite').notNull(),
     imageId: integer('image_id').references(() => images.id),
@@ -166,7 +166,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .select()
           .from(tracks)
           .where(eq(tracks.releaseId, releaseId))
-          .orderBy(tracks.trackNumber)
+          .orderBy(tracks.order)
           .all()
           .map(convertTrack)
       },
