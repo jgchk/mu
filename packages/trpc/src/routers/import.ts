@@ -139,12 +139,13 @@ export const importRouter = router({
           artists: albumArtists.map(getArtist),
           art: albumArt?.toString('base64'),
         },
-        tracks: tracks.map((track) => ({
-          id: track.id,
-          title: track.metadata.title ?? undefined,
-          artists: track.metadata.artists.map(getArtist),
-          track: track.metadata.track ?? undefined,
-        })),
+        tracks: tracks
+          .sort((a, b) => (a.metadata.track ?? Infinity) - (b.metadata.track ?? Infinity))
+          .map((track) => ({
+            id: track.id,
+            title: track.metadata.title ?? undefined,
+            artists: track.metadata.artists.map(getArtist),
+          })),
       }
     }),
   groupDownloadManual: publicProcedure
