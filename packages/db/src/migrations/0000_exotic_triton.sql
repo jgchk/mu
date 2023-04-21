@@ -1,3 +1,11 @@
+CREATE TABLE `artists` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`description` text,
+	`image_id` integer,
+	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `config` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`last_fm_key` text,
@@ -80,14 +88,6 @@ CREATE TABLE `images` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`hash` text NOT NULL,
 	`created_at` integer NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `artists` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`name` text NOT NULL,
-	`description` text,
-	`image_id` integer,
-	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `playlist_tracks` (
