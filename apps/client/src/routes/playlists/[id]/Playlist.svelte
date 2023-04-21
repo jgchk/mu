@@ -19,12 +19,12 @@
     playlist: RouterOutput['playlists']['getWithTracks'],
     trackIndex: number
   ) => ({
-    previousTracks: playlist.tracks.slice(0, trackIndex).map((t) => t.trackId),
-    nextTracks: playlist.tracks.slice(trackIndex + 1).map((t) => t.trackId),
+    previousTracks: playlist.tracks.slice(0, trackIndex).map((t) => t.id),
+    nextTracks: playlist.tracks.slice(trackIndex + 1).map((t) => t.id),
   })
 
   function makePlaylistCollageUrl() {
-    const imageIds = playlist.tracks.map((t) => t.track.imageId).filter(isNotNull)
+    const imageIds = playlist.tracks.map((t) => t.imageId).filter(isNotNull)
     return makeCollageUrl(imageIds, { size: 512 })
   }
 </script>
@@ -34,7 +34,7 @@
     <button
       type="button"
       disabled={playlist.tracks.length === 0}
-      on:click={() => playTrack(playlist.tracks[0].trackId, makeQueueData(playlist, 0))}
+      on:click={() => playTrack(playlist.tracks[0].id, makeQueueData(playlist, 0))}
     >
       <div class="relative w-64 shrink-0">
         <CoverArt

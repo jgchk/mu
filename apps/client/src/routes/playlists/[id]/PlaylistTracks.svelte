@@ -34,7 +34,7 @@
     $editTrackOrderMutation.mutate(
       {
         playlistId: playlistId,
-        playlistTrackIds: e.detail.items.map((track) => track.id),
+        trackIds: e.detail.items.map((t) => t.id),
       },
       {
         onError: () => {
@@ -53,9 +53,9 @@
   on:consider={handleConsiderReorder}
   on:finalize={handleReorderTracks}
 >
-  {#each tracks as playlistTrack, i (playlistTrack.id)}
+  {#each tracks as track, i (track.id)}
     <div animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
-      <PlaylistTrack {playlistTrack} on:play={() => play(playlistTrack.track.id, i)} />
+      <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
     </div>
   {/each}
 </div>

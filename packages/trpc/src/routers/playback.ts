@@ -9,31 +9,32 @@ export const playbackRouter = router({
     .input(z.object({ id: z.number() }))
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
-      const dbTrack = ctx.db.tracks.getWithArtists(input.id)
-
-      const artists = dbTrack.artists
-        .sort((a, b) => a.order - b.order)
-        .map((artist) => artist.name)
+      const track = ctx.db.tracks.get(input.id)
+      const artists = ctx.db.artists
+        .getByTrackId(track.id)
+        .map((a) => a.name)
         .join(', ')
 
-      const release = ifNotNull(dbTrack.releaseId, (releaseId) =>
-        ctx.db.releases.getWithArtists(releaseId)
-      )
+      const release = ifNotNull(track.releaseId, (releaseId) => {
+        const release = ctx.db.releases.get(releaseId)
+        const artists = ctx.db.artists.getByReleaseId(releaseId)
+        return {
+          ...release,
+          artists,
+        }
+      })
 
       const albumArtists = ifNotNull(release, (release) =>
-        release.artists
-          .sort((a, b) => a.order - b.order)
-          .map((artist) => artist.name)
-          .join(', ')
+        release.artists.map((a) => a.name).join(', ')
       )
 
       return ctx.lfm.updateNowPlaying({
         artist: artists,
-        track: dbTrack.title ?? '[untitled]',
+        track: track.title ?? '[untitled]',
         album: release?.title ?? undefined,
         trackNumber:
-          ifNotNull(dbTrack.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
-        duration: dbTrack.duration / 1000,
+          ifNotNull(track.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
+        duration: track.duration / 1000,
         albumArtist: albumArtists ?? undefined,
       })
     }),
@@ -47,32 +48,33 @@ export const playbackRouter = router({
     )
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
-      const dbTrack = ctx.db.tracks.getWithArtists(input.id)
-
-      const artists = dbTrack.artists
-        .sort((a, b) => a.order - b.order)
-        .map((artist) => artist.name)
+      const track = ctx.db.tracks.get(input.id)
+      const artists = ctx.db.artists
+        .getByTrackId(track.id)
+        .map((a) => a.name)
         .join(', ')
 
-      const release = ifNotNull(dbTrack.releaseId, (releaseId) =>
-        ctx.db.releases.getWithArtists(releaseId)
-      )
+      const release = ifNotNull(track.releaseId, (releaseId) => {
+        const release = ctx.db.releases.get(releaseId)
+        const artists = ctx.db.artists.getByReleaseId(releaseId)
+        return {
+          ...release,
+          artists,
+        }
+      })
 
       const albumArtists = ifNotNull(release, (release) =>
-        release.artists
-          .sort((a, b) => a.order - b.order)
-          .map((artist) => artist.name)
-          .join(', ')
+        release.artists.map((artist) => artist.name).join(', ')
       )
 
       return ctx.lfm.scrobble({
         artist: artists,
-        track: dbTrack.title ?? '[untitled]',
+        track: track.title ?? '[untitled]',
         album: release?.title ?? undefined,
         trackNumber:
-          ifNotNull(dbTrack.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
+          ifNotNull(track.trackNumber, (trackNumber) => trackNumber.toString()) ?? undefined,
         albumArtist: albumArtists ?? undefined,
-        duration: dbTrack.duration / 1000,
+        duration: track.duration / 1000,
         timestamp: input.timestamp,
       })
     }),

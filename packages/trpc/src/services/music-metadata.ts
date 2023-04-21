@@ -3,17 +3,15 @@ import type { Metadata } from 'music-metadata'
 import { ifNotNull } from 'utils'
 
 export const getMetadataFromTrack = (db: Database, trackId: Track['id']): Metadata => {
-  const track = db.tracks.getWithArtists(trackId)
+  const track = db.tracks.get(trackId)
+  const artists = db.artists.getByTrackId(trackId)
   return {
     title: track.title ?? null,
-    artists: track.artists.sort(compareArtists).map((artist) => artist.name),
+    artists: artists.map((a) => a.name),
     album: ifNotNull(track.releaseId, (releaseId) => db.releases.get(releaseId).title) ?? null,
     albumArtists:
       ifNotNull(track.releaseId, (releaseId) =>
-        db.artists
-          .getByReleaseId(releaseId)
-          .sort(compareArtists)
-          .map((artist) => artist.name)
+        db.artists.getByReleaseId(releaseId).map((a) => a.name)
       ) ?? [],
     track: track.trackNumber ?? null,
   }

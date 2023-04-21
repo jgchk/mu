@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { isNotNull } from 'utils'
+import { ifNotNull, isNotNull } from 'utils'
 import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
@@ -53,13 +53,18 @@ export const artistsRouter = router({
     .query(({ ctx, input }) => ctx.db.artists.get(input.id)),
   getFull: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.db.artists.get(input.id)
-    const releases = ctx.db.releases.getByArtistWithArtists(artist.id).map((release) => ({
+    const releases = ctx.db.releases.getByArtist(artist.id).map((release) => ({
       ...release,
+      artists: ctx.db.artists.getByReleaseId(release.id),
       imageId:
         ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
         null,
     }))
-    const tracks = ctx.db.tracks.getByArtistWithArtistsAndRelease(artist.id)
+    const tracks = ctx.db.tracks.getByArtist(artist.id).map((track) => ({
+      ...track,
+      release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
+      artists: ctx.db.artists.getByTrackId(track.id),
+    }))
     return {
       ...artist,
       releases,

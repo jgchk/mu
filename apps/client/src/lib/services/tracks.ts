@@ -118,9 +118,7 @@ export const createFavoriteTrackMutation = (
             ? {
                 ...old,
                 tracks: old.tracks.map((track) =>
-                  track.track.id === input.id
-                    ? { ...track, track: { ...track.track, favorite: input.favorite } }
-                    : track
+                  track.id === input.id ? { ...track, favorite: input.favorite } : track
                 ),
               }
             : old

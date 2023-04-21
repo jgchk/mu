@@ -1,5 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
+import { isNotNull } from 'utils'
 import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
@@ -9,22 +10,46 @@ import { cleanupImage, getImagePath } from '../utils'
 export const playlistsRouter = router({
   new: publicProcedure
     .input(z.object({ name: z.string().min(1), tracks: z.number().array().optional() }))
-    .mutation(({ ctx, input: { name, tracks } }) =>
-      ctx.db.playlists.insertWithTracks({ name }, tracks)
-    ),
+    .mutation(({ ctx, input: { name, tracks } }) => {
+      const playlist = ctx.db.playlists.insert({ name })
+      if (tracks) {
+        ctx.db.playlistTracks.insertManyByPlaylistId(playlist.id, tracks)
+      }
+      return playlist
+    }),
   addTrack: publicProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, trackId } }) => {
-      ctx.db.playlists.addTrack(playlistId, trackId)
-      return ctx.db.playlists.getWithTracks(playlistId)
+      ctx.db.playlistTracks.addTrack(playlistId, trackId)
+      return {
+        ...ctx.db.playlists.get(playlistId),
+        tracks: ctx.db.tracks.getByPlaylistId(playlistId).map((track) => ({
+          ...track,
+          artists: ctx.db.artists.getByTrackId(track.id),
+        })),
+      }
     }),
   removeTrack: publicProcedure
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, playlistTrackId } }) => {
       ctx.db.playlistTracks.delete(playlistTrackId)
-      return ctx.db.playlists.getWithTracks(playlistId)
+      return {
+        ...ctx.db.playlists.get(playlistId),
+        tracks: ctx.db.tracks.getByPlaylistId(playlistId).map((track) => ({
+          ...track,
+          artists: ctx.db.artists.getByTrackId(track.id),
+        })),
+      }
     }),
-  getAll: publicProcedure.query(({ ctx }) => ctx.db.playlists.getAll()),
+  getAll: publicProcedure.query(({ ctx }) =>
+    ctx.db.playlists.getAll().map((playlist) => ({
+      ...playlist,
+      imageIds: ctx.db.tracks
+        .getByPlaylistId(playlist.id)
+        .map((track) => track.imageId)
+        .filter(isNotNull),
+    }))
+  ),
   getAllHasTrack: publicProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
@@ -34,9 +59,13 @@ export const playlistsRouter = router({
         return { ...playlist, hasTrack }
       })
     }),
-  getWithTracks: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => ctx.db.playlists.getWithTracks(input.id)),
+  getWithTracks: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => ({
+    ...ctx.db.playlists.get(input.id),
+    tracks: ctx.db.tracks.getByPlaylistId(input.id).map((track) => ({
+      ...track,
+      artists: ctx.db.artists.getByTrackId(track.id),
+    })),
+  })),
   edit: publicProcedure
     .input(
       z.object({
@@ -75,9 +104,9 @@ export const playlistsRouter = router({
       return playlist
     }),
   editTrackOrder: publicProcedure
-    .input(z.object({ playlistId: z.number(), playlistTrackIds: z.number().array() }))
+    .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
     .mutation(({ ctx, input }) => {
-      ctx.db.playlists.updateTrackOrder(input.playlistTrackIds)
-      return ctx.db.playlists.getWithTracks(input.playlistId)
+      ctx.db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
+      return ctx.db.playlists.get(input.playlistId)
     }),
 })

@@ -119,13 +119,11 @@ export const createEditPlaylistTrackOrderMutation = (
       trpc.playlists.getWithTracks.utils.setData({ id: input.playlistId }, (old) => {
         if (!old) return old
 
-        const getTrackOrder = (id: number) => input.playlistTrackIds.indexOf(id) + 1
+        const getTrackOrder = (id: number) => input.trackIds.indexOf(id) + 1
 
         return {
           ...old,
-          tracks: old.tracks
-            .map((track) => ({ ...track, order: getTrackOrder(track.id) }))
-            .sort((a, b) => a.order - b.order),
+          tracks: old.tracks.sort((a, b) => getTrackOrder(a.id) - getTrackOrder(b.id)),
         }
       })
 

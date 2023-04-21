@@ -21,8 +21,9 @@ export const releasesRouter = router({
     }))
   ),
   getAllWithArtists: publicProcedure.query(({ ctx }) =>
-    ctx.db.releases.getAllWithArtists().map((release) => ({
+    ctx.db.releases.getAll().map((release) => ({
       ...release,
+      artists: ctx.db.artists.getByReleaseId(release.id),
       imageId:
         ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
         null,
@@ -31,9 +32,14 @@ export const releasesRouter = router({
   getWithTracksAndArtists: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
-      const release = ctx.db.releases.getWithTracksAndArtists(id)
+      const release = ctx.db.releases.get(id)
       return {
         ...release,
+        artists: ctx.db.artists.getByReleaseId(release.id),
+        tracks: ctx.db.tracks.getByReleaseId(release.id).map((track) => ({
+          ...track,
+          artists: ctx.db.artists.getByTrackId(track.id),
+        })),
         imageId:
           ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)
             ?.imageId ?? null,
@@ -80,10 +86,13 @@ export const releasesRouter = router({
         }
       })
 
-      const dbRelease = ctx.db.releases.updateWithArtists(input.id, {
+      const dbRelease = ctx.db.releases.update(input.id, {
         title: albumTitle,
-        artists: albumArtists.map((artist) => artist.id),
       })
+      ctx.db.releaseArtists.updateByReleaseId(
+        input.id,
+        albumArtists.map((a) => a.id)
+      )
 
       const existingDbTracks = ctx.db.tracks.getByReleaseId(dbRelease.id)
 
@@ -162,14 +171,17 @@ export const releasesRouter = router({
               }
             }
 
-            ctx.db.tracks.updateWithArtists(existingDbTrack.id, {
+            ctx.db.tracks.update(existingDbTrack.id, {
               title: metadata.title,
-              artists: artists.map((artist) => artist.id),
               path: newPath,
               releaseId: dbRelease.id,
               trackNumber: metadata.track,
               imageId: image?.id ?? null,
             })
+            ctx.db.trackArtists.updateByTrackId(
+              existingDbTrack.id,
+              artists.map((a) => a.id)
+            )
 
             if (oldImageId !== null) {
               await cleanupImage(ctx, oldImageId)
@@ -178,7 +190,14 @@ export const releasesRouter = router({
         )
       }
 
-      return ctx.db.releases.getWithTracksAndArtists(dbRelease.id)
+      const release = ctx.db.releases.get(dbRelease.id)
+      const tracks = ctx.db.tracks.getByReleaseId(dbRelease.id)
+      const artists = ctx.db.artists.getByReleaseId(dbRelease.id)
+      return {
+        ...release,
+        tracks,
+        artists,
+      }
     }),
   updateMetadata: publicProcedure
     .input(
@@ -201,7 +220,10 @@ export const releasesRouter = router({
         })
       )
 
-      const release = ctx.db.releases.updateWithArtists(id, { ...data, artists })
+      const release = ctx.db.releases.update(id, data)
+      if (artists) {
+        ctx.db.releaseArtists.updateByReleaseId(id, artists)
+      }
       const tracks = ctx.db.tracks.getByReleaseId(release.id)
 
       await Promise.all(

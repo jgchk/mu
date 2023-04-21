@@ -14,9 +14,8 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
-  export let playlistTrack: RouterOutput['playlists']['getWithTracks']['tracks'][number]
-  $: playlistId = playlistTrack.playlistId
-  $: track = playlistTrack.track
+  export let track: RouterOutput['playlists']['getWithTracks']['tracks'][number]
+  export let playlistId: number
 
   const trpc = getContextClient()
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
@@ -25,7 +24,7 @@
 
   const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)
   const handleRemoveTrack = () =>
-    $removeTrackMutation.mutate({ playlistId: playlistId, playlistTrackId: playlistTrack.id })
+    $removeTrackMutation.mutate({ playlistId: playlistId, playlistTrackId: track.playlistTrackId })
 
   const dispatch = createEventDispatcher<{ play: undefined }>()
   const play = () => dispatch('play')

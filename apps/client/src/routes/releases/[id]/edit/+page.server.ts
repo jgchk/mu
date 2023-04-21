@@ -57,16 +57,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       createArtists: new Map(),
       album: {
         title: data.title ?? undefined,
-        artists: data.artists
-          .sort((a, b) => a.order - b.order)
-          .map((artist) => ({ action: 'connect', id: artist.id } as const)),
+        artists: data.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
       },
       tracks: data.tracks.map((track) => ({
         id: track.id,
         title: track.title ?? undefined,
-        artists: data.artists
-          .sort((a, b) => a.order - b.order)
-          .map((artist) => ({ action: 'connect', id: artist.id } as const)),
+        artists: data.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
         track: track.trackNumber ?? undefined,
       })),
     },

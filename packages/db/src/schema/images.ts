@@ -5,8 +5,10 @@ import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../utils'
 import { withCreatedAt } from '../utils'
+import { artists } from './artists'
 import type { DatabaseBase } from './base'
-import { artists, playlists, tracks } from './library'
+import { playlists } from './playlists'
+import { tracks } from './tracks'
 
 export type Image = InferModel<typeof images>
 export type InsertImage = InferModel<typeof images, 'insert'>

@@ -223,10 +223,13 @@ export const importRouter = router({
           return ctx.db.artists.get(artist.id)
         }
       })
-      const dbRelease = ctx.db.releases.insertWithArtists({
+      const dbRelease = ctx.db.releases.insert({
         title: albumTitle,
-        artists: albumArtists.map((artist) => artist.id),
       })
+      ctx.db.releaseArtists.insertManyByReleaseId(
+        dbRelease.id,
+        albumArtists.map((a) => a.id)
+      )
 
       const dbTracks = await Promise.all(
         downloads.map(async (download) => {
@@ -302,9 +305,8 @@ export const importRouter = router({
             favorite = lastFm.userloved === '1'
           }
 
-          const dbTrack = ctx.db.tracks.insertWithArtists({
+          const dbTrack = ctx.db.tracks.insert({
             title: metadata.title,
-            artists: artists.map((artist) => artist.id),
             path: newPath,
             releaseId: dbRelease.id,
             trackNumber: metadata.track,
@@ -312,6 +314,10 @@ export const importRouter = router({
             duration: outputMetadata.length,
             favorite,
           })
+          const dbTrackArtists = ctx.db.trackArtists.insertManyByTrackId(
+            dbTrack.id,
+            artists.map((a) => a.id)
+          )
 
           if (input.service === 'soulseek') {
             ctx.db.soulseekTrackDownloads.delete(download.dbDownload.id)
@@ -324,7 +330,7 @@ export const importRouter = router({
             throw new Error(`Invalid service: ${input.service}`)
           }
 
-          return dbTrack
+          return { track: dbTrack, artists: dbTrackArtists }
         })
       )
 
@@ -475,10 +481,13 @@ export const importRouter = router({
         }
       })
 
-      const dbRelease = ctx.db.releases.insertWithArtists({
+      const dbRelease = ctx.db.releases.insert({
         title: input.album.title,
-        artists: albumArtists.map((artist) => artist.id),
       })
+      ctx.db.releaseArtists.insertManyByReleaseId(
+        dbRelease.id,
+        albumArtists.map((a) => a.id)
+      )
 
       // track
       const filename = `1 ${input.track.title ?? '[untitled]'}${path.extname(dbDownload.path)}`
@@ -534,9 +543,8 @@ export const importRouter = router({
         favorite = lastFm.userloved === '1'
       }
 
-      const dbTrack = ctx.db.tracks.insertWithArtists({
+      const dbTrack = ctx.db.tracks.insert({
         title: metadata.title,
-        artists: trackArtists.map((artist) => artist.id),
         path: newPath,
         releaseId: dbRelease.id,
         trackNumber: metadata.track,
@@ -544,6 +552,10 @@ export const importRouter = router({
         duration: outputMetadata.length,
         favorite,
       })
+      const dbTrackArtists = ctx.db.trackArtists.insertManyByTrackId(
+        dbTrack.id,
+        trackArtists.map((a) => a.id)
+      )
 
       if (input.service === 'soulseek') {
         ctx.db.soulseekTrackDownloads.delete(dbDownload.id)
@@ -559,6 +571,7 @@ export const importRouter = router({
       return {
         release: dbRelease,
         track: dbTrack,
+        trackArtists: dbTrackArtists,
       }
     }),
 })

@@ -1,10 +1,10 @@
+import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
 export const tracksRouter = router({
-  getAll: publicProcedure.query(({ ctx }) => ctx.db.tracks.getAll()),
   getAllWithArtistsAndRelease: publicProcedure
     .input(
       z.object({
@@ -17,32 +17,45 @@ export const tracksRouter = router({
       const skip = input.cursor ?? 0
       const limit = input.limit ?? 50
 
-      const items = ctx.db.tracks.getAllWithArtistsAndRelease({
+      const tracks = ctx.db.tracks.getAll({
         favorite: input.favorite,
         skip,
         limit: limit + 1,
       })
 
       let nextCursor: number | undefined = undefined
-      if (items.length > limit) {
-        items.pop()
+      if (tracks.length > limit) {
+        tracks.pop()
         nextCursor = skip + limit
       }
 
+      const tracksWithArtistsAndRelease = tracks.map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+        release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
+      }))
+
       return {
-        items,
+        items: tracksWithArtistsAndRelease,
         nextCursor,
       }
     }),
-  getById: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ input: { id }, ctx }) => ctx.db.tracks.getWithArtists(id)),
+  getById: publicProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => ({
+    ...ctx.db.tracks.get(id),
+    artists: ctx.db.artists.getByTrackId(id),
+  })),
   getByReleaseId: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
   getByReleaseIdWithArtists: publicProcedure
     .input(z.object({ releaseId: z.number() }))
-    .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseIdWithArtists(releaseId)),
+    .query(({ input: { releaseId }, ctx }) => {
+      const tracks = ctx.db.tracks.getByReleaseId(releaseId)
+      return tracks.map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
+    }),
   favorite: publicProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .use(isLastFmLoggedIn)
@@ -51,7 +64,6 @@ export const tracksRouter = router({
 
       const artists = ctx.db.artists
         .getByTrackId(dbTrack.id)
-        .sort((a, b) => a.order - b.order)
         .map((artist) => artist.name)
         .join(', ')
 
