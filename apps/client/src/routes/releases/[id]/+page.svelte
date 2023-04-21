@@ -80,6 +80,7 @@
 
     <TrackList
       {tracks}
+      showCoverArt={false}
       on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       on:favorite={(e) =>
         $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
