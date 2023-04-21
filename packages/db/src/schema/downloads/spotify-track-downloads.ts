@@ -8,7 +8,7 @@ import { ifDefined } from 'utils'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
-import type { DownloadStatus } from '../downloads__'
+import type { DownloadStatus } from '.'
 import { spotifyAlbumDownloads } from './spotify-album-downloads'
 
 export type SpotifyTrackDownload = InferModel<typeof spotifyTrackDownloads>

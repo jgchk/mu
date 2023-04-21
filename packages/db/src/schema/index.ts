@@ -1,7 +1,6 @@
 export * from './artists'
 export * from './config'
 export * from './downloads'
-export * from './downloads__'
 export * from './images'
 export * from './playlist-tracks'
 export * from './playlists'

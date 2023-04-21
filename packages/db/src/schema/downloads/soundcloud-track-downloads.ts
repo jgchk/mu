@@ -7,7 +7,7 @@ import type { Constructor } from 'utils'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
-import type { DownloadStatus } from '../downloads__'
+import type { DownloadStatus } from '.'
 import { soundcloudPlaylistDownloads } from './soundcloud-playlist-downloads'
 
 export type SoundcloudTrackDownload = InferModel<typeof soundcloudTrackDownloads>
