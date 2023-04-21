@@ -166,6 +166,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .select()
           .from(tracks)
           .where(eq(tracks.releaseId, releaseId))
+          .orderBy(tracks.trackNumber)
           .all()
           .map(convertTrack)
       },
