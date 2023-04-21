@@ -5,9 +5,7 @@ import { isNotNull, pipe, uniq } from 'utils'
 
 import type {
   Artist,
-  Image,
   InsertArtist,
-  InsertImage,
   InsertPlaylist,
   InsertPlaylistTrack,
   InsertRelease,
@@ -35,7 +33,7 @@ import type {
 import {
   artists,
   ConfigMixin,
-  images,
+  ImagesMixin,
   playlists,
   playlistTracks,
   releaseArtists,
@@ -996,42 +994,10 @@ class DatabaseOriginal extends DatabaseBase {
       return this.db.delete(soulseekTrackDownloads).where(eq(soulseekTrackDownloads.id, id)).run()
     },
   }
-
-  images = {
-    insert: (image: AutoCreatedAt<InsertImage>) => {
-      return this.db.insert(images).values(withCreatedAt(image)).returning().get()
-    },
-
-    get: (id: Image['id']) => {
-      return this.db.select().from(images).where(eq(images.id, id)).get()
-    },
-
-    getNumberOfUses: (id: Image['id']) => {
-      return this.db
-        .select({ id: images.id })
-        .from(images)
-        .where(eq(images.id, id))
-        .innerJoin(tracks, eq(images.id, tracks.imageId))
-        .innerJoin(playlists, eq(images.id, playlists.imageId))
-        .innerJoin(artists, eq(images.id, artists.imageId))
-        .all().length
-    },
-
-    update: (id: Image['id'], data: UpdateData<InsertImage>) => {
-      const update = {
-        ...(data.hash !== undefined ? { hash: data.hash } : {}),
-      }
-      return this.db.update(images).set(update).where(eq(images.id, id)).returning().get()
-    },
-
-    delete: (id: Image['id']) => {
-      return this.db.delete(images).where(eq(images.id, id)).run()
-    },
-  }
 }
 
 export function Database(url: string) {
-  const Database = pipe(DatabaseOriginal, ConfigMixin)
+  const Database = pipe(DatabaseOriginal, ConfigMixin, ImagesMixin)
   return new Database(url)
 }
 
