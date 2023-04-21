@@ -1,26 +1,24 @@
 import { and, eq, isNull } from 'drizzle-orm/expressions'
-import { ifDefined, pipe } from 'utils'
+import { pipe } from 'utils'
 
 import type {
   InsertSoulseekReleaseDownload,
   InsertSoulseekTrackDownload,
-  InsertSpotifyTrackDownload,
   SoulseekReleaseDownload,
   SoulseekTrackDownload,
-  SpotifyTrackDownload,
 } from './schema'
 import {
   ConfigMixin,
   ImagesMixin,
   soulseekReleaseDownloads,
   soulseekTrackDownloads,
-  spotifyTrackDownloads,
 } from './schema'
 import { ArtistsMixin } from './schema/artists'
 import { DatabaseBase } from './schema/base'
 import { SoundcloudPlaylistDownloadsMixin } from './schema/downloads/soundcloud-playlist-downloads'
 import { SoundcloudTrackDownloadsMixin } from './schema/downloads/soundcloud-track-downloads'
 import { SpotifyAlbumDownloadsMixin } from './schema/downloads/spotify-album-downloads'
+import { SpotifyTrackDownloadsMixin } from './schema/downloads/spotify-track-downloads'
 import { PlaylistTracksMixin } from './schema/playlist-tracks'
 import { PlaylistsMixin } from './schema/playlists'
 import { ReleaseArtistsMixin } from './schema/release-artists'
@@ -33,82 +31,6 @@ import { makeUpdate, withCreatedAt } from './utils'
 export * from './schema'
 
 class DatabaseOriginal extends DatabaseBase {
-  spotifyTrackDownloads = {
-    insert: (spotifyTrackDownload: AutoCreatedAt<InsertSpotifyTrackDownload>) => {
-      return this.db
-        .insert(spotifyTrackDownloads)
-        .values(withCreatedAt(spotifyTrackDownload))
-        .returning()
-        .get()
-    },
-
-    update: (id: SpotifyTrackDownload['id'], data: UpdateData<InsertSpotifyTrackDownload>) => {
-      return this.db
-        .update(spotifyTrackDownloads)
-        .set(
-          makeUpdate({
-            ...data,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            error: ifDefined(data.error, (error) =>
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-              JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-            ),
-          })
-        )
-        .where(eq(spotifyTrackDownloads.id, id))
-        .returning()
-        .get()
-    },
-
-    get: (id: SpotifyTrackDownload['id']) => {
-      return this.db
-        .select()
-        .from(spotifyTrackDownloads)
-        .where(eq(spotifyTrackDownloads.id, id))
-        .get()
-    },
-
-    getByAlbumDownloadId: (albumDownloadId: SpotifyTrackDownload['albumDownloadId']) => {
-      return this.db
-        .select()
-        .from(spotifyTrackDownloads)
-        .where(
-          albumDownloadId === null
-            ? isNull(spotifyTrackDownloads.albumDownloadId)
-            : eq(spotifyTrackDownloads.albumDownloadId, albumDownloadId)
-        )
-        .all()
-    },
-
-    getByTrackIdAndAlbumDownloadId: (
-      trackId: SpotifyTrackDownload['trackId'],
-      albumDownloadId: SpotifyTrackDownload['albumDownloadId']
-    ) => {
-      return this.db
-        .select()
-        .from(spotifyTrackDownloads)
-        .where(
-          and(
-            eq(spotifyTrackDownloads.trackId, trackId),
-            albumDownloadId === null
-              ? isNull(spotifyTrackDownloads.albumDownloadId)
-              : eq(spotifyTrackDownloads.albumDownloadId, albumDownloadId)
-          )
-        )
-        .limit(1)
-        .all()
-        .at(0)
-    },
-
-    getAll: () => {
-      return this.db.select().from(spotifyTrackDownloads).all()
-    },
-
-    delete: (id: SpotifyTrackDownload['id']) => {
-      return this.db.delete(spotifyTrackDownloads).where(eq(spotifyTrackDownloads.id, id)).run()
-    },
-  }
-
   soulseekReleaseDownloads = {
     insert: (soulseekReleaseDownload: AutoCreatedAt<InsertSoulseekReleaseDownload>) => {
       return this.db
@@ -231,23 +153,23 @@ class DatabaseOriginal extends DatabaseBase {
   }
 }
 
-export function Database(url: string) {
-  const Database = pipe(
-    DatabaseOriginal,
-    ConfigMixin,
-    ImagesMixin,
-    ArtistsMixin,
-    ReleaseArtistsMixin,
-    ReleasesMixin,
-    TrackArtistsMixin,
-    TracksMixin,
-    PlaylistsMixin,
-    PlaylistTracksMixin,
-    SoundcloudPlaylistDownloadsMixin,
-    SoundcloudTrackDownloadsMixin,
-    SpotifyAlbumDownloadsMixin
-  )
-  return new Database(url)
-}
+const DatabaseClass = pipe(
+  DatabaseOriginal,
+  ConfigMixin,
+  ImagesMixin,
+  ArtistsMixin,
+  ReleaseArtistsMixin,
+  ReleasesMixin,
+  TrackArtistsMixin,
+  TracksMixin,
+  PlaylistsMixin,
+  PlaylistTracksMixin,
+  SoundcloudPlaylistDownloadsMixin,
+  SoundcloudTrackDownloadsMixin,
+  SpotifyAlbumDownloadsMixin,
+  SpotifyTrackDownloadsMixin
+)
+
+export const Database = (url: string) => new DatabaseClass(url)
 
 export type Database = ReturnType<typeof Database>
