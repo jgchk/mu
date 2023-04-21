@@ -2,8 +2,10 @@ import type { InferModel } from 'drizzle-orm'
 import { eq, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
+import { ifDefined } from 'utils'
 
 import type { UpdateData } from '../utils'
+import { makeUpdate } from '../utils'
 import type { Artist } from './artists'
 import type { DatabaseBase } from './base'
 import { images } from './images'
@@ -100,15 +102,18 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
-        const update = {
-          ...(data.path !== undefined ? { path: data.path } : {}),
-          ...(data.title !== undefined ? { title: data.title } : {}),
-          ...(data.releaseId !== undefined ? { releaseId: data.releaseId } : {}),
-          ...(data.imageId !== undefined ? { imageId: data.imageId } : {}),
-          ...(data.favorite !== undefined ? { favorite: data.favorite ? 1 : 0 } : {}),
-        }
         return convertTrack(
-          this.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
+          this.db
+            .update(tracks)
+            .set(
+              makeUpdate({
+                ...data,
+                favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
+              })
+            )
+            .where(eq(tracks.id, id))
+            .returning()
+            .get()
         )
       },
 

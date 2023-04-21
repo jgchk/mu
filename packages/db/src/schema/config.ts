@@ -3,6 +3,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { UpdateData } from '../utils'
+import { makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
 
 export type Config = InferModel<typeof configs>
@@ -61,37 +62,7 @@ export const ConfigMixin = <TBase extends Constructor<DatabaseBase>>(
       update: (data) => {
         const config = this.config.get()
         if ('id' in config) {
-          const update = {
-            ...(data.lastFmKey !== undefined ? { lastFmKey: data.lastFmKey } : {}),
-            ...(data.lastFmSecret !== undefined ? { lastFmSecret: data.lastFmSecret } : {}),
-            ...(data.lastFmUsername !== undefined ? { lastFmUsername: data.lastFmUsername } : {}),
-            ...(data.lastFmPassword !== undefined ? { lastFmPassword: data.lastFmPassword } : {}),
-            ...(data.soulseekUsername !== undefined
-              ? { soulseekUsername: data.soulseekUsername }
-              : {}),
-            ...(data.soulseekPassword !== undefined
-              ? { soulseekPassword: data.soulseekPassword }
-              : {}),
-            ...(data.spotifyClientId !== undefined
-              ? { spotifyClientId: data.spotifyClientId }
-              : {}),
-            ...(data.spotifyClientSecret !== undefined
-              ? { spotifyClientSecret: data.spotifyClientSecret }
-              : {}),
-            ...(data.spotifyUsername !== undefined
-              ? { spotifyUsername: data.spotifyUsername }
-              : {}),
-            ...(data.spotifyPassword !== undefined
-              ? { spotifyPassword: data.spotifyPassword }
-              : {}),
-            ...(data.spotifyDcCookie !== undefined
-              ? { spotifyDcCookie: data.spotifyDcCookie }
-              : {}),
-            ...(data.soundcloudAuthToken !== undefined
-              ? { soundcloudAuthToken: data.soundcloudAuthToken }
-              : {}),
-          }
-          return this.db.update(configs).set(update).returning().get()
+          return this.db.update(configs).set(makeUpdate(data)).returning().get()
         } else {
           const insert: InsertConfig = {
             lastFmKey: data.lastFmKey ?? defaultConfig.lastFmKey,

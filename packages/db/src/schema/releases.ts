@@ -4,6 +4,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { UpdateData } from '../utils'
+import { makeUpdate } from '../utils'
 import type { Artist } from './artists'
 import type { DatabaseBase } from './base'
 import { releaseArtists } from './release-artists'
@@ -36,10 +37,12 @@ export const ReleasesMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
-        const update = {
-          ...(data.title !== undefined ? { title: data.title } : {}),
-        }
-        return this.db.update(releases).set(update).where(eq(releases.id, id)).returning().get()
+        return this.db
+          .update(releases)
+          .set(makeUpdate(data))
+          .where(eq(releases.id, id))
+          .returning()
+          .get()
       },
 
       getAll: () => {

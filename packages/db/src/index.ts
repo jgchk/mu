@@ -1,5 +1,5 @@
 import { and, eq, isNull } from 'drizzle-orm/expressions'
-import { pipe } from 'utils'
+import { ifDefined, pipe } from 'utils'
 
 import type {
   InsertSoulseekReleaseDownload,
@@ -34,7 +34,7 @@ import { ReleasesMixin } from './schema/releases'
 import { TrackArtistsMixin } from './schema/track-artists'
 import { TracksMixin } from './schema/tracks'
 import type { AutoCreatedAt, UpdateData } from './utils'
-import { withCreatedAt } from './utils'
+import { makeUpdate, withCreatedAt } from './utils'
 
 export * from './schema'
 
@@ -52,14 +52,9 @@ class DatabaseOriginal extends DatabaseBase {
       id: SoundcloudPlaylistDownload['id'],
       data: UpdateData<InsertSoundcloudPlaylistDownload>
     ) => {
-      const update = {
-        ...(data.playlistId !== undefined ? { playlistId: data.playlistId } : {}),
-        ...(data.playlist !== undefined ? { playlist: data.playlist } : {}),
-        ...(data.error !== undefined ? { error: data.error } : {}),
-      }
       return this.db
         .update(soundcloudPlaylistDownloads)
-        .set(update)
+        .set(makeUpdate(data))
         .where(eq(soundcloudPlaylistDownloads.id, id))
         .returning()
         .get()
@@ -108,20 +103,9 @@ class DatabaseOriginal extends DatabaseBase {
       id: SoundcloudTrackDownload['id'],
       data: UpdateData<InsertSoundcloudTrackDownload>
     ) => {
-      const update = {
-        ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
-        ...(data.track !== undefined ? { track: data.track } : {}),
-        ...(data.path !== undefined ? { path: data.path } : {}),
-        ...(data.status !== undefined ? { status: data.status } : {}),
-        ...(data.progress !== undefined ? { progress: data.progress } : {}),
-        ...(data.error !== undefined ? { error: data.error } : {}),
-        ...(data.playlistDownloadId !== undefined
-          ? { playlistDownloadId: data.playlistDownloadId }
-          : {}),
-      }
       return this.db
         .update(soundcloudTrackDownloads)
-        .set(update)
+        .set(makeUpdate(data))
         .where(eq(soundcloudTrackDownloads.id, id))
         .returning()
         .get()
@@ -191,14 +175,9 @@ class DatabaseOriginal extends DatabaseBase {
     },
 
     update: (id: SpotifyAlbumDownload['id'], data: UpdateData<InsertSpotifyAlbumDownload>) => {
-      const update = {
-        ...(data.albumId !== undefined ? { albumId: data.albumId } : {}),
-        ...(data.album !== undefined ? { album: data.album } : {}),
-        ...(data.error !== undefined ? { error: data.error } : {}),
-      }
       return this.db
         .update(spotifyAlbumDownloads)
-        .set(update)
+        .set(makeUpdate(data))
         .where(eq(spotifyAlbumDownloads.id, id))
         .returning()
         .get()
@@ -241,23 +220,18 @@ class DatabaseOriginal extends DatabaseBase {
     },
 
     update: (id: SpotifyTrackDownload['id'], data: UpdateData<InsertSpotifyTrackDownload>) => {
-      const update = {
-        ...(data.trackId !== undefined ? { trackId: data.trackId } : {}),
-        ...(data.track !== undefined ? { track: data.track } : {}),
-        ...(data.path !== undefined ? { path: data.path } : {}),
-        ...(data.status !== undefined ? { status: data.status } : {}),
-        ...(data.progress !== undefined ? { progress: data.progress } : {}),
-        ...(data.error !== undefined
-          ? {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              error: JSON.parse(JSON.stringify(data.error, Object.getOwnPropertyNames(data.error))),
-            }
-          : {}),
-        ...(data.albumDownloadId !== undefined ? { albumDownloadId: data.albumDownloadId } : {}),
-      }
       return this.db
         .update(spotifyTrackDownloads)
-        .set(update)
+        .set(
+          makeUpdate({
+            ...data,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            error: ifDefined(data.error, (error) =>
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+              JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+            ),
+          })
+        )
         .where(eq(spotifyTrackDownloads.id, id))
         .returning()
         .get()
@@ -325,13 +299,9 @@ class DatabaseOriginal extends DatabaseBase {
       id: SoulseekReleaseDownload['id'],
       data: UpdateData<InsertSoulseekReleaseDownload>
     ) => {
-      const update = {
-        ...(data.username !== undefined ? { username: data.username } : {}),
-        ...(data.dir !== undefined ? { dir: data.dir } : {}),
-      }
       return this.db
         .update(soulseekReleaseDownloads)
-        .set(update)
+        .set(makeUpdate(data))
         .where(eq(soulseekReleaseDownloads.id, id))
         .returning()
         .get()
@@ -385,20 +355,9 @@ class DatabaseOriginal extends DatabaseBase {
     },
 
     update: (id: SoulseekTrackDownload['id'], data: UpdateData<InsertSoulseekTrackDownload>) => {
-      const update = {
-        ...(data.username !== undefined ? { username: data.username } : {}),
-        ...(data.file !== undefined ? { file: data.file } : {}),
-        ...(data.path !== undefined ? { path: data.path } : {}),
-        ...(data.status !== undefined ? { status: data.status } : {}),
-        ...(data.progress !== undefined ? { progress: data.progress } : {}),
-        ...(data.error !== undefined ? { error: data.error } : {}),
-        ...(data.releaseDownloadId !== undefined
-          ? { releaseDownloadId: data.releaseDownloadId }
-          : {}),
-      }
       return this.db
         .update(soulseekTrackDownloads)
-        .set(update)
+        .set(makeUpdate(data))
         .where(eq(soulseekTrackDownloads.id, id))
         .returning()
         .get()
