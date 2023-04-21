@@ -4,11 +4,9 @@ import { ifDefined, pipe } from 'utils'
 import type {
   InsertSoulseekReleaseDownload,
   InsertSoulseekTrackDownload,
-  InsertSpotifyAlbumDownload,
   InsertSpotifyTrackDownload,
   SoulseekReleaseDownload,
   SoulseekTrackDownload,
-  SpotifyAlbumDownload,
   SpotifyTrackDownload,
 } from './schema'
 import {
@@ -16,13 +14,13 @@ import {
   ImagesMixin,
   soulseekReleaseDownloads,
   soulseekTrackDownloads,
-  spotifyAlbumDownloads,
   spotifyTrackDownloads,
 } from './schema'
 import { ArtistsMixin } from './schema/artists'
 import { DatabaseBase } from './schema/base'
 import { SoundcloudPlaylistDownloadsMixin } from './schema/downloads/soundcloud-playlist-downloads'
 import { SoundcloudTrackDownloadsMixin } from './schema/downloads/soundcloud-track-downloads'
+import { SpotifyAlbumDownloadsMixin } from './schema/downloads/spotify-album-downloads'
 import { PlaylistTracksMixin } from './schema/playlist-tracks'
 import { PlaylistsMixin } from './schema/playlists'
 import { ReleaseArtistsMixin } from './schema/release-artists'
@@ -35,51 +33,6 @@ import { makeUpdate, withCreatedAt } from './utils'
 export * from './schema'
 
 class DatabaseOriginal extends DatabaseBase {
-  spotifyAlbumDownloads = {
-    insert: (spotifyAlbumDownload: AutoCreatedAt<InsertSpotifyAlbumDownload>) => {
-      return this.db
-        .insert(spotifyAlbumDownloads)
-        .values(withCreatedAt(spotifyAlbumDownload))
-        .returning()
-        .get()
-    },
-
-    update: (id: SpotifyAlbumDownload['id'], data: UpdateData<InsertSpotifyAlbumDownload>) => {
-      return this.db
-        .update(spotifyAlbumDownloads)
-        .set(makeUpdate(data))
-        .where(eq(spotifyAlbumDownloads.id, id))
-        .returning()
-        .get()
-    },
-
-    get: (id: SpotifyAlbumDownload['id']) => {
-      return this.db
-        .select()
-        .from(spotifyAlbumDownloads)
-        .where(eq(spotifyAlbumDownloads.id, id))
-        .get()
-    },
-
-    getByAlbumId: (albumId: SpotifyAlbumDownload['albumId']) => {
-      return this.db
-        .select()
-        .from(spotifyAlbumDownloads)
-        .where(eq(spotifyAlbumDownloads.albumId, albumId))
-        .limit(1)
-        .all()
-        .at(0)
-    },
-
-    getAll: () => {
-      return this.db.select().from(spotifyAlbumDownloads).all()
-    },
-
-    delete: (id: SpotifyAlbumDownload['id']) => {
-      return this.db.delete(spotifyAlbumDownloads).where(eq(spotifyAlbumDownloads.id, id)).run()
-    },
-  }
-
   spotifyTrackDownloads = {
     insert: (spotifyTrackDownload: AutoCreatedAt<InsertSpotifyTrackDownload>) => {
       return this.db
@@ -291,7 +244,8 @@ export function Database(url: string) {
     PlaylistsMixin,
     PlaylistTracksMixin,
     SoundcloudPlaylistDownloadsMixin,
-    SoundcloudTrackDownloadsMixin
+    SoundcloudTrackDownloadsMixin,
+    SpotifyAlbumDownloadsMixin
   )
   return new Database(url)
 }
