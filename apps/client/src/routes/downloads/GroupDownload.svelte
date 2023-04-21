@@ -49,9 +49,7 @@
             Import
           </LinkButton>
         {:else if status.type === 'downloading'}
-          Downloading... ({status.progress}%)
-        {:else}
-          Queued
+          {status.progress}%
         {/if}
       </div>
     </div>

@@ -22,9 +22,9 @@
   <div class="col-start-1 truncate">{track.name ?? 'Loading...'}</div>
   <div class="text-right">
     {#if track.status === 'done'}
-      Complete
+      Done
     {:else if track.status === 'downloading'}
-      Downloading...{#if track.progress !== null} ({track.progress}%){/if}
+      {track.progress ?? 0}%
     {:else if track.status === 'error'}
       <span
         class="text-error-500"
@@ -34,8 +34,6 @@
       >
         Error
       </span>
-    {:else}
-      Queued
     {/if}
   </div>
   {#if track.status === 'error'}
