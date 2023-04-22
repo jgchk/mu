@@ -5,6 +5,7 @@
 
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import { onMount } from 'svelte'
+  import { fly } from 'svelte/transition'
   import { toErrorString } from 'utils'
 
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
@@ -61,10 +62,15 @@
       <NavBar />
 
       <main class="relative flex-1 overflow-auto">
-        {#if showQueue}
-          <Queue />
-        {:else}
+        <div class="relative h-full w-full overflow-auto">
           <slot />
+        </div>
+        {#if showQueue}
+          <div class="absolute left-0 top-0 h-full w-full overflow-hidden rounded">
+            <div class="h-full w-full" transition:fly={{ y: 20, duration: 150 }}>
+              <Queue class="h-full w-full" />
+            </div>
+          </div>
         {/if}
         <Dialogs />
         <Toaster />

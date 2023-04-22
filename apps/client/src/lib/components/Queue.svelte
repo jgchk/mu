@@ -7,9 +7,13 @@
   import { nowPlaying } from '$lib/now-playing'
   import { createFavoriteTrackMutation, createTracksQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
+  import { tw } from '$lib/utils/classes'
 
   import Delay from './Delay.svelte'
   import TrackList from './TrackList.svelte'
+
+  let class_: string | undefined = undefined
+  export { class_ as class }
 
   const trpc = getContextClient()
 
@@ -31,7 +35,7 @@
   })
 </script>
 
-<div class="h-full w-full space-y-4 overflow-auto rounded bg-black p-4">
+<div class={tw('space-y-4 overflow-auto rounded bg-black p-4', class_)}>
   {#if $tracksQuery.data}
     {@const previousTracks = $tracksQuery.data.filter((t) =>
       $nowPlaying.previousTracks.includes(t.id)
