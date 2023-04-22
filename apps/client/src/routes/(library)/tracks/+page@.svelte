@@ -53,7 +53,7 @@
       class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
       href={data.favoritesOnly ? '/tracks' : '/tracks?favorites=true'}
       on:keydown={(e) => {
-        // go on space
+        // trigger link on space
         if (e.key === ' ') {
           e.preventDefault()
           e.stopPropagation()
