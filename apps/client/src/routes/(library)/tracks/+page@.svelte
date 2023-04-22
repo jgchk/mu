@@ -2,6 +2,9 @@
   import { inview } from 'svelte-inview'
 
   import Button from '$lib/atoms/Button.svelte'
+  import Checkbox from '$lib/atoms/Checkbox.svelte'
+  import InputGroup from '$lib/atoms/InputGroup.svelte'
+  import Label from '$lib/atoms/Label.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { playTrack } from '$lib/now-playing'
   import {
@@ -10,7 +13,6 @@
   } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
-  import { cn } from '$lib/utils/classes'
 
   import Layout from '../+layout.svelte'
   import type { PageData } from './$types'
@@ -46,13 +48,28 @@
 <Layout>
   <svelte:fragment slot="sidebar">
     <a
+      data-sveltekit-keepfocus
+      data-sveltekit-replacestate
+      class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
       href={data.favoritesOnly ? '/tracks' : '/tracks?favorites=true'}
-      class={cn(
-        'flex h-10 w-full items-center px-4 hover:text-white',
-        data.favoritesOnly ? 'text-white' : 'text-gray-500'
-      )}
+      on:keydown={(e) => {
+        // go on space
+        if (e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          e.currentTarget.click()
+        }
+      }}
     >
-      Favorites
+      <InputGroup layout="horizontal" class="pointer-events-none">
+        {#key data.favoritesOnly}
+          <Checkbox id="favorites-only" checked={data.favoritesOnly} tabindex={-1} />
+        {/key}
+        <Label
+          for="favorites-only"
+          class="cursor-pointer transition group-hover/favorites:text-white">Favorites only</Label
+        >
+      </InputGroup>
     </a>
   </svelte:fragment>
 
