@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "7ae49f2a-4b30-4771-bd75-6840d16206a0",
+  "id": "20adb0a2-3b0a-45b6-ad62-4ec00cb7ba24",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -626,7 +626,8 @@
           ],
           "columnsTo": [
             "id"
-          ]
+          ],
+          "onDelete": "cascade"
         },
         "playlist_tracks_track_id_tracks_id_fk": {
           "name": "playlist_tracks_track_id_tracks_id_fk",
@@ -637,7 +638,8 @@
           ],
           "columnsTo": [
             "id"
-          ]
+          ],
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {}

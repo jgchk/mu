@@ -67,13 +67,14 @@
       {/if}
     </div>
 
-    <Button
-      kind="outline"
-      class="absolute right-0 top-0"
-      on:click={() => dialogs.open('edit-playlist', { playlist })}
-    >
-      Edit
-    </Button>
+    <div class="absolute right-0 top-0 flex gap-1">
+      <Button kind="text" on:click={() => dialogs.open('delete-playlist', { playlist })}>
+        Delete
+      </Button>
+      <Button kind="outline" on:click={() => dialogs.open('edit-playlist', { playlist })}>
+        Edit
+      </Button>
+    </div>
   </div>
 
   <PlaylistTracks

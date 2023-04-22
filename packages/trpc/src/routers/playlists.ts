@@ -109,4 +109,12 @@ export const playlistsRouter = router({
       ctx.db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
       return ctx.db.playlists.get(input.playlistId)
     }),
+  delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+    const imageId = ctx.db.playlists.get(input.id).imageId
+    if (imageId !== null) {
+      await cleanupImage(ctx, imageId)
+    }
+    ctx.db.playlists.delete(input.id)
+    return null
+  }),
 })

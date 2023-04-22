@@ -144,3 +144,18 @@ export const createEditPlaylistTrackOrderMutation = (
       ])
     },
   })
+
+export const createDeletePlaylistMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['playlists']['delete']
+) =>
+  trpc.playlists.delete.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.playlists.getAll.utils.invalidate(),
+        trpc.playlists.getAllHasTrack.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })

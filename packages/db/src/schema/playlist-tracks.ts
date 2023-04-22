@@ -14,10 +14,10 @@ export type InsertPlaylistTrack = InferModel<typeof playlistTracks, 'insert'>
 export const playlistTracks = sqliteTable('playlist_tracks', {
   id: integer('id').primaryKey(),
   playlistId: integer('playlist_id')
-    .references(() => playlists.id)
+    .references(() => playlists.id, { onDelete: 'cascade' })
     .notNull(),
   trackId: integer('track_id')
-    .references(() => tracks.id)
+    .references(() => tracks.id, { onDelete: 'cascade' })
     .notNull(),
   order: integer('order').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
