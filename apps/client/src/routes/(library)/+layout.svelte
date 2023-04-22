@@ -1,12 +1,16 @@
 <script lang="ts">
+  import AlbumIcon from '$lib/icons/AlbumIcon.svelte'
+  import MusicNoteIcon from '$lib/icons/MusicNoteIcon.svelte'
+  import PersonIcon from '$lib/icons/PersonIcon.svelte'
+
   import LibraryLink from './LibraryLink.svelte'
 </script>
 
 <div class="flex h-full gap-2">
   <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
-    <LibraryLink href="/artists">Artists</LibraryLink>
-    <LibraryLink href="/releases">Releases</LibraryLink>
-    <LibraryLink href="/tracks">Tracks</LibraryLink>
+    <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
+    <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
+    <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>
 
     {#if $$slots.sidebar}
       <div class="p-2">

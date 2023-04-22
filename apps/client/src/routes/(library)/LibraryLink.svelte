@@ -3,6 +3,7 @@
   import { cn } from '$lib/utils/classes'
 
   export let href: string
+  export let label: string
 
   $: isCurrentUrl = $page.url.pathname === href
 </script>
@@ -14,5 +15,10 @@
   )}
   {href}
 >
-  <slot />
+  {#if $$slots.default}
+    <div class="h-5 w-5">
+      <slot />
+    </div>
+  {/if}
+  {label}
 </a>
