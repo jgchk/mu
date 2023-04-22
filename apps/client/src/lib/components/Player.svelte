@@ -20,6 +20,7 @@
   import { createScrobbleMutation, createUpdateNowPlayingMutation } from '$lib/services/playback'
   import { createFavoriteTrackMutation, createTrackQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
+  import { cn } from '$lib/utils/classes'
 
   import Range from '../atoms/Range.svelte'
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
@@ -94,6 +95,7 @@
     }
   })
 
+  export let queueOpen: boolean
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
   const toggleQueue = () => dispatch('toggleQueue')
 </script>
@@ -196,7 +198,13 @@
     </div>
   </div>
   <div class="flex flex-[2.25] items-center justify-end gap-1">
-    <IconButton kind="text" tooltip="Queue" layer="black" on:click={toggleQueue}>
+    <IconButton
+      kind="text"
+      tooltip="Queue"
+      layer="black"
+      class={cn(queueOpen && 'text-primary-600')}
+      on:click={toggleQueue}
+    >
       <ListIcon />
     </IconButton>
     <IconButton

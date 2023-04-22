@@ -77,7 +77,11 @@
       </main>
 
       {#if $nowPlaying.track}
-        <Player track={$nowPlaying.track} on:toggleQueue={() => (showQueue = !showQueue)} />
+        <Player
+          track={$nowPlaying.track}
+          on:toggleQueue={() => (showQueue = !showQueue)}
+          queueOpen={showQueue}
+        />
       {/if}
     </div>
 
