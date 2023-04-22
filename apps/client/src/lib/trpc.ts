@@ -84,7 +84,7 @@ export const createClient = (fetchFn: typeof fetch) => {
     queryClient,
     fetch: fetchFn,
     links: [
-      loggerLink({ enabled: () => dev }),
+      ...(dev ? [loggerLink()] : []),
 
       browser
         ? splitLink({
