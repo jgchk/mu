@@ -10,6 +10,7 @@
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
   import Player from '$lib/components/Player.svelte'
+  import Queue from '$lib/components/Queue.svelte'
   import { setContextDialogs } from '$lib/dialogs/dialogs'
   import Dialogs from '$lib/dialogs/Dialogs.svelte'
   import { nowPlaying } from '$lib/now-playing'
@@ -50,6 +51,8 @@
   setContextToast(toast)
 
   setContextDialogs()
+
+  let showQueue = false
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
@@ -58,13 +61,17 @@
       <NavBar />
 
       <main class="relative flex-1 overflow-auto">
-        <slot />
+        {#if showQueue}
+          <Queue />
+        {:else}
+          <slot />
+        {/if}
         <Dialogs />
         <Toaster />
       </main>
 
       {#if $nowPlaying.track}
-        <Player track={$nowPlaying.track} />
+        <Player track={$nowPlaying.track} on:toggleQueue={() => (showQueue = !showQueue)} />
       {/if}
     </div>
 

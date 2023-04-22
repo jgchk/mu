@@ -7,6 +7,9 @@ export const createTrackQuery = (trpc: TRPCClient, id: number) => trpc.tracks.ge
 export const prefetchTrackQuery = (trpc: TRPCClient, id: number) =>
   trpc.tracks.getById.prefetchQuery({ id })
 
+export const createTracksQuery = (trpc: TRPCClient, ids: number[]) =>
+  trpc.tracks.getMany.query({ ids })
+
 export const createAllTracksWithArtistsAndReleaseQuery = (
   trpc: TRPCClient,
   input: Omit<RouterInput['tracks']['getAllWithArtistsAndRelease'], 'cursor'>
@@ -24,6 +27,7 @@ export const createFavoriteTrackMutation = (
   trpc: TRPCClient,
   optimistic?: {
     getTrackByIdQuery?: RouterInput['tracks']['getById']
+    getManyTracksQuery?: RouterInput['tracks']['getMany']
     getAllTracksWithArtistsAndReleaseQuery?: Omit<
       RouterInput['tracks']['getAllWithArtistsAndRelease'],
       'cursor'
@@ -37,6 +41,7 @@ export const createFavoriteTrackMutation = (
     onMutate: async (input) => {
       const output: {
         getTrackByIdQuery?: RouterOutput['tracks']['getById']
+        getManyTracksQuery?: RouterOutput['tracks']['getMany']
         getAllTracksWithArtistsAndReleaseQuery?: InfiniteData<
           RouterOutput['tracks']['getAllWithArtistsAndRelease']
         >
@@ -52,6 +57,20 @@ export const createFavoriteTrackMutation = (
 
         trpc.tracks.getById.utils.setData(optimistic.getTrackByIdQuery, (old) =>
           old ? { ...old, favorite: input.favorite } : old
+        )
+      }
+
+      if (optimistic?.getManyTracksQuery) {
+        await trpc.tracks.getMany.utils.cancel(optimistic.getManyTracksQuery)
+
+        output.getManyTracksQuery = trpc.tracks.getMany.utils.getData(optimistic.getManyTracksQuery)
+
+        trpc.tracks.getMany.utils.setData(optimistic.getManyTracksQuery, (old) =>
+          old
+            ? old.map((track) =>
+                track.id === input.id ? { ...track, favorite: input.favorite } : track
+              )
+            : old
         )
       }
 
@@ -151,6 +170,13 @@ export const createFavoriteTrackMutation = (
         trpc.tracks.getById.utils.setData(optimistic.getTrackByIdQuery, context?.getTrackByIdQuery)
       }
 
+      if (optimistic?.getManyTracksQuery) {
+        trpc.tracks.getMany.utils.setData(
+          optimistic.getManyTracksQuery,
+          context?.getManyTracksQuery
+        )
+      }
+
       if (optimistic?.getAllTracksWithArtistsAndReleaseQuery) {
         trpc.tracks.getAllWithArtistsAndRelease.utils.setInfiniteData(
           optimistic.getAllTracksWithArtistsAndReleaseQuery,
@@ -182,6 +208,7 @@ export const createFavoriteTrackMutation = (
     onSuccess: async () => {
       await Promise.all([
         trpc.tracks.getById.utils.invalidate(optimistic?.getTrackByIdQuery),
+        trpc.tracks.getMany.utils.invalidate(optimistic?.getManyTracksQuery),
         trpc.tracks.getAllWithArtistsAndRelease.utils.invalidate(
           optimistic?.getAllTracksWithArtistsAndReleaseQuery
         ),

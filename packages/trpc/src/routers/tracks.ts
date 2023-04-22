@@ -44,6 +44,15 @@ export const tracksRouter = router({
     ...ctx.db.tracks.get(id),
     artists: ctx.db.artists.getByTrackId(id),
   })),
+  getMany: publicProcedure
+    .input(z.object({ ids: z.array(z.number()) }))
+    .query(({ input: { ids }, ctx }) => {
+      const tracks = ctx.db.tracks.getMany(ids)
+      return tracks.map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
+    }),
   getByReleaseId: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),

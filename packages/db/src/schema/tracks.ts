@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { eq, placeholder, sql } from 'drizzle-orm'
+import { eq, inArray, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
@@ -69,6 +69,7 @@ export type TracksMixin = {
       playlistId: number
     ) => (TrackPretty & { playlistTrackId: PlaylistTrack['id'] })[]
     get: (id: Track['id']) => TrackPretty
+    getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
   }
 }
@@ -187,6 +188,11 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
 
       get: (id) => {
         return convertTrack(this.db.select().from(tracks).where(eq(tracks.id, id)).get())
+      },
+
+      getMany: (ids) => {
+        if (ids.length === 0) return []
+        return this.db.select().from(tracks).where(inArray(tracks.id, ids)).all().map(convertTrack)
       },
 
       delete: (id) => {

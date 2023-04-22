@@ -148,7 +148,7 @@
 />
 <div class="relative w-full">
   <div
-    class="range__wrapper group relative box-border min-w-full py-2 outline-none"
+    class="range__wrapper group/range relative box-border min-w-full py-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
@@ -167,7 +167,7 @@
           'range__thumb absolute -mt-[5px] h-[14px] w-[14px] cursor-pointer select-none rounded-full bg-white',
           holding
             ? 'range__thumb--holding'
-            : 'scale-90 transform opacity-0 group-hover:scale-100 group-hover:opacity-100'
+            : 'scale-90 transform opacity-0 group-hover/range:scale-100 group-hover/range:opacity-100'
         )}
         bind:this={thumb}
         on:touchstart={onDragStart}

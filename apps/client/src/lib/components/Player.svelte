@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
-  import { raf } from 'svelte/internal'
+  import { createEventDispatcher, raf } from 'svelte/internal'
   import { formatMilliseconds } from 'utils'
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import IconButton from '$lib/atoms/IconButton.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
+  import ListIcon from '$lib/icons/ListIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import RewindIcon from '$lib/icons/RewindIcon.svelte'
@@ -91,6 +93,9 @@
       unsubscribeNowPlayer()
     }
   })
+
+  const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
+  const toggleQueue = () => dispatch('toggleQueue')
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">
@@ -190,11 +195,14 @@
       </div>
     </div>
   </div>
-  <div class="group flex flex-[2.25] items-center justify-end">
-    <button
-      type="button"
-      class="center h-8 w-8 text-gray-400 hover:text-white"
-      use:tooltip={{ content: $volume === 0 ? 'Unmute' : 'Mute' }}
+  <div class="flex flex-[2.25] items-center justify-end gap-1">
+    <IconButton kind="text" tooltip="Queue" layer="black" on:click={toggleQueue}>
+      <ListIcon />
+    </IconButton>
+    <IconButton
+      kind="text"
+      layer="black"
+      tooltip={$volume === 0 ? 'Unmute' : 'Mute'}
       on:click={() => {
         if ($volume === 0) {
           $volume = previousVolume
@@ -204,14 +212,12 @@
         }
       }}
     >
-      <div class="h-4 w-4">
-        {#if $volume === 0}
-          <VolumeOffIcon />
-        {:else}
-          <VolumeOnIcon />
-        {/if}
-      </div>
-    </button>
+      {#if $volume === 0}
+        <VolumeOffIcon />
+      {:else}
+        <VolumeOnIcon />
+      {/if}
+    </IconButton>
     <div class="mr-4 w-[125px]">
       <Range bind:value={$volume} min={0} max={1} />
     </div>

@@ -44,7 +44,19 @@ export const hasDuplicates = <T>(array: T[]): boolean => {
   return false
 }
 
-export const equalOrderless = <T>(a: T[], b: T[]): boolean => {
+export const equalsWithOrder = <T>(a: T[], b: T[]): boolean => {
+  if (a.length !== b.length) {
+    return false
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+export const equalsWithoutOrder = <T>(a: T[], b: T[]): boolean => {
   if (a.length !== b.length) {
     return false
   }
