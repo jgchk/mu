@@ -9,13 +9,84 @@ import { cleanupImage, getImagePath } from '../utils'
 
 export const playlistsRouter = router({
   new: publicProcedure
-    .input(z.object({ name: z.string().min(1), tracks: z.number().array().optional() }))
-    .mutation(({ ctx, input: { name, tracks } }) => {
-      const playlist = ctx.db.playlists.insert({ name })
-      if (tracks) {
-        ctx.db.playlistTracks.insertManyByPlaylistId(playlist.id, tracks)
+    .input(
+      z.object({
+        name: z.string().min(1),
+        description: z.string().nullable(),
+        art: z.string().nullish(),
+        tracks: z.number().array().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      let image: { data: Buffer; id: number } | null | undefined =
+        input.art === null ? null : undefined
+      const art = input.art ? Buffer.from(input.art, 'base64') : null
+      if (art) {
+        image = {
+          data: art,
+          id: ctx.db.images.insert({ hash: md5(art) }).id,
+        }
+
+        const imagePath = getImagePath(ctx, image.id)
+        await ensureDir(path.dirname(imagePath))
+        await fs.writeFile(imagePath, art)
       }
+
+      const imageId = image === null ? null : image?.id
+      const playlist = ctx.db.playlists.insert({
+        name: input.name,
+        description: input.description,
+        imageId,
+      })
+
+      if (input.tracks) {
+        ctx.db.playlistTracks.insertManyByPlaylistId(playlist.id, input.tracks)
+      }
+
       return playlist
+    }),
+  edit: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        data: z.object({ name: z.string().min(1), description: z.string().nullable() }),
+        art: z.string().nullish(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const oldImageId = ctx.db.playlists.get(input.id).imageId
+
+      let image: { data: Buffer; id: number } | null | undefined =
+        input.art === null ? null : undefined
+      const art = input.art ? Buffer.from(input.art, 'base64') : null
+      if (art) {
+        image = {
+          data: art,
+          id: ctx.db.images.insert({ hash: md5(art) }).id,
+        }
+
+        const imagePath = getImagePath(ctx, image.id)
+        await ensureDir(path.dirname(imagePath))
+        await fs.writeFile(imagePath, art)
+      }
+
+      const imageId = image === null ? null : image?.id
+      const playlist = ctx.db.playlists.update(input.id, {
+        ...input.data,
+        imageId,
+      })
+
+      if (imageId !== undefined && oldImageId !== null) {
+        await cleanupImage(ctx, oldImageId)
+      }
+
+      return playlist
+    }),
+  editTrackOrder: publicProcedure
+    .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
+    .mutation(({ ctx, input }) => {
+      ctx.db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
+      return ctx.db.playlists.get(input.playlistId)
     }),
   addTrack: publicProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
@@ -66,49 +137,6 @@ export const playlistsRouter = router({
       artists: ctx.db.artists.getByTrackId(track.id),
     })),
   })),
-  edit: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        data: z.object({ name: z.string().min(1), description: z.string().nullable() }),
-        art: z.string().nullish(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const oldImageId = ctx.db.playlists.get(input.id).imageId
-
-      let image: { data: Buffer; id: number } | null | undefined =
-        input.art === null ? null : undefined
-      const art = input.art ? Buffer.from(input.art, 'base64') : null
-      if (art) {
-        image = {
-          data: art,
-          id: ctx.db.images.insert({ hash: md5(art) }).id,
-        }
-
-        const imagePath = getImagePath(ctx, image.id)
-        await ensureDir(path.dirname(imagePath))
-        await fs.writeFile(imagePath, art)
-      }
-
-      const imageId = image === null ? null : image?.id
-      const playlist = ctx.db.playlists.update(input.id, {
-        ...input.data,
-        imageId,
-      })
-
-      if (imageId !== undefined && oldImageId !== null) {
-        await cleanupImage(ctx, oldImageId)
-      }
-
-      return playlist
-    }),
-  editTrackOrder: publicProcedure
-    .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
-    .mutation(({ ctx, input }) => {
-      ctx.db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
-      return ctx.db.playlists.get(input.playlistId)
-    }),
   delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
     const imageId = ctx.db.playlists.get(input.id).imageId
     if (imageId !== null) {

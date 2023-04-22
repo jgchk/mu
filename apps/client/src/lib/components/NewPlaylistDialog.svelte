@@ -1,16 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { ifNotNullOrUndefined } from 'utils'
+  import { blobToBase64 } from 'utils/browser'
 
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
-  import Input from '$lib/atoms/Input.svelte'
-  import InputGroup from '$lib/atoms/InputGroup.svelte'
-  import Label from '$lib/atoms/Label.svelte'
   import { createNewPlaylistMutation } from '$lib/services/playlists'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
 
   import LinkToast from './LinkToast.svelte'
+  import PlaylistDetailsForm from './PlaylistDetailsForm.svelte'
 
   const dispatch = createEventDispatcher<{ close: undefined }>()
   const close = () => dispatch('close')
@@ -18,14 +18,29 @@
   export let name = ''
   export let tracks: number[] | undefined = undefined
 
+  let data: {
+    name: string
+    description: string | undefined
+    art: Blob | null | undefined
+  } = {
+    name,
+    description: undefined,
+    art: null,
+  }
+
   const trpc = getContextClient()
   const newPlaylistMutation = createNewPlaylistMutation(trpc)
 
   const toast = getContextToast()
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     $newPlaylistMutation.mutate(
-      { name: name || 'Untitled Playlist', tracks },
+      {
+        name: data.name || 'Untitled Playlist',
+        description: data.description || null,
+        art: await ifNotNullOrUndefined(data.art, blobToBase64),
+        tracks,
+      },
       {
         onSuccess: (data) => {
           toast.success(LinkToast, {
@@ -42,10 +57,7 @@
 
 <form on:submit|preventDefault={handleSubmit}>
   <Dialog title="New Playlist" on:close={close}>
-    <InputGroup>
-      <Label for="playlist-name">Name</Label>
-      <Input id="playlist-name" bind:value={name} autofocus />
-    </InputGroup>
+    <PlaylistDetailsForm {data} />
 
     <svelte:fragment slot="buttons">
       <Button type="submit" loading={$newPlaylistMutation.isLoading}>Save</Button>
