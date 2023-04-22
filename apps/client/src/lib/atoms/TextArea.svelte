@@ -59,7 +59,7 @@
   {rows}
   data-invalid={errors}
   class={tw(
-    'focus-visible:ring-primary-500 rounded px-2 py-1 text-white outline-none focus-visible:ring-1',
+    'rounded px-2 py-1 text-white',
     layer === 700 && 'bg-gray-600',
     layer === 800 && 'bg-gray-700',
     class_

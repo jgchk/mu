@@ -194,7 +194,7 @@
 
 <style lang="postcss">
   .range__wrapper:focus-visible > .range__track {
-    box-shadow: 0 0 0 2px white, 0 0 0 3px theme(colors.secondary.500);
+    outline: auto;
   }
 
   .range__thumb {
