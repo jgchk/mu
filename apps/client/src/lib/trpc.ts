@@ -89,23 +89,10 @@ export const createClient = (fetchFn: typeof fetch) => {
       browser
         ? splitLink({
             condition: (op) => op.type === 'subscription',
-            true: wsLink({
-              client: createWSClient({
-                url: `ws://localhost:8080`,
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                WebSocket,
-              }),
-            }),
-            false: httpBatchLink({
-              url,
-              fetch: fetchFn,
-            }),
+            true: wsLink({ client: createWSClient({ url: `ws://localhost:8080` }) }),
+            false: httpBatchLink({ url, fetch: fetchFn }),
           })
-        : httpBatchLink({
-            url,
-            fetch: fetchFn,
-          }),
+        : httpBatchLink({ url, fetch: fetchFn }),
     ],
     transformer: superjson,
   })
