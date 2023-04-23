@@ -2,7 +2,10 @@ import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
+import { ifDefined } from 'utils'
 
+import type { UpdateData } from '../utils'
+import { makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
 import type { ReleaseTag } from './release-tags'
 import { releaseTags } from './release-tags'
@@ -57,6 +60,7 @@ const convertTag = (tag: Tag): TagPretty => ({
 export type TagsMixin = {
   tags: {
     insert: (tag: InsertTagPretty) => TagPretty
+    update: (id: Tag['id'], data: UpdateData<InsertTagPretty>) => TagPretty
     get: (id: Tag['id']) => TagPretty
     getAll: (filter?: { taggable?: boolean }) => TagPretty[]
     getParents: (id: Tag['id']) => TagPretty[]
@@ -89,6 +93,40 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
             .values(children.map((childId) => ({ parentId: result.id, childId })))
             .run()
         }
+        return convertTag(result)
+      },
+      update: (id, { parents, children, ...data }) => {
+        const result = this.db
+          .update(tags)
+          .set(
+            makeUpdate({
+              ...data,
+              taggable: ifDefined(data.taggable, (taggable) => (taggable ? 1 : 0)),
+            })
+          )
+          .where(eq(tags.id, id))
+          .returning()
+          .get()
+
+        if (parents) {
+          this.db.delete(tagRelationships).where(eq(tagRelationships.childId, id)).run()
+          if (parents.length) {
+            this.db
+              .insert(tagRelationships)
+              .values(parents.map((parentId) => ({ parentId, childId: id })))
+              .run()
+          }
+        }
+        if (children) {
+          this.db.delete(tagRelationships).where(eq(tagRelationships.parentId, id)).run()
+          if (children.length) {
+            this.db
+              .insert(tagRelationships)
+              .values(children.map((childId) => ({ parentId: id, childId })))
+              .run()
+          }
+        }
+
         return convertTag(result)
       },
       get: (id) => {

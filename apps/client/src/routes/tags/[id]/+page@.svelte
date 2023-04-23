@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { ifDefined } from 'utils'
+
+  import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import { createReleasesByTagQuery } from '$lib/services/releases'
   import { createTagQuery, createTagsTreeQuery } from '$lib/services/tags'
@@ -19,6 +23,7 @@
   const trpc = getContextClient()
   const tagQuery = createTagQuery(trpc, data.id)
   const tagsQuery = createTagsTreeQuery(trpc)
+  $: tagsMap = ifDefined($tagsQuery.data, (tags) => new Map(tags.map((t) => [t.id, t])))
 
   const releasesQuery = createReleasesByTagQuery(trpc, data.id)
   const tracksQuery = createTracksByTagQuery(trpc, data.id)
@@ -31,13 +36,13 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
+
+  const dialogs = getContextDialogs()
 </script>
 
 <Layout>
   <svelte:fragment slot="sidebar">
-    {#if $tagsQuery.data}
-      {@const tags = $tagsQuery.data}
-      {@const tagsMap = new Map(tags.map((t) => [t.id, t]))}
+    {#if tagsMap}
       {@const tag = tagsMap.get(data.id)}
 
       {#if tag}
@@ -78,6 +83,22 @@
             </p>
           {/if}
         </div>
+
+        <Button
+          kind="outline"
+          class="absolute right-0 top-0"
+          on:click={() =>
+            dialogs.open('edit-tag', {
+              tag: {
+                ...tag,
+                parents: tagsMap?.get(tag.id)?.parents ?? [],
+                children: tagsMap?.get(tag.id)?.children ?? [],
+              },
+            })}
+          disabled={!tagsMap}
+        >
+          Edit
+        </Button>
       </div>
     {/if}
 

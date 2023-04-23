@@ -18,11 +18,25 @@ export const createTagsTreeQuery = (
 
 export const prefetchTagsTreeQuery = (trpc: TRPCClient) => trpc.tags.getAllTree.prefetchQuery()
 
-export const createTagMutation = (trpc: TRPCClient, options?: RouterOptions['tags']['add']) =>
+export const createNewTagMutation = (trpc: TRPCClient, options?: RouterOptions['tags']['add']) =>
   trpc.tags.add.mutation({
     ...options,
     onSuccess: async (...args) => {
       await Promise.all([
+        trpc.tags.getAll.utils.invalidate(),
+        trpc.tags.getAllTree.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
+export const createEditTagMutation = (trpc: TRPCClient, options?: RouterOptions['tags']['edit']) =>
+  trpc.tags.edit.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      const [data, input] = args
+      await Promise.all([
+        trpc.tags.get.utils.setData({ id: input.id }, data),
         trpc.tags.getAll.utils.invalidate(),
         trpc.tags.getAllTree.utils.invalidate(),
         options?.onSuccess?.(...args),

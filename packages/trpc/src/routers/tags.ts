@@ -24,6 +24,29 @@ export const tagsRouter = router({
       }
       return ctx.db.tags.insert(input)
     }),
+  edit: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        data: z.object({
+          name: z.string().optional(),
+          description: z.string().nullish(),
+          parents: z.number().array().optional(),
+          children: z.number().array().optional(),
+          taggable: z.boolean().optional(),
+        }),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const loop = ctx.db.tags.checkLoop(input.data)
+      if (loop) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Loop detected: ${loop}`,
+        })
+      }
+      return ctx.db.tags.update(input.id, input.data)
+    }),
   get: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.get(input.id)),

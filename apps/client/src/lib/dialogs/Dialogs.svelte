@@ -3,6 +3,7 @@
   import DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
   import EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
+  import EditTagDialog from '$lib/components/EditTagDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
   import NewTagDialog from '$lib/components/NewTagDialog.svelte'
 
@@ -39,5 +40,7 @@
     <EditArtistDialog artist={dialog.artist} on:close={() => dialogs.close('edit-artist')} />
   {:else if dialog._tag === 'new-tag'}
     <NewTagDialog on:close={() => dialogs.close('new-tag')} />
+  {:else if dialog._tag === 'edit-tag'}
+    <EditTagDialog tag={dialog.tag} on:close={() => dialogs.close('edit-tag')} />
   {/if}
 {/if}

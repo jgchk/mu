@@ -7,6 +7,7 @@ import type { AreAllPropsOptional } from 'utils'
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
 import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
+import type EditTagDialog from '$lib/components/EditTagDialog.svelte'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type NoProps = {}
@@ -23,6 +24,7 @@ export type AllDialogs = {
   'delete-playlist': ComponentProps<DeletePlaylistDialog>
   'edit-artist': ComponentProps<EditArtistDialog>
   'new-tag': NoProps
+  'edit-tag': ComponentProps<EditTagDialog>
 }
 
 export type Dialogs = {
