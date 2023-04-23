@@ -121,7 +121,6 @@ CREATE TABLE `release_artists` (
 CREATE TABLE `release_tags` (
 	`release_id` integer NOT NULL,
 	`tag_id` integer NOT NULL,
-	`order` integer NOT NULL,
 	PRIMARY KEY(`release_id`, `tag_id`),
 	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`),
 	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
@@ -158,7 +157,6 @@ CREATE TABLE `track_artists` (
 CREATE TABLE `track_tags` (
 	`track_id` integer NOT NULL,
 	`tag_id` integer NOT NULL,
-	`order` integer NOT NULL,
 	PRIMARY KEY(`track_id`, `tag_id`),
 	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`),
 	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
