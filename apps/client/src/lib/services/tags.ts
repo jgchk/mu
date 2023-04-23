@@ -30,6 +30,9 @@ export const createTagMutation = (trpc: TRPCClient, options?: RouterOptions['tag
 export const createReleaseTagsQuery = (trpc: TRPCClient, releaseId: number) =>
   trpc.tags.getByRelease.query({ releaseId })
 
+export const prefetchReleaseTagsQuery = (trpc: TRPCClient, releaseId: number) =>
+  trpc.tags.getByRelease.prefetchQuery({ releaseId })
+
 export const createAddReleaseTagMutation = (
   trpc: TRPCClient,
   options?: RouterOptions['tags']['addToRelease']
@@ -37,6 +40,23 @@ export const createAddReleaseTagMutation = (
   trpc.tags.addToRelease.mutation({
     ...options,
     onSuccess: async (...args) => {
-      await Promise.all([trpc.tags.getByRelease.utils.invalidate(), options?.onSuccess?.(...args)])
+      await Promise.all([
+        trpc.tags.getByRelease.utils.setData({ releaseId: args[1].releaseId }, args[0]),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
+export const createReorderReleaseTagsMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['tags']['editTagsOrder']
+) =>
+  trpc.tags.editTagsOrder.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.tags.getByRelease.utils.setData({ releaseId: args[1].releaseId }, args[0]),
+        options?.onSuccess?.(...args),
+      ])
     },
   })

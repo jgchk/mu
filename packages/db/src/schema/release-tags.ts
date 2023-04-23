@@ -28,7 +28,17 @@ export const releaseTags = sqliteTable(
 export type ReleaseTagsMixin = {
   releaseTags: {
     insert: (releaseTag: InsertReleaseTag) => ReleaseTag
+    insertMany: (releaseTags: InsertReleaseTag[]) => ReleaseTag[]
+    insertManyByReleaseId: (
+      releaseId: ReleaseTag['releaseId'],
+      tagIds: ReleaseTag['tagId'][]
+    ) => ReleaseTag[]
+    updateByReleaseId: (
+      releaseId: ReleaseTag['releaseId'],
+      tagIds: ReleaseTag['tagId'][]
+    ) => ReleaseTag[]
     addTag: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => ReleaseTag
+    deleteByReleaseId: (releaseId: ReleaseTag['releaseId']) => void
   }
 }
 
@@ -39,6 +49,19 @@ export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
     releaseTags: ReleaseTagsMixin['releaseTags'] = {
       insert: (releaseTag) => {
         return this.db.insert(releaseTags).values(releaseTag).returning().get()
+      },
+      insertMany: (releaseTags_) => {
+        if (releaseTags_.length === 0) return []
+        return this.db.insert(releaseTags).values(releaseTags_).returning().all()
+      },
+      insertManyByReleaseId: (releaseId, tagIds) => {
+        return this.releaseTags.insertMany(
+          tagIds.map((tagId, order) => ({ releaseId, tagId, order }))
+        )
+      },
+      updateByReleaseId: (releaseId, tagIds) => {
+        this.releaseTags.deleteByReleaseId(releaseId)
+        return this.releaseTags.insertManyByReleaseId(releaseId, tagIds)
       },
       addTag: (releaseId, tagId) => {
         const lastTag = this.db
@@ -51,6 +74,9 @@ export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .at(0)
         const order = lastTag ? lastTag.order + 1 : 0
         return this.releaseTags.insert({ releaseId, tagId, order })
+      },
+      deleteByReleaseId: (releaseId) => {
+        return this.db.delete(releaseTags).where(eq(releaseTags.releaseId, releaseId)).run()
       },
     }
   }

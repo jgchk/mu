@@ -1,37 +1,26 @@
 <script lang="ts">
-  import IconButton from '$lib/atoms/IconButton.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import PlusIcon from '$lib/icons/PlusIcon.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
-  import { createAddReleaseTagMutation, createReleaseTagsQuery } from '$lib/services/tags'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
+  import Tags from './Tags.svelte'
 
   export let data: PageData
 
   const trpc = getContextClient()
   $: releaseQuery = createReleaseWithTracksAndArtistsQuery(trpc, data.id)
-  $: releaseTagsQuery = createReleaseTagsQuery(trpc, data.id)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getReleaseWithTracksAndArtistsQuery: { id: data.id },
   })
-
-  let addTag: number | undefined
-  const addTagMutation = createAddReleaseTagMutation(trpc)
-  const handleAddTag = () => {
-    if (addTag === undefined) return
-    $addTagMutation.mutate({ releaseId: data.id, tagId: addTag })
-  }
 
   const makeQueueData = (
     tracks: RouterOutput['releases']['getWithTracksAndArtists']['tracks'],
@@ -83,20 +72,7 @@
             </li>
           {/each}
         </ul>
-        {#if $releaseTagsQuery.data}
-          {@const tags = $releaseTagsQuery.data}
-          <ul class="comma-list text-sm">
-            {#each tags as tag (tag.id)}
-              <li>{tag.name}</li>
-            {/each}
-          </ul>
-          <form class="flex items-center gap-1" on:submit|preventDefault={handleAddTag}>
-            <TagSelect bind:value={addTag} />
-            <IconButton type="submit" tooltip="Add tag" loading={$addTagMutation.isLoading}>
-              <PlusIcon />
-            </IconButton>
-          </form>
-        {/if}
+        <Tags releaseId={data.id} />
       </div>
 
       <LinkButton href="/releases/{release.id}/edit" kind="outline" class="absolute right-0 top-0">
