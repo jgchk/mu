@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import Button from '$lib/atoms/Button.svelte'
+  import Checkbox from '$lib/atoms/Checkbox.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
@@ -19,6 +20,7 @@
 
   let name = ''
   let description = ''
+  let taggable = true
   let parents: number[] = []
   let children: number[] = []
 
@@ -34,6 +36,7 @@
         description: description || null,
         parents,
         children,
+        taggable,
       },
       {
         onSuccess: (data) => {
@@ -84,6 +87,10 @@
             class="w-full"
             placeholder="Optional"
           />
+        </InputGroup>
+        <InputGroup layout="horizontal">
+          <Checkbox id="tag-edit-taggable" bind:checked={taggable} />
+          <Label for="tag-edit-taggable">Taggable</Label>
         </InputGroup>
       </div>
     </div>

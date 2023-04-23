@@ -11,6 +11,7 @@ export const tagsRouter = router({
         description: z.string().nullable(),
         parents: z.number().array().optional(),
         children: z.number().array().optional(),
+        taggable: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -26,7 +27,9 @@ export const tagsRouter = router({
   get: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.get(input.id)),
-  getAll: publicProcedure.query(({ ctx }) => ctx.db.tags.getAll()),
+  getAll: publicProcedure
+    .input(z.object({ taggable: z.boolean().optional() }))
+    .query(({ input, ctx }) => ctx.db.tags.getAll(input)),
   getAllTree: publicProcedure.query(({ ctx }) =>
     ctx.db.tags.getAll().map((tag) => ({
       ...tag,

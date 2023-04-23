@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "590ea156-7b09-4e00-bc0b-8ccf0da1f72d",
+  "id": "5e804511-f935-4e08-87d4-336f3a01e91e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -902,6 +902,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "taggable": {
+          "name": "taggable",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},

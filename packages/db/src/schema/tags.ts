@@ -18,6 +18,7 @@ export const tags = sqliteTable('tags', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
+  taggable: integer('taggable').notNull(),
 })
 
 export type TagRelationship = InferModel<typeof tagRelationships>
@@ -37,16 +38,32 @@ export const tagRelationships = sqliteTable(
   })
 )
 
+export type TagPretty = Omit<Tag, 'taggable'> & {
+  taggable: boolean
+}
+export type InsertTagPretty = Omit<InsertTag, 'taggable'> & {
+  taggable?: boolean
+}
+
+const convertInsertTag = (tag: InsertTagPretty): InsertTag => ({
+  ...tag,
+  taggable: tag.taggable ? 1 : 0,
+})
+const convertTag = (tag: Tag): TagPretty => ({
+  ...tag,
+  taggable: tag.taggable !== 0,
+})
+
 export type TagsMixin = {
   tags: {
-    insert: (tag: InsertTag) => Tag
-    get: (id: Tag['id']) => Tag
-    getAll: () => Tag[]
-    getParents: (id: Tag['id']) => Tag[]
-    getChildren: (id: Tag['id']) => Tag[]
-    getDescendants: (id: Tag['id']) => Tag[]
-    getByRelease: (releaseId: ReleaseTag['releaseId']) => Tag[]
-    getByTrack: (trackId: TrackTag['trackId']) => Tag[]
+    insert: (tag: InsertTagPretty) => TagPretty
+    get: (id: Tag['id']) => TagPretty
+    getAll: (filter?: { taggable?: boolean }) => TagPretty[]
+    getParents: (id: Tag['id']) => TagPretty[]
+    getChildren: (id: Tag['id']) => TagPretty[]
+    getDescendants: (id: Tag['id']) => TagPretty[]
+    getByRelease: (releaseId: ReleaseTag['releaseId']) => TagPretty[]
+    getByTrack: (trackId: TrackTag['trackId']) => TagPretty[]
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
     ) => string | false
@@ -59,7 +76,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
   class extends Base implements TagsMixin {
     tags: TagsMixin['tags'] = {
       insert: ({ parents, children, ...tag }) => {
-        const result = this.db.insert(tags).values(tag).returning().get()
+        const result = this.db.insert(tags).values(convertInsertTag(tag)).returning().get()
         if (parents?.length) {
           this.db
             .insert(tagRelationships)
@@ -72,13 +89,19 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
             .values(children.map((childId) => ({ parentId: result.id, childId })))
             .run()
         }
-        return result
+        return convertTag(result)
       },
       get: (id) => {
-        return this.db.select().from(tags).where(eq(tags.id, id)).get()
+        return convertTag(this.db.select().from(tags).where(eq(tags.id, id)).get())
       },
-      getAll: () => {
-        return this.db.select().from(tags).all()
+      getAll: ({ taggable } = {}) => {
+        let query = this.db.select().from(tags)
+
+        if (taggable !== undefined) {
+          query = query.where(eq(tags.taggable, taggable ? 1 : 0))
+        }
+
+        return query.all().map(convertTag)
       },
       getParents: (id) => {
         return this.db
@@ -87,7 +110,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(tagRelationships.childId, id))
           .innerJoin(tags, eq(tags.id, tagRelationships.parentId))
           .all()
-          .map((tag) => tag.tags)
+          .map((tag) => convertTag(tag.tags))
       },
       getChildren: (id) => {
         return this.db
@@ -96,13 +119,13 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(tagRelationships.parentId, id))
           .innerJoin(tags, eq(tags.id, tagRelationships.childId))
           .all()
-          .map((tag) => tag.tags)
+          .map((tag) => convertTag(tag.tags))
       },
       getDescendants: (id) => {
         const tag = this.tags.get(id)
 
         // bfs
-        const descendants: Tag[] = []
+        const descendants: TagPretty[] = []
         const visited = new Set<number>()
         const queue = [tag]
         while (queue.length) {
@@ -125,7 +148,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(releaseTags.releaseId, releaseId))
           .innerJoin(tags, eq(releaseTags.tagId, tags.id))
           .all()
-          .map((t) => t.tags)
+          .map((t) => convertTag(t.tags))
       },
       getByTrack: (trackId) => {
         return this.db
@@ -134,7 +157,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(trackTags.trackId, trackId))
           .innerJoin(tags, eq(trackTags.tagId, tags.id))
           .all()
-          .map((t) => t.tags)
+          .map((t) => convertTag(t.tags))
       },
       checkLoop: (newTag) => {
         const nodes: Pick<Tag, 'id' | 'name'>[] = this.db.select().from(tags).all()

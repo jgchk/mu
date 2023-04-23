@@ -23,7 +23,7 @@
   export let offset = 8
 
   const trpc = getContextClient()
-  const tagsQuery = createTagsQuery(trpc)
+  const tagsQuery = createTagsQuery(trpc, { taggable: true })
 
   const dispatch = createEventDispatcher<{
     close: undefined

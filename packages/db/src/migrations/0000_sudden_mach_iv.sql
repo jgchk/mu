@@ -142,7 +142,8 @@ CREATE TABLE `tag_relationships` (
 CREATE TABLE `tags` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`description` text
+	`description` text,
+	`taggable` integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `track_artists` (

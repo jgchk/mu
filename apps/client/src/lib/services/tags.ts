@@ -1,12 +1,15 @@
-import type { RouterOptions, TRPCClient } from '$lib/trpc'
+import type { RouterInput, RouterOptions, TRPCClient } from '$lib/trpc'
 
 export const createTagQuery = (trpc: TRPCClient, id: number) => trpc.tags.get.query({ id })
 
 export const prefetchTagQuery = (trpc: TRPCClient, id: number) =>
   trpc.tags.get.prefetchQuery({ id })
 
-export const createTagsQuery = (trpc: TRPCClient, options?: RouterOptions['tags']['getAll']) =>
-  trpc.tags.getAll.query(undefined, options)
+export const createTagsQuery = (
+  trpc: TRPCClient,
+  input?: RouterInput['tags']['getAll'],
+  options?: RouterOptions['tags']['getAll']
+) => trpc.tags.getAll.query(input ?? {}, options)
 
 export const createTagsTreeQuery = (
   trpc: TRPCClient,
