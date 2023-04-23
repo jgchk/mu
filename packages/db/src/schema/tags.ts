@@ -36,6 +36,7 @@ export const tagRelationships = sqliteTable(
 export type TagsMixin = {
   tags: {
     insert: (tag: InsertTag) => Tag
+    get: (id: Tag['id']) => Tag
     getAll: () => Tag[]
     getParents: (id: Tag['id']) => Tag[]
     getChildren: (id: Tag['id']) => Tag[]
@@ -65,6 +66,9 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
             .run()
         }
         return result
+      },
+      get: (id) => {
+        return this.db.select().from(tags).where(eq(tags.id, id)).get()
       },
       getAll: () => {
         return this.db.select().from(tags).all()

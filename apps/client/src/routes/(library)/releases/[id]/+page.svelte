@@ -73,9 +73,9 @@
         </ul>
       </div>
 
-      <LinkButton href="/releases/{release.id}/edit" kind="outline" class="absolute right-0 top-0"
-        >Edit</LinkButton
-      >
+      <LinkButton href="/releases/{release.id}/edit" kind="outline" class="absolute right-0 top-0">
+        Edit
+      </LinkButton>
     </div>
 
     <TrackList

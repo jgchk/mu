@@ -23,6 +23,9 @@ export const tagsRouter = router({
       }
       return ctx.db.tags.insert(input)
     }),
+  get: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ ctx, input }) => ctx.db.tags.get(input.id)),
   getAll: publicProcedure.query(({ ctx }) => ctx.db.tags.getAll()),
   getAllTree: publicProcedure.query(({ ctx }) =>
     ctx.db.tags.getAll().map((tag) => ({

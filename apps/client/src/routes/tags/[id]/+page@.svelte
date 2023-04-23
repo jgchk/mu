@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createTagsTreeQuery } from '$lib/services/tags'
+  import { createTagQuery, createTagsTreeQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../+layout.svelte'
@@ -9,6 +9,7 @@
   export let data: PageData
 
   const trpc = getContextClient()
+  const tagQuery = createTagQuery(trpc, data.id)
   const tagsQuery = createTagsTreeQuery(trpc)
 </script>
 
@@ -36,4 +37,23 @@
       <div>Loading...</div>
     {/if}
   </svelte:fragment>
+
+  {#if $tagQuery.data}
+    {@const tag = $tagQuery.data}
+    <div class="relative flex items-end gap-6">
+      <div class="space-y-1 pb-2">
+        <h1 class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]" title={tag.name}>
+          {tag.name}
+        </h1>
+        {#if tag.description}
+          <p
+            class="line-clamp-5 whitespace-pre-wrap leading-[1.19] text-gray-400"
+            title={tag.description}
+          >
+            {tag.description}
+          </p>
+        {/if}
+      </div>
+    </div>
+  {/if}
 </Layout>
