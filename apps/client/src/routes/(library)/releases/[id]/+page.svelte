@@ -36,7 +36,7 @@
   {@const tracks = release.tracks}
 
   <div class="space-y-4 p-4">
-    <div class="relative flex items-end gap-6">
+    <div class="group/tags relative flex items-end gap-6">
       <button
         type="button"
         disabled={tracks.length === 0}
@@ -63,7 +63,7 @@
         >
           {release.title}
         </h1>
-        <div class="group/tags flex items-center gap-2 text-sm">
+        <div class="flex items-center gap-2 text-sm">
           <ul class="comma-list text-sm font-bold">
             {#each release.artists as artist (artist.id)}
               <li class="flex">
