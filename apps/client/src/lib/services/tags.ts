@@ -33,26 +33,11 @@ export const createReleaseTagsQuery = (trpc: TRPCClient, releaseId: number) =>
 export const prefetchReleaseTagsQuery = (trpc: TRPCClient, releaseId: number) =>
   trpc.tags.getByRelease.prefetchQuery({ releaseId })
 
-export const createAddReleaseTagMutation = (
+export const createReleaseTagMutation = (
   trpc: TRPCClient,
-  options?: RouterOptions['tags']['addToRelease']
+  options?: RouterOptions['tags']['tagRelease']
 ) =>
-  trpc.tags.addToRelease.mutation({
-    ...options,
-    onSuccess: async (...args) => {
-      const [data, input] = args
-      await Promise.all([
-        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data),
-        options?.onSuccess?.(...args),
-      ])
-    },
-  })
-
-export const createDeleteReleaseTagMutation = (
-  trpc: TRPCClient,
-  options?: RouterOptions['tags']['removeFromRelease']
-) =>
-  trpc.tags.removeFromRelease.mutation({
+  trpc.tags.tagRelease.mutation({
     ...options,
     onSuccess: async (...args) => {
       const [data, input] = args
@@ -72,26 +57,11 @@ export const createTrackTagsQuery = (
 export const prefetchTrackTagsQuery = (trpc: TRPCClient, trackId: number) =>
   trpc.tags.getByTrack.prefetchQuery({ trackId })
 
-export const createAddTrackTagMutation = (
+export const createTrackTagMutation = (
   trpc: TRPCClient,
-  options?: RouterOptions['tags']['addToTrack']
+  options?: RouterOptions['tags']['tagTrack']
 ) =>
-  trpc.tags.addToTrack.mutation({
-    ...options,
-    onSuccess: async (...args) => {
-      const [data, input] = args
-      await Promise.all([
-        trpc.tags.getByTrack.utils.setData({ trackId: input.trackId }, data),
-        options?.onSuccess?.(...args),
-      ])
-    },
-  })
-
-export const createDeleteTrackTagMutation = (
-  trpc: TRPCClient,
-  options?: RouterOptions['tags']['removeFromTrack']
-) =>
-  trpc.tags.removeFromTrack.mutation({
+  trpc.tags.tagTrack.mutation({
     ...options,
     onSuccess: async (...args) => {
       const [data, input] = args

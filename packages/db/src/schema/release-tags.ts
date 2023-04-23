@@ -38,6 +38,7 @@ export type ReleaseTagsMixin = {
     ) => ReleaseTag[]
     addTag: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => ReleaseTag
     getByTags: (tagIds: ReleaseTag['tagId'][]) => ReleaseTag[]
+    find: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => ReleaseTag | undefined
     delete: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => void
     deleteByReleaseId: (releaseId: ReleaseTag['releaseId']) => void
   }
@@ -67,6 +68,15 @@ export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
       },
       getByTags: (tagIds) => {
         return this.db.select().from(releaseTags).where(inArray(releaseTags.tagId, tagIds)).all()
+      },
+      find: (releaseId, tagId) => {
+        return this.db
+          .select()
+          .from(releaseTags)
+          .where(and(eq(releaseTags.releaseId, releaseId), eq(releaseTags.tagId, tagId)))
+          .limit(1)
+          .all()
+          .at(0)
       },
       delete: (releaseId, tagId) => {
         return this.db

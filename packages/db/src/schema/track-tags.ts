@@ -32,6 +32,7 @@ export type TrackTagsMixin = {
     updateByTrackId: (trackId: TrackTag['trackId'], tagIds: TrackTag['tagId'][]) => TrackTag[]
     addTag: (trackId: TrackTag['trackId'], tagId: TrackTag['tagId']) => TrackTag
     getByTags: (tagIds: TrackTag['tagId'][]) => TrackTag[]
+    find: (trackId: TrackTag['trackId'], tagId: TrackTag['tagId']) => TrackTag | undefined
     delete: (trackId: TrackTag['trackId'], tagId: TrackTag['tagId']) => void
     deleteByTrackId: (trackId: TrackTag['trackId']) => void
   }
@@ -61,6 +62,15 @@ export const TrackTagsMixin = <TBase extends Constructor<DatabaseBase>>(
       },
       getByTags: (tagIds) => {
         return this.db.select().from(trackTags).where(inArray(trackTags.tagId, tagIds)).all()
+      },
+      find: (trackId, tagId) => {
+        return this.db
+          .select()
+          .from(trackTags)
+          .where(and(eq(trackTags.trackId, trackId), eq(trackTags.tagId, tagId)))
+          .limit(1)
+          .all()
+          .at(0)
       },
       delete: (trackId, tagId) => {
         return this.db

@@ -9,11 +9,7 @@
   import Input from '$lib/atoms/Input.svelte'
   import PopoverArrow from '$lib/components/PopoverArrow.svelte'
   import CheckIcon from '$lib/icons/CheckIcon.svelte'
-  import {
-    createAddReleaseTagMutation,
-    createDeleteReleaseTagMutation,
-    createTagsQuery,
-  } from '$lib/services/tags'
+  import { createReleaseTagMutation, createTagsQuery } from '$lib/services/tags'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
@@ -29,14 +25,9 @@
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc)
-  const addTagMutation = createAddReleaseTagMutation(trpc)
-  const handleAddTag = (tagId: number) => {
-    $addTagMutation.mutate({ releaseId, tagId })
-  }
-
-  const deleteTagMutation = createDeleteReleaseTagMutation(trpc)
-  const handleDeleteTag = (tagId: number) => {
-    $deleteTagMutation.mutate({ releaseId, tagId })
+  const tagMutation = createReleaseTagMutation(trpc)
+  const handleTag = (tagId: number, tagged: boolean) => {
+    $tagMutation.mutate({ releaseId, tagId, tagged })
   }
 
   const dispatch = createEventDispatcher<{ close: undefined }>()
@@ -70,11 +61,7 @@
 
             const tag = filteredTags[0]
             const selected = selectedTagIdsSet.has(tag.id)
-            if (selected) {
-              handleDeleteTag(tag.id)
-            } else {
-              handleAddTag(tag.id)
-            }
+            handleTag(tag.id, !selected)
           }
         }
       }}
@@ -91,7 +78,7 @@
             class="w-full text-white"
             layer={700}
             align="left"
-            on:click={() => (selected ? handleDeleteTag(tag.id) : handleAddTag(tag.id))}
+            on:click={() => handleTag(tag.id, !selected)}
             icon={selected ? CheckIcon : undefined}
           >
             {tag.name}

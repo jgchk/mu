@@ -38,52 +38,46 @@ export const tagsRouter = router({
   getByRelease: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.getByRelease(input.releaseId)),
-  addToRelease: publicProcedure
+  tagRelease: publicProcedure
     .input(
       z.object({
         releaseId: z.number(),
         tagId: z.number(),
+        tagged: z.boolean(),
       })
     )
     .mutation(({ ctx, input }) => {
-      ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
-      return ctx.db.tags.getByRelease(input.releaseId)
-    }),
-  removeFromRelease: publicProcedure
-    .input(
-      z.object({
-        releaseId: z.number(),
-        tagId: z.number(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
-      ctx.db.releaseTags.delete(input.releaseId, input.tagId)
+      if (input.tagged) {
+        const existingTag = ctx.db.releaseTags.find(input.releaseId, input.tagId)
+        if (!existingTag) {
+          ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
+        }
+      } else {
+        ctx.db.releaseTags.delete(input.releaseId, input.tagId)
+      }
       return ctx.db.tags.getByRelease(input.releaseId)
     }),
 
   getByTrack: publicProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.getByTrack(input.trackId)),
-  addToTrack: publicProcedure
+  tagTrack: publicProcedure
     .input(
       z.object({
         trackId: z.number(),
         tagId: z.number(),
+        tagged: z.boolean(),
       })
     )
     .mutation(({ ctx, input }) => {
-      ctx.db.trackTags.addTag(input.trackId, input.tagId)
-      return ctx.db.tags.getByTrack(input.trackId)
-    }),
-  removeFromTrack: publicProcedure
-    .input(
-      z.object({
-        trackId: z.number(),
-        tagId: z.number(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
-      ctx.db.trackTags.delete(input.trackId, input.tagId)
+      if (input.tagged) {
+        const existingTag = ctx.db.trackTags.find(input.trackId, input.tagId)
+        if (!existingTag) {
+          ctx.db.trackTags.addTag(input.trackId, input.tagId)
+        }
+      } else {
+        ctx.db.trackTags.delete(input.trackId, input.tagId)
+      }
       return ctx.db.tags.getByTrack(input.trackId)
     }),
 })
