@@ -63,16 +63,19 @@
         >
           {release.title}
         </h1>
-        <ul class="comma-list text-sm font-bold">
-          {#each release.artists as artist (artist.id)}
-            <li class="flex">
-              <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
-                >{artist.name}</a
-              >
-            </li>
-          {/each}
-        </ul>
-        <Tags releaseId={data.id} />
+        <div class="group/tags flex items-center gap-2 text-sm">
+          <ul class="comma-list text-sm font-bold">
+            {#each release.artists as artist (artist.id)}
+              <li class="flex">
+                <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
+                  >{artist.name}</a
+                >
+              </li>
+            {/each}
+          </ul>
+          •
+          <Tags releaseId={data.id} />
+        </div>
       </div>
 
       <LinkButton href="/releases/{release.id}/edit" kind="outline" class="absolute right-0 top-0">

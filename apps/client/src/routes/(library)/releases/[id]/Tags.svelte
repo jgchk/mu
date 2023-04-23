@@ -19,17 +19,26 @@
 {#if $releaseTagsQuery.data}
   {@const tags = $releaseTagsQuery.data}
 
-  <div class="flex items-center gap-2">
-    <ul class="comma-list text-sm text-gray-400">
-      {#each tags as tag (tag.id)}
-        <li>
-          <a href="/tags/{tag.id}" class="transition hover:text-white hover:underline">{tag.name}</a
-          >
-        </li>
-      {/each}
-    </ul>
+  <div class="flex items-center gap-1.5">
+    {#if tags.length}
+      <ul class="comma-list text-sm text-gray-400">
+        {#each tags as tag (tag.id)}
+          <li>
+            <a href="/tags/{tag.id}" class="transition hover:text-white hover:underline"
+              >{tag.name}</a
+            >
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <div class="text-sm text-gray-400">No tags</div>
+    {/if}
 
-    <div class="w-fit" use:popperElement use:clickOutside={() => (showAddTagPopover = false)}>
+    <div
+      class="w-fit opacity-0 transition group-hover/tags:opacity-100"
+      use:popperElement
+      use:clickOutside={() => (showAddTagPopover = false)}
+    >
       <button
         type="button"
         class="text-xs text-gray-400 hover:text-white hover:underline"
