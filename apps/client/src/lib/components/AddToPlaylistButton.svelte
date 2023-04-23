@@ -14,29 +14,30 @@
   export let excludePlaylistId: ComponentProps<AddToPlaylistPopover>['excludePlaylistId'] =
     undefined
 
-  let showAddToPlaylistDialog: { trackId: number } | false = false
+  let showAddToPlaylistPopover: { trackId: number } | false = false
   const [popperElement, popperTooltip] = createPopperAction()
 </script>
 
-<div use:popperElement use:clickOutside={() => (showAddToPlaylistDialog = false)}>
+<div use:popperElement use:clickOutside={() => (showAddToPlaylistPopover = false)}>
   <IconButton
     {layer}
     kind="text"
     tooltip="Add to playlist"
     on:click={() => {
-      if (showAddToPlaylistDialog) {
-        showAddToPlaylistDialog = false
+      if (showAddToPlaylistPopover) {
+        showAddToPlaylistPopover = false
       } else {
-        showAddToPlaylistDialog = { trackId }
+        showAddToPlaylistPopover = { trackId }
       }
     }}
   >
     <PlusIcon />
   </IconButton>
-  {#if showAddToPlaylistDialog}
+
+  {#if showAddToPlaylistPopover}
     <AddToPlaylistPopover
-      trackId={showAddToPlaylistDialog.trackId}
-      on:close={() => (showAddToPlaylistDialog = false)}
+      trackId={showAddToPlaylistPopover.trackId}
+      on:close={() => (showAddToPlaylistPopover = false)}
       {popperTooltip}
       {offset}
       {excludePlaylistId}

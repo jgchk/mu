@@ -1,10 +1,11 @@
 <script lang="ts">
-  import IconButton from '$lib/atoms/IconButton.svelte'
-  import TagSelect from '$lib/components/TagSelect.svelte'
-  import PlusIcon from '$lib/icons/PlusIcon.svelte'
-  import { createAddReleaseTagMutation, createReleaseTagsQuery } from '$lib/services/tags'
+  import { clickOutside } from '$lib/actions/clickOutside'
+  import { createPopperAction } from '$lib/actions/popper'
+  import { tooltip } from '$lib/actions/tooltip'
+  import { createReleaseTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
+  import AddTagPopover from './AddTagPopover.svelte'
   import TagsInternal from './TagsInternal.svelte'
 
   export let releaseId: number
@@ -12,23 +13,32 @@
   const trpc = getContextClient()
   $: releaseTagsQuery = createReleaseTagsQuery(trpc, releaseId)
 
-  let addTag: number | undefined
-  const addTagMutation = createAddReleaseTagMutation(trpc)
-  const handleAddTag = () => {
-    if (addTag === undefined) return
-    $addTagMutation.mutate({ releaseId, tagId: addTag })
-  }
+  let showAddTagPopover = false
+  const [popperElement, popperTooltip] = createPopperAction()
 </script>
 
 {#if $releaseTagsQuery.data}
   {@const tags = $releaseTagsQuery.data}
 
-  <TagsInternal {tags} {releaseId} />
-{/if}
+  <div class="flex items-center gap-2">
+    <TagsInternal {tags} {releaseId} />
 
-<form class="flex items-center gap-1" on:submit|preventDefault={handleAddTag}>
-  <TagSelect bind:value={addTag} />
-  <IconButton type="submit" tooltip="Add tag" loading={$addTagMutation.isLoading}>
-    <PlusIcon />
-  </IconButton>
-</form>
+    <div class="w-fit" use:popperElement use:clickOutside={() => (showAddTagPopover = false)}>
+      <button
+        type="button"
+        class="text-gray-400 hover:text-white hover:underline"
+        on:click={() => (showAddTagPopover = !showAddTagPopover)}
+        use:tooltip={{ content: 'Add tag' }}>+</button
+      >
+
+      {#if showAddTagPopover}
+        <AddTagPopover
+          {releaseId}
+          {popperTooltip}
+          excludeTagIds={tags.map((t) => t.id)}
+          on:close={() => (showAddTagPopover = false)}
+        />
+      {/if}
+    </div>
+  </div>
+{/if}

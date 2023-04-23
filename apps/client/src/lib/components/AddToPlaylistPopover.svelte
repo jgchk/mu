@@ -113,7 +113,13 @@
   </div>
 
   <div class="max-h-[calc(100vh/3)] overflow-auto p-2" tabindex="-1">
-    <Button kind="text" class="w-full text-white" layer={700} on:click={handleNewPlaylist}>
+    <Button
+      kind="text"
+      class="w-full text-white"
+      layer={700}
+      align="left"
+      on:click={handleNewPlaylist}
+    >
       New Playlist
     </Button>
     {#if filteredPlaylists}
@@ -122,6 +128,7 @@
           kind="text"
           class="w-full text-white"
           layer={700}
+          align="left"
           on:click={() => {
             if (playlist.hasTrack) {
               dialogs.open('confirm-duplicate-playlist-track', { playlistId: playlist.id, trackId })
@@ -144,6 +151,7 @@
         kind="text"
         class="w-full text-white"
         layer={700}
+        align="left"
         on:click={() => $playlistsQuery.refetch()}
         loading={$playlistsQuery.isFetching}
       >

@@ -14,7 +14,7 @@
 </script>
 
 <ul
-  class="comma-list text-sm"
+  class="comma-list text-sm text-gray-400"
   use:dnd={{ items: tags, dragDisabled: $reorderTagsMutation.isLoading }}
   on:consider={(e) => (tags = e.detail.items)}
   on:finalize={(e) => {
@@ -36,6 +36,8 @@
   }}
 >
   {#each tags as tag (tag.id)}
-    <li animate:flip={{ duration: dnd.defaults.flipDurationMs }}>{tag.name}</li>
+    <li animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
+      <a href="/tags/{tag.id}" class="transition hover:text-white hover:underline">{tag.name}</a>
+    </li>
   {/each}
 </ul>

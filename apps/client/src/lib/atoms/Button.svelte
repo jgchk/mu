@@ -7,6 +7,7 @@
   export let disabled = false
   export let type: 'button' | 'submit' = 'button'
   export let kind: 'solid' | 'outline' | 'text' = 'solid'
+  export let align: 'left' | 'center' | 'right' = 'center'
   export let loading = false
   let class_: string | undefined = undefined
   export { class_ as class }
@@ -19,7 +20,12 @@
   {disabled}
   {type}
   class={tw(
-    'flex items-center justify-center rounded border px-2 py-1 text-sm font-medium transition',
+    'flex items-center rounded border px-2 py-1 text-sm font-medium transition',
+
+    align === 'left' && 'justify-start',
+    align === 'center' && 'justify-center',
+    align === 'right' && 'justify-end',
+
     kind === 'solid' &&
       'bg-primary-500 hover:bg-primary-600 border-transparent text-black disabled:bg-gray-500 disabled:text-gray-700',
     kind === 'outline' &&
