@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "20adb0a2-3b0a-45b6-ad62-4ec00cb7ba24",
+  "id": "5d235abc-92e6-4435-96cd-6ef77e688f76",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -768,6 +768,85 @@
         },
         "title": {
           "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "tag_relationships": {
+      "name": "tag_relationships",
+      "columns": {
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_id": {
+          "name": "child_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tag_relationships_parent_id_tags_id_fk": {
+          "name": "tag_relationships_parent_id_tags_id_fk",
+          "tableFrom": "tag_relationships",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        },
+        "tag_relationships_child_id_tags_id_fk": {
+          "name": "tag_relationships_child_id_tags_id_fk",
+          "tableFrom": "tag_relationships",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "child_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
+      "compositePrimaryKeys": {
+        "tag_relationships_parent_id_child_id_pk": {
+          "columns": [
+            "parent_id",
+            "child_id"
+          ]
+        }
+      }
+    },
+    "tags": {
+      "name": "tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": false

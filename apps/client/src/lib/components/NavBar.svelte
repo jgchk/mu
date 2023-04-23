@@ -29,6 +29,7 @@
   <NavLink href="/playlists">Playlists</NavLink>
   <NavLink href="/downloads">Downloads</NavLink>
   <NavLink href="/system">System</NavLink>
+  <NavLink href="/tags">Tags</NavLink>
 
   <form
     class="inline"

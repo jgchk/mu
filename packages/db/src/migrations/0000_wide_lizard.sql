@@ -123,6 +123,20 @@ CREATE TABLE `releases` (
 	`title` text
 );
 --> statement-breakpoint
+CREATE TABLE `tag_relationships` (
+	`parent_id` integer NOT NULL,
+	`child_id` integer NOT NULL,
+	PRIMARY KEY(`parent_id`, `child_id`),
+	FOREIGN KEY (`parent_id`) REFERENCES `tags`(`id`),
+	FOREIGN KEY (`child_id`) REFERENCES `tags`(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `tags` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`description` text
+);
+--> statement-breakpoint
 CREATE TABLE `track_artists` (
 	`track_id` integer NOT NULL,
 	`artist_id` integer NOT NULL,

@@ -41,6 +41,10 @@
       transform: translateX(60%);
     }
   }
+
+  .outline-auto {
+    outline: auto;
+  }
 }
 
 .tippy-box {

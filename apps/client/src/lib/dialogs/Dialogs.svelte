@@ -4,6 +4,7 @@
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
   import EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
+  import NewTagDialog from '$lib/components/NewTagDialog.svelte'
 
   import { getContextDialogs } from './dialogs'
 
@@ -36,5 +37,7 @@
     />
   {:else if dialog._tag === 'edit-artist'}
     <EditArtistDialog artist={dialog.artist} on:close={() => dialogs.close('edit-artist')} />
+  {:else if dialog._tag === 'new-tag'}
+    <NewTagDialog on:close={() => dialogs.close('new-tag')} />
   {/if}
 {/if}

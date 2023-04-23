@@ -148,7 +148,7 @@
 />
 <div class="relative w-full">
   <div
-    class="range__wrapper group/range relative box-border min-w-full py-2 outline-none"
+    class="group/range relative box-border min-w-full py-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
@@ -160,7 +160,10 @@
     on:mousedown={onTrackEvent}
     on:touchstart={onTrackEvent}
   >
-    <div class="range__track h-1 rounded-full bg-gray-700" bind:this={container}>
+    <div
+      class="group-focus-visible/range:outline-auto h-1 rounded-full bg-gray-700"
+      bind:this={container}
+    >
       <div class="bg-primary-500 absolute h-1 w-0 rounded-full" bind:this={progressBar} />
       <div
         class={cn(
@@ -193,10 +196,6 @@
 </svelte:head>
 
 <style lang="postcss">
-  .range__wrapper:focus-visible > .range__track {
-    outline: auto;
-  }
-
   .range__thumb {
     transition: box-shadow 125ms, opacity 125ms, transform 125ms;
     box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 0px 2px 1px rgba(0, 0, 0, 0.2);

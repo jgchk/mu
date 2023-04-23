@@ -8,6 +8,8 @@ import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svel
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
 import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+type NoProps = {}
 export type AllDialogs = {
   'new-playlist': {
     name?: string
@@ -20,6 +22,7 @@ export type AllDialogs = {
   'edit-playlist': ComponentProps<EditPlaylistDialog>
   'delete-playlist': ComponentProps<DeletePlaylistDialog>
   'edit-artist': ComponentProps<EditArtistDialog>
+  'new-tag': NoProps
 }
 
 export type Dialogs = {

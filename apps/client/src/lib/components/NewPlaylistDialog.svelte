@@ -56,7 +56,7 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-  <Dialog title="New Playlist" on:close={close}>
+  <Dialog title="New playlist" on:close={close}>
     <PlaylistDetailsForm {data} />
 
     <svelte:fragment slot="buttons">
