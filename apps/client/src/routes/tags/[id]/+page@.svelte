@@ -57,7 +57,9 @@
       {:else}
         <a href="/tags" class="block text-gray-400 hover:underline">All Tags</a>
       {/if}
-      <NavNode id={data.id} {tagsMap} topLevel />
+      <div class="ml-2">
+        <NavNode id={data.id} {tagsMap} topLevel />
+      </div>
     {:else if $tagsQuery.error}
       <div>{$tagsQuery.error.message}</div>
     {:else}
