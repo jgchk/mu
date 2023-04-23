@@ -8,13 +8,12 @@
   import TagIcon from '$lib/icons/TagIcon.svelte'
   import { createReleaseTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
+  import { cn } from '$lib/utils/classes'
 
   import AddTagPopover from './AddTagPopover.svelte'
 
   export let releaseId: number
   export let layer: ComponentProps<IconButton>['layer'] = undefined
-  let class_: string | undefined = undefined
-  export { class_ as class }
 
   let showPopover = false
   const [popperElement, popperTooltip] = createPopperAction()
@@ -24,8 +23,14 @@
   $: selectedTagIds = ifDefined($releaseTagsQuery.data, (tags) => tags.map((t) => t.id)) ?? []
 </script>
 
-<div use:popperElement use:clickOutside={() => (showPopover = false)} class={class_}>
-  <IconButton {layer} kind="text" tooltip="Edit tags" on:click={() => (showPopover = !showPopover)}>
+<div use:popperElement use:clickOutside={() => (showPopover = false)} class="relative -top-[15px]">
+  <IconButton
+    {layer}
+    class={cn('transition', showPopover ? 'opacity-100' : 'opacity-0 group-hover/tags:opacity-100')}
+    kind="text"
+    tooltip="Edit tags"
+    on:click={() => (showPopover = !showPopover)}
+  >
     <TagIcon />
   </IconButton>
 

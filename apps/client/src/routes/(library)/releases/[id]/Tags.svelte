@@ -29,10 +29,7 @@
     {/if}
 
     <div class="ml-2 h-0">
-      <TagsButton
-        {releaseId}
-        class="relative -top-[15px] opacity-0 transition group-hover/tags:opacity-100"
-      />
+      <TagsButton {releaseId} />
     </div>
   </div>
 {/if}
