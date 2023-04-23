@@ -45,7 +45,7 @@
     {#if tagsMap}
       {@const tag = tagsMap.get(data.id)}
 
-      {#if tag}
+      {#if tag?.parents.length}
         {#each tag.parents as parentId (parentId)}
           {@const parent = tagsMap.get(parentId)}
           {#if parent}
@@ -54,6 +54,8 @@
             </a>
           {/if}
         {/each}
+      {:else}
+        <a href="/tags" class="block text-gray-400 hover:underline">All Tags</a>
       {/if}
       <NavNode id={data.id} {tagsMap} topLevel />
     {:else if $tagsQuery.error}
