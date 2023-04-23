@@ -1,4 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
@@ -36,6 +37,8 @@ export type TagsMixin = {
   tags: {
     insert: (tag: InsertTag) => Tag
     getAll: () => Tag[]
+    getParents: (id: Tag['id']) => Tag[]
+    getChildren: (id: Tag['id']) => Tag[]
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
     ) => string | false
@@ -66,6 +69,24 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
       getAll: () => {
         return this.db.select().from(tags).all()
       },
+      getParents: (id) => {
+        return this.db
+          .select()
+          .from(tagRelationships)
+          .where(eq(tagRelationships.childId, id))
+          .innerJoin(tags, eq(tags.id, tagRelationships.parentId))
+          .all()
+          .map((tag) => tag.tags)
+      },
+      getChildren: (id) => {
+        return this.db
+          .select()
+          .from(tagRelationships)
+          .where(eq(tagRelationships.parentId, id))
+          .innerJoin(tags, eq(tags.id, tagRelationships.childId))
+          .all()
+          .map((tag) => tag.tags)
+      },
       checkLoop: (newTag) => {
         const nodes: Pick<Tag, 'id' | 'name'>[] = this.db.select().from(tags).all()
         const edges = this.db.select().from(tagRelationships).all()
@@ -92,19 +113,8 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           ])
         )
         for (const edge of edges) {
-          const previousParent = tagsMap.get(edge.parentId)
-          if (!previousParent) {
-            throw new Error('Invalid parent id')
-          } else {
-            previousParent.children.add(edge.childId)
-          }
-
-          const previousChild = tagsMap.get(edge.childId)
-          if (!previousChild) {
-            throw new Error('Invalid child id')
-          } else {
-            previousChild.parents.add(edge.parentId)
-          }
+          tagsMap.get(edge.parentId)?.children.add(edge.childId)
+          tagsMap.get(edge.childId)?.parents.add(edge.parentId)
         }
 
         const detectCycleInner = (id: number, stack: number[]): number[] | false => {
