@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "5d235abc-92e6-4435-96cd-6ef77e688f76",
+  "id": "67a8262c-85b0-40bf-a70b-210fd2b41fcf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -752,6 +752,65 @@
           "columns": [
             "release_id",
             "artist_id"
+          ]
+        }
+      }
+    },
+    "release_tags": {
+      "name": "release_tags",
+      "columns": {
+        "release_id": {
+          "name": "release_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "release_tags_release_id_releases_id_fk": {
+          "name": "release_tags_release_id_releases_id_fk",
+          "tableFrom": "release_tags",
+          "tableTo": "releases",
+          "columnsFrom": [
+            "release_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        },
+        "release_tags_tag_id_tags_id_fk": {
+          "name": "release_tags_tag_id_tags_id_fk",
+          "tableFrom": "release_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
+      "compositePrimaryKeys": {
+        "release_tags_release_id_tag_id_pk": {
+          "columns": [
+            "release_id",
+            "tag_id"
           ]
         }
       }

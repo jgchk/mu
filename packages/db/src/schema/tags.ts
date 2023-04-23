@@ -4,6 +4,8 @@ import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { DatabaseBase } from './base'
+import type { ReleaseTag } from './release-tags'
+import { releaseTags } from './release-tags'
 
 export type Tag = InferModel<typeof tags>
 export type InsertTag = InferModel<typeof tags, 'insert'> & {
@@ -40,6 +42,7 @@ export type TagsMixin = {
     getAll: () => Tag[]
     getParents: (id: Tag['id']) => Tag[]
     getChildren: (id: Tag['id']) => Tag[]
+    getByRelease: (releaseId: ReleaseTag['releaseId']) => Tag[]
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
     ) => string | false
@@ -90,6 +93,16 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .innerJoin(tags, eq(tags.id, tagRelationships.childId))
           .all()
           .map((tag) => tag.tags)
+      },
+      getByRelease: (releaseId) => {
+        return this.db
+          .select()
+          .from(releaseTags)
+          .where(eq(releaseTags.releaseId, releaseId))
+          .innerJoin(tags, eq(releaseTags.tagId, tags.id))
+          .orderBy(releaseTags.order)
+          .all()
+          .map((t) => t.tags)
       },
       checkLoop: (newTag) => {
         const nodes: Pick<Tag, 'id' | 'name'>[] = this.db.select().from(tags).all()

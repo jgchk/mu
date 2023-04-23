@@ -93,7 +93,7 @@ export const PlaylistTracksMixin = <TBase extends Constructor<DatabaseBase>>(
 
       addTrack: (playlistId, trackId) => {
         const lastTrack = this.db
-          .select()
+          .select({ order: playlistTracks.order })
           .from(playlistTracks)
           .where(eq(playlistTracks.playlistId, playlistId))
           .orderBy(desc(playlistTracks.order))

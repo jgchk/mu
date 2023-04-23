@@ -118,6 +118,15 @@ CREATE TABLE `release_artists` (
 	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `release_tags` (
+	`release_id` integer NOT NULL,
+	`tag_id` integer NOT NULL,
+	`order` integer NOT NULL,
+	PRIMARY KEY(`release_id`, `tag_id`),
+	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`),
+	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `releases` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`title` text

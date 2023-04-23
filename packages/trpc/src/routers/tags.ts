@@ -34,4 +34,18 @@ export const tagsRouter = router({
       children: ctx.db.tags.getChildren(tag.id).map((t) => t.id),
     }))
   ),
+  getByRelease: publicProcedure
+    .input(z.object({ releaseId: z.number() }))
+    .query(({ ctx, input }) => ctx.db.tags.getByRelease(input.releaseId)),
+  addToRelease: publicProcedure
+    .input(
+      z.object({
+        releaseId: z.number(),
+        tagId: z.number(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
+      return null
+    }),
 })

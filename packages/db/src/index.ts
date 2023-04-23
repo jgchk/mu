@@ -11,6 +11,7 @@ import { SpotifyTrackDownloadsMixin } from './schema/downloads/spotify-track-dow
 import { PlaylistTracksMixin } from './schema/playlist-tracks'
 import { PlaylistsMixin } from './schema/playlists'
 import { ReleaseArtistsMixin } from './schema/release-artists'
+import { ReleaseTagsMixin } from './schema/release-tags'
 import { ReleasesMixin } from './schema/releases'
 import { TagsMixin } from './schema/tags'
 import { TrackArtistsMixin } from './schema/track-artists'
@@ -35,7 +36,8 @@ const DatabaseClass = pipe(
   SpotifyTrackDownloadsMixin,
   SoulseekReleaseDownloadsMixin,
   SoulseekTrackDownloadsMixin,
-  TagsMixin
+  TagsMixin,
+  ReleaseTagsMixin
 )
 
 export const Database = (url: string) => new DatabaseClass(url)
