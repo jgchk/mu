@@ -63,21 +63,6 @@ export const createDeleteReleaseTagMutation = (
     },
   })
 
-export const createReorderReleaseTagsMutation = (
-  trpc: TRPCClient,
-  options?: RouterOptions['tags']['editReleaseTagsOrder']
-) =>
-  trpc.tags.editReleaseTagsOrder.mutation({
-    ...options,
-    onSuccess: async (...args) => {
-      const [data, input] = args
-      await Promise.all([
-        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data),
-        options?.onSuccess?.(...args),
-      ])
-    },
-  })
-
 export const createTrackTagsQuery = (
   trpc: TRPCClient,
   trackId: number,
@@ -107,21 +92,6 @@ export const createDeleteTrackTagMutation = (
   options?: RouterOptions['tags']['removeFromTrack']
 ) =>
   trpc.tags.removeFromTrack.mutation({
-    ...options,
-    onSuccess: async (...args) => {
-      const [data, input] = args
-      await Promise.all([
-        trpc.tags.getByTrack.utils.setData({ trackId: input.trackId }, data),
-        options?.onSuccess?.(...args),
-      ])
-    },
-  })
-
-export const createReorderTrackTagsMutation = (
-  trpc: TRPCClient,
-  options?: RouterOptions['tags']['editTrackTagsOrder']
-) =>
-  trpc.tags.editTrackTagsOrder.mutation({
     ...options,
     onSuccess: async (...args) => {
       const [data, input] = args

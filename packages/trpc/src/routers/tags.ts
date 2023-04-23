@@ -60,17 +60,6 @@ export const tagsRouter = router({
       ctx.db.releaseTags.delete(input.releaseId, input.tagId)
       return ctx.db.tags.getByRelease(input.releaseId)
     }),
-  editReleaseTagsOrder: publicProcedure
-    .input(
-      z.object({
-        releaseId: z.number(),
-        tags: z.number().array(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
-      ctx.db.releaseTags.updateByReleaseId(input.releaseId, input.tags)
-      return ctx.db.tags.getByRelease(input.releaseId)
-    }),
 
   getByTrack: publicProcedure
     .input(z.object({ trackId: z.number() }))
@@ -95,17 +84,6 @@ export const tagsRouter = router({
     )
     .mutation(({ ctx, input }) => {
       ctx.db.trackTags.delete(input.trackId, input.tagId)
-      return ctx.db.tags.getByTrack(input.trackId)
-    }),
-  editTrackTagsOrder: publicProcedure
-    .input(
-      z.object({
-        trackId: z.number(),
-        tags: z.number().array(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
-      ctx.db.trackTags.updateByTrackId(input.trackId, input.tags)
       return ctx.db.tags.getByTrack(input.trackId)
     }),
 })

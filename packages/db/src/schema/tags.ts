@@ -124,7 +124,6 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .from(releaseTags)
           .where(eq(releaseTags.releaseId, releaseId))
           .innerJoin(tags, eq(releaseTags.tagId, tags.id))
-          .orderBy(releaseTags.order)
           .all()
           .map((t) => t.tags)
       },
@@ -134,7 +133,6 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .from(trackTags)
           .where(eq(trackTags.trackId, trackId))
           .innerJoin(tags, eq(trackTags.tagId, tags.id))
-          .orderBy(trackTags.order)
           .all()
           .map((t) => t.tags)
       },

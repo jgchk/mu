@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
@@ -18,7 +18,6 @@ export const trackTags = sqliteTable(
     tagId: integer('tag_id')
       .references(() => tags.id)
       .notNull(),
-    order: integer('order').notNull(),
   },
   (trackTags) => ({
     trackTagsPrimaryKey: primaryKey(trackTags.trackId, trackTags.tagId),
@@ -51,23 +50,14 @@ export const TrackTagsMixin = <TBase extends Constructor<DatabaseBase>>(
         return this.db.insert(trackTags).values(trackTags_).returning().all()
       },
       insertManyByTrackId: (trackId, tagIds) => {
-        return this.trackTags.insertMany(tagIds.map((tagId, order) => ({ trackId, tagId, order })))
+        return this.trackTags.insertMany(tagIds.map((tagId) => ({ trackId, tagId })))
       },
       updateByTrackId: (trackId, tagIds) => {
         this.trackTags.deleteByTrackId(trackId)
         return this.trackTags.insertManyByTrackId(trackId, tagIds)
       },
       addTag: (trackId, tagId) => {
-        const lastTag = this.db
-          .select({ order: trackTags.order })
-          .from(trackTags)
-          .where(eq(trackTags.trackId, trackId))
-          .orderBy(desc(trackTags.order))
-          .limit(1)
-          .all()
-          .at(0)
-        const order = lastTag ? lastTag.order + 1 : 0
-        return this.trackTags.insert({ trackId, tagId, order })
+        return this.trackTags.insert({ trackId, tagId })
       },
       getByTags: (tagIds) => {
         return this.db.select().from(trackTags).where(inArray(trackTags.tagId, tagIds)).all()

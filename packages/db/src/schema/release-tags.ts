@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
@@ -18,7 +18,6 @@ export const releaseTags = sqliteTable(
     tagId: integer('tag_id')
       .references(() => tags.id)
       .notNull(),
-    order: integer('order').notNull(),
   },
   (releaseTags) => ({
     releaseTagsPrimaryKey: primaryKey(releaseTags.releaseId, releaseTags.tagId),
@@ -57,25 +56,14 @@ export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
         return this.db.insert(releaseTags).values(releaseTags_).returning().all()
       },
       insertManyByReleaseId: (releaseId, tagIds) => {
-        return this.releaseTags.insertMany(
-          tagIds.map((tagId, order) => ({ releaseId, tagId, order }))
-        )
+        return this.releaseTags.insertMany(tagIds.map((tagId) => ({ releaseId, tagId })))
       },
       updateByReleaseId: (releaseId, tagIds) => {
         this.releaseTags.deleteByReleaseId(releaseId)
         return this.releaseTags.insertManyByReleaseId(releaseId, tagIds)
       },
       addTag: (releaseId, tagId) => {
-        const lastTag = this.db
-          .select({ order: releaseTags.order })
-          .from(releaseTags)
-          .where(eq(releaseTags.releaseId, releaseId))
-          .orderBy(desc(releaseTags.order))
-          .limit(1)
-          .all()
-          .at(0)
-        const order = lastTag ? lastTag.order + 1 : 0
-        return this.releaseTags.insert({ releaseId, tagId, order })
+        return this.releaseTags.insert({ releaseId, tagId })
       },
       getByTags: (tagIds) => {
         return this.db.select().from(releaseTags).where(inArray(releaseTags.tagId, tagIds)).all()
