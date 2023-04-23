@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { numDigits } from 'utils'
+import { numDigits, uniq } from 'utils'
 import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
@@ -43,6 +43,19 @@ export const releasesRouter = router({
           ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)
             ?.imageId ?? null,
       }
+    }),
+  getByTag: publicProcedure
+    .input(z.object({ tagId: z.number() }))
+    .query(({ input: { tagId }, ctx }) => {
+      const descendants = ctx.db.tags.getDescendants(tagId)
+      const ids = [tagId, ...descendants.map((t) => t.id)]
+      const releaseTags = ctx.db.releaseTags.getByTags(ids)
+      const releaseIds = uniq(releaseTags.map((rt) => rt.releaseId))
+      return releaseIds.map((id) => ({
+        ...ctx.db.releases.get(id),
+        imageId:
+          ctx.db.tracks.getByReleaseId(id).find((track) => track.imageId !== null)?.imageId ?? null,
+      }))
     }),
   updateWithTracksAndArtists: publicProcedure
     .input(

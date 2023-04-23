@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
@@ -38,6 +38,7 @@ export type ReleaseTagsMixin = {
       tagIds: ReleaseTag['tagId'][]
     ) => ReleaseTag[]
     addTag: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => ReleaseTag
+    getByTags: (tagIds: ReleaseTag['tagId'][]) => ReleaseTag[]
     delete: (releaseId: ReleaseTag['releaseId'], tagId: ReleaseTag['tagId']) => void
     deleteByReleaseId: (releaseId: ReleaseTag['releaseId']) => void
   }
@@ -75,6 +76,9 @@ export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .at(0)
         const order = lastTag ? lastTag.order + 1 : 0
         return this.releaseTags.insert({ releaseId, tagId, order })
+      },
+      getByTags: (tagIds) => {
+        return this.db.select().from(releaseTags).where(inArray(releaseTags.tagId, tagIds)).all()
       },
       delete: (releaseId, tagId) => {
         return this.db

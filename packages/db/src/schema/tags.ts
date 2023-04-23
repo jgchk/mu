@@ -42,6 +42,7 @@ export type TagsMixin = {
     getAll: () => Tag[]
     getParents: (id: Tag['id']) => Tag[]
     getChildren: (id: Tag['id']) => Tag[]
+    getDescendants: (id: Tag['id']) => Tag[]
     getByRelease: (releaseId: ReleaseTag['releaseId']) => Tag[]
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
@@ -93,6 +94,26 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .innerJoin(tags, eq(tags.id, tagRelationships.childId))
           .all()
           .map((tag) => tag.tags)
+      },
+      getDescendants: (id) => {
+        const tag = this.tags.get(id)
+
+        // bfs
+        const descendants: Tag[] = []
+        const visited = new Set<number>()
+        const queue = [tag]
+        while (queue.length) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const current = queue.shift()!
+          if (visited.has(current.id)) {
+            continue
+          }
+          descendants.push(current)
+          visited.add(current.id)
+          queue.push(...this.tags.getChildren(current.id))
+        }
+
+        return descendants
       },
       getByRelease: (releaseId) => {
         return this.db
