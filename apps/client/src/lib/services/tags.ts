@@ -40,8 +40,24 @@ export const createAddReleaseTagMutation = (
   trpc.tags.addToRelease.mutation({
     ...options,
     onSuccess: async (...args) => {
+      const [data, input] = args
       await Promise.all([
-        trpc.tags.getByRelease.utils.setData({ releaseId: args[1].releaseId }, args[0]),
+        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
+export const createDeleteReleaseTagMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['tags']['removeFromRelease']
+) =>
+  trpc.tags.removeFromRelease.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      const [data, input] = args
+      await Promise.all([
+        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data),
         options?.onSuccess?.(...args),
       ])
     },

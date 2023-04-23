@@ -1,4 +1,7 @@
 <script lang="ts">
+  import type { SvelteComponentTyped } from 'svelte'
+  import { scale } from 'svelte/transition'
+
   import { slide } from '$lib/transitions/slide'
   import { cn, tw } from '$lib/utils/classes'
 
@@ -11,6 +14,10 @@
   export let loading = false
   let class_: string | undefined = undefined
   export { class_ as class }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-undef
+  type C = $$Generic<typeof SvelteComponentTyped<any, any, any>>
+  export let icon: C | undefined = undefined
 
   export let layer: 700 | 800 = 800
 </script>
@@ -43,12 +50,19 @@
     class_
   )}
 >
-  {#if loading}
+  {#if loading || icon}
     <div transition:slide|local={{ axis: 'x' }}>
       <div class="relative mr-2 h-3.5 w-3.5">
-        <Loader />
+        {#if loading}
+          <Loader />
+        {:else}
+          <div class="absolute" transition:scale|local={{ duration: 150 }}>
+            <svelte:component this={icon} />
+          </div>
+        {/if}
       </div>
     </div>
   {/if}
+
   <slot />
 </button>

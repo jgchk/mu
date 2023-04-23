@@ -48,6 +48,30 @@ export const tagsRouter = router({
       ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
       return ctx.db.tags.getByRelease(input.releaseId)
     }),
+  removeFromRelease: publicProcedure
+    .input(
+      z.object({
+        releaseId: z.number(),
+        tagId: z.number(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      ctx.db.releaseTags.delete(input.releaseId, input.tagId)
+      return ctx.db.tags.getByRelease(input.releaseId)
+    }),
+  toggleReleaseTag: publicProcedure
+    .input(
+      z.object({
+        releaseId: z.number(),
+        tagId: z.number(),
+        tagged: z.boolean(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      if (input.tagged) {
+        ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
+      }
+    }),
   editTagsOrder: publicProcedure
     .input(
       z.object({

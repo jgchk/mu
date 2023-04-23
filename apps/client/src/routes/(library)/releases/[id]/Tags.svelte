@@ -35,7 +35,7 @@
         <AddTagPopover
           {releaseId}
           {popperTooltip}
-          excludeTagIds={tags.map((t) => t.id)}
+          selectedTagIds={tags.map((t) => t.id)}
           on:close={() => (showAddTagPopover = false)}
         />
       {/if}

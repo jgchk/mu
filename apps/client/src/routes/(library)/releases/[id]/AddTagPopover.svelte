@@ -8,14 +8,19 @@
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import PopoverArrow from '$lib/components/PopoverArrow.svelte'
-  import { createAddReleaseTagMutation, createTagsQuery } from '$lib/services/tags'
+  import CheckIcon from '$lib/icons/CheckIcon.svelte'
+  import {
+    createAddReleaseTagMutation,
+    createDeleteReleaseTagMutation,
+    createTagsQuery,
+  } from '$lib/services/tags'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
   export let releaseId: number
-  export let excludeTagIds: number[] = []
-  $: excludeTagIdsSet = new Set(excludeTagIds)
+  export let selectedTagIds: number[] = []
+  $: selectedTagIdsSet = new Set(selectedTagIds)
 
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
@@ -26,14 +31,12 @@
   const tagsQuery = createTagsQuery(trpc)
   const addTagMutation = createAddReleaseTagMutation(trpc)
   const handleAddTag = (tagId: number) => {
-    $addTagMutation.mutate(
-      { releaseId, tagId },
-      {
-        onSuccess: () => {
-          close()
-        },
-      }
-    )
+    $addTagMutation.mutate({ releaseId, tagId })
+  }
+
+  const deleteTagMutation = createDeleteReleaseTagMutation(trpc)
+  const handleDeleteTag = (tagId: number) => {
+    $deleteTagMutation.mutate({ releaseId, tagId })
   }
 
   const dispatch = createEventDispatcher<{ close: undefined }>()
@@ -41,13 +44,9 @@
 
   let filter = ''
   let filteredTags: RouterOutput['tags']['getAll'] | undefined = undefined
-  $: filteredTags = ifDefined($tagsQuery.data, (tags) => {
-    let output = tags.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
-    if (excludeTagIds.length) {
-      output = output.filter((p) => !excludeTagIdsSet.has(p.id))
-    }
-    return output
-  })
+  $: filteredTags = ifDefined($tagsQuery.data, (tags) =>
+    tags.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
+  )
 </script>
 
 <div
@@ -68,7 +67,14 @@
         if (e.key === 'Enter') {
           if (filteredTags?.length) {
             e.preventDefault()
-            handleAddTag(filteredTags[0].id)
+
+            const tag = filteredTags[0]
+            const selected = selectedTagIdsSet.has(tag.id)
+            if (selected) {
+              handleDeleteTag(tag.id)
+            } else {
+              handleAddTag(tag.id)
+            }
           }
         }
       }}
@@ -79,13 +85,14 @@
     {#if filteredTags}
       {#if filteredTags.length}
         {#each filteredTags as tag (tag.id)}
+          {@const selected = selectedTagIdsSet.has(tag.id)}
           <Button
             kind="text"
             class="w-full text-white"
             layer={700}
             align="left"
-            on:click={() => handleAddTag(tag.id)}
-            loading={$addTagMutation.isLoading}
+            on:click={() => (selected ? handleDeleteTag(tag.id) : handleAddTag(tag.id))}
+            icon={selected ? CheckIcon : undefined}
           >
             {tag.name}
           </Button>
