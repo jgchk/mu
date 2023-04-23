@@ -13,14 +13,13 @@
     createAddTrackTagMutation,
     createDeleteTrackTagMutation,
     createTagsQuery,
+    createTrackTagsQuery,
   } from '$lib/services/tags'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
   export let trackId: number
-  export let selectedTagIds: number[] = []
-  $: selectedTagIdsSet = new Set(selectedTagIds)
 
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
@@ -28,7 +27,9 @@
   export let offset = 8
 
   const trpc = getContextClient()
-  const tagsQuery = createTagsQuery(trpc)
+  const trackTagsQuery = createTrackTagsQuery(trpc, trackId)
+  $: selectedTagIdsSet = new Set($trackTagsQuery.data?.map((t) => t.id) ?? [])
+
   const addTagMutation = createAddTrackTagMutation(trpc)
   const handleAddTag = (tagId: number) => {
     $addTagMutation.mutate({ trackId, tagId })
@@ -44,6 +45,7 @@
 
   let filter = ''
   let filteredTags: RouterOutput['tags']['getAll'] | undefined = undefined
+  const tagsQuery = createTagsQuery(trpc)
   $: filteredTags = ifDefined($tagsQuery.data, (tags) =>
     tags.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
   )
