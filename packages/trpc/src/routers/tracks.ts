@@ -1,4 +1,4 @@
-import { ifNotNull } from 'utils'
+import { ifNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
@@ -63,6 +63,18 @@ export const tracksRouter = router({
       return tracks.map((track) => ({
         ...track,
         artists: ctx.db.artists.getByTrackId(track.id),
+      }))
+    }),
+  getByTag: publicProcedure
+    .input(z.object({ tagId: z.number() }))
+    .query(({ input: { tagId }, ctx }) => {
+      const descendants = ctx.db.tags.getDescendants(tagId)
+      const ids = [tagId, ...descendants.map((t) => t.id)]
+      const trackTags = ctx.db.trackTags.getByTags(ids)
+      const trackIds = uniq(trackTags.map((tt) => tt.trackId))
+      return trackIds.map((id) => ({
+        ...ctx.db.tracks.get(id),
+        artists: ctx.db.artists.getByTrackId(id),
       }))
     }),
   favorite: publicProcedure

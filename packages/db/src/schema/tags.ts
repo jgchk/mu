@@ -6,6 +6,8 @@ import type { Constructor } from 'utils'
 import type { DatabaseBase } from './base'
 import type { ReleaseTag } from './release-tags'
 import { releaseTags } from './release-tags'
+import type { TrackTag } from './track-tags'
+import { trackTags } from './track-tags'
 
 export type Tag = InferModel<typeof tags>
 export type InsertTag = InferModel<typeof tags, 'insert'> & {
@@ -44,6 +46,7 @@ export type TagsMixin = {
     getChildren: (id: Tag['id']) => Tag[]
     getDescendants: (id: Tag['id']) => Tag[]
     getByRelease: (releaseId: ReleaseTag['releaseId']) => Tag[]
+    getByTrack: (trackId: TrackTag['trackId']) => Tag[]
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
     ) => string | false
@@ -122,6 +125,16 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(releaseTags.releaseId, releaseId))
           .innerJoin(tags, eq(releaseTags.tagId, tags.id))
           .orderBy(releaseTags.order)
+          .all()
+          .map((t) => t.tags)
+      },
+      getByTrack: (trackId) => {
+        return this.db
+          .select()
+          .from(trackTags)
+          .where(eq(trackTags.trackId, trackId))
+          .innerJoin(tags, eq(trackTags.tagId, tags.id))
+          .orderBy(trackTags.order)
           .all()
           .map((t) => t.tags)
       },

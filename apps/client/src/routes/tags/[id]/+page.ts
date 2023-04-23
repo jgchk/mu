@@ -1,5 +1,6 @@
 import { prefetchReleasesByTagQuery } from '$lib/services/releases'
 import { prefetchTagQuery, prefetchTagsTreeQuery } from '$lib/services/tags'
+import { prefetchTracksByTagQuery } from '$lib/services/tracks'
 import { paramNumber } from '$lib/utils/params'
 
 import type { PageLoad } from './$types'
@@ -12,6 +13,7 @@ export const load: PageLoad = async ({ params, parent }) => {
     prefetchTagQuery(trpc, id),
     prefetchTagsTreeQuery(trpc),
     prefetchReleasesByTagQuery(trpc, id),
+    prefetchTracksByTagQuery(trpc, id),
   ])
 
   return { id }

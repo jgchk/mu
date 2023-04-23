@@ -1,98 +1,32 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { formatMilliseconds } from 'utils'
 
-  import { makeImageUrl } from '$lib/cover-art'
-  import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import type { TrackListTrack as TrackListTrackType } from './TrackList'
+  import TrackListTrack from './TrackListTrack.svelte'
 
-  import AddToPlaylistButton from './AddToPlaylistButton.svelte'
-  import CoverArt from './CoverArt.svelte'
-  import FavoriteButton from './FavoriteButton.svelte'
-
-  type Track = {
-    id: number
-    imageId: number | null
-    title: string | null
-    duration: number
-    favorite: boolean
-    release?: { id: number; title: string | null } | null
-    artists: { id: number; name: string }[]
-  }
-
-  export let tracks: Track[]
+  export let tracks: TrackListTrackType[]
   export let showCoverArt = true
   let class_: string | undefined = undefined
   export { class_ as class }
 
   const dispatch = createEventDispatcher<{
-    play: { track: Track; i: number }
-    favorite: { track: Track; favorite: boolean }
+    play: { track: TrackListTrackType; i: number }
+    favorite: { track: TrackListTrackType; favorite: boolean }
   }>()
-  const play = (track: Track, i: number) => dispatch('play', { track, i })
-  const favorite = (track: Track) => dispatch('favorite', { track, favorite: !track.favorite })
+  const play = (track: TrackListTrackType, i: number) => dispatch('play', { track, i })
+  const favorite = (track: TrackListTrackType) =>
+    dispatch('favorite', { track, favorite: !track.favorite })
 </script>
 
 <div class={class_}>
   {#each tracks as track, i (track.id)}
-    <div
-      class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-      on:dblclick={() => play(track, i)}
-    >
-      {#if showCoverArt}
-        <button type="button" class="relative h-11 w-11 shadow" on:click={() => play(track, i)}>
-          <CoverArt
-            src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
-            alt={track.title}
-            iconClass="w-5 h-5"
-            placeholderClass="text-[5px]"
-            rounding="rounded-sm"
-          >
-            <PlayIcon />
-          </CoverArt>
-        </button>
-      {:else}
-        <div class="center w-8">
-          <div class="text-gray-400 group-hover:opacity-0">{i + 1}</div>
-          <button
-            type="button"
-            class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover:opacity-100"
-            on:click={() => play(track, i)}
-          >
-            <PlayIcon />
-          </button>
-        </div>
-      {/if}
-      <div class="flex-1 truncate">
-        {track.title || '[untitled]'}
-        <ul class="comma-list text-sm text-gray-400">
-          {#each track.artists as artist (artist.id)}
-            <li class="flex">
-              <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
-                >{artist.name}</a
-              >
-            </li>
-          {/each}
-        </ul>
-      </div>
-      {#if track.release}
-        <div class="flex-[2] truncate text-sm text-gray-400">
-          <a class="hover:underline group-hover:text-white" href="/releases/{track.release.id}"
-            >{#if track.release.title}
-              {track.release.title}
-            {:else}
-              [untitled]
-            {/if}
-          </a>
-        </div>
-      {/if}
-      <div class="text-sm text-gray-400">
-        {formatMilliseconds(track.duration)}
-      </div>
-      <div class="flex items-center gap-1">
-        <FavoriteButton layer={700} favorite={track.favorite} on:click={() => favorite(track)} />
-        <AddToPlaylistButton trackId={track.id} layer={700} />
-      </div>
-    </div>
+    <TrackListTrack
+      {track}
+      {i}
+      {showCoverArt}
+      on:play={() => play(track, i)}
+      on:favorite={() => favorite(track)}
+    />
   {/each}
 
   <slot name="footer" />

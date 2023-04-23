@@ -34,6 +34,7 @@ export const tagsRouter = router({
       children: ctx.db.tags.getChildren(tag.id).map((t) => t.id),
     }))
   ),
+
   getByRelease: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.getByRelease(input.releaseId)),
@@ -59,20 +60,7 @@ export const tagsRouter = router({
       ctx.db.releaseTags.delete(input.releaseId, input.tagId)
       return ctx.db.tags.getByRelease(input.releaseId)
     }),
-  toggleReleaseTag: publicProcedure
-    .input(
-      z.object({
-        releaseId: z.number(),
-        tagId: z.number(),
-        tagged: z.boolean(),
-      })
-    )
-    .mutation(({ ctx, input }) => {
-      if (input.tagged) {
-        ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
-      }
-    }),
-  editTagsOrder: publicProcedure
+  editReleaseTagsOrder: publicProcedure
     .input(
       z.object({
         releaseId: z.number(),
@@ -82,5 +70,42 @@ export const tagsRouter = router({
     .mutation(({ ctx, input }) => {
       ctx.db.releaseTags.updateByReleaseId(input.releaseId, input.tags)
       return ctx.db.tags.getByRelease(input.releaseId)
+    }),
+
+  getByTrack: publicProcedure
+    .input(z.object({ trackId: z.number() }))
+    .query(({ ctx, input }) => ctx.db.tags.getByTrack(input.trackId)),
+  addToTrack: publicProcedure
+    .input(
+      z.object({
+        trackId: z.number(),
+        tagId: z.number(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      ctx.db.trackTags.addTag(input.trackId, input.tagId)
+      return ctx.db.tags.getByTrack(input.trackId)
+    }),
+  removeFromTrack: publicProcedure
+    .input(
+      z.object({
+        trackId: z.number(),
+        tagId: z.number(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      ctx.db.trackTags.delete(input.trackId, input.tagId)
+      return ctx.db.tags.getByTrack(input.trackId)
+    }),
+  editTrackTagsOrder: publicProcedure
+    .input(
+      z.object({
+        trackId: z.number(),
+        tags: z.number().array(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      ctx.db.trackTags.updateByTrackId(input.trackId, input.tags)
+      return ctx.db.tags.getByTrack(input.trackId)
     }),
 })

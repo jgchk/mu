@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "67a8262c-85b0-40bf-a70b-210fd2b41fcf",
+  "id": "cd2828db-8807-4385-a97c-dae26d29f65e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "artists": {
@@ -970,6 +970,65 @@
           "columns": [
             "track_id",
             "artist_id"
+          ]
+        }
+      }
+    },
+    "track_tags": {
+      "name": "track_tags",
+      "columns": {
+        "track_id": {
+          "name": "track_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "track_tags_track_id_tracks_id_fk": {
+          "name": "track_tags_track_id_tracks_id_fk",
+          "tableFrom": "track_tags",
+          "tableTo": "tracks",
+          "columnsFrom": [
+            "track_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        },
+        "track_tags_tag_id_tags_id_fk": {
+          "name": "track_tags_tag_id_tags_id_fk",
+          "tableFrom": "track_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ]
+        }
+      },
+      "compositePrimaryKeys": {
+        "track_tags_track_id_tag_id_pk": {
+          "columns": [
+            "track_id",
+            "tag_id"
           ]
         }
       }

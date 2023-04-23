@@ -35,6 +35,7 @@ export const createFavoriteTrackMutation = (
     getReleaseWithTracksAndArtistsQuery?: RouterInput['releases']['getWithTracksAndArtists']
     getPlaylistQuery?: RouterInput['playlists']['getWithTracks']
     getFullArtistQuery?: RouterInput['artists']['getFull']
+    getTracksByTagQuery?: RouterInput['tracks']['getByTag']
   }
 ) =>
   trpc.tracks.favorite.mutation({
@@ -48,6 +49,7 @@ export const createFavoriteTrackMutation = (
         getReleaseWithTracksAndArtistsQuery?: RouterOutput['releases']['getWithTracksAndArtists']
         getPlaylistQuery?: RouterOutput['playlists']['getWithTracks']
         getFullArtistQuery?: RouterOutput['artists']['getFull']
+        getTracksByTagQuery?: RouterOutput['tracks']['getByTag']
       } = {}
 
       if (optimistic?.getTrackByIdQuery) {
@@ -163,6 +165,22 @@ export const createFavoriteTrackMutation = (
         )
       }
 
+      if (optimistic?.getTracksByTagQuery) {
+        await trpc.tracks.getByTag.utils.cancel(optimistic.getTracksByTagQuery)
+
+        output.getTracksByTagQuery = trpc.tracks.getByTag.utils.getData(
+          optimistic.getTracksByTagQuery
+        )
+
+        trpc.tracks.getByTag.utils.setData(optimistic.getTracksByTagQuery, (old) =>
+          old
+            ? old.map((track) =>
+                track.id === input.id ? { ...track, favorite: input.favorite } : track
+              )
+            : old
+        )
+      }
+
       return output
     },
     onError: (err, input, context) => {
@@ -204,6 +222,13 @@ export const createFavoriteTrackMutation = (
           context?.getFullArtistQuery
         )
       }
+
+      if (optimistic?.getTracksByTagQuery) {
+        trpc.tracks.getByTag.utils.setData(
+          optimistic.getTracksByTagQuery,
+          context?.getTracksByTagQuery
+        )
+      }
     },
     onSuccess: async () => {
       await Promise.all([
@@ -217,6 +242,13 @@ export const createFavoriteTrackMutation = (
         ),
         trpc.playlists.getWithTracks.utils.invalidate(optimistic?.getPlaylistQuery),
         trpc.artists.getFull.utils.invalidate(optimistic?.getFullArtistQuery),
+        trpc.tracks.getByTag.utils.invalidate(optimistic?.getTracksByTagQuery),
       ])
     },
   })
+
+export const createTracksByTagQuery = (trpc: TRPCClient, tagId: number) =>
+  trpc.tracks.getByTag.query({ tagId })
+
+export const prefetchTracksByTagQuery = (trpc: TRPCClient, tagId: number) =>
+  trpc.tracks.getByTag.prefetchQuery({ tagId })

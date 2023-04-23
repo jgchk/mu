@@ -155,6 +155,15 @@ CREATE TABLE `track_artists` (
 	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `track_tags` (
+	`track_id` integer NOT NULL,
+	`tag_id` integer NOT NULL,
+	`order` integer NOT NULL,
+	PRIMARY KEY(`track_id`, `tag_id`),
+	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`),
+	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `tracks` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`path` text NOT NULL,

@@ -1,9 +1,13 @@
 <script lang="ts">
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
+  import { playTrack } from '$lib/now-playing'
   import { createReleasesByTagQuery } from '$lib/services/releases'
   import { createTagQuery, createTagsTreeQuery } from '$lib/services/tags'
+  import { createFavoriteTrackMutation, createTracksByTagQuery } from '$lib/services/tracks'
+  import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../+layout.svelte'
@@ -17,6 +21,16 @@
   const tagsQuery = createTagsTreeQuery(trpc)
 
   const releasesQuery = createReleasesByTagQuery(trpc, data.id)
+  const tracksQuery = createTracksByTagQuery(trpc, data.id)
+
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
+    getTracksByTagQuery: { tagId: data.id },
+  })
+
+  const makeQueueData = (tracks: RouterOutput['tracks']['getByTag'], trackIndex: number) => ({
+    previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
+    nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
+  })
 </script>
 
 <Layout>
@@ -88,6 +102,21 @@
     </FlowGrid>
   {:else if $releasesQuery.error}
     <div>{$releasesQuery.error.message}</div>
+  {:else}
+    <div>Loading...</div>
+  {/if}
+
+  <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
+  {#if $tracksQuery.data}
+    {@const tracks = $tracksQuery.data}
+    <TrackList
+      {tracks}
+      on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+      on:favorite={(e) =>
+        $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
+    />
+  {:else if $tracksQuery.error}
+    <div>{$tracksQuery.error.message}</div>
   {:else}
     <div>Loading...</div>
   {/if}
