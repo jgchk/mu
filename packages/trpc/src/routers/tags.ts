@@ -47,6 +47,10 @@ export const tagsRouter = router({
       }
       return ctx.db.tags.update(input.id, input.data)
     }),
+  delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ ctx, input }) => {
+    ctx.db.tags.delete(input.id)
+    return true
+  }),
   get: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.get(input.id)),

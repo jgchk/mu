@@ -5,6 +5,7 @@ import { writable } from 'svelte/store'
 import type { AreAllPropsOptional } from 'utils'
 
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
+import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
 import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
 import type EditTagDialog from '$lib/components/EditTagDialog.svelte'
@@ -25,6 +26,7 @@ export type AllDialogs = {
   'edit-artist': ComponentProps<EditArtistDialog>
   'new-tag': NoProps
   'edit-tag': ComponentProps<EditTagDialog>
+  'delete-tag': ComponentProps<DeleteTagDialog>
 }
 
 export type Dialogs = {

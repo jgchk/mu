@@ -30,10 +30,10 @@ export const tagRelationships = sqliteTable(
   'tag_relationships',
   {
     parentId: integer('parent_id')
-      .references(() => tags.id)
+      .references(() => tags.id, { onDelete: 'cascade' })
       .notNull(),
     childId: integer('child_id')
-      .references(() => tags.id)
+      .references(() => tags.id, { onDelete: 'cascade' })
       .notNull(),
   },
   (tagRelationships) => ({
@@ -68,6 +68,7 @@ export type TagsMixin = {
     getDescendants: (id: Tag['id']) => TagPretty[]
     getByRelease: (releaseId: ReleaseTag['releaseId']) => TagPretty[]
     getByTrack: (trackId: TrackTag['trackId']) => TagPretty[]
+    delete: (id: Tag['id']) => void
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
     ) => string | false
@@ -196,6 +197,9 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .innerJoin(tags, eq(trackTags.tagId, tags.id))
           .all()
           .map((t) => convertTag(t.tags))
+      },
+      delete: (id) => {
+        return this.db.delete(tags).where(eq(tags.id, id)).run()
       },
       checkLoop: (newTag) => {
         const nodes: Pick<Tag, 'id' | 'name'>[] = this.db.select().from(tags).all()

@@ -122,8 +122,8 @@ CREATE TABLE `release_tags` (
 	`release_id` integer NOT NULL,
 	`tag_id` integer NOT NULL,
 	PRIMARY KEY(`release_id`, `tag_id`),
-	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`),
-	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
+	FOREIGN KEY (`release_id`) REFERENCES `releases`(`id`) ON DELETE cascade,
+	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`) ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `releases` (
@@ -135,8 +135,8 @@ CREATE TABLE `tag_relationships` (
 	`parent_id` integer NOT NULL,
 	`child_id` integer NOT NULL,
 	PRIMARY KEY(`parent_id`, `child_id`),
-	FOREIGN KEY (`parent_id`) REFERENCES `tags`(`id`),
-	FOREIGN KEY (`child_id`) REFERENCES `tags`(`id`)
+	FOREIGN KEY (`parent_id`) REFERENCES `tags`(`id`) ON DELETE cascade,
+	FOREIGN KEY (`child_id`) REFERENCES `tags`(`id`) ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `tags` (
@@ -159,8 +159,8 @@ CREATE TABLE `track_tags` (
 	`track_id` integer NOT NULL,
 	`tag_id` integer NOT NULL,
 	PRIMARY KEY(`track_id`, `tag_id`),
-	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`),
-	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`)
+	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`id`) ON DELETE cascade,
+	FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`) ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `tracks` (

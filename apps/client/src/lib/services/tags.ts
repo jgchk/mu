@@ -44,6 +44,21 @@ export const createEditTagMutation = (trpc: TRPCClient, options?: RouterOptions[
     },
   })
 
+export const createDeleteTagMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['tags']['delete']
+) =>
+  trpc.tags.delete.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await Promise.all([
+        trpc.tags.getAll.utils.invalidate(),
+        trpc.tags.getAllTree.utils.invalidate(),
+        options?.onSuccess?.(...args),
+      ])
+    },
+  })
+
 export const createReleaseTagsQuery = (trpc: TRPCClient, releaseId: number) =>
   trpc.tags.getByRelease.query({ releaseId })
 

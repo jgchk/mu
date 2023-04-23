@@ -13,10 +13,10 @@ export const releaseTags = sqliteTable(
   'release_tags',
   {
     releaseId: integer('release_id')
-      .references(() => releases.id)
+      .references(() => releases.id, { onDelete: 'cascade' })
       .notNull(),
     tagId: integer('tag_id')
-      .references(() => tags.id)
+      .references(() => tags.id, { onDelete: 'cascade' })
       .notNull(),
   },
   (releaseTags) => ({

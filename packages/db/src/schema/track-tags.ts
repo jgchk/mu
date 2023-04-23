@@ -13,10 +13,10 @@ export const trackTags = sqliteTable(
   'track_tags',
   {
     trackId: integer('track_id')
-      .references(() => tracks.id)
+      .references(() => tracks.id, { onDelete: 'cascade' })
       .notNull(),
     tagId: integer('tag_id')
-      .references(() => tags.id)
+      .references(() => tags.id, { onDelete: 'cascade' })
       .notNull(),
   },
   (trackTags) => ({

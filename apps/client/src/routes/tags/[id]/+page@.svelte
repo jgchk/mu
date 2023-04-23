@@ -21,12 +21,12 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  const tagQuery = createTagQuery(trpc, data.id)
+  $: tagQuery = createTagQuery(trpc, data.id)
   const tagsQuery = createTagsTreeQuery(trpc)
   $: tagsMap = ifDefined($tagsQuery.data, (tags) => new Map(tags.map((t) => [t.id, t])))
 
-  const releasesQuery = createReleasesByTagQuery(trpc, data.id)
-  const tracksQuery = createTracksByTagQuery(trpc, data.id)
+  $: releasesQuery = createReleasesByTagQuery(trpc, data.id)
+  $: tracksQuery = createTracksByTagQuery(trpc, data.id)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getTracksByTagQuery: { tagId: data.id },
@@ -84,21 +84,23 @@
           {/if}
         </div>
 
-        <Button
-          kind="outline"
-          class="absolute right-0 top-0"
-          on:click={() =>
-            dialogs.open('edit-tag', {
-              tag: {
-                ...tag,
-                parents: tagsMap?.get(tag.id)?.parents ?? [],
-                children: tagsMap?.get(tag.id)?.children ?? [],
-              },
-            })}
-          disabled={!tagsMap}
-        >
-          Edit
-        </Button>
+        <div class="absolute right-0 top-0 flex gap-1">
+          <Button kind="text" on:click={() => dialogs.open('delete-tag', { tag })}>Delete</Button>
+          <Button
+            kind="outline"
+            on:click={() =>
+              dialogs.open('edit-tag', {
+                tag: {
+                  ...tag,
+                  parents: tagsMap?.get(tag.id)?.parents ?? [],
+                  children: tagsMap?.get(tag.id)?.children ?? [],
+                },
+              })}
+            disabled={!tagsMap}
+          >
+            Edit
+          </Button>
+        </div>
       </div>
     {/if}
 
