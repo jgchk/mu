@@ -203,14 +203,38 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
       },
       checkLoop: (newTag) => {
         const nodes: Pick<Tag, 'id' | 'name'>[] = this.db.select().from(tags).all()
-        const edges = this.db.select().from(tagRelationships).all()
-        if (newTag) {
-          const newTagId = newTag.id ?? Infinity
-          nodes.push({ id: newTagId, name: newTag.name ?? '[new tag]' })
+        let edges = this.db.select().from(tagRelationships).all()
+
+        if (newTag?.id !== undefined) {
+          const newTagId = newTag.id
+
+          // replace old node
+          const index = nodes.findIndex((node) => node.id === newTagId)
+          if (index !== -1) {
+            nodes[index] = { id: newTagId, name: newTag.name ?? '[new tag]' }
+          }
+
+          // remove old edges
+          edges = edges.filter((edge) => edge.parentId !== newTagId && edge.childId !== newTagId)
+
+          // add new edges
           if (newTag.parents) {
             edges.push(...newTag.parents.map((parentId) => ({ parentId, childId: newTagId })))
           }
           if (newTag.children) {
+            edges.push(...newTag.children.map((childId) => ({ parentId: newTagId, childId })))
+          }
+        } else {
+          const newTagId = Infinity
+
+          // add new node
+          nodes.push({ id: newTagId, name: newTag?.name ?? '[new tag]' })
+
+          // add new edges
+          if (newTag?.parents) {
+            edges.push(...newTag.parents.map((parentId) => ({ parentId, childId: newTagId })))
+          }
+          if (newTag?.children) {
             edges.push(...newTag.children.map((childId) => ({ parentId: newTagId, childId })))
           }
         }

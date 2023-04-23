@@ -38,7 +38,7 @@ export const tagsRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
-      const loop = ctx.db.tags.checkLoop(input.data)
+      const loop = ctx.db.tags.checkLoop({ id: input.id, ...input.data })
       if (loop) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
