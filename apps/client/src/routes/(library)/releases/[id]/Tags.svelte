@@ -26,9 +26,9 @@
     <div class="w-fit" use:popperElement use:clickOutside={() => (showAddTagPopover = false)}>
       <button
         type="button"
-        class="text-gray-400 hover:text-white hover:underline"
+        class="text-xs text-gray-400 hover:text-white hover:underline"
         on:click={() => (showAddTagPopover = !showAddTagPopover)}
-        use:tooltip={{ content: 'Add tag' }}>+</button
+        use:tooltip={{ content: 'Edit tags' }}>🖉</button
       >
 
       {#if showAddTagPopover}
