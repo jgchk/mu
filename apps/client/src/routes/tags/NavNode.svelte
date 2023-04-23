@@ -3,13 +3,13 @@
 
   export let id: number
   export let tagsMap: Map<number, RouterOutput['tags']['getAllTree'][0]>
-  export let topLevel = false
+  export let current = false
 
   $: tag = tagsMap.get(id)
 </script>
 
 {#if tag}
-  {#if topLevel}
+  {#if current}
     <div class="font-bold text-white">{tag.name}</div>
   {:else}
     <a href="/tags/{tag.id}" class="text-gray-400 hover:underline">{tag.name}</a>
