@@ -26,29 +26,31 @@
         </CoverArt>
       </a>
     </div>
-    <div class="relative min-w-0 flex-1 space-y-1">
-      <div class="flex justify-between">
+    <div class="relative min-w-0 flex-1">
+      <div class="mb-1 flex justify-between">
         <a
-          class="mr-1 truncate text-sm font-semibold text-gray-300 hover:text-white hover:underline"
+          class="mr-1 truncate text-xs font-semibold tracking-wide text-gray-300 hover:text-white hover:underline"
           href={friend.friendUrl}
           title={friend.friendName}
         >
           {friend.friendName}
         </a>
-        {#if friend.nowPlaying}
-          <div class="h-5 w-5 text-gray-400" use:tooltip={{ content: 'Now' }}>
-            <PlayingIcon />
-          </div>
-        {:else}
-          <div
-            class="select-none text-xs text-gray-400"
-            use:tooltip={{ content: toPrettyDate(friend.date) }}
-          >
-            {getTimeSinceShort(friend.date)}
-          </div>
-        {/if}
+        <div class="h-0">
+          {#if friend.nowPlaying}
+            <div class="h-5 w-5 text-gray-400" use:tooltip={{ content: 'Now' }}>
+              <PlayingIcon />
+            </div>
+          {:else}
+            <div
+              class="select-none text-xs text-gray-400"
+              use:tooltip={{ content: toPrettyDate(friend.date) }}
+            >
+              {getTimeSinceShort(friend.date)}
+            </div>
+          {/if}
+        </div>
       </div>
-      <div class="flex items-center gap-1 whitespace-nowrap text-xs text-white">
+      <div class="mb-[3px] flex items-center gap-1 whitespace-nowrap text-xs text-white">
         <a
           class="inline-block max-w-[70%] truncate text-gray-400 hover:text-white hover:underline"
           href={friend.url}
