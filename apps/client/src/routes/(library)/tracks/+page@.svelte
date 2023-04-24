@@ -88,13 +88,13 @@
       <Label for="filter-tag">Tag</Label>
       <TagSelect
         id="filter-tag"
-        value={data.tag}
+        value={typeof data.tags === 'number' ? data.tags : undefined}
         on:change={({ detail: { value } }) => {
           const url = new URL($page.url)
           if (value === undefined) {
-            url.searchParams.delete('tag')
+            url.searchParams.delete('tags')
           } else {
-            url.searchParams.set('tag', value.toString())
+            url.searchParams.set('tags', value.toString())
           }
           void goto(url.toString(), { keepFocus: true, replaceState: true })
         }}
