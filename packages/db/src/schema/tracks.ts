@@ -1,5 +1,5 @@
-import type { InferModel, SQL } from 'drizzle-orm'
-import { and, eq, inArray, or, placeholder, sql } from 'drizzle-orm'
+import type { InferModel } from 'drizzle-orm'
+import { eq, inArray, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
@@ -170,49 +170,53 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getAll: ({ favorite, tags: filterTags, skip = 0, limit = 50 } = {}) => {
-        let query = this.db.select().from(tracks)
+        let query = this.db.select().from(tracks).orderBy(tracks.title)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
         }
 
-        let results
         if (filterTags !== undefined) {
-          const getTagsFilter = (filter: TrackTagsFilter): SQL | undefined => {
-            if (typeof filter === 'number') {
-              return eq(trackTags.tagId, filter)
-            } else if (filter.kind === 'and') {
-              if (filter.tags.length === 0) {
-                return undefined
-              } else if (filter.tags.length === 1) {
-                return getTagsFilter(filter.tags[0])
-              } else {
-                return and(...filter.tags.map(getTagsFilter))
-              }
-            } else if (filter.kind === 'or') {
-              if (filter.tags.length === 0) {
-                return undefined
-              } else if (filter.tags.length === 1) {
-                return getTagsFilter(filter.tags[0])
-              } else {
-                return or(...filter.tags.map(getTagsFilter))
-              }
+          const tracksWithTags = this.db
+            .select()
+            .from(tracks)
+            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
+            .all()
+
+          const trackTagsMap = new Map<number, Set<number>>()
+          for (const trackWithTags of tracksWithTags) {
+            const previous = trackTagsMap.get(trackWithTags.tracks.id)
+            if (previous) {
+              previous.add(trackWithTags.track_tags.tagId)
+            } else {
+              trackTagsMap.set(trackWithTags.tracks.id, new Set([trackWithTags.track_tags.tagId]))
             }
           }
 
-          results = query
-            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
-            .where(getTagsFilter(filterTags))
-            .offset(skip)
-            .orderBy(tracks.title)
-            .limit(limit)
-            .all()
-            .map((t) => t.tracks)
-        } else {
-          results = query.offset(skip).orderBy(tracks.title).limit(limit).all()
+          const allTracks = query.all()
+
+          const makeFilter =
+            (filter: TrackTagsFilter): ((tracks: (typeof allTracks)[0]) => boolean) =>
+            (track) => {
+              const tags = trackTagsMap.get(track.id)
+              if (typeof filter === 'number') {
+                return tags?.has(filter) ?? false
+              } else if (filter.kind === 'and') {
+                return filter.tags.every((tag) => makeFilter(tag)(track))
+              } else if (filter.kind === 'or') {
+                return filter.tags.some((tag) => makeFilter(tag)(track))
+              } else {
+                throw new Error(`Invalid filter: ${JSON.stringify(filter)}`)
+              }
+            }
+
+          return allTracks
+            .filter(makeFilter(filterTags))
+            .slice(skip, skip + limit)
+            .map(convertTrack)
         }
 
-        return results.map(convertTrack)
+        return query.offset(skip).limit(limit).all().map(convertTrack)
       },
 
       getByReleaseId: (releaseId) => {
