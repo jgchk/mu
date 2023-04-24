@@ -47,6 +47,9 @@ importers:
       '@trpc/client':
         specifier: ^10.20.0
         version: 10.20.0(@trpc/server@10.20.0)
+      bool-lang:
+        specifier: workspace:*
+        version: link:../../packages/bool-lang
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
@@ -215,6 +218,8 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
 
+  packages/bool-lang: {}
+
   packages/db:
     dependencies:
       '@types/better-sqlite3':
@@ -223,6 +228,9 @@ importers:
       better-sqlite3:
         specifier: ^8.3.0
         version: 8.3.0
+      bool-lang:
+        specifier: workspace:*
+        version: link:../bool-lang
       drizzle-orm:
         specifier: ^0.24.4
         version: 0.24.4(@types/better-sqlite3@7.6.4)(better-sqlite3@8.3.0)
@@ -395,6 +403,9 @@ importers:
       '@types/mime':
         specifier: ^3.0.1
         version: 3.0.1
+      bool-lang:
+        specifier: workspace:*
+        version: link:../bool-lang
       content-disposition:
         specifier: ^0.5.4
         version: 0.5.4

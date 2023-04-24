@@ -16,6 +16,7 @@
     "@trpc/server": "^10.20.0",
     "@types/content-disposition": "^0.5.5",
     "@types/mime": "^3.0.1",
+    "bool-lang": "workspace:*",
     "content-disposition": "^0.5.4",
     "db": "workspace:*",
     "downloader": "workspace:*",

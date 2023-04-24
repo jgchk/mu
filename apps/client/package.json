@@ -21,6 +21,7 @@
     "@popperjs/core": "^2.11.7",
     "@tanstack/svelte-query": "^4.29.1",
     "@trpc/client": "^10.20.0",
+    "bool-lang": "workspace:*",
     "isomorphic-ws": "^5.0.0",
     "superjson": "^1.12.2",
     "svelte-dnd-action": "^0.9.22",

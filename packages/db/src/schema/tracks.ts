@@ -1,3 +1,4 @@
+import type { BoolLang } from 'bool-lang'
 import type { InferModel } from 'drizzle-orm'
 import { eq, inArray, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
@@ -54,25 +55,10 @@ const convertTrack = (track: Track): TrackPretty => ({
 
 export type TracksFilter = {
   favorite?: boolean
-  tags?: TrackTagsFilter
+  tags?: BoolLang
   skip?: number
   limit?: number
 }
-
-export type TrackTagsFilter =
-  | number
-  | {
-      kind: 'not'
-      tag: TrackTagsFilter
-    }
-  | {
-      kind: 'and'
-      tags: TrackTagsFilter[]
-    }
-  | {
-      kind: 'or'
-      tags: TrackTagsFilter[]
-    }
 
 export type TracksMixin = {
   tracks: {
@@ -200,24 +186,29 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           const allTracks = query.all()
 
           const makeFilter =
-            (filter: TrackTagsFilter): ((tracks: (typeof allTracks)[0]) => boolean) =>
-            (track) => {
-              const tags = trackTagsMap.get(track.id)
-              if (typeof filter === 'number') {
-                return tags?.has(filter) ?? false
-              } else if (filter.kind === 'not') {
-                return !makeFilter(filter.tag)(track)
-              } else if (filter.kind === 'and') {
-                return filter.tags.every((tag) => makeFilter(tag)(track))
-              } else if (filter.kind === 'or') {
-                return filter.tags.some((tag) => makeFilter(tag)(track))
-              } else {
-                throw new Error(`Invalid filter: ${JSON.stringify(filter)}`)
+            (track: (typeof allTracks)[0]) =>
+            (node: BoolLang): boolean => {
+              switch (node.kind) {
+                case 'id': {
+                  const tags = trackTagsMap.get(track.id)
+                  return tags?.has(node.value) ?? false
+                }
+                case 'not': {
+                  return !makeFilter(track)(node.child)
+                }
+                case 'and': {
+                  const filter = makeFilter(track)
+                  return node.children.every((tag) => filter(tag))
+                }
+                case 'or': {
+                  const filter = makeFilter(track)
+                  return node.children.some((tag) => filter(tag))
+                }
               }
             }
 
           return allTracks
-            .filter(makeFilter(filterTags))
+            .filter((track) => makeFilter(track)(filterTags))
             .slice(skip, skip + limit)
             .map(convertTrack)
         }

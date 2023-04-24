@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { BoolLang } from 'bool-lang'
+  import { AND_SYMBOL, decode, encode, NOT_SYMBOL, OR_SYMBOL } from 'bool-lang'
   import { createEventDispatcher } from 'svelte'
   import { pipe, tryOr } from 'utils'
   import { toRelativeUrl } from 'utils/browser'
@@ -8,23 +10,15 @@
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import TextArea from '$lib/atoms/TextArea.svelte'
-  import type { TrackTagsFilter } from '$lib/tag-filter'
-  import {
-    AND_SYMBOL,
-    decodeTagsFilterUrl,
-    encodeTagsFilterUrl,
-    NOT_SYMBOL,
-    OR_SYMBOL,
-  } from '$lib/tag-filter'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
 
   import EditTagsFilterPlaintext from './EditTagsFilterPlaintext.svelte'
   import TagSelect from './TagSelect.svelte'
 
-  export let filter: TrackTagsFilter | undefined
-  let text = filter ? encodeTagsFilterUrl(filter) : ''
-  $: parsed = tryOr(() => decodeTagsFilterUrl(text), undefined)
+  export let filter: BoolLang | undefined
+  let text = filter ? encode(filter) : ''
+  $: parsed = tryOr(() => decode(text), undefined)
   $: isValid = text.length === 0 || parsed !== undefined
 
   const toast = getContextToast()
@@ -40,7 +34,7 @@
     if (trimmed.length === 0) {
       url.searchParams.delete('tags')
     } else {
-      const reencoded = encodeTagsFilterUrl(parsed)
+      const reencoded = encode(parsed)
       url.searchParams.set('tags', reencoded)
     }
 

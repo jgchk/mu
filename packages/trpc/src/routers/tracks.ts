@@ -1,37 +1,27 @@
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type { BoolLang } from 'bool-lang'
 import { ifDefined, ifNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
-export type TrackTagsFilter =
-  | number
-  | {
-      kind: 'not'
-      tag: TrackTagsFilter
-    }
-  | {
-      kind: 'and'
-      tags: TrackTagsFilter[]
-    }
-  | {
-      kind: 'or'
-      tags: TrackTagsFilter[]
-    }
-
-const TrackTagsFilter: z.ZodType<TrackTagsFilter> = z.union([
-  z.number(),
+const BoolLang: z.ZodType<BoolLang> = z.union([
+  z.object({
+    kind: z.literal('id'),
+    value: z.number(),
+  }),
   z.object({
     kind: z.literal('not'),
-    tag: z.lazy(() => TrackTagsFilter),
+    child: z.lazy(() => BoolLang),
   }),
   z.object({
     kind: z.literal('and'),
-    tags: z.lazy(() => TrackTagsFilter.array()),
+    children: z.lazy(() => BoolLang.array()),
   }),
   z.object({
     kind: z.literal('or'),
-    tags: z.lazy(() => TrackTagsFilter.array()),
+    children: z.lazy(() => BoolLang.array()),
   }),
 ])
 
@@ -40,7 +30,7 @@ export const tracksRouter = router({
     .input(
       z.object({
         favorite: z.boolean().optional(),
-        tags: TrackTagsFilter.optional(),
+        tags: BoolLang.optional(),
         limit: z.number().min(1).max(100).optional(),
         cursor: z.number().optional(),
       })
@@ -50,36 +40,38 @@ export const tracksRouter = router({
       const limit = input.limit ?? 50
 
       const tags = ifDefined(input.tags, (filter) => {
-        const transformTag = (filter: TrackTagsFilter): TrackTagsFilter => {
-          if (typeof filter === 'number') {
-            const tagId = filter
-            const descendants = ctx.db.tags.getDescendants(tagId)
-            const ids = [tagId, ...descendants.map((t) => t.id)]
-            return {
-              kind: 'or',
-              tags: ids,
+        const injectDescendants = (node: BoolLang): BoolLang => {
+          switch (node.kind) {
+            case 'id': {
+              const descendants = ctx.db.tags.getDescendants(node.value)
+              const ids = [node.value, ...descendants.map((t) => t.id)]
+              return {
+                kind: 'or',
+                children: ids.map((id) => ({ kind: 'id', value: id })),
+              }
             }
-          } else if (filter.kind === 'not') {
-            return {
-              kind: 'not',
-              tag: transformTag(filter.tag),
+            case 'not': {
+              return {
+                kind: 'not',
+                child: injectDescendants(node.child),
+              }
             }
-          } else if (filter.kind === 'and') {
-            return {
-              kind: 'and',
-              tags: filter.tags.map(transformTag),
+            case 'and': {
+              return {
+                kind: 'and',
+                children: node.children.map(injectDescendants),
+              }
             }
-          } else if (filter.kind === 'or') {
-            return {
-              kind: 'or',
-              tags: filter.tags.map(transformTag),
+            case 'or': {
+              return {
+                kind: 'or',
+                children: node.children.map(injectDescendants),
+              }
             }
-          } else {
-            throw new Error(`Invalid filter: ${JSON.stringify(filter)}}`)
           }
         }
 
-        return transformTag(filter)
+        return injectDescendants(filter)
       })
 
       const tracks = ctx.db.tracks.getAll({

@@ -18,6 +18,7 @@
   "dependencies": {
     "@types/better-sqlite3": "^7.6.4",
     "better-sqlite3": "^8.3.0",
+    "bool-lang": "workspace:*",
     "drizzle-orm": "^0.24.4",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",

@@ -1,10 +1,11 @@
-import type { TrackTagsFilter } from '$lib/tag-filter'
+import type { BoolLang } from 'bool-lang'
+
 import type { RouterInput } from '$lib/trpc'
 
 export const baseTracksQueryInput = { limit: 100 }
 export const makeTracksQueryInput = (opts?: {
   favoritesOnly?: boolean
-  tags?: TrackTagsFilter
+  tags?: BoolLang
 }): RouterInput['tracks']['getAllWithArtistsAndRelease'] => ({
   ...baseTracksQueryInput,
   ...(opts?.favoritesOnly ? { favorite: true } : {}),
