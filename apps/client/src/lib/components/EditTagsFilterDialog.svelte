@@ -9,7 +9,13 @@
   import Dialog from '$lib/atoms/Dialog.svelte'
   import TextArea from '$lib/atoms/TextArea.svelte'
   import type { TrackTagsFilter } from '$lib/tag-filter'
-  import { AND_SYMBOL, decodeTagsFilterUrl, encodeTagsFilterUrl, OR_SYMBOL } from '$lib/tag-filter'
+  import {
+    AND_SYMBOL,
+    decodeTagsFilterUrl,
+    encodeTagsFilterUrl,
+    NOT_SYMBOL,
+    OR_SYMBOL,
+  } from '$lib/tag-filter'
   import { getContextToast } from '$lib/toast/toast'
   import { cn } from '$lib/utils/classes'
 
@@ -97,6 +103,7 @@
         <div class="space-y-1">
           <Button on:click={() => handleInsertText(AND_SYMBOL)}>And</Button>
           <Button on:click={() => handleInsertText(OR_SYMBOL)}>Or</Button>
+          <Button on:click={() => handleInsertText(NOT_SYMBOL)}>Not</Button>
         </div>
       </div>
 

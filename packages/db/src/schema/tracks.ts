@@ -62,6 +62,10 @@ export type TracksFilter = {
 export type TrackTagsFilter =
   | number
   | {
+      kind: 'not'
+      tag: TrackTagsFilter
+    }
+  | {
       kind: 'and'
       tags: TrackTagsFilter[]
     }
@@ -201,6 +205,8 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
               const tags = trackTagsMap.get(track.id)
               if (typeof filter === 'number') {
                 return tags?.has(filter) ?? false
+              } else if (filter.kind === 'not') {
+                return !makeFilter(filter.tag)(track)
               } else if (filter.kind === 'and') {
                 return filter.tags.every((tag) => makeFilter(tag)(track))
               } else if (filter.kind === 'or') {

@@ -7,6 +7,10 @@ import { publicProcedure, router } from '../trpc'
 export type TrackTagsFilter =
   | number
   | {
+      kind: 'not'
+      tag: TrackTagsFilter
+    }
+  | {
       kind: 'and'
       tags: TrackTagsFilter[]
     }
@@ -17,6 +21,10 @@ export type TrackTagsFilter =
 
 const TrackTagsFilter: z.ZodType<TrackTagsFilter> = z.union([
   z.number(),
+  z.object({
+    kind: z.literal('not'),
+    tag: z.lazy(() => TrackTagsFilter),
+  }),
   z.object({
     kind: z.literal('and'),
     tags: z.lazy(() => TrackTagsFilter.array()),
@@ -50,6 +58,11 @@ export const tracksRouter = router({
             return {
               kind: 'or',
               tags: ids,
+            }
+          } else if (filter.kind === 'not') {
+            return {
+              kind: 'not',
+              tag: transformTag(filter.tag),
             }
           } else if (filter.kind === 'and') {
             return {

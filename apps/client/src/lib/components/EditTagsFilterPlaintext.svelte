@@ -31,6 +31,9 @@
       {:else}
         <span class="text-error-500 font-semibold">[unknown]</span>
       {/if}
+    {:else if filter.kind === 'not'}
+      <span class="text-gray-400">not</span>
+      <svelte:self filter={filter.tag} child {tagClass} />
     {:else if filter.tags.length === 1}
       <svelte:self filter={filter.tags[0]} />
     {:else if filter.tags.length > 1}

@@ -1,8 +1,13 @@
+export const NOT_SYMBOL = '!'
 export const AND_SYMBOL = '.'
 export const OR_SYMBOL = ','
 
 export type TrackTagsFilter =
   | number
+  | {
+      kind: 'not'
+      tag: TrackTagsFilter
+    }
   | {
       kind: 'and'
       tags: TrackTagsFilter[]
@@ -15,6 +20,8 @@ export type TrackTagsFilter =
 export const encodeTagsFilterUrl = (filter: TrackTagsFilter): string => {
   if (typeof filter === 'number') {
     return filter.toString()
+  } else if (filter.kind === 'not') {
+    return `${NOT_SYMBOL}${encodeTagsFilterUrl(filter.tag)}`
   } else if (filter.kind === 'and') {
     return `(${filter.tags.map(encodeTagsFilterUrl).join(AND_SYMBOL)})`
   } else if (filter.kind === 'or') {
@@ -39,6 +46,11 @@ export const decodeTagsFilterUrl = (filter: string): TrackTagsFilter => {
 const convertASTNode = (node: AST): TrackTagsFilter => {
   if (node.kind === 'id') {
     return node.value
+  } else if (node.kind === 'not') {
+    return {
+      kind: 'not',
+      tag: convertASTNode(node.child),
+    }
   } else if (node.kind === 'and') {
     return {
       kind: 'and',
@@ -55,10 +67,14 @@ const convertASTNode = (node: AST): TrackTagsFilter => {
 }
 
 type AST = Filter
-type Filter = FilterId | FilterAnd | FilterOr
+type Filter = FilterId | FilterNot | FilterAnd | FilterOr
 type FilterId = {
   kind: 'id'
   value: number
+}
+type FilterNot = {
+  kind: 'not'
+  child: Filter
 }
 type FilterAnd = {
   kind: 'and'
@@ -96,7 +112,7 @@ const parse = (text: string): AST[] => {
 const ast: ParseFunction<AST> = (code, index) => filter(code, index)
 
 const filter: ParseFunction<Filter> = (code, index) =>
-  filterId(code, index) ?? filterAnd(code, index) ?? filterOr(code, index)
+  filterId(code, index) ?? filterNot(code, index) ?? filterAnd(code, index) ?? filterOr(code, index)
 
 const filterId: ParseFunction<FilterId> = (code, index) =>
   given(
@@ -108,6 +124,17 @@ const filterId: ParseFunction<FilterId> = (code, index) =>
       },
       newIndex: index,
     })
+  )
+
+const filterNot: ParseFunction<FilterNot> = (code, index) =>
+  given(consume(code, index, NOT_SYMBOL), ({ newIndex: index }) =>
+    given(filter(code, index), ({ parsed: child, newIndex: index }) => ({
+      parsed: {
+        kind: 'not',
+        child,
+      },
+      newIndex: index,
+    }))
   )
 
 const filterAnd: ParseFunction<FilterAnd> = (code, index) =>
