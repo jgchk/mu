@@ -9,7 +9,7 @@
     "format": "prettier --write --ignore-path=../../.prettierignore . && black ./src/metadata"
   },
   "devDependencies": {
-    "@types/node": "^18.15.12",
+    "@types/node": "^18.16.0",
     "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
