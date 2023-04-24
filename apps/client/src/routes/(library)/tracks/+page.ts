@@ -11,7 +11,11 @@ export const load: PageLoad = async ({ parent, url }) => {
   const favoritesParam = url.searchParams.get('favorites')
   const favoritesOnly = favoritesParam !== null
 
-  const tags = ifNotNull(url.searchParams.get('tags'), decode) ?? undefined
+  const tags =
+    ifNotNull(url.searchParams.get('tags'), (tags) => ({
+      text: tags,
+      parsed: decode(tags),
+    })) ?? undefined
 
   const data = { favoritesOnly, tags }
 

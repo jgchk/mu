@@ -114,7 +114,7 @@
       <div class="flex gap-1">
         <Button
           kind="outline"
-          on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags })}
+          on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags?.parsed })}
         >
           Advanced
         </Button>
@@ -141,7 +141,7 @@
 
   {#if data.tags}
     <div class="rounded bg-gray-900 px-2 py-1">
-      <EditTagsFilterPlaintext filter={data.tags} tagClass="text-gray-300" />
+      <EditTagsFilterPlaintext filter={data.tags.parsed} tagClass="text-gray-300" />
     </div>
   {/if}
   {#if $tracksQuery.data}

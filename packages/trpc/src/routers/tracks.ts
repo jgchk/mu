@@ -1,36 +1,30 @@
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { BoolLang } from 'bool-lang'
-import { ifDefined, ifNotNull, uniq } from 'utils'
+import { decode } from 'bool-lang'
+import { ifDefined, ifNotNull, toErrorString, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 
-const BoolLang: z.ZodType<BoolLang> = z.union([
-  z.object({
-    kind: z.literal('id'),
-    value: z.number(),
-  }),
-  z.object({
-    kind: z.literal('not'),
-    child: z.lazy(() => BoolLang),
-  }),
-  z.object({
-    kind: z.literal('and'),
-    children: z.lazy(() => BoolLang.array()),
-  }),
-  z.object({
-    kind: z.literal('or'),
-    children: z.lazy(() => BoolLang.array()),
-  }),
-])
+const BoolLangString = z.string().transform((val, ctx) => {
+  try {
+    const parsed = decode(val)
+    return parsed
+  } catch (e) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Invalid BoolLang: ${toErrorString(e)}`,
+    })
+    return z.NEVER
+  }
+})
 
 export const tracksRouter = router({
   getAllWithArtistsAndRelease: publicProcedure
     .input(
       z.object({
         favorite: z.boolean().optional(),
-        tags: BoolLang.optional(),
+        tags: BoolLangString.optional(),
         limit: z.number().min(1).max(100).optional(),
         cursor: z.number().optional(),
       })
