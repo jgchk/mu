@@ -465,8 +465,8 @@ importers:
   packages/utils:
     dependencies:
       '@types/node':
-        specifier: ^18.15.12
-        version: 18.15.12
+        specifier: ^18.16.0
+        version: 18.16.0
 
 packages:
 
@@ -1259,10 +1259,6 @@ packages:
 
   /@types/mime@3.0.1:
     resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
-    dev: false
-
-  /@types/node@18.15.12:
-    resolution: {integrity: sha512-Wha1UwsB3CYdqUm2PPzh/1gujGCNtWVUYF0mB00fJFoR4gTyWTDPjSm+zBF787Ahw8vSGgBja90MkgFwvB86Dg==}
     dev: false
 
   /@types/node@18.16.0:
