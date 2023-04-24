@@ -16,9 +16,9 @@ export const encodeTagsFilterUrl = (filter: TrackTagsFilter): string => {
   if (typeof filter === 'number') {
     return filter.toString()
   } else if (filter.kind === 'and') {
-    return `(${filter.tags.join(AND_SYMBOL)})`
+    return `(${filter.tags.map(encodeTagsFilterUrl).join(AND_SYMBOL)})`
   } else if (filter.kind === 'or') {
-    return `(${filter.tags.join(OR_SYMBOL)})`
+    return `(${filter.tags.map(encodeTagsFilterUrl).join(OR_SYMBOL)})`
   } else {
     throw new Error(`Invalid filter: ${JSON.stringify(filter)}}`)
   }
