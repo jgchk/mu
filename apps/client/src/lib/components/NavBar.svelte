@@ -26,9 +26,9 @@
 <nav class="flex items-center overflow-auto rounded bg-black p-2 px-3 text-white">
   <NavLink href="/">Home</NavLink>
   <NavLink href="/artists" otherMatches={['/releases', '/tracks']}>Library</NavLink>
+  <NavLink href="/tags">Tags</NavLink>
   <NavLink href="/downloads">Downloads</NavLink>
   <NavLink href="/system">System</NavLink>
-  <NavLink href="/tags">Tags</NavLink>
 
   <form
     class="inline"
