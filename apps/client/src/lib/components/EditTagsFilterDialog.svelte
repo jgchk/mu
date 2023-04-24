@@ -8,24 +8,22 @@
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import TextArea from '$lib/atoms/TextArea.svelte'
-  import { createEditTagMutation } from '$lib/services/tags'
   import type { TrackTagsFilter } from '$lib/tag-filter'
   import { AND_SYMBOL, decodeTagsFilterUrl, encodeTagsFilterUrl, OR_SYMBOL } from '$lib/tag-filter'
   import { getContextToast } from '$lib/toast/toast'
-  import { getContextClient } from '$lib/trpc'
+  import { cn } from '$lib/utils/classes'
 
+  import EditTagsFilterPlaintext from './EditTagsFilterPlaintext.svelte'
   import TagSelect from './TagSelect.svelte'
 
   export let filter: TrackTagsFilter | undefined
   let text = filter ? encodeTagsFilterUrl(filter) : ''
-  $: isValid = text.length === 0 || tryOr(() => !!decodeTagsFilterUrl(text), false)
-
-  const trpc = getContextClient()
-  const editTagMutation = createEditTagMutation(trpc)
+  $: parsed = tryOr(() => decodeTagsFilterUrl(text), undefined)
+  $: isValid = text.length === 0 || parsed !== undefined
 
   const toast = getContextToast()
   const handleSubmit = () => {
-    if (!isValid) {
+    if (!isValid || parsed === undefined) {
       toast.error('Filter is invalid :(')
       return
     }
@@ -36,7 +34,7 @@
     if (trimmed.length === 0) {
       url.searchParams.delete('tags')
     } else {
-      const reencoded = encodeTagsFilterUrl(decodeTagsFilterUrl(trimmed))
+      const reencoded = encodeTagsFilterUrl(parsed)
       url.searchParams.set('tags', reencoded)
     }
 
@@ -78,11 +76,19 @@
 <form on:submit|preventDefault={handleSubmit}>
   <Dialog title="Edit filter" on:close={close}>
     <div class="space-y-1">
-      {#if isValid}
-        <div class="text-success-500 text-sm">Valid</div>
-      {:else}
-        <div class="text-error-500 text-sm">Invalid</div>
-      {/if}
+      <div class="relative">
+        <div class={cn('text-sm', isValid ? 'opacity-100' : 'opacity-0')}>
+          <span class="text-success-500">Valid</span><EditTagsFilterPlaintext filter={parsed} />
+        </div>
+        <div
+          class={cn(
+            'text-error-500 absolute left-0 top-0 text-sm',
+            isValid ? 'opacity-0' : 'opacity-100'
+          )}
+        >
+          Invalid
+        </div>
+      </div>
 
       <div class="flex gap-1">
         <TextArea bind:value={text} class="flex-1 font-mono" bind:this={textArea} />
@@ -106,7 +112,7 @@
     </div>
 
     <svelte:fragment slot="buttons">
-      <Button type="submit" loading={$editTagMutation.isLoading}>Save</Button>
+      <Button type="submit">Save</Button>
       <Button kind="outline" on:click={close}>Cancel</Button>
     </svelte:fragment>
   </Dialog>
