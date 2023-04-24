@@ -78,7 +78,9 @@
     <div class="space-y-1">
       <div class="relative">
         <div class={cn('text-sm', isValid ? 'opacity-100' : 'opacity-0')}>
-          <span class="text-success-500">Valid</span><EditTagsFilterPlaintext filter={parsed} />
+          <span class="text-success-500">Valid</span>{#if parsed}: {/if}<EditTagsFilterPlaintext
+            filter={parsed}
+          />
         </div>
         <div
           class={cn(
