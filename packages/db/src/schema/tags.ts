@@ -140,7 +140,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           query = query.where(eq(tags.taggable, taggable ? 1 : 0))
         }
 
-        return query.all().map(convertTag)
+        return query.orderBy(tags.name).all().map(convertTag)
       },
       getParents: (id) => {
         return this.db
