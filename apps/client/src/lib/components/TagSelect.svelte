@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   import { clickOutside } from '$lib/actions/clickOutside'
   import { createPopperAction } from '$lib/actions/popper'
   import Input from '$lib/atoms/Input.svelte'
@@ -39,6 +41,12 @@
   }
 
   const [popperElement, popperTooltip] = createPopperAction()
+
+  const dispatch = createEventDispatcher<{ change: { value: number | undefined } }>()
+  const change = (v: number | undefined) => {
+    value = v
+    dispatch('change', { value: v })
+  }
 </script>
 
 <div class="relative w-fit" use:clickOutside={() => (open = false)}>
@@ -57,9 +65,9 @@
           case 'Enter': {
             e.preventDefault()
             if (filteredTags.length === 0) {
-              value = undefined
+              change(undefined)
             } else {
-              value = filteredTags[0].id
+              change(filteredTags[0].id)
             }
             filter = ''
             break
@@ -95,7 +103,7 @@
             type="button"
             class="block w-full px-2 py-1 text-left hover:bg-gray-600"
             on:click={() => {
-              value = tag.id
+              change(tag.id)
               filter = ''
             }}
           >

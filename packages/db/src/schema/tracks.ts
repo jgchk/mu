@@ -1,5 +1,5 @@
-import type { InferModel } from 'drizzle-orm'
-import { eq, inArray, placeholder, sql } from 'drizzle-orm'
+import type { InferModel, SQL } from 'drizzle-orm'
+import { and, eq, inArray, or, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
@@ -15,6 +15,7 @@ import type { Release } from './releases'
 import { releases } from './releases'
 import type { TrackArtist } from './track-artists'
 import { trackArtists } from './track-artists'
+import { trackTags } from './track-tags'
 
 export type Track = InferModel<typeof tracks>
 export type InsertTrack = InferModel<typeof tracks, 'insert'>
@@ -51,6 +52,24 @@ const convertTrack = (track: Track): TrackPretty => ({
   favorite: track.favorite !== 0,
 })
 
+export type TracksFilter = {
+  favorite?: boolean
+  tags?: TrackTagsFilter
+  skip?: number
+  limit?: number
+}
+
+export type TrackTagsFilter =
+  | number
+  | {
+      kind: 'and'
+      tags: TrackTagsFilter[]
+    }
+  | {
+      kind: 'or'
+      tags: TrackTagsFilter[]
+    }
+
 export type TracksMixin = {
   tracks: {
     preparedQueries: PreparedQueries
@@ -63,7 +82,7 @@ export type TracksMixin = {
       title: NonNullable<Track['title']>
     ) => TrackPretty[]
     getByPath: (path: Track['path']) => TrackPretty | undefined
-    getAll: (filter?: { favorite?: boolean; skip?: number; limit?: number }) => TrackPretty[]
+    getAll: (filter?: TracksFilter) => TrackPretty[]
     getByReleaseId: (releaseId: Release['id']) => TrackPretty[]
     getByPlaylistId: (
       playlistId: number
@@ -150,16 +169,50 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         }
       },
 
-      getAll: ({ favorite, skip = 0, limit = 50 } = {}) => {
+      getAll: ({ favorite, tags: filterTags, skip = 0, limit = 50 } = {}) => {
         let query = this.db.select().from(tracks)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
         }
 
-        const allTracks = query.offset(skip).orderBy(tracks.title).limit(limit).all()
+        let results
+        if (filterTags !== undefined) {
+          const getTagsFilter = (filter: TrackTagsFilter): SQL | undefined => {
+            if (typeof filter === 'number') {
+              return eq(trackTags.tagId, filter)
+            } else if (filter.kind === 'and') {
+              if (filter.tags.length === 0) {
+                return undefined
+              } else if (filter.tags.length === 1) {
+                return getTagsFilter(filter.tags[0])
+              } else {
+                return and(...filter.tags.map(getTagsFilter))
+              }
+            } else if (filter.kind === 'or') {
+              if (filter.tags.length === 0) {
+                return undefined
+              } else if (filter.tags.length === 1) {
+                return getTagsFilter(filter.tags[0])
+              } else {
+                return or(...filter.tags.map(getTagsFilter))
+              }
+            }
+          }
 
-        return allTracks.map(convertTrack)
+          results = query
+            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
+            .where(getTagsFilter(filterTags))
+            .offset(skip)
+            .orderBy(tracks.title)
+            .limit(limit)
+            .all()
+            .map((t) => t.tracks)
+        } else {
+          results = query.offset(skip).orderBy(tracks.title).limit(limit).all()
+        }
+
+        return results.map(convertTrack)
       },
 
       getByReleaseId: (releaseId) => {

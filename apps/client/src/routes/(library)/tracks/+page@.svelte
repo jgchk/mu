@@ -1,10 +1,14 @@
 <script lang="ts">
   import { inview } from 'svelte-inview'
+  import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
   import Button from '$lib/atoms/Button.svelte'
   import Checkbox from '$lib/atoms/Checkbox.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
+  import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { playTrack } from '$lib/now-playing'
   import {
@@ -20,7 +24,7 @@
 
   export let data: PageData
 
-  $: tracksQueryInput = makeTracksQueryInput(data.favoritesOnly)
+  $: tracksQueryInput = makeTracksQueryInput(data)
 
   const trpc = getContextClient()
   $: tracksQuery = createAllTracksWithArtistsAndReleaseQuery(trpc, tracksQueryInput)
@@ -51,7 +55,15 @@
       data-sveltekit-keepfocus
       data-sveltekit-replacestate
       class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
-      href={data.favoritesOnly ? '/tracks' : '/tracks?favorites=true'}
+      href={toRelativeUrl(
+        withUrlUpdate($page.url, (url) => {
+          if (data.favoritesOnly) {
+            url.searchParams.delete('favorites')
+          } else {
+            url.searchParams.set('favorites', 'true')
+          }
+        })
+      )}
       on:keydown={(e) => {
         // trigger link on space
         if (e.key === ' ') {
@@ -63,14 +75,31 @@
     >
       <InputGroup layout="horizontal" class="pointer-events-none">
         {#key data.favoritesOnly}
-          <Checkbox id="favorites-only" checked={data.favoritesOnly} tabindex={-1} />
+          <Checkbox id="filter-favorites-only" checked={data.favoritesOnly} tabindex={-1} />
         {/key}
         <Label
-          for="favorites-only"
+          for="filter-favorites-only"
           class="cursor-pointer transition group-hover/favorites:text-white">Favorites only</Label
         >
       </InputGroup>
     </a>
+
+    <InputGroup class="px-4">
+      <Label for="filter-tag">Tag</Label>
+      <TagSelect
+        id="filter-tag"
+        value={data.tag}
+        on:change={({ detail: { value } }) => {
+          const url = new URL($page.url)
+          if (value === undefined) {
+            url.searchParams.delete('tag')
+          } else {
+            url.searchParams.set('tag', value.toString())
+          }
+          void goto(url.toString(), { keepFocus: true, replaceState: true })
+        }}
+      />
+    </InputGroup>
   </svelte:fragment>
 
   {#if $tracksQuery.data}

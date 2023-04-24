@@ -1,14 +1,38 @@
-import { ifNotNull, uniq } from 'utils'
+import { ifDefined, ifNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
+
+export type TrackTagsFilter =
+  | number
+  | {
+      kind: 'and'
+      tags: TrackTagsFilter[]
+    }
+  | {
+      kind: 'or'
+      tags: TrackTagsFilter[]
+    }
+
+const TrackTagsFilter: z.ZodType<TrackTagsFilter> = z.union([
+  z.number(),
+  z.object({
+    kind: z.literal('and'),
+    tags: z.lazy(() => TrackTagsFilter.array()),
+  }),
+  z.object({
+    kind: z.literal('or'),
+    tags: z.lazy(() => TrackTagsFilter.array()),
+  }),
+])
 
 export const tracksRouter = router({
   getAllWithArtistsAndRelease: publicProcedure
     .input(
       z.object({
         favorite: z.boolean().optional(),
+        tags: TrackTagsFilter.optional(),
         limit: z.number().min(1).max(100).optional(),
         cursor: z.number().optional(),
       })
@@ -17,8 +41,37 @@ export const tracksRouter = router({
       const skip = input.cursor ?? 0
       const limit = input.limit ?? 50
 
+      const tags = ifDefined(input.tags, (filter) => {
+        const transformTag = (filter: TrackTagsFilter): TrackTagsFilter => {
+          if (typeof filter === 'number') {
+            const tagId = filter
+            const descendants = ctx.db.tags.getDescendants(tagId)
+            const ids = [tagId, ...descendants.map((t) => t.id)]
+            return {
+              kind: 'or',
+              tags: ids,
+            }
+          } else if (filter.kind === 'and') {
+            return {
+              kind: 'and',
+              tags: filter.tags.map(transformTag),
+            }
+          } else if (filter.kind === 'or') {
+            return {
+              kind: 'or',
+              tags: filter.tags.map(transformTag),
+            }
+          } else {
+            throw new Error(`Invalid filter: ${JSON.stringify(filter)}}`)
+          }
+        }
+
+        return transformTag(filter)
+      })
+
       const tracks = ctx.db.tracks.getAll({
         favorite: input.favorite,
+        tags,
         skip,
         limit: limit + 1,
       })

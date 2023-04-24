@@ -161,12 +161,10 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           .map((tag) => convertTag(tag.tags))
       },
       getDescendants: (id) => {
-        const tag = this.tags.get(id)
-
         // bfs
         const descendants: TagPretty[] = []
         const visited = new Set<number>()
-        const queue = [tag]
+        const queue = this.tags.getChildren(id)
         while (queue.length) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const current = queue.shift()!
