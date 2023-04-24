@@ -20,6 +20,8 @@ COPY apps/client/package.json ./apps/client/
 COPY apps/client/pnpm-*.yaml ./apps/client/
 COPY apps/server/package.json ./apps/server/
 COPY apps/server/pnpm-*.yaml ./apps/server/
+COPY packages/bool-lang/package.json ./packages/bool-lang/
+COPY packages/bool-lang/pnpm-*.yaml ./packages/bool-lang/
 COPY packages/db/package.json ./packages/db/
 COPY packages/db/pnpm-*.yaml ./packages/db/
 COPY packages/downloader/package.json ./packages/downloader/
