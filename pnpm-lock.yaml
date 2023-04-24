@@ -288,8 +288,8 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.12
-        version: 18.15.12
+        specifier: ^18.16.0
+        version: 18.16.0
       eslint-config-custom:
         specifier: workspace:*
         version: link:../eslint-config-custom
