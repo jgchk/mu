@@ -7,7 +7,7 @@
 </script>
 
 <div class="flex h-full gap-2">
-  <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
+  <div class="w-48 rounded bg-gray-900 py-2">
     <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
     <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>

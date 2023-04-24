@@ -1,5 +1,6 @@
 <script lang="ts">
   import { inview } from 'svelte-inview'
+  import { pipe } from 'utils'
   import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
   import { goto } from '$app/navigation'
@@ -10,6 +11,7 @@
   import Label from '$lib/atoms/Label.svelte'
   import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import {
     createAllTracksWithArtistsAndReleaseQuery,
@@ -47,6 +49,8 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
+
+  const dialogs = getContextDialogs()
 </script>
 
 <Layout>
@@ -55,14 +59,16 @@
       data-sveltekit-keepfocus
       data-sveltekit-replacestate
       class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
-      href={toRelativeUrl(
+      href={pipe(
         withUrlUpdate($page.url, (url) => {
           if (data.favoritesOnly) {
             url.searchParams.delete('favorites')
           } else {
             url.searchParams.set('favorites', 'true')
           }
-        })
+        }),
+        toRelativeUrl,
+        decodeURIComponent
       )}
       on:keydown={(e) => {
         // trigger link on space
@@ -84,22 +90,52 @@
       </InputGroup>
     </a>
 
-    <InputGroup class="px-4">
-      <Label for="filter-tag">Tag</Label>
-      <TagSelect
-        id="filter-tag"
-        value={typeof data.tags === 'number' ? data.tags : undefined}
-        on:change={({ detail: { value } }) => {
-          const url = new URL($page.url)
-          if (value === undefined) {
-            url.searchParams.delete('tags')
-          } else {
-            url.searchParams.set('tags', value.toString())
-          }
-          void goto(url.toString(), { keepFocus: true, replaceState: true })
-        }}
-      />
-    </InputGroup>
+    <div class="space-y-1 px-4">
+      {#if data.tags === undefined || typeof data.tags === 'number'}
+        <InputGroup>
+          <Label for="filter-tag">Tags Filter</Label>
+          <TagSelect
+            id="filter-tag"
+            value={typeof data.tags === 'number' ? data.tags : undefined}
+            on:change={({ detail: { value } }) => {
+              const url = new URL($page.url)
+              if (value === undefined) {
+                url.searchParams.delete('tags')
+              } else {
+                url.searchParams.set('tags', value.toString())
+              }
+              void goto(url.toString(), { keepFocus: true, replaceState: true })
+            }}
+          />
+        </InputGroup>
+      {/if}
+
+      <div class="flex gap-1">
+        <Button
+          kind="outline"
+          on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags })}
+        >
+          Advanced
+        </Button>
+        {#if data.tags !== undefined}
+          <Button
+            kind="text"
+            on:click={() => {
+              const url = pipe(
+                withUrlUpdate($page.url, (url) => {
+                  url.searchParams.delete('tags')
+                }),
+                toRelativeUrl,
+                decodeURIComponent
+              )
+              void goto(url, { keepFocus: true, replaceState: true })
+            }}
+          >
+            Clear
+          </Button>
+        {/if}
+      </div>
+    </div>
   </svelte:fragment>
 
   {#if $tracksQuery.data}

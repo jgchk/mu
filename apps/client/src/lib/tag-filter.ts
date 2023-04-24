@@ -1,7 +1,60 @@
 export const AND_SYMBOL = '.'
 export const OR_SYMBOL = ','
 
-export type AST = Filter
+export type TrackTagsFilter =
+  | number
+  | {
+      kind: 'and'
+      tags: TrackTagsFilter[]
+    }
+  | {
+      kind: 'or'
+      tags: TrackTagsFilter[]
+    }
+
+export const encodeTagsFilterUrl = (filter: TrackTagsFilter): string => {
+  if (typeof filter === 'number') {
+    return filter.toString()
+  } else if (filter.kind === 'and') {
+    return `(${filter.tags.join(AND_SYMBOL)})`
+  } else if (filter.kind === 'or') {
+    return `(${filter.tags.join(OR_SYMBOL)})`
+  } else {
+    throw new Error(`Invalid filter: ${JSON.stringify(filter)}}`)
+  }
+}
+
+export const decodeTagsFilterUrl = (filter: string): TrackTagsFilter => {
+  const parsedAst = parse(filter)
+
+  if (parsedAst.length === 0) {
+    throw new Error(`Invalid filter: ${filter}`)
+  } else if (parsedAst.length > 1) {
+    throw new Error(`Invalid filter: ${filter}`)
+  }
+
+  return convertASTNode(parsedAst[0])
+}
+
+const convertASTNode = (node: AST): TrackTagsFilter => {
+  if (node.kind === 'id') {
+    return node.value
+  } else if (node.kind === 'and') {
+    return {
+      kind: 'and',
+      tags: node.children.map(convertASTNode),
+    }
+  } else if (node.kind === 'or') {
+    return {
+      kind: 'or',
+      tags: node.children.map(convertASTNode),
+    }
+  } else {
+    throw new Error(`Invalid node: ${JSON.stringify(node)}`)
+  }
+}
+
+type AST = Filter
 type Filter = FilterId | FilterAnd | FilterOr
 type FilterId = {
   kind: 'id'
@@ -16,7 +69,7 @@ type FilterOr = {
   children: Filter[]
 }
 
-export const parse = (text: string): AST[] => {
+const parse = (text: string): AST[] => {
   const foundASTs: AST[] = []
   let index = 0
 
@@ -31,6 +84,10 @@ export const parse = (text: string): AST[] => {
       index = parseResult.newIndex
       foundASTs.push(parseResult.parsed)
     }
+  }
+
+  if (index < text.length) {
+    throw new Error(`Invalid filter: ${text}`)
   }
 
   return foundASTs

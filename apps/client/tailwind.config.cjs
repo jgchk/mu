@@ -6,6 +6,7 @@ module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     fontFamily: {
+      ...defaults.fontFamily,
       sans: ['InterVariable', 'Noto Emoji', ...defaults.fontFamily.sans],
     },
     colors: {

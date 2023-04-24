@@ -5,6 +5,7 @@
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
   import EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
   import EditTagDialog from '$lib/components/EditTagDialog.svelte'
+  import EditTagsFilterDialog from '$lib/components/EditTagsFilterDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
   import NewTagDialog from '$lib/components/NewTagDialog.svelte'
 
@@ -45,5 +46,7 @@
     <EditTagDialog tag={dialog.tag} on:close={() => dialogs.close('edit-tag')} />
   {:else if dialog._tag === 'delete-tag'}
     <DeleteTagDialog tag={dialog.tag} on:close={() => dialogs.close('delete-tag')} />
+  {:else if dialog._tag === 'edit-tags-filter'}
+    <EditTagsFilterDialog {...dialog} on:close={() => dialogs.close('edit-tags-filter')} />
   {/if}
 {/if}

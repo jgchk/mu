@@ -38,10 +38,25 @@
       currentTarget: EventTarget & HTMLInputElement
     }
   }
+
+  let textArea: HTMLTextAreaElement
+
+  export function focus() {
+    textArea.focus()
+  }
+
+  export function getSelectionRange() {
+    return { start: textArea.selectionStart, end: textArea.selectionEnd }
+  }
+
+  export function setSelectionRange(...args: Parameters<HTMLTextAreaElement['setSelectionRange']>) {
+    textArea.setSelectionRange(...args)
+  }
 </script>
 
 <!-- svelte-ignore a11y-autofocus -->
 <textarea
+  bind:this={textArea}
   {value}
   on:input
   on:input={(e) => (value = e.currentTarget.value)}

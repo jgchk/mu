@@ -9,6 +9,7 @@ import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
 import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
 import type EditTagDialog from '$lib/components/EditTagDialog.svelte'
+import type EditTagsFilterDialog from '$lib/components/EditTagsFilterDialog.svelte'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type NoProps = {}
@@ -27,6 +28,7 @@ export type AllDialogs = {
   'new-tag': NoProps
   'edit-tag': ComponentProps<EditTagDialog>
   'delete-tag': ComponentProps<DeleteTagDialog>
+  'edit-tags-filter': ComponentProps<EditTagsFilterDialog>
 }
 
 export type Dialogs = {

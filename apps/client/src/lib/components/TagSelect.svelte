@@ -7,10 +7,14 @@
   import { createTagsQuery } from '$lib/services/tags'
   import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
+  import { tw } from '$lib/utils/classes'
 
   export let value: number | undefined = undefined
   export let open = false
   export let id: string | undefined = undefined
+
+  let class_: string | undefined = undefined
+  export { class_ as class }
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc)
@@ -49,10 +53,11 @@
   }
 </script>
 
-<div class="relative w-fit" use:clickOutside={() => (open = false)}>
+<div class={tw('relative w-fit', class_)} use:clickOutside={() => (open = false)}>
   <div use:popperElement>
     <Input
       {id}
+      class="w-full"
       type="text"
       value={displayFilter}
       on:input={(e) => {
