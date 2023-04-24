@@ -386,8 +386,8 @@ importers:
         version: 3.21.4
     devDependencies:
       '@types/node':
-        specifier: ^18.15.12
-        version: 18.15.12
+        specifier: ^18.16.0
+        version: 18.16.0
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1263,6 +1263,7 @@ packages:
 
   /@types/node@18.15.12:
     resolution: {integrity: sha512-Wha1UwsB3CYdqUm2PPzh/1gujGCNtWVUYF0mB00fJFoR4gTyWTDPjSm+zBF787Ahw8vSGgBja90MkgFwvB86Dg==}
+    dev: false
 
   /@types/node@18.16.0:
     resolution: {integrity: sha512-BsAaKhB+7X+H4GnSjGhJG9Qi8Tw+inU9nJDwmD5CgOmBLEI6ArdhikpLX7DjbjDRDTbqZzU2LSQNZg8WGPiSZQ==}
