@@ -11,6 +11,12 @@ export const createTagsQuery = (
   options?: RouterOptions['tags']['getAll']
 ) => trpc.tags.getAll.query(input ?? {}, options)
 
+export const prefetchTagsQuery = (
+  trpc: TRPCClient,
+  input?: RouterInput['tags']['getAll'],
+  options?: RouterOptions['tags']['getAll']
+) => trpc.tags.getAll.prefetchQuery(input ?? {}, options)
+
 export const createTagsTreeQuery = (
   trpc: TRPCClient,
   options?: RouterOptions['tags']['getAllTree']

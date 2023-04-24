@@ -1,5 +1,6 @@
 import { ifNotNull } from 'utils'
 
+import { prefetchTagsQuery } from '$lib/services/tags'
 import { prefetchAllTracksWithArtistsAndReleaseQuery } from '$lib/services/tracks'
 import { decodeTagsFilterUrl } from '$lib/tag-filter'
 
@@ -15,7 +16,10 @@ export const load: PageLoad = async ({ parent, url }) => {
   const data = { favoritesOnly, tags }
 
   const { trpc } = await parent()
-  await prefetchAllTracksWithArtistsAndReleaseQuery(trpc, makeTracksQueryInput(data))
+  await Promise.all([
+    prefetchAllTracksWithArtistsAndReleaseQuery(trpc, makeTracksQueryInput(data)),
+    prefetchTagsQuery(trpc),
+  ])
 
   return data
 }

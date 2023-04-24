@@ -9,6 +9,7 @@
   import Checkbox from '$lib/atoms/Checkbox.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
+  import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
   import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -138,6 +139,11 @@
     </div>
   </svelte:fragment>
 
+  {#if data.tags}
+    <div class="rounded bg-gray-900 px-2 py-1">
+      <EditTagsFilterPlaintext filter={data.tags} tagClass="text-gray-300" />
+    </div>
+  {/if}
   {#if $tracksQuery.data}
     {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
     <TrackList

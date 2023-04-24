@@ -4,10 +4,14 @@
   import { createTagsQuery } from '$lib/services/tags'
   import type { TrackTagsFilter } from '$lib/tag-filter'
   import { getContextClient } from '$lib/trpc'
+  import { tw } from '$lib/utils/classes'
 
   import Delay from './Delay.svelte'
 
   export let filter: TrackTagsFilter | undefined
+  export let child = false
+
+  export let tagClass: string | undefined = undefined
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc)
@@ -19,16 +23,20 @@
     {#if typeof filter === 'number'}
       {@const tag = tagsMap_.get(filter)}
       {#if tag !== undefined}
-        <a href="/tags/{tag.id}" target="_blank" class="font-semibold text-white hover:underline"
-          >{tag.name}</a
+        <a
+          href="/tags/{tag.id}"
+          target="_blank"
+          class={tw('font-semibold text-white hover:underline', tagClass)}>{tag.name}</a
         >
       {:else}
         <span class="text-error-500 font-semibold">[unknown]</span>
       {/if}
-    {:else}
+    {:else if filter.tags.length === 1}
+      <svelte:self filter={filter.tags[0]} />
+    {:else if filter.tags.length > 1}
       <span class="text-gray-400"
-        >({#each filter.tags as tag, i}{#if i > 0}{' '}{#if filter.kind === 'and'}and{:else}or{/if}
-          {/if}<svelte:self filter={tag} />{/each})</span
+        >{#if child}({/if}{#each filter.tags as tag, i}{#if i > 0}{' '}{#if filter.kind === 'and'}and{:else}or{/if}
+          {/if}<svelte:self filter={tag} child {tagClass} />{/each}{#if child}){/if}</span
       >
     {/if}
   {:else if $tagsQuery.error}
