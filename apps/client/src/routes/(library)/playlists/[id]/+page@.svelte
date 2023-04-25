@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createPlaylistQuery, createPlaylistTracksQuery } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
 
@@ -28,6 +29,6 @@
   {:else if $playlistQuery.error || $tracksQuery.error}
     Error: {$playlistQuery.error?.message || $tracksQuery.error?.message}
   {:else}
-    Loading...
+    <FullscreenLoader />
   {/if}
 </Layout>
