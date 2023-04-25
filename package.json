@@ -15,9 +15,9 @@
     "db:remigrate": "cd packages/db && pnpm db:remigrate"
   },
   "devDependencies": {
-    "eslint": "^8.38.0",
+    "eslint": "^8.39.0",
     "eslint-config-custom": "workspace:*",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "prettier-plugin-svelte": "^2.10.0",
     "prettier-plugin-tailwindcss": "^0.2.7",
     "turbo": "1.6.3"
