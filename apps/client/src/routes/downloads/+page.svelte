@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createAllDownloadsQuery } from '$lib/services/downloads'
   import { getContextClient } from '$lib/trpc'
 
@@ -9,7 +10,7 @@
   const downloadsQuery = createAllDownloadsQuery(trpc)
 </script>
 
-<div class="p-4">
+<div class="h-full p-4">
   {#if $downloadsQuery.data}
     {#if $downloadsQuery.data.groups.length > 0 || $downloadsQuery.data.tracks.length > 0}
       <div class="space-y-4">
@@ -26,6 +27,6 @@
   {:else if $downloadsQuery.error}
     <div>{$downloadsQuery.error.message}</div>
   {:else}
-    <div>Loading...</div>
+    <FullscreenLoader />
   {/if}
 </div>
