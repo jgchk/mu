@@ -3,7 +3,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../../+layout.svelte'
-  import FavoritesOnlyToggle from '../../FavoritesOnlyToggle.svelte'
+  import FavoritesToggle from '../../FavoritesToggle.svelte'
   import type { PageData } from './$types'
   import Playlist from './Playlist.svelte'
 
@@ -16,7 +16,7 @@
 
 <Layout>
   <svelte:fragment slot="sidebar">
-    <FavoritesOnlyToggle />
+    <FavoritesToggle />
   </svelte:fragment>
 
   {#if $playlistQuery.data && $tracksQuery.data}

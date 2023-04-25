@@ -21,7 +21,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../+layout.svelte'
-  import FavoritesOnlyToggle from '../FavoritesOnlyToggle.svelte'
+  import FavoritesToggle from '../FavoritesToggle.svelte'
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -53,7 +53,7 @@
 
 <Layout>
   <svelte:fragment slot="sidebar">
-    <FavoritesOnlyToggle />
+    <FavoritesToggle />
 
     <div class="space-y-1 px-4">
       {#if data.tags === undefined || data.tags.parsed.kind === 'id'}

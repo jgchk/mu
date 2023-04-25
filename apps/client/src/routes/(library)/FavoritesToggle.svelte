@@ -6,8 +6,9 @@
   import Checkbox from '$lib/atoms/Checkbox.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
+  import { cn } from '$lib/utils/classes'
 
-  $: favoritesOnly = $page.url.searchParams.get('favorites') !== null
+  $: favorites = $page.url.searchParams.get('favorites') !== null
 </script>
 
 <a
@@ -16,7 +17,7 @@
   class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
   href={pipe(
     withUrlUpdate($page.url, (url) => {
-      if (favoritesOnly) {
+      if (favorites) {
         url.searchParams.delete('favorites')
       } else {
         url.searchParams.set('favorites', 'true')
@@ -35,12 +36,17 @@
   }}
 >
   <InputGroup layout="horizontal" class="pointer-events-none">
-    {#key favoritesOnly}
-      <Checkbox id="filter-favorites-only" checked={favoritesOnly} tabindex={-1} />
+    {#key favorites}
+      <Checkbox id="filter-favorites-only" checked={favorites} tabindex={-1} />
     {/key}
     <Label
       for="filter-favorites-only"
-      class="cursor-pointer transition group-hover/favorites:text-white">Favorites only</Label
+      class={cn(
+        'cursor-pointer transition group-hover/favorites:text-white',
+        favorites ? 'text-white' : 'text-gray-400'
+      )}
     >
+      Favorites
+    </Label>
   </InputGroup>
 </a>
