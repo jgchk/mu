@@ -9,7 +9,7 @@ import { z } from 'zod'
 
 import type { Context } from '../context'
 import { publicProcedure, router } from '../trpc'
-import { cleanupImage, getImagePath, injectDescendants } from '../utils'
+import { cleanupImage, getImagePath, injectDescendants, TracksFilter } from '../utils'
 
 export const playlistsRouter = router({
   new: publicProcedure
@@ -175,16 +175,18 @@ export const playlistsRouter = router({
         return { ...playlist, hasTrack }
       })
     }),
-  getWithTracks: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
-    const playlist = ctx.db.playlists.get(input.id)
-    return {
-      ...playlist,
-      tracks: getPlaylistTracks(ctx.db, playlist).map((track) => ({
-        ...track,
-        artists: ctx.db.artists.getByTrackId(track.id),
-      })),
-    }
-  }),
+  getWithTracks: publicProcedure
+    .input(z.object({ id: z.number() }).and(TracksFilter))
+    .query(({ ctx, input: { id, ...filter } }) => {
+      const playlist = ctx.db.playlists.get(id)
+      return {
+        ...playlist,
+        tracks: getPlaylistTracks(ctx.db, playlist, filter).map((track) => ({
+          ...track,
+          artists: ctx.db.artists.getByTrackId(track.id),
+        })),
+      }
+    }),
   delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
     const imageId = ctx.db.playlists.get(input.id).imageId
     if (imageId !== null) {
@@ -197,12 +199,13 @@ export const playlistsRouter = router({
 
 const getPlaylistTracks = (
   db: Context['db'],
-  playlist: Playlist
+  playlist: Playlist,
+  filter?: TracksFilter
 ): (TrackPretty & { playlistTrackId?: PlaylistTrack['id'] })[] => {
   if (playlist.filter !== null) {
-    const filter = decode(playlist.filter)
-    return db.tracks.getAll({ tags: injectDescendants(db)(filter) })
+    const tagsFilter = decode(playlist.filter)
+    return db.tracks.getAll({ ...filter, tags: injectDescendants(db)(tagsFilter) })
   } else {
-    return db.tracks.getByPlaylistId(playlist.id)
+    return db.tracks.getByPlaylistId(playlist.id, filter)
   }
 }

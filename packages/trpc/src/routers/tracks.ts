@@ -1,62 +1,39 @@
-import { decode } from 'bool-lang'
-import { ifDefined, ifNotNull, toErrorString, uniq } from 'utils'
+import { ifDefined, ifNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
-import { injectDescendants } from '../utils'
-
-const BoolLangString = z.string().transform((val, ctx) => {
-  try {
-    const parsed = decode(val)
-    return parsed
-  } catch (e) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Invalid BoolLang: ${toErrorString(e)}`,
-    })
-    return z.NEVER
-  }
-})
+import { injectDescendants, TracksFilter } from '../utils'
 
 export const tracksRouter = router({
-  getAllWithArtistsAndRelease: publicProcedure
-    .input(
-      z.object({
-        favorite: z.boolean().optional(),
-        tags: BoolLangString.optional(),
-        limit: z.number().min(1).max(100).optional(),
-        cursor: z.number().optional(),
-      })
-    )
-    .query(({ input, ctx }) => {
-      const skip = input.cursor ?? 0
-      const limit = input.limit ?? 50
+  getAllWithArtistsAndRelease: publicProcedure.input(TracksFilter).query(({ input, ctx }) => {
+    const skip = input.cursor ?? 0
+    const limit = input.limit ?? 50
 
-      const tracks = ctx.db.tracks.getAll({
-        favorite: input.favorite,
-        tags: ifDefined(input.tags, injectDescendants(ctx.db)),
-        skip,
-        limit: limit + 1,
-      })
+    const tracks = ctx.db.tracks.getAll({
+      favorite: input.favorite,
+      tags: ifDefined(input.tags, injectDescendants(ctx.db)),
+      skip,
+      limit: limit + 1,
+    })
 
-      let nextCursor: number | undefined = undefined
-      if (tracks.length > limit) {
-        tracks.pop()
-        nextCursor = skip + limit
-      }
+    let nextCursor: number | undefined = undefined
+    if (tracks.length > limit) {
+      tracks.pop()
+      nextCursor = skip + limit
+    }
 
-      const tracksWithArtistsAndRelease = tracks.map((track) => ({
-        ...track,
-        artists: ctx.db.artists.getByTrackId(track.id),
-        release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
-      }))
+    const tracksWithArtistsAndRelease = tracks.map((track) => ({
+      ...track,
+      artists: ctx.db.artists.getByTrackId(track.id),
+      release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
+    }))
 
-      return {
-        items: tracksWithArtistsAndRelease,
-        nextCursor,
-      }
-    }),
+    return {
+      items: tracksWithArtistsAndRelease,
+      nextCursor,
+    }
+  }),
   getById: publicProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => ({
     ...ctx.db.tracks.get(id),
     artists: ctx.db.artists.getByTrackId(id),

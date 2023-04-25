@@ -75,7 +75,8 @@ export type TracksMixin = {
     getAll: (filter?: TracksFilter) => TrackPretty[]
     getByReleaseId: (releaseId: Release['id']) => TrackPretty[]
     getByPlaylistId: (
-      playlistId: number
+      playlistId: number,
+      filter?: TracksFilter
     ) => (TrackPretty & { playlistTrackId: PlaylistTrack['id'] })[]
     get: (id: Track['id']) => TrackPretty
     getMany: (ids: Track['id'][]) => TrackPretty[]
@@ -238,18 +239,84 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .map(convertTrack)
       },
 
-      getByPlaylistId: (playlistId) => {
-        return this.db
+      getByPlaylistId: (playlistId, { favorite, tags: filterTags, skip, limit } = {}) => {
+        let query = this.db
           .select()
           .from(tracks)
           .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
           .where(eq(playlistTracks.playlistId, playlistId))
           .orderBy(playlistTracks.order)
-          .all()
-          .map((row) => ({
+
+        if (favorite !== undefined) {
+          query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
+        }
+
+        if (filterTags !== undefined) {
+          const tracksWithTags = this.db
+            .select()
+            .from(tracks)
+            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
+            .all()
+
+          const trackTagsMap = new Map<number, Set<number>>()
+          for (const trackWithTags of tracksWithTags) {
+            const previous = trackTagsMap.get(trackWithTags.tracks.id)
+            if (previous) {
+              previous.add(trackWithTags.track_tags.tagId)
+            } else {
+              trackTagsMap.set(trackWithTags.tracks.id, new Set([trackWithTags.track_tags.tagId]))
+            }
+          }
+
+          const allTracks = query.all()
+
+          const makeFilter =
+            (track: (typeof allTracks)[0]) =>
+            (node: BoolLang): boolean => {
+              switch (node.kind) {
+                case 'id': {
+                  const tags = trackTagsMap.get(track.tracks.id)
+                  return tags?.has(node.value) ?? false
+                }
+                case 'not': {
+                  return !makeFilter(track)(node.child)
+                }
+                case 'and': {
+                  const filter = makeFilter(track)
+                  return node.children.every((tag) => filter(tag))
+                }
+                case 'or': {
+                  const filter = makeFilter(track)
+                  return node.children.some((tag) => filter(tag))
+                }
+              }
+            }
+
+          let results = allTracks.filter((track) => makeFilter(track)(filterTags))
+
+          if (skip !== undefined) {
+            results = results.slice(skip)
+          }
+          if (limit !== undefined) {
+            results = results.slice(0, limit)
+          }
+          return results.map((row) => ({
             ...convertTrack(row.tracks),
             playlistTrackId: row.playlist_tracks.id,
           }))
+        }
+
+        if (skip !== undefined) {
+          query = query.offset(skip)
+        }
+        if (limit !== undefined) {
+          query = query.limit(limit)
+        }
+
+        return query.all().map((row) => ({
+          ...convertTrack(row.tracks),
+          playlistTrackId: row.playlist_tracks.id,
+        }))
       },
 
       get: (id) => {

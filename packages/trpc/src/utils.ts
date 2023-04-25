@@ -1,6 +1,9 @@
 import type { BoolLang } from 'bool-lang'
+import { decode } from 'bool-lang'
 import fs from 'fs/promises'
 import path from 'path'
+import { toErrorString } from 'utils'
+import { z } from 'zod'
 
 import type { Context } from './context'
 
@@ -14,6 +17,27 @@ export const cleanupImage = async (ctx: Context, id: number) => {
     await fs.rm(getImagePath(ctx, id))
   }
 }
+
+export const BoolLangString = z.string().transform((val, ctx) => {
+  try {
+    const parsed = decode(val)
+    return parsed
+  } catch (e) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Invalid BoolLang: ${toErrorString(e)}`,
+    })
+    return z.NEVER
+  }
+})
+
+export type TracksFilter = z.infer<typeof TracksFilter>
+export const TracksFilter = z.object({
+  favorite: z.boolean().optional(),
+  tags: BoolLangString.optional(),
+  limit: z.number().min(1).max(100).optional(),
+  cursor: z.number().optional(),
+})
 
 export const injectDescendants =
   (db: Context['db']) =>

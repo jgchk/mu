@@ -13,11 +13,17 @@ export const prefetchPlaylistsQuery = (
 export const createPlaylistsHasTrackQuery = (trpc: TRPCClient, trackId: number) =>
   trpc.playlists.getAllHasTrack.query({ trackId })
 
-export const createPlaylistQuery = (trpc: TRPCClient, id: number) =>
-  trpc.playlists.getWithTracks.query({ id })
+export const createPlaylistQuery = (
+  trpc: TRPCClient,
+  id: number,
+  filter?: Omit<RouterInput['playlists']['getWithTracks'], 'id'>
+) => trpc.playlists.getWithTracks.query({ id, ...filter })
 
-export const prefetchPlaylistQuery = (trpc: TRPCClient, id: number) =>
-  trpc.playlists.getWithTracks.prefetchQuery({ id })
+export const prefetchPlaylistQuery = (
+  trpc: TRPCClient,
+  id: number,
+  filter?: Omit<RouterInput['playlists']['getWithTracks'], 'id'>
+) => trpc.playlists.getWithTracks.prefetchQuery({ id, ...filter })
 
 export const fetchPlaylistQuery = (trpc: TRPCClient, id: number) =>
   trpc.playlists.getWithTracks.fetchQuery({ id })

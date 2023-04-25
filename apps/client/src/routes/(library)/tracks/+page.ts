@@ -5,11 +5,9 @@ import { prefetchTagsQuery } from '$lib/services/tags'
 import { prefetchAllTracksWithArtistsAndReleaseQuery } from '$lib/services/tracks'
 
 import type { PageLoad } from './$types'
-import { makeTracksQueryInput } from './common'
 
 export const load: PageLoad = async ({ parent, url }) => {
-  const favoritesParam = url.searchParams.get('favorites')
-  const favoritesOnly = favoritesParam !== null
+  const favoritesOnly = url.searchParams.get('favorites') !== null
 
   const tags =
     ifNotNull(url.searchParams.get('tags'), (tags) => ({
@@ -17,13 +15,17 @@ export const load: PageLoad = async ({ parent, url }) => {
       parsed: decode(tags),
     })) ?? undefined
 
-  const data = { favoritesOnly, tags }
+  const query = {
+    limit: 100,
+    ...(favoritesOnly ? { favorite: true } : {}),
+    ...(tags !== undefined ? { tags: tags.text } : {}),
+  }
 
   const { trpc } = await parent()
   await Promise.all([
-    prefetchAllTracksWithArtistsAndReleaseQuery(trpc, makeTracksQueryInput(data)),
+    prefetchAllTracksWithArtistsAndReleaseQuery(trpc, query),
     prefetchTagsQuery(trpc),
   ])
 
-  return data
+  return { favoritesOnly, tags, query }
 }

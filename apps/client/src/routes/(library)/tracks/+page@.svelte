@@ -6,7 +6,6 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import Button from '$lib/atoms/Button.svelte'
-  import Checkbox from '$lib/atoms/Checkbox.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
@@ -22,18 +21,16 @@
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../+layout.svelte'
+  import FavoritesOnlyToggle from '../FavoritesOnlyToggle.svelte'
   import type { PageData } from './$types'
-  import { makeTracksQueryInput } from './common'
 
   export let data: PageData
 
-  $: tracksQueryInput = makeTracksQueryInput(data)
-
   const trpc = getContextClient()
-  $: tracksQuery = createAllTracksWithArtistsAndReleaseQuery(trpc, tracksQueryInput)
+  $: tracksQuery = createAllTracksWithArtistsAndReleaseQuery(trpc, data.query)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getAllTracksWithArtistsAndReleaseQuery: tracksQueryInput,
+    getAllTracksWithArtistsAndReleaseQuery: data.query,
   })
 
   let inView = false
@@ -56,40 +53,7 @@
 
 <Layout>
   <svelte:fragment slot="sidebar">
-    <a
-      data-sveltekit-keepfocus
-      data-sveltekit-replacestate
-      class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
-      href={pipe(
-        withUrlUpdate($page.url, (url) => {
-          if (data.favoritesOnly) {
-            url.searchParams.delete('favorites')
-          } else {
-            url.searchParams.set('favorites', 'true')
-          }
-        }),
-        toRelativeUrl,
-        decodeURIComponent
-      )}
-      on:keydown={(e) => {
-        // trigger link on space
-        if (e.key === ' ') {
-          e.preventDefault()
-          e.stopPropagation()
-          e.currentTarget.click()
-        }
-      }}
-    >
-      <InputGroup layout="horizontal" class="pointer-events-none">
-        {#key data.favoritesOnly}
-          <Checkbox id="filter-favorites-only" checked={data.favoritesOnly} tabindex={-1} />
-        {/key}
-        <Label
-          for="filter-favorites-only"
-          class="cursor-pointer transition group-hover/favorites:text-white">Favorites only</Label
-        >
-      </InputGroup>
-    </a>
+    <FavoritesOnlyToggle />
 
     <div class="space-y-1 px-4">
       {#if data.tags === undefined || data.tags.parsed.kind === 'id'}
