@@ -7,12 +7,15 @@
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
+  import Loader from '$lib/atoms/Loader.svelte'
   import PopoverArrow from '$lib/components/PopoverArrow.svelte'
   import CheckIcon from '$lib/icons/CheckIcon.svelte'
   import { createTagsQuery } from '$lib/services/tags'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
+
+  import Delay from './Delay.svelte'
 
   export let selectedTagIds: number[]
   $: selectedTagIdsSet = new Set(selectedTagIds)
@@ -104,7 +107,11 @@
         > loading tags. Retry?
       </Button>
     {:else}
-      <div class="block w-full p-1 px-2 text-left text-sm text-gray-400">Loading tags...</div>
+      <div class="flex h-7 w-full items-center justify-center">
+        <Delay>
+          <Loader class="h-5 w-5 text-gray-500" />
+        </Delay>
+      </div>
     {/if}
   </div>
 </div>
