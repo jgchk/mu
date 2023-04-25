@@ -1,6 +1,7 @@
 <script lang="ts">
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import { createAllReleasesWithArtistsQuery } from '$lib/services/releases'
   import { getContextClient } from '$lib/trpc'
@@ -40,5 +41,5 @@
 {:else if $releasesQuery.error}
   <div>{$releasesQuery.error.message}</div>
 {:else}
-  <div>Loading...</div>
+  <FullscreenLoader />
 {/if}
