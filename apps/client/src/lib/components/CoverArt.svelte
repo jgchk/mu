@@ -36,6 +36,7 @@
         rounding
       )}
     />
+    <slot name="insert" />
   {:else}
     <div
       class={tw(
