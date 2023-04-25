@@ -47,6 +47,7 @@
     >
       No cover art
     </div>
+    <slot name="insert" />
   {/if}
   <div
     class={cn(

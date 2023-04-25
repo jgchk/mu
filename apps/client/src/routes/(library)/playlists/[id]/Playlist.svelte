@@ -40,6 +40,16 @@
           hoverable={tracks.length > 0}
         >
           <PlayIcon />
+
+          <svelte:fragment slot="insert">
+            {#if playlist.filter !== null}
+              <div
+                class="bg-secondary-600 border-secondary-700 absolute bottom-0 right-0 ml-auto rounded-br rounded-tl border-l border-t border-opacity-75 bg-opacity-75 pb-[3px] pl-[5px] pr-[7px] pt-[1px] text-sm font-semibold italic text-white"
+              >
+                Auto
+              </div>
+            {/if}
+          </svelte:fragment>
         </CoverArt>
       </div>
     </button>
