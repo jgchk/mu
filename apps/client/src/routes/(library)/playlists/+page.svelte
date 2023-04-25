@@ -2,6 +2,7 @@
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { createPlaylistsQuery } from '$lib/services/playlists'
@@ -13,7 +14,7 @@
   const dialogs = getContextDialogs()
 </script>
 
-<div class="h-full gap-2 overflow-auto p-1">
+<div class="flex h-full flex-col gap-2 overflow-auto p-1">
   <div class="flex gap-1 pl-2">
     <Button on:click={() => dialogs.open('new-playlist')}>New Playlist</Button>
     <Button kind="outline" on:click={() => dialogs.open('new-auto-playlist')}>
@@ -57,6 +58,6 @@
   {:else if $playlistsQuery.error}
     <div>{$playlistsQuery.error.message}</div>
   {:else}
-    <div>Loading...</div>
+    <FullscreenLoader class="flex-1" />
   {/if}
 </div>
