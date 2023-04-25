@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$lib/atoms/Button.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createStartSoulseekMutation, createSystemStatusQuery } from '$lib/services/system'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'
@@ -68,5 +69,5 @@
 {:else if $statusQuery.error}
   <div class="text-2xl text-gray-500">Error loading status</div>
 {:else}
-  <div>Loading...</div>
+  <FullscreenLoader />
 {/if}
