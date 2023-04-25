@@ -1,6 +1,7 @@
 <script lang="ts">
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -94,5 +95,5 @@
 {:else if $releaseQuery.error}
   <div>{$releaseQuery.error.message}</div>
 {:else}
-  <div>Loading...</div>
+  <FullscreenLoader />
 {/if}
