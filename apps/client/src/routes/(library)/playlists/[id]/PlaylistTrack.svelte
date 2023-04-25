@@ -14,12 +14,12 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
-  export let track: RouterOutput['playlists']['getWithTracks']['tracks'][number]
+  export let track: RouterOutput['playlists']['tracks'][number]
   export let playlistId: number
 
   const trpc = getContextClient()
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getPlaylistQuery: { id: playlistId },
+    getPlaylistTracksQuery: { id: playlistId },
   })
 
   const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)

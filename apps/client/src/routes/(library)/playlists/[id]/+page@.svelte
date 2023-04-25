@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createPlaylistQuery } from '$lib/services/playlists'
+  import { createPlaylistQuery, createPlaylistTracksQuery } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
 
   import Layout from '../../+layout.svelte'
@@ -10,7 +10,8 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: playlistQuery = createPlaylistQuery(trpc, data.id, data.query)
+  $: playlistQuery = createPlaylistQuery(trpc, data.id)
+  $: tracksQuery = createPlaylistTracksQuery(trpc, data.tracksQuery)
 </script>
 
 <Layout>
@@ -18,10 +19,10 @@
     <FavoritesOnlyToggle />
   </svelte:fragment>
 
-  {#if $playlistQuery.data}
-    <Playlist playlist={$playlistQuery.data} />
-  {:else if $playlistQuery.error}
-    Error: {$playlistQuery.error.message}
+  {#if $playlistQuery.data && $tracksQuery.data}
+    <Playlist playlist={$playlistQuery.data} tracks={$tracksQuery.data} />
+  {:else if $playlistQuery.error || $tracksQuery.error}
+    Error: {$playlistQuery.error?.message || $tracksQuery.error?.message}
   {:else}
     Loading...
   {/if}

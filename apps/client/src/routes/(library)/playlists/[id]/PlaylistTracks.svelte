@@ -10,7 +10,7 @@
 
   import PlaylistTrack from './PlaylistTrack.svelte'
 
-  export let tracks: RouterOutput['playlists']['getWithTracks']['tracks']
+  export let tracks: RouterOutput['playlists']['tracks']
   export let playlistId: number
   export let reorderable: boolean
 
@@ -18,7 +18,7 @@
   const editTrackOrderMutation = createEditPlaylistTrackOrderMutation(trpc)
 
   const handleConsiderReorder = (
-    e: CustomEvent<DndEvent<RouterOutput['playlists']['getWithTracks']['tracks'][number]>> & {
+    e: CustomEvent<DndEvent<RouterOutput['playlists']['tracks'][number]>> & {
       target: EventTarget & HTMLDivElement
     }
   ) => {
@@ -26,7 +26,7 @@
   }
 
   const handleReorderTracks = (
-    e: CustomEvent<DndEvent<RouterOutput['playlists']['getWithTracks']['tracks'][number]>> & {
+    e: CustomEvent<DndEvent<RouterOutput['playlists']['tracks'][number]>> & {
       target: EventTarget & HTMLDivElement
     }
   ) => {

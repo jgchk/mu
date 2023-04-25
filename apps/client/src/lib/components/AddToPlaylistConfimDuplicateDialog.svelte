@@ -10,6 +10,7 @@
   import LinkToast from './LinkToast.svelte'
 
   export let playlistId: number
+  export let playlistName: string
   export let trackId: number
 
   const trpc = getContextClient()
@@ -22,10 +23,10 @@
     $addToPlaylistMutation.mutate(
       { playlistId, trackId },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success(LinkToast, {
             props: {
-              message: ['Added to ', { href: `/playlists/${data.id}`, text: data.name }, '!'],
+              message: ['Added to ', { href: `/playlists/${playlistId}`, text: playlistName }, '!'],
             },
           })
           close()

@@ -28,8 +28,7 @@
     <NewAutoPlaylistDialog {...dialog} on:close={() => dialogs.close('new-auto-playlist')} />
   {:else if dialog._tag === 'confirm-duplicate-playlist-track'}
     <AddToPlaylistConfimDuplicateDialog
-      playlistId={dialog.playlistId}
-      trackId={dialog.trackId}
+      {...dialog}
       on:close={() => dialogs.close('confirm-duplicate-playlist-track')}
     />
   {:else if dialog._tag === 'edit-playlist'}

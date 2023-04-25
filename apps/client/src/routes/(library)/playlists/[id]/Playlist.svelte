@@ -13,20 +13,18 @@
 
   import PlaylistTracks from './PlaylistTracks.svelte'
 
-  export let playlist: RouterOutput['playlists']['getWithTracks']
+  export let playlist: RouterOutput['playlists']['get']
+  export let tracks: RouterOutput['playlists']['tracks']
 
   const dialogs = getContextDialogs()
 
-  const makeQueueData = (
-    playlist: RouterOutput['playlists']['getWithTracks'],
-    trackIndex: number
-  ) => ({
-    previousTracks: playlist.tracks.slice(0, trackIndex).map((t) => t.id),
-    nextTracks: playlist.tracks.slice(trackIndex + 1).map((t) => t.id),
+  const makeQueueData = (trackIndex: number) => ({
+    previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
+    nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
 
   function makePlaylistCollageUrl() {
-    const imageIds = playlist.tracks.map((t) => t.imageId).filter(isNotNull)
+    const imageIds = tracks.map((t) => t.imageId).filter(isNotNull)
     return makeCollageUrl(imageIds, { size: 512 })
   }
 </script>
@@ -35,8 +33,8 @@
   <div class="relative flex items-end gap-6">
     <button
       type="button"
-      disabled={playlist.tracks.length === 0}
-      on:click={() => playTrack(playlist.tracks[0].id, makeQueueData(playlist, 0))}
+      disabled={tracks.length === 0}
+      on:click={() => playTrack(tracks[0].id, makeQueueData(0))}
     >
       <div class="relative w-64 shrink-0">
         <CoverArt
@@ -45,7 +43,7 @@
             : makePlaylistCollageUrl()}
           alt={playlist.name}
           iconClass="w-16 h-16"
-          hoverable={playlist.tracks.length > 0}
+          hoverable={tracks.length > 0}
         >
           <PlayIcon />
         </CoverArt>
@@ -97,8 +95,8 @@
 
   <PlaylistTracks
     playlistId={playlist.id}
-    tracks={playlist.tracks}
+    {tracks}
     reorderable={playlist.filter === null}
-    on:play={(e) => playTrack(e.detail.id, makeQueueData(playlist, e.detail.index))}
+    on:play={(e) => playTrack(e.detail.id, makeQueueData(e.detail.index))}
   />
 </div>

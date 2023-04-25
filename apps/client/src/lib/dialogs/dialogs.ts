@@ -4,6 +4,7 @@ import type { Writable } from 'svelte/store'
 import { writable } from 'svelte/store'
 import type { AreAllPropsOptional } from 'utils'
 
+import type AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
 import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
@@ -21,10 +22,7 @@ export type AllDialogs = {
     tracks?: number[]
   }
   'new-auto-playlist': ComponentProps<NewAutoPlaylistDialog>
-  'confirm-duplicate-playlist-track': {
-    playlistId: number
-    trackId: number
-  }
+  'confirm-duplicate-playlist-track': ComponentProps<AddToPlaylistConfimDuplicateDialog>
   'edit-playlist': ComponentProps<EditPlaylistDialog>
   'edit-auto-playlist': ComponentProps<EditAutoPlaylistDialog>
   'delete-playlist': ComponentProps<DeletePlaylistDialog>

@@ -128,13 +128,11 @@ export const playlistsRouter = router({
       }
 
       ctx.db.playlistTracks.addTrack(playlistId, trackId)
-      return {
-        ...ctx.db.playlists.get(playlistId),
-        tracks: ctx.db.tracks.getByPlaylistId(playlistId).map((track) => ({
-          ...track,
-          artists: ctx.db.artists.getByTrackId(track.id),
-        })),
-      }
+
+      return getPlaylistTracks(ctx.db, oldPlaylist).map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
     }),
   removeTrack: publicProcedure
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
@@ -148,13 +146,10 @@ export const playlistsRouter = router({
       }
 
       ctx.db.playlistTracks.delete(playlistTrackId)
-      return {
-        ...ctx.db.playlists.get(playlistId),
-        tracks: ctx.db.tracks.getByPlaylistId(playlistId).map((track) => ({
-          ...track,
-          artists: ctx.db.artists.getByTrackId(track.id),
-        })),
-      }
+      return getPlaylistTracks(ctx.db, oldPlaylist).map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
     }),
   getAll: publicProcedure
     .input(z.object({ auto: z.boolean().optional() }))
@@ -175,17 +170,24 @@ export const playlistsRouter = router({
         return { ...playlist, hasTrack }
       })
     }),
-  getWithTracks: publicProcedure
+  get: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
+    const playlist = ctx.db.playlists.get(id)
+    const imageIds = getPlaylistTracks(ctx.db, playlist)
+      .map((track) => track.imageId)
+      .filter(isNotNull)
+    return {
+      ...playlist,
+      imageIds,
+    }
+  }),
+  tracks: publicProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) => {
       const playlist = ctx.db.playlists.get(id)
-      return {
-        ...playlist,
-        tracks: getPlaylistTracks(ctx.db, playlist, filter).map((track) => ({
-          ...track,
-          artists: ctx.db.artists.getByTrackId(track.id),
-        })),
-      }
+      return getPlaylistTracks(ctx.db, playlist, filter).map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
     }),
   delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
     const imageId = ctx.db.playlists.get(input.id).imageId

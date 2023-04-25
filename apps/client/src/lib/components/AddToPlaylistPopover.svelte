@@ -40,7 +40,7 @@
   }
 
   let addingToPlaylistId: number | undefined = undefined
-  const handleAddToPlaylist = (playlistId: number) => {
+  const handleAddToPlaylist = (playlistId: number, playlistName: string) => {
     if ($addToPlaylistMutation.isLoading) return
 
     addingToPlaylistId = playlistId
@@ -48,10 +48,10 @@
     $addToPlaylistMutation.mutate(
       { playlistId, trackId },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success(LinkToast, {
             props: {
-              message: ['Added to ', { href: `/playlists/${data.id}`, text: data.name }, '!'],
+              message: ['Added to ', { href: `/playlists/${playlistId}`, text: playlistName }, '!'],
             },
           })
           addingToPlaylistId = undefined
@@ -103,7 +103,7 @@
         if (e.key === 'Enter') {
           e.preventDefault()
           if (filteredPlaylists?.length) {
-            void handleAddToPlaylist(filteredPlaylists[0].id)
+            void handleAddToPlaylist(filteredPlaylists[0].id, filteredPlaylists[0].name)
           } else {
             void handleNewPlaylist()
           }
@@ -131,9 +131,13 @@
           align="left"
           on:click={() => {
             if (playlist.hasTrack) {
-              dialogs.open('confirm-duplicate-playlist-track', { playlistId: playlist.id, trackId })
+              dialogs.open('confirm-duplicate-playlist-track', {
+                playlistId: playlist.id,
+                trackId,
+                playlistName: playlist.name,
+              })
             } else {
-              handleAddToPlaylist(playlist.id)
+              handleAddToPlaylist(playlist.id, playlist.name)
             }
           }}
           loading={addingToPlaylistId === playlist.id}
