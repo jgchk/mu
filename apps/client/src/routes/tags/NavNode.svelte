@@ -10,9 +10,9 @@
 
 {#if tag}
   {#if current}
-    <div class="font-bold text-white">{tag.name}</div>
+    <div class="py-0.5 font-bold text-white">{tag.name}</div>
   {:else}
-    <a href="/tags/{tag.id}" class="text-gray-400 hover:underline">{tag.name}</a>
+    <a href="/tags/{tag.id}" class="block py-0.5 text-gray-400 hover:underline">{tag.name}</a>
   {/if}
 
   <ul class="border-l border-gray-800">

@@ -6,7 +6,7 @@
 </script>
 
 <div class="flex h-full gap-2">
-  <div class="flex w-48 flex-col overflow-auto rounded bg-gray-900 p-2">
+  <div class="flex w-48 flex-col overflow-auto rounded bg-gray-900 p-2 px-3">
     <div class="flex-1">
       <slot name="sidebar" />
     </div>
