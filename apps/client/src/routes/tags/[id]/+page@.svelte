@@ -4,6 +4,7 @@
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -63,7 +64,7 @@
     {:else if $tagsQuery.error}
       <div>{$tagsQuery.error.message}</div>
     {:else}
-      <div>Loading...</div>
+      <FullscreenLoader />
     {/if}
   </svelte:fragment>
 
@@ -111,45 +112,55 @@
     <h2 class="mb-4 mt-8 text-2xl font-bold">Releases</h2>
     {#if $releasesQuery.data}
       {@const releases = $releasesQuery.data}
-      <FlowGrid>
-        {#each releases as release (release.id)}
-          <div class="w-full">
-            <a href="/releases/{release.id}" class="w-full">
-              <CoverArt
-                src={release.imageId !== null
-                  ? makeImageUrl(release.imageId, { size: 512 })
-                  : undefined}
-              />
-            </a>
-            <a
-              href="/releases/{release.id}"
-              class="mt-1 block truncate font-medium hover:underline"
-              title={release.title}
-            >
-              {release.title}
-            </a>
-          </div>
-        {/each}
-      </FlowGrid>
+
+      {#if releases.length > 0}
+        <FlowGrid>
+          {#each releases as release (release.id)}
+            <div class="w-full">
+              <a href="/releases/{release.id}" class="w-full">
+                <CoverArt
+                  src={release.imageId !== null
+                    ? makeImageUrl(release.imageId, { size: 512 })
+                    : undefined}
+                />
+              </a>
+              <a
+                href="/releases/{release.id}"
+                class="mt-1 block truncate font-medium hover:underline"
+                title={release.title}
+              >
+                {release.title}
+              </a>
+            </div>
+          {/each}
+        </FlowGrid>
+      {:else}
+        <div>No releases</div>
+      {/if}
     {:else if $releasesQuery.error}
       <div>{$releasesQuery.error.message}</div>
     {:else}
-      <div>Loading...</div>
+      <FullscreenLoader />
     {/if}
 
     <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
     {#if $tracksQuery.data}
       {@const tracks = $tracksQuery.data}
-      <TrackList
-        {tracks}
-        on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-        on:favorite={(e) =>
-          $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-      />
+
+      {#if tracks.length > 0}
+        <TrackList
+          {tracks}
+          on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+          on:favorite={(e) =>
+            $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
+        />
+      {:else}
+        <div>No tracks</div>
+      {/if}
     {:else if $tracksQuery.error}
       <div>{$tracksQuery.error.message}</div>
     {:else}
-      <div>Loading...</div>
+      <FullscreenLoader />
     {/if}
   </div>
 </Layout>
