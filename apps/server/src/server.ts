@@ -65,13 +65,19 @@ const main = async () => {
   })
   console.log('✅ WebSocket Server listening on ws://localhost:8080')
 
-  process.on('SIGINT', () => {
-    console.log('Shutting down...')
-    trpcWsHandler.broadcastReconnectNotification()
-    wss.close()
-    server.close()
-    ctx.destroy()
-  })
+  let shuttingDown = false
+  for (const sig of ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGUSR2']) {
+    process.once(sig, () => {
+      if (shuttingDown) return
+      shuttingDown = true
+
+      console.log('Shutting down...')
+      trpcWsHandler.broadcastReconnectNotification()
+      wss.close()
+      server.close()
+      ctx.destroy()
+    })
+  }
 }
 
 void main()
