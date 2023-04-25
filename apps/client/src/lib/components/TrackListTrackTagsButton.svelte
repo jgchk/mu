@@ -18,6 +18,7 @@
   const trpc = getContextClient()
   const close = () => {
     void trpc.tracks.getByTag.utils.invalidate()
+    void trpc.playlists.tracks.utils.invalidate()
     showAddTagPopover = false
   }
 </script>
