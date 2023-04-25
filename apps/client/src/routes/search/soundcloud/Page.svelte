@@ -1,5 +1,6 @@
 <script lang="ts">
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createSearchSoundcloudQuery } from '$lib/services/search'
   import { getContextClient } from '$lib/trpc'
 
@@ -32,7 +33,7 @@
   {:else if $soundcloudQuery.error}
     <div>{$soundcloudQuery.error.message}</div>
   {:else}
-    <div>Loading...</div>
+    <FullscreenLoader />
   {/if}
 {:else}
   <div>Enter a search query</div>
