@@ -6,6 +6,7 @@
   import AddToPlaylistButton from '$lib/components/AddToPlaylistButton.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FavoriteButton from '$lib/components/FavoriteButton.svelte'
+  import TrackListTrackTagsButton from '$lib/components/TrackListTrackTagsButton.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
@@ -62,12 +63,6 @@
     {formatMilliseconds(track.duration)}
   </div>
   <div class="flex items-center gap-1">
-    <FavoriteButton
-      layer={700}
-      favorite={track.favorite}
-      on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
-    />
-    <AddToPlaylistButton trackId={track.id} layer={700} excludePlaylistId={playlistId} />
     {#if track.playlistTrackId !== undefined}
       {@const playlistTrackId = track.playlistTrackId}
       <IconButton
@@ -80,5 +75,12 @@
         <DeleteIcon />
       </IconButton>
     {/if}
+    <FavoriteButton
+      layer={700}
+      favorite={track.favorite}
+      on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+    />
+    <AddToPlaylistButton trackId={track.id} layer={700} excludePlaylistId={playlistId} />
+    <TrackListTrackTagsButton trackId={track.id} layer={700} />
   </div>
 </div>
