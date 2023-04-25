@@ -1,6 +1,5 @@
 <script lang="ts">
   import { decode } from 'bool-lang'
-  import { isNotNull } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
@@ -22,11 +21,6 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
-
-  function makePlaylistCollageUrl() {
-    const imageIds = tracks.map((t) => t.imageId).filter(isNotNull)
-    return makeCollageUrl(imageIds, { size: 512 })
-  }
 </script>
 
 <div class="space-y-4 p-4">
@@ -40,7 +34,7 @@
         <CoverArt
           src={playlist.imageId !== null
             ? makeImageUrl(playlist.imageId, { size: 512 })
-            : makePlaylistCollageUrl()}
+            : makeCollageUrl(playlist.imageIds, { size: 512 })}
           alt={playlist.name}
           iconClass="w-16 h-16"
           hoverable={tracks.length > 0}
