@@ -6,6 +6,7 @@
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
   import Input from '$lib/atoms/Input.svelte'
+  import Loader from '$lib/atoms/Loader.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import {
     createAddTrackToPlaylistMutation,
@@ -16,6 +17,7 @@
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
+  import Delay from './Delay.svelte'
   import LinkToast from './LinkToast.svelte'
   import PopoverArrow from './PopoverArrow.svelte'
 
@@ -164,7 +166,11 @@
         > loading playlists. Retry?
       </Button>
     {:else}
-      <div class="block w-full p-1 px-2 text-left text-sm text-gray-400">Loading playlists...</div>
+      <div class="flex h-7 w-full items-center justify-center">
+        <Delay>
+          <Loader class="h-5 w-5 text-gray-500" />
+        </Delay>
+      </div>
     {/if}
   </div>
 </div>
