@@ -20,7 +20,11 @@
   </svelte:fragment>
 
   {#if $playlistQuery.data && $tracksQuery.data}
-    <Playlist playlist={$playlistQuery.data} tracks={$tracksQuery.data} />
+    <Playlist
+      playlist={$playlistQuery.data}
+      tracks={$tracksQuery.data}
+      tracksQuery={data.tracksQuery}
+    />
   {:else if $playlistQuery.error || $tracksQuery.error}
     Error: {$playlistQuery.error?.message || $tracksQuery.error?.message}
   {:else}

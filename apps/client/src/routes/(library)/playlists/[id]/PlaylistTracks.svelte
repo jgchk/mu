@@ -5,13 +5,14 @@
 
   import { dnd } from '$lib/actions/dnd'
   import { createEditPlaylistTrackOrderMutation } from '$lib/services/playlists'
-  import type { RouterOutput } from '$lib/trpc'
+  import type { RouterInput, RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   import PlaylistTrack from './PlaylistTrack.svelte'
 
   export let tracks: RouterOutput['playlists']['tracks']
   export let playlistId: number
+  export let tracksQuery: RouterInput['playlists']['tracks']
   export let reorderable: boolean
 
   const trpc = getContextClient()
@@ -57,7 +58,7 @@
   >
     {#each tracks as track, i (track.id)}
       <div animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
-        <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
+        <PlaylistTrack {track} {playlistId} {tracksQuery} on:play={() => play(track.id, i)} />
       </div>
     {/each}
   </div>
@@ -65,7 +66,7 @@
   <div>
     {#each tracks as track, i (track.id)}
       <div>
-        <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
+        <PlaylistTrack {track} {playlistId} {tracksQuery} on:play={() => play(track.id, i)} />
       </div>
     {/each}
   </div>

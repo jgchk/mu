@@ -11,15 +11,16 @@
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { createRemoveTrackFromPlaylistMutation } from '$lib/services/playlists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
-  import type { RouterOutput } from '$lib/trpc'
+  import type { RouterInput, RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
   export let track: RouterOutput['playlists']['tracks'][number]
   export let playlistId: number
+  export let tracksQuery: RouterInput['playlists']['tracks']
 
   const trpc = getContextClient()
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getPlaylistTracksQuery: { id: playlistId },
+    getPlaylistTracksQuery: tracksQuery,
   })
 
   const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)

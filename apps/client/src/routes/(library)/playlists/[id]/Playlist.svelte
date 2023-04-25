@@ -8,12 +8,13 @@
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
-  import type { RouterOutput } from '$lib/trpc'
+  import type { RouterInput, RouterOutput } from '$lib/trpc'
 
   import PlaylistTracks from './PlaylistTracks.svelte'
 
   export let playlist: RouterOutput['playlists']['get']
   export let tracks: RouterOutput['playlists']['tracks']
+  export let tracksQuery: RouterInput['playlists']['tracks']
 
   const dialogs = getContextDialogs()
 
@@ -100,6 +101,7 @@
   <PlaylistTracks
     playlistId={playlist.id}
     {tracks}
+    {tracksQuery}
     reorderable={playlist.filter === null}
     on:play={(e) => playTrack(e.detail.id, makeQueueData(e.detail.index))}
   />
