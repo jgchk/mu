@@ -9,6 +9,7 @@
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -140,6 +141,6 @@
   {:else if $tracksQuery.error}
     <div>{$tracksQuery.error.message}</div>
   {:else}
-    <div>Loading...</div>
+    <FullscreenLoader />
   {/if}
 </Layout>
