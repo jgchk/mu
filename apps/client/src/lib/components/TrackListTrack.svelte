@@ -2,7 +2,9 @@
   import { createEventDispatcher } from 'svelte'
   import { formatMilliseconds } from 'utils'
 
+  import IconButton from '$lib/atoms/IconButton.svelte'
   import { makeImageUrl } from '$lib/cover-art'
+  import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
 
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
@@ -14,13 +16,16 @@
   export let track: TrackListTrackType
   export let showCoverArt = true
   export let i: number
+  export let showDelete = false
 
   const dispatch = createEventDispatcher<{
     play: undefined
     favorite: undefined
+    delete: undefined
   }>()
   const play = () => dispatch('play')
   const favorite = () => dispatch('favorite')
+  const delete_ = () => dispatch('delete')
 </script>
 
 <div
@@ -78,6 +83,11 @@
     {formatMilliseconds(track.duration)}
   </div>
   <div class="flex items-center gap-1">
+    {#if showDelete}
+      <IconButton kind="text" layer={700} tooltip="Remove from playlist" on:click={() => delete_()}>
+        <DeleteIcon />
+      </IconButton>
+    {/if}
     <FavoriteButton layer={700} favorite={track.favorite} on:click={() => favorite()} />
     <AddToPlaylistButton trackId={track.id} layer={700} />
     <TrackListTrackTagsButton trackId={track.id} layer={700} />

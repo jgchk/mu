@@ -4,11 +4,14 @@
   import type { DndEvent } from 'svelte-dnd-action'
 
   import { dnd } from '$lib/actions/dnd'
-  import { createEditPlaylistTrackOrderMutation } from '$lib/services/playlists'
+  import TrackListTrack from '$lib/components/TrackListTrack.svelte'
+  import {
+    createEditPlaylistTrackOrderMutation,
+    createRemoveTrackFromPlaylistMutation,
+  } from '$lib/services/playlists'
+  import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterInput, RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
-
-  import PlaylistTrack from './PlaylistTrack.svelte'
 
   export let tracks: RouterOutput['playlists']['tracks']
   export let playlistId: number
@@ -17,6 +20,13 @@
 
   const trpc = getContextClient()
   const editTrackOrderMutation = createEditPlaylistTrackOrderMutation(trpc)
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
+    getPlaylistTracksQuery: tracksQuery,
+  })
+
+  const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)
+  const handleRemoveTrack = (playlistTrackId: number) =>
+    $removeTrackMutation.mutate({ playlistId, playlistTrackId })
 
   const handleConsiderReorder = (
     e: CustomEvent<DndEvent<RouterOutput['playlists']['tracks'][number]>> & {
@@ -58,7 +68,15 @@
   >
     {#each tracks as track, i (track.id)}
       <div animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
-        <PlaylistTrack {track} {playlistId} {tracksQuery} on:play={() => play(track.id, i)} />
+        <TrackListTrack
+          {track}
+          {i}
+          showDelete={track.playlistTrackId !== undefined}
+          on:play={() => play(track.id, i)}
+          on:favorite={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+          on:delete={() =>
+            track.playlistTrackId !== undefined && handleRemoveTrack(track.playlistTrackId)}
+        />
       </div>
     {/each}
   </div>
@@ -66,7 +84,15 @@
   <div>
     {#each tracks as track, i (track.id)}
       <div>
-        <PlaylistTrack {track} {playlistId} {tracksQuery} on:play={() => play(track.id, i)} />
+        <TrackListTrack
+          {track}
+          {i}
+          showDelete={track.playlistTrackId !== undefined}
+          on:play={() => play(track.id, i)}
+          on:favorite={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
+          on:delete={() =>
+            track.playlistTrackId !== undefined && handleRemoveTrack(track.playlistTrackId)}
+        />
       </div>
     {/each}
   </div>
