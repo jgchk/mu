@@ -5,6 +5,7 @@
 
   import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
   import IconButton from '$lib/atoms/IconButton.svelte'
+  import Loader from '$lib/atoms/Loader.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import ListIcon from '$lib/icons/ListIcon.svelte'
@@ -25,6 +26,7 @@
   import Range from '../atoms/Range.svelte'
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
+  import Delay from './Delay.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
@@ -138,10 +140,10 @@
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
-      <div class="h-[64px] w-[64px] rounded-sm bg-gray-800" />
-      <div>
-        <div class="invisible">Loading...</div>
-        <div class="invisible text-sm text-gray-400">Loading...</div>
+      <div class="flex h-[64px] w-[64px] items-center justify-center rounded-sm bg-gray-800">
+        <Delay>
+          <Loader class="h-8 w-8 text-gray-600" />
+        </Delay>
       </div>
     {/if}
   </div>
