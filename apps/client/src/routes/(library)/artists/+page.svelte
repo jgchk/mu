@@ -1,6 +1,7 @@
 <script lang="ts">
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { createAllArtistsQuery } from '$lib/services/artists'
   import { getContextClient } from '$lib/trpc'
@@ -35,5 +36,5 @@
 {:else if $artistsQuery.error}
   <div>{$artistsQuery.error.message}</div>
 {:else}
-  <div>Loading...</div>
+  <FullscreenLoader />
 {/if}

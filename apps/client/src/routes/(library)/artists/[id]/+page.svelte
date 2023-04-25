@@ -4,6 +4,7 @@
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -114,5 +115,5 @@
 {:else if $artistQuery.error}
   <p>Something went wrong</p>
 {:else}
-  <p>Loading...</p>
+  <FullscreenLoader />
 {/if}
