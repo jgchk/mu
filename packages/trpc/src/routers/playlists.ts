@@ -60,16 +60,23 @@ export const playlistsRouter = router({
     .input(
       z.object({
         id: z.number(),
-        data: z.object({ name: z.string().min(1), description: z.string().nullable() }),
+        data: z.object({
+          name: z.string().min(1),
+          description: z.string().nullable(),
+          filter: z.string().nullish(),
+        }),
         art: z.string().nullish(),
-        filter: z.string().nullish(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const oldPlaylist = ctx.db.playlists.get(input.id)
       const oldImageId = oldPlaylist.imageId
 
-      if (oldPlaylist.filter === null && input.filter !== undefined && input.filter !== null) {
+      if (
+        oldPlaylist.filter === null &&
+        input.data.filter !== undefined &&
+        input.data.filter !== null
+      ) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Cannot set filter on non-auto-playlist',
@@ -91,6 +98,10 @@ export const playlistsRouter = router({
       }
 
       const imageId = image === null ? null : image?.id
+      console.log('intpu', input, {
+        ...input.data,
+        imageId,
+      })
       const playlist = ctx.db.playlists.update(input.id, {
         ...input.data,
         imageId,

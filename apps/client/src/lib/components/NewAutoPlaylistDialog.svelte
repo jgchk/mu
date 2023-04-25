@@ -59,7 +59,7 @@
 
 <form on:submit|preventDefault={handleSubmit}>
   <Dialog title="New auto playlist" on:close={close}>
-    <AutoPlaylistDetailsForm {data} />
+    <AutoPlaylistDetailsForm bind:data />
 
     <svelte:fragment slot="buttons">
       <Button type="submit" loading={$newPlaylistMutation.isLoading}>Save</Button>

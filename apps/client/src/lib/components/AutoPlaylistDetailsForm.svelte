@@ -80,5 +80,5 @@
     </div>
   </div>
 
-  <TagsFilterEditor text={data.filter} required />
+  <TagsFilterEditor bind:text={data.filter} required />
 </div>

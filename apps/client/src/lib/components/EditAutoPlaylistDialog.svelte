@@ -44,9 +44,12 @@
     $editPlaylistMutation.mutate(
       {
         id: playlist.id,
-        data: { name: data.name || 'Untitled Playlist', description: data.description || null },
+        data: {
+          name: data.name || 'Untitled Playlist',
+          description: data.description || null,
+          filter: data.filter,
+        },
         art: await ifNotNullOrUndefined(data.art, blobToBase64),
-        filter: data.filter,
       },
       {
         onSuccess: (data) => {
@@ -60,7 +63,7 @@
 
 <form on:submit|preventDefault={handleEditPlaylist}>
   <Dialog title="New auto playlist" on:close={close}>
-    <AutoPlaylistDetailsForm {data} />
+    <AutoPlaylistDetailsForm bind:data />
 
     <svelte:fragment slot="buttons">
       <Button type="submit" loading={$editPlaylistMutation.isLoading}>Save</Button>
