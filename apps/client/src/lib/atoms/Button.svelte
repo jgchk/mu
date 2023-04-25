@@ -2,6 +2,7 @@
   import type { SvelteComponentTyped } from 'svelte'
   import { scale } from 'svelte/transition'
 
+  import { tooltip } from '$lib/actions/tooltip'
   import { slide } from '$lib/transitions/slide'
   import { cn, tw } from '$lib/utils/classes'
 
@@ -14,6 +15,8 @@
   export let loading = false
   let class_: string | undefined = undefined
   export { class_ as class }
+  let tooltip_: string | undefined = undefined
+  export { tooltip_ as tooltip }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-undef
   type C = $$Generic<typeof SvelteComponentTyped<any, any, any>>
@@ -27,7 +30,7 @@
   {disabled}
   {type}
   class={tw(
-    'flex items-center rounded border px-2 py-1 text-sm font-medium transition',
+    'relative flex items-center rounded border px-2 py-1 text-sm font-medium transition',
 
     align === 'left' && 'justify-start',
     align === 'center' && 'justify-center',
@@ -65,4 +68,8 @@
   {/if}
 
   <slot />
+
+  {#if tooltip_ !== undefined}
+    <div class="absolute left-0 top-0 h-full w-full" use:tooltip={{ content: tooltip_ }} />
+  {/if}
 </button>

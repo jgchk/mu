@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { decode } from 'bool-lang'
   import { createEventDispatcher } from 'svelte'
-  import { ifNotNullOrUndefined } from 'utils'
+  import { ifNotNullOrUndefined, tryOr } from 'utils'
   import { blobToBase64 } from 'utils/browser'
 
   import Button from '$lib/atoms/Button.svelte'
@@ -30,12 +31,25 @@
     filter,
   }
 
+  $: parsedFilter = tryOr(() => decode(data.filter), undefined)
+
   const trpc = getContextClient()
   const newPlaylistMutation = createNewPlaylistMutation(trpc)
 
   const toast = getContextToast()
 
   const handleSubmit = async () => {
+    if ($newPlaylistMutation.isLoading) return
+
+    if (!parsedFilter) {
+      if (data.filter.length > 0) {
+        toast.error('Filter is invalid :(')
+      } else {
+        toast.error('Filter is required')
+      }
+      return
+    }
+
     $newPlaylistMutation.mutate(
       {
         name: data.name || 'Untitled Playlist',
@@ -62,7 +76,18 @@
     <AutoPlaylistDetailsForm bind:data />
 
     <svelte:fragment slot="buttons">
-      <Button type="submit" loading={$newPlaylistMutation.isLoading}>Save</Button>
+      <Button
+        type="submit"
+        loading={$newPlaylistMutation.isLoading}
+        disabled={!parsedFilter}
+        tooltip={!parsedFilter
+          ? data.filter.length > 0
+            ? 'Disabled: Invalid filter'
+            : 'Disabled: Filter is required'
+          : undefined}
+      >
+        Save
+      </Button>
       <Button kind="outline" on:click={close}>Cancel</Button>
     </svelte:fragment>
   </Dialog>
