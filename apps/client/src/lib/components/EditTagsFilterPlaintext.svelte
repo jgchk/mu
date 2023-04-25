@@ -2,11 +2,10 @@
   import type { BoolLang } from 'bool-lang'
   import { ifDefined } from 'utils'
 
+  import Loader from '$lib/atoms/Loader.svelte'
   import { createTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
-
-  import Delay from './Delay.svelte'
 
   export let filter: BoolLang | undefined
   export let child = false
@@ -45,8 +44,8 @@
   {:else if $tagsQuery.error}
     <span class="text-error-500">Error</span>
   {:else}
-    <Delay>
-      <span class="text-gray-400">Loading...</span>
-    </Delay>
+    <span>
+      <Loader class="h-5 w-5 text-gray-600" />
+    </span>
   {/if}
 {/if}
