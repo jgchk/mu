@@ -105,6 +105,7 @@ CREATE TABLE `playlists` (
 	`name` text NOT NULL,
 	`description` text,
 	`image_id` integer,
+	`filter` text,
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`image_id`) REFERENCES `images`(`id`)
 );

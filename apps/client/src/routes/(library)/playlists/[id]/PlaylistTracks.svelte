@@ -12,6 +12,7 @@
 
   export let tracks: RouterOutput['playlists']['getWithTracks']['tracks']
   export let playlistId: number
+  export let reorderable: boolean
 
   const trpc = getContextClient()
   const editTrackOrderMutation = createEditPlaylistTrackOrderMutation(trpc)
@@ -48,14 +49,24 @@
   const play = (id: number, index: number) => dispatch('play', { id, index })
 </script>
 
-<div
-  use:dnd={{ items: tracks, dragDisabled: $editTrackOrderMutation.isLoading }}
-  on:consider={handleConsiderReorder}
-  on:finalize={handleReorderTracks}
->
-  {#each tracks as track, i (track.id)}
-    <div animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
-      <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
-    </div>
-  {/each}
-</div>
+{#if reorderable}
+  <div
+    use:dnd={{ items: tracks, dragDisabled: $editTrackOrderMutation.isLoading }}
+    on:consider={handleConsiderReorder}
+    on:finalize={handleReorderTracks}
+  >
+    {#each tracks as track, i (track.id)}
+      <div animate:flip={{ duration: dnd.defaults.flipDurationMs }}>
+        <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
+      </div>
+    {/each}
+  </div>
+{:else}
+  <div>
+    {#each tracks as track, i (track.id)}
+      <div>
+        <PlaylistTrack {track} {playlistId} on:play={() => play(track.id, i)} />
+      </div>
+    {/each}
+  </div>
+{/if}

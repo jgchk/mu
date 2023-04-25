@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { eq } from 'drizzle-orm'
+import { eq, isNotNull, isNull } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
@@ -15,6 +15,7 @@ export const playlists = sqliteTable('playlists', {
   name: text('name').notNull(),
   description: text('description'),
   imageId: integer('image_id').references(() => images.id),
+  filter: text('filter'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 
@@ -22,7 +23,7 @@ export type PlaylistsMixin = {
   playlists: {
     insert: (playlist: AutoCreatedAt<InsertPlaylist>) => Playlist
     get: (id: Playlist['id']) => Playlist
-    getAll: () => Playlist[]
+    getAll: (filter?: { auto?: boolean }) => Playlist[]
     update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => Playlist
     delete: (id: Playlist['id']) => void
   }
@@ -41,8 +42,14 @@ export const PlaylistsMixin = <TBase extends Constructor<DatabaseBase>>(
         return this.db.select().from(playlists).where(eq(playlists.id, id)).get()
       },
 
-      getAll: () => {
-        return this.db.select().from(playlists).all()
+      getAll: (filter) => {
+        let query = this.db.select().from(playlists).orderBy(playlists.name)
+
+        if (filter?.auto !== undefined) {
+          query = query.where(filter.auto ? isNotNull(playlists.filter) : isNull(playlists.filter))
+        }
+
+        return query.all()
       },
 
       update: (id, data) => {

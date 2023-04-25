@@ -23,8 +23,8 @@
   })
 
   const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)
-  const handleRemoveTrack = () =>
-    $removeTrackMutation.mutate({ playlistId: playlistId, playlistTrackId: track.playlistTrackId })
+  const handleRemoveTrack = (playlistTrackId: number) =>
+    $removeTrackMutation.mutate({ playlistId, playlistTrackId })
 
   const dispatch = createEventDispatcher<{ play: undefined }>()
   const play = () => dispatch('play')
@@ -67,14 +67,17 @@
       on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
     />
     <AddToPlaylistButton trackId={track.id} layer={700} excludePlaylistId={playlistId} />
-    <IconButton
-      kind="text"
-      layer={700}
-      tooltip="Remove from playlist"
-      on:click={handleRemoveTrack}
-      loading={$removeTrackMutation.isLoading}
-    >
-      <DeleteIcon />
-    </IconButton>
+    {#if track.playlistTrackId !== undefined}
+      {@const playlistTrackId = track.playlistTrackId}
+      <IconButton
+        kind="text"
+        layer={700}
+        tooltip="Remove from playlist"
+        on:click={() => handleRemoveTrack(playlistTrackId)}
+        loading={$removeTrackMutation.isLoading}
+      >
+        <DeleteIcon />
+      </IconButton>
+    {/if}
   </div>
 </div>

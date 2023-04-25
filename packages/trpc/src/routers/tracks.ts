@@ -1,10 +1,10 @@
-import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
 import { ifDefined, ifNotNull, toErrorString, uniq } from 'utils'
 import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
+import { injectDescendants } from '../utils'
 
 const BoolLangString = z.string().transform((val, ctx) => {
   try {
@@ -33,44 +33,9 @@ export const tracksRouter = router({
       const skip = input.cursor ?? 0
       const limit = input.limit ?? 50
 
-      const tags = ifDefined(input.tags, (filter) => {
-        const injectDescendants = (node: BoolLang): BoolLang => {
-          switch (node.kind) {
-            case 'id': {
-              const descendants = ctx.db.tags.getDescendants(node.value)
-              const ids = [node.value, ...descendants.map((t) => t.id)]
-              return {
-                kind: 'or',
-                children: ids.map((id) => ({ kind: 'id', value: id })),
-              }
-            }
-            case 'not': {
-              return {
-                kind: 'not',
-                child: injectDescendants(node.child),
-              }
-            }
-            case 'and': {
-              return {
-                kind: 'and',
-                children: node.children.map(injectDescendants),
-              }
-            }
-            case 'or': {
-              return {
-                kind: 'or',
-                children: node.children.map(injectDescendants),
-              }
-            }
-          }
-        }
-
-        return injectDescendants(filter)
-      })
-
       const tracks = ctx.db.tracks.getAll({
         favorite: input.favorite,
-        tags,
+        tags: ifDefined(input.tags, injectDescendants(ctx.db)),
         skip,
         limit: limit + 1,
       })

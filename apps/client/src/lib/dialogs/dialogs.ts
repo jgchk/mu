@@ -7,9 +7,11 @@ import type { AreAllPropsOptional } from 'utils'
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
 import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
+import type EditAutoPlaylistDialog from '$lib/components/EditAutoPlaylistDialog.svelte'
 import type EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
 import type EditTagDialog from '$lib/components/EditTagDialog.svelte'
 import type EditTagsFilterDialog from '$lib/components/EditTagsFilterDialog.svelte'
+import type NewAutoPlaylistDialog from '$lib/components/NewAutoPlaylistDialog.svelte'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type NoProps = {}
@@ -18,11 +20,13 @@ export type AllDialogs = {
     name?: string
     tracks?: number[]
   }
+  'new-auto-playlist': ComponentProps<NewAutoPlaylistDialog>
   'confirm-duplicate-playlist-track': {
     playlistId: number
     trackId: number
   }
   'edit-playlist': ComponentProps<EditPlaylistDialog>
+  'edit-auto-playlist': ComponentProps<EditAutoPlaylistDialog>
   'delete-playlist': ComponentProps<DeletePlaylistDialog>
   'edit-artist': ComponentProps<EditArtistDialog>
   'new-tag': NoProps

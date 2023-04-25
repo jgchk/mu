@@ -3,9 +3,11 @@
   import DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
   import DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
+  import EditAutoPlaylistDialog from '$lib/components/EditAutoPlaylistDialog.svelte'
   import EditPlaylistDialog from '$lib/components/EditPlaylistDialog.svelte'
   import EditTagDialog from '$lib/components/EditTagDialog.svelte'
   import EditTagsFilterDialog from '$lib/components/EditTagsFilterDialog.svelte'
+  import NewAutoPlaylistDialog from '$lib/components/NewAutoPlaylistDialog.svelte'
   import NewPlaylistDialog from '$lib/components/NewPlaylistDialog.svelte'
   import NewTagDialog from '$lib/components/NewTagDialog.svelte'
 
@@ -22,6 +24,8 @@
       tracks={dialog.tracks}
       on:close={() => dialogs.close('new-playlist')}
     />
+  {:else if dialog._tag === 'new-auto-playlist'}
+    <NewAutoPlaylistDialog {...dialog} on:close={() => dialogs.close('new-auto-playlist')} />
   {:else if dialog._tag === 'confirm-duplicate-playlist-track'}
     <AddToPlaylistConfimDuplicateDialog
       playlistId={dialog.playlistId}
@@ -33,6 +37,8 @@
       playlist={dialog.playlist}
       on:close={() => dialogs.close('edit-playlist')}
     />
+  {:else if dialog._tag === 'edit-auto-playlist'}
+    <EditAutoPlaylistDialog {...dialog} on:close={() => dialogs.close('edit-auto-playlist')} />
   {:else if dialog._tag === 'delete-playlist'}
     <DeletePlaylistDialog
       playlist={dialog.playlist}

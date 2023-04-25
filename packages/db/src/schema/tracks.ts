@@ -159,7 +159,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         }
       },
 
-      getAll: ({ favorite, tags: filterTags, skip = 0, limit = 50 } = {}) => {
+      getAll: ({ favorite, tags: filterTags, skip, limit } = {}) => {
         let query = this.db.select().from(tracks).orderBy(tracks.title)
 
         if (favorite !== undefined) {
@@ -207,13 +207,25 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
               }
             }
 
-          return allTracks
-            .filter((track) => makeFilter(track)(filterTags))
-            .slice(skip, skip + limit)
-            .map(convertTrack)
+          let results = allTracks.filter((track) => makeFilter(track)(filterTags))
+
+          if (skip !== undefined) {
+            results = results.slice(skip)
+          }
+          if (limit !== undefined) {
+            results = results.slice(0, limit)
+          }
+          return results.map(convertTrack)
         }
 
-        return query.offset(skip).limit(limit).all().map(convertTrack)
+        if (skip !== undefined) {
+          query = query.offset(skip)
+        }
+        if (limit !== undefined) {
+          query = query.limit(limit)
+        }
+
+        return query.all().map(convertTrack)
       },
 
       getByReleaseId: (releaseId) => {

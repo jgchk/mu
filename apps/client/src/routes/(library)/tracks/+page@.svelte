@@ -136,6 +136,12 @@
           </Button>
         {/if}
       </div>
+      {#if data.tags !== undefined}
+        {@const filter = data.tags.text}
+        <Button kind="outline" on:click={() => dialogs.open('new-auto-playlist', { filter })}>
+          New Auto-Playlist
+        </Button>
+      {/if}
     </div>
   </svelte:fragment>
 

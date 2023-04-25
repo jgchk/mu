@@ -1,8 +1,14 @@
-import type { RouterOptions, TRPCClient } from '$lib/trpc'
+import type { RouterInput, RouterOptions, TRPCClient } from '$lib/trpc'
 
-export const createPlaylistsQuery = (trpc: TRPCClient) => trpc.playlists.getAll.query()
+export const createPlaylistsQuery = (
+  trpc: TRPCClient,
+  input?: RouterInput['playlists']['getAll']
+) => trpc.playlists.getAll.query(input ?? {})
 
-export const prefetchPlaylistsQuery = (trpc: TRPCClient) => trpc.playlists.getAll.prefetchQuery()
+export const prefetchPlaylistsQuery = (
+  trpc: TRPCClient,
+  input?: RouterInput['playlists']['getAll']
+) => trpc.playlists.getAll.prefetchQuery(input ?? {})
 
 export const createPlaylistsHasTrackQuery = (trpc: TRPCClient, trackId: number) =>
   trpc.playlists.getAllHasTrack.query({ trackId })

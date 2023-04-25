@@ -14,7 +14,12 @@
 </script>
 
 <div class="h-full gap-2 overflow-auto p-1">
-  <Button on:click={() => dialogs.open('new-playlist')}>New Playlist</Button>
+  <div class="flex gap-1 pl-2">
+    <Button on:click={() => dialogs.open('new-playlist')}>New Playlist</Button>
+    <Button kind="outline" on:click={() => dialogs.open('new-auto-playlist')}>
+      New Auto-Playlist
+    </Button>
+  </div>
 
   {#if $playlistsQuery.data}
     {@const playlists = $playlistsQuery.data}
