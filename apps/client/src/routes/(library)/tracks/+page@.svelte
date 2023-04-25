@@ -92,12 +92,12 @@
     </a>
 
     <div class="space-y-1 px-4">
-      {#if data.tags === undefined || typeof data.tags === 'number'}
+      {#if data.tags === undefined || data.tags.parsed.kind === 'id'}
         <InputGroup>
           <Label for="filter-tag">Tags Filter</Label>
           <TagSelect
             id="filter-tag"
-            value={typeof data.tags === 'number' ? data.tags : undefined}
+            value={data.tags?.parsed.kind === 'id' ? data.tags.parsed.value : undefined}
             on:change={({ detail: { value } }) => {
               const url = new URL($page.url)
               if (value === undefined) {
