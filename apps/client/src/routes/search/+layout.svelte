@@ -7,7 +7,7 @@
 </script>
 
 <div class="flex h-full gap-2">
-  <div class="w-48 min-w-fit rounded bg-gray-900 py-2">
+  <div class="w-48 overflow-auto rounded bg-gray-900 py-2">
     <ServiceLink service="Soulseek">
       <SoulseekIcon />
     </ServiceLink>

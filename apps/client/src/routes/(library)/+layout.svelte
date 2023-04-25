@@ -8,7 +8,7 @@
 </script>
 
 <div class="flex h-full gap-2">
-  <div class="w-48 rounded bg-gray-900 py-2">
+  <div class="w-48 overflow-auto rounded bg-gray-900 py-2">
     <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
     <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
