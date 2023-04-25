@@ -45,6 +45,7 @@
     <div class={cn('text-sm', isValid ? 'opacity-100' : 'opacity-0')}>
       <span class="text-success-500">Valid</span>{#if parsed}: {/if}<EditTagsFilterPlaintext
         filter={parsed}
+        newTab
       />
     </div>
     <div

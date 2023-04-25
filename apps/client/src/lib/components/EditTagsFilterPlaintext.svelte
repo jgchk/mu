@@ -9,6 +9,7 @@
 
   export let filter: BoolLang | undefined
   export let child = false
+  export let newTab = false
 
   export let tagClass: string | undefined = undefined
 
@@ -24,7 +25,7 @@
       {#if tag !== undefined}
         <a
           href="/tags/{tag.id}"
-          target="_blank"
+          target={newTab ? '_blank' : undefined}
           class={tw('font-semibold text-white hover:underline', tagClass)}>{tag.name}</a
         >
       {:else}
@@ -32,13 +33,13 @@
       {/if}
     {:else if filter.kind === 'not'}
       <span class="text-gray-400">not</span>
-      <svelte:self filter={filter.child} child {tagClass} />
+      <svelte:self filter={filter.child} child {tagClass} {newTab} />
     {:else if filter.children.length === 1}
-      <svelte:self filter={filter.children[0]} />
+      <svelte:self filter={filter.children[0]} child {tagClass} {newTab} />
     {:else if filter.children.length > 1}
       <span class="text-gray-400"
         >{#if child}({/if}{#each filter.children as tag, i}{#if i > 0}{' '}{#if filter.kind === 'and'}and{:else}or{/if}
-          {/if}<svelte:self filter={tag} child {tagClass} />{/each}{#if child}){/if}</span
+          {/if}<svelte:self filter={tag} child {tagClass} {newTab} />{/each}{#if child}){/if}</span
       >
     {/if}
   {:else if $tagsQuery.error}
