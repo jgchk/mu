@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createSystemStatusQuery } from '$lib/services/system'
   import { getContextClient } from '$lib/trpc'
 
@@ -23,5 +24,5 @@
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}
-  <p>Loading...</p>
+  <FullscreenLoader />
 {/if}
