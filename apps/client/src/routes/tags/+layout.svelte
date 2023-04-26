@@ -6,8 +6,8 @@
 </script>
 
 <div class="flex h-full gap-2">
-  <div class="flex w-48 flex-col overflow-auto rounded bg-gray-900 p-2 px-3">
-    <div class="flex-1">
+  <div class="flex w-48 flex-col overflow-auto rounded bg-gray-900 p-2">
+    <div class="flex-1 px-1">
       <slot name="sidebar" />
     </div>
     <Button kind="outline" on:click={() => dialogs.open('new-tag')} class="mt-1">New Tag</Button>
