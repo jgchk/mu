@@ -28,6 +28,8 @@ COPY packages/downloader/package.json ./packages/downloader/
 COPY packages/downloader/pnpm-*.yaml ./packages/downloader/
 COPY packages/eslint-config-custom/package.json ./packages/eslint-config-custom/
 COPY packages/eslint-config-custom/pnpm-*.yaml ./packages/eslint-config-custom/
+COPY packages/image-manager/package.json ./packages/image-manager/
+COPY packages/image-manager/pnpm-*.yaml ./packages/image-manager/
 COPY packages/last-fm/package.json ./packages/last-fm/
 COPY packages/last-fm/pnpm-*.yaml ./packages/last-fm/
 COPY packages/music-metadata/package.json ./packages/music-metadata/
