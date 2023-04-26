@@ -6,6 +6,11 @@
   "license": "MIT",
   "scripts": {
     "lint": "prettier --check --ignore-path=../../.prettierignore . && eslint \".\"",
-    "format": "prettier --write --ignore-path=../../.prettierignore ."
+    "format": "prettier --write --ignore-path=../../.prettierignore .",
+    "test": "vitest run",
+    "test:dev": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^0.30.1"
   }
 }
