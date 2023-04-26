@@ -19,13 +19,13 @@ const main = async () => {
     process.exit(1)
   }
 
+  const ctx = await makeContext()
+
   const bree = new Bree({
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
-    jobs: [{ name: 'import-lastfm-loved' }],
+    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
   })
   await bree.start()
-
-  const ctx = await makeContext()
 
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {

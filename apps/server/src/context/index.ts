@@ -1,4 +1,5 @@
 import type { Database } from 'db'
+import { ImageManager } from 'image-manager'
 import { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
@@ -203,6 +204,7 @@ export const makeContext = async (): Promise<Context> => {
     sp: spotifyStopped,
     slsk: { status: 'stopped' },
     lfm: { status: 'stopped' },
+    img: new ImageManager({ imagesDir: env.IMAGES_DIR, db }),
     musicDir: env.MUSIC_DIR,
     imagesDir: env.IMAGES_DIR,
     startSoulseek: async () => {

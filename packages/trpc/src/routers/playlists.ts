@@ -1,15 +1,12 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
 import type { Playlist, PlaylistTrack, TrackPretty } from 'db'
-import fs from 'fs/promises'
-import path from 'path'
 import { isNotNull } from 'utils'
-import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import type { Context } from '../context'
 import { publicProcedure, router } from '../trpc'
-import { cleanupImage, getImagePath, injectDescendants, TracksFilter } from '../utils'
+import { injectDescendants, TracksFilter } from '../utils'
 
 export const playlistsRouter = router({
   new: publicProcedure
@@ -34,12 +31,8 @@ export const playlistsRouter = router({
       if (art) {
         image = {
           data: art,
-          id: ctx.db.images.insert({ hash: md5(art) }).id,
+          id: (await ctx.img.getImage(art)).id,
         }
-
-        const imagePath = getImagePath(ctx, image.id)
-        await ensureDir(path.dirname(imagePath))
-        await fs.writeFile(imagePath, art)
       }
 
       const imageId = image === null ? null : image?.id
@@ -89,12 +82,8 @@ export const playlistsRouter = router({
       if (art) {
         image = {
           data: art,
-          id: ctx.db.images.insert({ hash: md5(art) }).id,
+          id: (await ctx.img.getImage(art)).id,
         }
-
-        const imagePath = getImagePath(ctx, image.id)
-        await ensureDir(path.dirname(imagePath))
-        await fs.writeFile(imagePath, art)
       }
 
       const imageId = image === null ? null : image?.id
@@ -108,7 +97,7 @@ export const playlistsRouter = router({
       })
 
       if (imageId !== undefined && oldImageId !== null) {
-        await cleanupImage(ctx, oldImageId)
+        await ctx.img.cleanupImage(oldImageId)
       }
 
       return playlist
@@ -203,7 +192,7 @@ export const playlistsRouter = router({
   delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
     const imageId = ctx.db.playlists.get(input.id).imageId
     if (imageId !== null) {
-      await cleanupImage(ctx, imageId)
+      await ctx.img.cleanupImage(imageId)
     }
     ctx.db.playlists.delete(input.id)
     return null

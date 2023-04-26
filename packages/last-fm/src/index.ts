@@ -3,6 +3,7 @@ import got, { HTTPError } from 'got'
 import { hasMessage, isObject } from 'utils'
 
 import {
+  ErrorResponse,
   Friends,
   LovedTracks,
   MobileSession,
@@ -184,7 +185,26 @@ export class LastFMBase {
         format: 'json',
       },
     }).json()
-    return TrackInfoUser.parse(res).track
+    const parsed = TrackInfoUser.or(ErrorResponse).parse(res)
+    if ('error' in parsed) {
+      throw new Error(`Error getting track info for ${artist} - ${track}: ${parsed.message}`)
+    } else {
+      return parsed.track
+    }
+  }
+
+  async getLovedTrack(
+    {
+      artist,
+      track,
+    }: {
+      artist: string
+      track: string
+    },
+    username: string
+  ) {
+    const res = await this.getTrackInfoUser({ artist, track }, username)
+    return res.userloved === '1'
   }
 }
 
@@ -241,6 +261,10 @@ export class LastFMAuthenticated extends LastFMBase {
 
   getTrackInfoUser({ artist, track }: { artist: string; track: string }, username = this.username) {
     return super.getTrackInfoUser({ artist, track }, username)
+  }
+
+  getLovedTrack({ artist, track }: { artist: string; track: string }, username = this.username) {
+    return super.getLovedTrack({ artist, track }, username)
   }
 
   async updateNowPlaying({

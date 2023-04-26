@@ -23,6 +23,7 @@ export type ImagesMixin = {
     insert: (image: AutoCreatedAt<InsertImage>) => Image
     get: (id: Image['id']) => Image
     getNumberOfUses: (id: Image['id']) => number
+    findHash: (hash: Image['hash']) => Image | undefined
     update: (id: Image['id'], data: UpdateData<InsertImage>) => Image
     delete: (id: Image['id']) => void
   }
@@ -50,6 +51,10 @@ export const ImagesMixin = <TBase extends Constructor<DatabaseBase>>(
           .innerJoin(playlists, eq(images.id, playlists.imageId))
           .innerJoin(artists, eq(images.id, artists.imageId))
           .all().length
+      },
+
+      findHash: (hash) => {
+        return this.db.select().from(images).where(eq(images.hash, hash)).limit(1).all().at(0)
       },
 
       update: (id, data) => {

@@ -1,5 +1,6 @@
 import type { Database } from 'db'
 import type { Downloader } from 'downloader'
+import type { ImageManager } from 'image-manager'
 import type { LastFM, LastFMAuthenticated } from 'last-fm'
 import type { SlskClient } from 'soulseek-ts'
 import type { Soundcloud } from 'soundcloud'
@@ -12,6 +13,7 @@ export type Context = {
   sp: ContextSpotify
   slsk: ContextSlsk
   lfm: ContextLastFm
+  img: ImageManager
   imagesDir: string
   musicDir: string
 

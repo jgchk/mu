@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+export type ErrorResponse = z.infer<typeof ErrorResponse>
+export const ErrorResponse = z.object({
+  error: z.number(),
+  message: z.string(),
+})
+
 export type MobileSession = z.infer<typeof MobileSession>
 export const MobileSession = z.object({
   session: z.object({

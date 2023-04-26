@@ -14,6 +14,7 @@ export default defineConfig({
     '../../packages/soundcloud',
     '../../packages/last-fm',
     '../../packages/utils',
+    '../../packages/image-manager',
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',

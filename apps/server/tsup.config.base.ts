@@ -44,6 +44,7 @@ const config: Options = {
     'spotify',
     'last-fm',
     'utils',
+    'image-manager',
   ],
   esbuildOptions(options) {
     options.banner = {

@@ -1,11 +1,7 @@
-import fs from 'fs/promises'
-import path from 'path'
 import { ifNotNull, isNotNull } from 'utils'
-import { ensureDir, md5 } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { cleanupImage, getImagePath } from '../utils'
 
 export const artistsRouter = router({
   add: publicProcedure
@@ -28,12 +24,8 @@ export const artistsRouter = router({
       if (art) {
         image = {
           data: art,
-          id: ctx.db.images.insert({ hash: md5(art) }).id,
+          id: (await ctx.img.getImage(art)).id,
         }
-
-        const imagePath = getImagePath(ctx, image.id)
-        await ensureDir(path.dirname(imagePath))
-        await fs.writeFile(imagePath, art)
       }
 
       const imageId = image === null ? null : image?.id
@@ -43,7 +35,7 @@ export const artistsRouter = router({
       })
 
       if (imageId !== undefined && oldImageId !== null) {
-        await cleanupImage(ctx, oldImageId)
+        await ctx.img.cleanupImage(oldImageId)
       }
 
       return artist

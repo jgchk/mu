@@ -24,6 +24,7 @@
     "file-type": "^18.2.1",
     "filenamify": "^6.0.0",
     "got": "^12.6.0",
+    "image-manager": "workspace:*",
     "last-fm": "workspace:*",
     "mime": "^3.0.0",
     "music-metadata": "workspace:*",

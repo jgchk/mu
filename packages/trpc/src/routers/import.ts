@@ -18,12 +18,11 @@ import {
 } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
-import { numDigits } from 'utils'
-import { ensureDir, md5 } from 'utils/node'
+import { ifDefined, isAudio, numDigits } from 'utils'
+import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
-import { getImagePath } from '../utils'
 
 type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -74,8 +73,7 @@ export const importRouter = router({
       )
 
       const audioDownloads = downloads.filter(
-        (download) =>
-          download.fileType?.mime.startsWith('audio/') || download.fileType?.mime === 'video/mp4'
+        (download) => ifDefined(download.fileType?.mime, isAudio) ?? false
       )
 
       const tracks = await Promise.all(
@@ -242,18 +240,20 @@ export const importRouter = router({
           filename += download.metadata.title ?? '[untitled]'
           filename += path.extname(download.dbDownload.path)
 
-          const newPath = path.join(
-            ctx.musicDir,
-            filenamify(
-              albumArtists.length > 0
-                ? albumArtists.map((artist) => artist.name).join(', ')
-                : '[unknown]'
-            ),
-            filenamify(albumTitle || '[untitled]'),
-            filenamify(filename)
+          const newPath = path.resolve(
+            path.join(
+              ctx.musicDir,
+              filenamify(
+                albumArtists.length > 0
+                  ? albumArtists.map((artist) => artist.name).join(', ')
+                  : '[unknown]'
+              ),
+              filenamify(albumTitle || '[untitled]'),
+              filenamify(filename)
+            )
           )
 
-          if (path.resolve(download.dbDownload.path) !== path.resolve(newPath)) {
+          if (path.resolve(download.dbDownload.path) !== newPath) {
             await ensureDir(path.dirname(newPath))
             await fs.rename(download.dbDownload.path, newPath)
           }
@@ -282,11 +282,7 @@ export const importRouter = router({
           let imageId: number | null = null
           const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
           if (albumArt) {
-            imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
-
-            const imagePath = getImagePath(ctx, imageId)
-            await ensureDir(path.dirname(imagePath))
-            await fs.writeFile(imagePath, albumArt)
+            imageId = (await ctx.img.getImage(albumArt)).id
 
             try {
               await writeTrackCoverArt(newPath, albumArt)
@@ -297,12 +293,11 @@ export const importRouter = router({
           }
 
           let favorite = false
-          if (ctx.lfm.status === 'logged-in') {
-            const lastFm = await ctx.lfm.getTrackInfoUser({
-              track: metadata.title ?? '[untitled]',
+          if (ctx.lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
+            favorite = await ctx.lfm.getLovedTrack({
+              track: metadata.title,
               artist: artists.map((artist) => artist.name).join(', '),
             })
-            favorite = lastFm.userloved === '1'
           }
 
           const dbTrack = ctx.db.tracks.insert({
@@ -492,18 +487,20 @@ export const importRouter = router({
       // track
       const filename = `1 ${input.track.title ?? '[untitled]'}${path.extname(dbDownload.path)}`
 
-      const newPath = path.join(
-        ctx.musicDir,
-        filenamify(
-          albumArtists.length > 0
-            ? albumArtists.map((artist) => artist.name).join(', ')
-            : '[unknown]'
-        ),
-        filenamify(input.album.title ?? '[unknown]'),
-        filenamify(filename)
+      const newPath = path.resolve(
+        path.join(
+          ctx.musicDir,
+          filenamify(
+            albumArtists.length > 0
+              ? albumArtists.map((artist) => artist.name).join(', ')
+              : '[unknown]'
+          ),
+          filenamify(input.album.title ?? '[unknown]'),
+          filenamify(filename)
+        )
       )
 
-      if (path.resolve(dbDownload.path) !== path.resolve(newPath)) {
+      if (path.resolve(dbDownload.path) !== newPath) {
         await ensureDir(path.dirname(newPath))
         await fs.rename(dbDownload.path, newPath)
       }
@@ -520,11 +517,7 @@ export const importRouter = router({
       let imageId: number | null = null
       const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
       if (albumArt) {
-        imageId = ctx.db.images.insert({ hash: md5(albumArt) }).id
-
-        const imagePath = getImagePath(ctx, imageId)
-        await ensureDir(path.dirname(imagePath))
-        await fs.writeFile(imagePath, albumArt)
+        imageId = (await ctx.img.getImage(albumArt)).id
 
         try {
           await writeTrackCoverArt(newPath, albumArt)
@@ -535,12 +528,11 @@ export const importRouter = router({
       }
 
       let favorite = false
-      if (ctx.lfm.status === 'logged-in') {
-        const lastFm = await ctx.lfm.getTrackInfoUser({
-          track: metadata.title ?? '[untitled]',
+      if (ctx.lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
+        favorite = await ctx.lfm.getLovedTrack({
+          track: metadata.title,
           artist: trackArtists.map((artist) => artist.name).join(', '),
         })
-        favorite = lastFm.userloved === '1'
       }
 
       const dbTrack = ctx.db.tracks.insert({
