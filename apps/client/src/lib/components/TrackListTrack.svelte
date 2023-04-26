@@ -26,10 +26,13 @@
   const play = () => dispatch('play')
   const favorite = () => dispatch('favorite')
   const delete_ = () => dispatch('delete')
+
+  $: columns = track.release ? 'auto 1fr 1fr 1fr auto' : 'auto 1fr 1fr auto'
 </script>
 
-<div
-  class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
+<tracklist-track
+  class="group grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
+  style:grid-template-columns={columns}
   on:dblclick={() => play()}
 >
   {#if showCoverArt}
@@ -56,7 +59,7 @@
       </button>
     </div>
   {/if}
-  <div class="flex-1 truncate">
+  <div class="truncate">
     {track.title || '[untitled]'}
     <ul class="comma-list text-sm text-gray-400">
       {#each track.artists as artist (artist.id)}
@@ -69,7 +72,7 @@
     </ul>
   </div>
   {#if track.release}
-    <div class="flex-[2] truncate text-sm text-gray-400">
+    <div class="truncate text-sm text-gray-400">
       <a class="hover:underline group-hover:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
           {track.release.title}
@@ -79,10 +82,10 @@
       </a>
     </div>
   {/if}
-  <div class="text-sm text-gray-400">
+  <div class="justify-self-end text-sm text-gray-400">
     {formatMilliseconds(track.duration)}
   </div>
-  <div class="flex items-center gap-1">
+  <div class="flex gap-1">
     {#if showDelete}
       <IconButton kind="text" layer={700} tooltip="Remove from playlist" on:click={() => delete_()}>
         <DeleteIcon />
@@ -92,4 +95,4 @@
     <AddToPlaylistButton trackId={track.id} layer={700} />
     <TrackListTrackTagsButton trackId={track.id} layer={700} />
   </div>
-</div>
+</tracklist-track>
