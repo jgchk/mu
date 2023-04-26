@@ -76,7 +76,7 @@ export const FriendActivity = z.object({
         track: z.object({
           uri: z.string(),
           name: z.string(),
-          imageUrl: z.string(),
+          imageUrl: z.string().optional(),
           album: z.object({ uri: z.string(), name: z.string() }),
           artist: z.object({ uri: z.string(), name: z.string() }),
           context: z.object({
@@ -92,7 +92,7 @@ export const FriendActivity = z.object({
         track: z.object({
           uri: z.string(),
           name: z.string(),
-          imageUrl: z.string(),
+          imageUrl: z.string().optional(),
           album: z.object({ uri: z.string(), name: z.string() }),
           artist: z.object({ uri: z.string(), name: z.string() }),
           context: z.object({
