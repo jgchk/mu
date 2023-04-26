@@ -30,7 +30,7 @@
   $: columns = track.release ? 'auto 1fr 1fr 1fr auto' : 'auto 1fr 1fr auto'
 </script>
 
-<tracklist-track
+<div
   class="group grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
   style:grid-template-columns={columns}
   on:dblclick={() => play()}
@@ -95,4 +95,4 @@
     <AddToPlaylistButton trackId={track.id} layer={700} />
     <TrackListTrackTagsButton trackId={track.id} layer={700} />
   </div>
-</tracklist-track>
+</div>
