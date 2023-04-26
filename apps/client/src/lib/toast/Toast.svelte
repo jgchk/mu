@@ -72,8 +72,10 @@
     </div>
   </button>
 
-  <div class="relative flex flex-col rounded-r-lg border border-l-0 border-gray-700 bg-gray-800">
-    <div class="px-3 py-2">
+  <div
+    class="relative flex min-w-0 flex-1 flex-col rounded-r-lg border border-l-0 border-gray-700 bg-gray-800"
+  >
+    <div class="break-words px-3 py-2">
       {#if typeof item.msg === 'string'}
         {item.msg}
       {:else}

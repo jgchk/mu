@@ -12,13 +12,13 @@
 </script>
 
 <ul
-  class="pointer-events-none absolute right-0 top-0 z-50 flex h-full flex-col items-end overflow-x-hidden"
+  class="pointer-events-none absolute right-0 top-0 z-50 flex h-full max-w-full flex-col items-end overflow-x-hidden"
 >
   {#each $toast as item (item.id)}
     <li
       in:fly|local={{ x: FLY_SIZE, duration: IN_DURATION }}
       out:fly|local={{ x: FLY_SIZE, duration: OUT_DURATION }}
-      class="group"
+      class="group max-w-full"
     >
       <div
         in:slide|local={{ duration: IN_DURATION }}
