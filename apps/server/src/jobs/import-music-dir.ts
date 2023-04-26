@@ -6,15 +6,21 @@ import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { isAudio, tryOr } from 'utils'
-import { fileExists, walkDir } from 'utils/node'
+import { dirExists, fileExists, walkDir } from 'utils/node'
 
 import { makeDb } from '../context/db'
 import { makeLastFm } from '../context/lfm'
 import { env } from '../env'
 
-const db = makeDb()
 const musicDir = env.MUSIC_DIR
 const imagesDir = env.IMAGES_DIR
+
+const musicDirExists = await dirExists(musicDir)
+if (!musicDirExists) {
+  process.exit(0)
+}
+
+const db = makeDb()
 
 const config = db.config.get()
 
