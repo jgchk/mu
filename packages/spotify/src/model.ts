@@ -65,44 +65,32 @@ export const Pager = <T extends z.ZodTypeAny>(itemType: T) =>
 export type FriendActivity = z.infer<typeof FriendActivity>
 export const FriendActivity = z.object({
   friends: z
-    .union([
-      z.object({
-        timestamp: z.number(),
-        user: z.object({
+    .object({
+      timestamp: z.number(),
+      user: z.object({
+        uri: z.string(),
+        name: z.string(),
+        imageUrl: z.string().optional(),
+      }),
+      track: z.object({
+        uri: z.string(),
+        name: z.string(),
+        imageUrl: z.string().optional(),
+        album: z.object({
           uri: z.string(),
           name: z.string(),
-          imageUrl: z.string(),
         }),
-        track: z.object({
+        artist: z.object({
           uri: z.string(),
           name: z.string(),
-          imageUrl: z.string().optional(),
-          album: z.object({ uri: z.string(), name: z.string() }),
-          artist: z.object({ uri: z.string(), name: z.string() }),
-          context: z.object({
-            uri: z.string(),
-            name: z.string(),
-            index: z.number(),
-          }),
+        }),
+        context: z.object({
+          uri: z.string(),
+          name: z.string(),
+          index: z.number(),
         }),
       }),
-      z.object({
-        timestamp: z.number(),
-        user: z.object({ uri: z.string(), name: z.string() }),
-        track: z.object({
-          uri: z.string(),
-          name: z.string(),
-          imageUrl: z.string().optional(),
-          album: z.object({ uri: z.string(), name: z.string() }),
-          artist: z.object({ uri: z.string(), name: z.string() }),
-          context: z.object({
-            uri: z.string(),
-            name: z.string(),
-            index: z.number(),
-          }),
-        }),
-      }),
-    ])
+    })
     .array(),
 })
 
