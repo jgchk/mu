@@ -45,7 +45,7 @@
       </CoverArt>
     </button>
   {:else}
-    <div class="center w-8">
+    <div class="center relative w-8">
       <div class="text-gray-400 group-hover:opacity-0">{i + 1}</div>
       <button
         type="button"
