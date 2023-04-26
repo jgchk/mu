@@ -54,12 +54,6 @@
   setContextDialogs()
 
   let showQueue = false
-
-  // toast.error(
-  //   'fjdklsa;fjdklsa;jfkldsa;jfklsd;ajfkl;dsajfkl;sdajfkl;sdajkfl;jdsakl;fjsdakl;fjksdl;ajfkl;sdajfkl;sdajfklsa;jdfkl;ajsfkl;dsajkfl;dsjaklf;sdjakl;fjdklsa;fjdklsa;jfkldsa;jfklsd;ajfkl;dsajfkl;sdajfkl;sdajkfl;jdsakl;fjsdakl;fjksdl;ajfkl;sdajfkl;sdajfklsa;jdfkl;ajsfkl;dsajkfl;dsjaklf;sdjakl;fjdklsa;fjdklsa;jfkldsa;jfklsd;ajfkl;dsajfkl;sdajfkl;sdajkfl;jdsakl;fjsdakl;fjksdl;ajfkl;sdajfkl;sdajfklsa;jdfkl;ajsfkl;dsajkfl;dsjaklf;sdjakl;',
-  //   { duration: Infinity }
-  // )
-  toast.error('hi', { duration: Infinity })
 </script>
 
 <QueryClientProvider client={data.trpc.queryClient}>
