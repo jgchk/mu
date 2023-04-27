@@ -1,6 +1,8 @@
+import type Database from 'better-sqlite3'
 import type { BoolLang } from 'bool-lang'
 import type { InferModel, SQL } from 'drizzle-orm'
 import { and, asc, desc, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
+import type { SQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
@@ -167,8 +169,29 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         }
       },
 
-      getAll: ({ favorite, tags: filterTags, sort, skip, limit } = {}) => {
+      getAll: (filter) => {
         let query = this.db.select({ tracks: tracks }).from(tracks)
+        query = withTracksFilter(query, filter)
+        return query.all().map((row) => convertTrack(row.tracks))
+      },
+
+      getByReleaseId: (releaseId) => {
+        return this.db
+          .select()
+          .from(tracks)
+          .where(eq(tracks.releaseId, releaseId))
+          .orderBy(tracks.order)
+          .all()
+          .map(convertTrack)
+      },
+
+      getByPlaylistId: (playlistId, { favorite, tags: filterTags, sort, skip, limit } = {}) => {
+        let query = this.db
+          .select({ tracks: tracks, playlistTrackId: playlistTracks.id })
+          .from(tracks)
+          .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
+          .where(eq(playlistTracks.playlistId, playlistId))
+          .orderBy(playlistTracks.order)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
@@ -235,96 +258,9 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           query = query.limit(limit)
         }
 
-        return query.all().map((row) => convertTrack(row.tracks))
-      },
-
-      getByReleaseId: (releaseId) => {
-        return this.db
-          .select()
-          .from(tracks)
-          .where(eq(tracks.releaseId, releaseId))
-          .orderBy(tracks.order)
-          .all()
-          .map(convertTrack)
-      },
-
-      getByPlaylistId: (playlistId, { favorite, tags: filterTags, skip, limit } = {}) => {
-        let query = this.db
-          .select()
-          .from(tracks)
-          .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
-          .where(eq(playlistTracks.playlistId, playlistId))
-          .orderBy(playlistTracks.order)
-
-        if (favorite !== undefined) {
-          query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
-        }
-
-        if (filterTags !== undefined) {
-          const tracksWithTags = this.db
-            .select()
-            .from(tracks)
-            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
-            .all()
-
-          const trackTagsMap = new Map<number, Set<number>>()
-          for (const trackWithTags of tracksWithTags) {
-            const previous = trackTagsMap.get(trackWithTags.tracks.id)
-            if (previous) {
-              previous.add(trackWithTags.track_tags.tagId)
-            } else {
-              trackTagsMap.set(trackWithTags.tracks.id, new Set([trackWithTags.track_tags.tagId]))
-            }
-          }
-
-          const allTracks = query.all()
-
-          const makeFilter =
-            (track: (typeof allTracks)[0]) =>
-            (node: BoolLang): boolean => {
-              switch (node.kind) {
-                case 'id': {
-                  const tags = trackTagsMap.get(track.tracks.id)
-                  return tags?.has(node.value) ?? false
-                }
-                case 'not': {
-                  return !makeFilter(track)(node.child)
-                }
-                case 'and': {
-                  const filter = makeFilter(track)
-                  return node.children.every((tag) => filter(tag))
-                }
-                case 'or': {
-                  const filter = makeFilter(track)
-                  return node.children.some((tag) => filter(tag))
-                }
-              }
-            }
-
-          let results = allTracks.filter((track) => makeFilter(track)(filterTags))
-
-          if (skip !== undefined) {
-            results = results.slice(skip)
-          }
-          if (limit !== undefined) {
-            results = results.slice(0, limit)
-          }
-          return results.map((row) => ({
-            ...convertTrack(row.tracks),
-            playlistTrackId: row.playlist_tracks.id,
-          }))
-        }
-
-        if (skip !== undefined) {
-          query = query.offset(skip)
-        }
-        if (limit !== undefined) {
-          query = query.limit(limit)
-        }
-
         return query.all().map((row) => ({
           ...convertTrack(row.tracks),
-          playlistTrackId: row.playlist_tracks.id,
+          playlistTrackId: row.playlistTrackId,
         }))
       },
 
@@ -342,3 +278,74 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
     }
   }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const withTracksFilter = (
+  query_: SQLiteSelect<'tracks', 'sync', Database.RunResult, { tracks: typeof tracks }, 'partial'>,
+  filter?: TracksFilter
+) => {
+  let query = query_
+
+  if (filter?.favorite !== undefined) {
+    query = query.where(eq(tracks.favorite, filter.favorite ? 1 : 0))
+  }
+
+  if (filter?.tags !== undefined) {
+    // eslint-disable-next-line svelte/no-inner-declarations, no-inner-declarations
+    const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+      switch (node.kind) {
+        case 'id':
+          return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`
+
+        case 'not':
+          return ifDefined(generateWhereClause(node.child, index + 1), not)
+
+        case 'and':
+          return and(
+            ...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1))
+          )
+
+        case 'or':
+          return or(
+            ...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1))
+          )
+      }
+    }
+
+    query = query.where(generateWhereClause(filter.tags))
+  }
+
+  if (filter?.sort) {
+    const dir = filter.sort.direction === 'asc' ? asc : desc
+
+    switch (filter.sort.column) {
+      case 'title': {
+        query = query.orderBy(dir(tracks.title))
+        break
+      }
+      case 'artists': {
+        // todo
+        break
+      }
+      case 'release': {
+        query = query
+          .innerJoin(releases, eq(tracks.releaseId, releases.id))
+          .orderBy(dir(releases.title))
+        break
+      }
+      case 'duration': {
+        query = query.orderBy(dir(tracks.duration))
+        break
+      }
+    }
+  }
+
+  if (filter?.skip !== undefined) {
+    query = query.offset(filter.skip)
+  }
+  if (filter?.limit !== undefined) {
+    query = query.limit(filter.limit)
+  }
+
+  return query
+}
