@@ -87,10 +87,6 @@ export const playlistsRouter = router({
       }
 
       const imageId = image === null ? null : image?.id
-      console.log('intpu', input, {
-        ...input.data,
-        imageId,
-      })
       const playlist = ctx.db.playlists.update(input.id, {
         ...input.data,
         imageId,
