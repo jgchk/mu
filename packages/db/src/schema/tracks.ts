@@ -279,7 +279,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
     }
   }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withTracksFilter = (
   query_: SQLiteSelect<'tracks', 'sync', Database.RunResult, { tracks: typeof tracks }, 'partial'>,
   filter?: TracksFilter
@@ -291,27 +290,6 @@ const withTracksFilter = (
   }
 
   if (filter?.tags !== undefined) {
-    // eslint-disable-next-line svelte/no-inner-declarations, no-inner-declarations
-    const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
-      switch (node.kind) {
-        case 'id':
-          return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`
-
-        case 'not':
-          return ifDefined(generateWhereClause(node.child, index + 1), not)
-
-        case 'and':
-          return and(
-            ...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1))
-          )
-
-        case 'or':
-          return or(
-            ...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1))
-          )
-      }
-    }
-
     query = query.where(generateWhereClause(filter.tags))
   }
 
@@ -348,4 +326,20 @@ const withTracksFilter = (
   }
 
   return query
+}
+
+const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+  switch (node.kind) {
+    case 'id':
+      return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`
+
+    case 'not':
+      return ifDefined(generateWhereClause(node.child, index + 1), not)
+
+    case 'and':
+      return and(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+
+    case 'or':
+      return or(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+  }
 }
