@@ -10,6 +10,7 @@ import { ifDefined } from 'utils'
 import type { UpdateData } from '../utils'
 import { makeUpdate } from '../utils'
 import type { Artist } from './artists'
+import { artists } from './artists'
 import type { DatabaseBase } from './base'
 import { images } from './images'
 import type { PlaylistTrack } from './playlist-tracks'
@@ -242,7 +243,13 @@ const withTracksFilter = <
         break
       }
       case 'artists': {
-        // todo
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        query = query
+          .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
+          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+          .where(eq(trackArtists.order, 0))
+          .orderBy(dir(artists.name))
         break
       }
       case 'release': {
