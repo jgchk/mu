@@ -203,8 +203,16 @@ export class LastFMBase {
     },
     username: string
   ) {
-    const res = await this.getTrackInfoUser({ artist, track }, username)
-    return res.userloved === '1'
+    try {
+      const res = await this.getTrackInfoUser({ artist, track }, username)
+      return res.userloved === '1'
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Track not found')) {
+        return false
+      } else {
+        throw e
+      }
+    }
   }
 }
 
