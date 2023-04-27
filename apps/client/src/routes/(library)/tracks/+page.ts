@@ -3,6 +3,7 @@ import { ifNotNull } from 'utils'
 
 import { prefetchTagsQuery } from '$lib/services/tags'
 import { prefetchAllTracksWithArtistsAndReleaseQuery } from '$lib/services/tracks'
+import { getTracksSort } from '$lib/tracks-sort'
 import type { RouterInput } from '$lib/trpc'
 
 import type { PageLoad } from './$types'
@@ -16,16 +17,7 @@ export const load: PageLoad = async ({ parent, url }) => {
       parsed: decode(tags),
     })) ?? undefined
 
-  const sortColumn = url.searchParams.get('sort')
-  const sortDirection = url.searchParams.get('dir')
-  const sort =
-    ifNotNull(sortColumn, (column) =>
-      ifNotNull(
-        sortDirection,
-        (direction) =>
-          ({ column, direction } as RouterInput['tracks']['getAllWithArtistsAndRelease']['sort'])
-      )
-    ) ?? undefined
+  const sort = getTracksSort(url)
 
   const query: RouterInput['tracks']['getAllWithArtistsAndRelease'] = {
     limit: 100,

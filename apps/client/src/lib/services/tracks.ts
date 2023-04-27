@@ -12,7 +12,7 @@ export const createTracksQuery = (trpc: TRPCClient, ids: number[]) =>
 
 export const createAllTracksWithArtistsAndReleaseQuery = (
   trpc: TRPCClient,
-  input: Omit<RouterInput['tracks']['getAllWithArtistsAndRelease'], 'cursor'>
+  input: RouterInput['tracks']['getAllWithArtistsAndRelease']
 ) =>
   trpc.tracks.getAllWithArtistsAndRelease.infiniteQuery(input, {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -20,7 +20,7 @@ export const createAllTracksWithArtistsAndReleaseQuery = (
 
 export const prefetchAllTracksWithArtistsAndReleaseQuery = (
   trpc: TRPCClient,
-  input: Omit<RouterInput['tracks']['getAllWithArtistsAndRelease'], 'cursor'>
+  input: RouterInput['tracks']['getAllWithArtistsAndRelease']
 ) => trpc.tracks.getAllWithArtistsAndRelease.prefetchInfiniteQuery(input)
 
 export const createFavoriteTrackMutation = (

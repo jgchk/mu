@@ -120,22 +120,10 @@
     <TrackList
       {tracks}
       sortable
-      sort={data.query.sort}
       class="p-4 pt-2"
       on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       on:favorite={(e) =>
         $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-      on:sort={({ detail: { sort } }) => {
-        const url = new URL($page.url)
-        if (sort === undefined) {
-          url.searchParams.delete('sort')
-          url.searchParams.delete('dir')
-        } else {
-          url.searchParams.set('sort', sort.column)
-          url.searchParams.set('dir', sort.direction)
-        }
-        void goto(url.toString(), { keepFocus: true, replaceState: true })
-      }}
     >
       <svelte:fragment slot="footer">
         {#if $tracksQuery.hasNextPage}

@@ -4,7 +4,7 @@
 
   import { dnd } from '$lib/actions/dnd'
 
-  import type { Sort, TrackListTrack as T } from './TrackList'
+  import type { TrackListTrack as TrackListTrackType } from './TrackList'
   import TrackListSort from './TrackListSort.svelte'
   import TrackListTrack from './TrackListTrack.svelte'
 
@@ -15,7 +15,6 @@
   export let showCoverArt = true
   export let reorderable = false
   export let sortable = false
-  export let sort: Sort | undefined = undefined
 
   let class_: string | undefined = undefined
   export { class_ as class }
@@ -40,7 +39,7 @@
 
 <div class={class_}>
   {#if sortable}
-    <TrackListSort {sort} {showRelease} {showCoverArt} {showDelete} on:sort />
+    <TrackListSort {showRelease} {showCoverArt} {showDelete} />
   {/if}
 
   <div
