@@ -115,7 +115,10 @@
 
   <TrackList
     {tracks}
-    reorderable={playlist.filter === null && !$editTrackOrderMutation.isLoading}
+    sortable
+    reorderable={playlist.filter === null &&
+      !tracksQuery.sort &&
+      !$editTrackOrderMutation.isLoading}
     on:play={(e) => playTrack(e.detail.track.id, makeQueueData(e.detail.i))}
     on:favorite={(e) =>
       $favoriteMutation.mutate({ id: e.detail.track.id, favorite: !e.detail.favorite })}
