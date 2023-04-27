@@ -13,6 +13,7 @@ export const tracksRouter = router({
     const tracks = ctx.db.tracks.getAll({
       favorite: input.favorite,
       tags: ifDefined(input.tags, injectDescendants(ctx.db)),
+      sort: input.sort,
       skip,
       limit: limit + 1,
     })

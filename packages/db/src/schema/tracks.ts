@@ -1,6 +1,6 @@
 import type { BoolLang } from 'bool-lang'
 import type { InferModel, SQL } from 'drizzle-orm'
-import { and, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
@@ -56,9 +56,16 @@ const convertTrack = (track: Track): TrackPretty => ({
 export type TracksFilter = {
   favorite?: boolean
   tags?: BoolLang
+  sort?: TracksSort
   skip?: number
   limit?: number
 }
+export type TracksSort = {
+  column: TracksSortColumn
+  direction: TracksSortDirection
+}
+export type TracksSortColumn = 'title' | 'artists' | 'release' | 'duration'
+export type TracksSortDirection = 'asc' | 'desc'
 
 export type TracksMixin = {
   tracks: {
@@ -160,8 +167,8 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         }
       },
 
-      getAll: ({ favorite, tags: filterTags, skip, limit } = {}) => {
-        let query = this.db.select().from(tracks)
+      getAll: ({ favorite, tags: filterTags, sort, skip, limit } = {}) => {
+        let query = this.db.select({ tracks: tracks }).from(tracks)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
@@ -196,7 +203,30 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           query = query.where(generateWhereClause(filterTags))
         }
 
-        query = query.orderBy(tracks.title)
+        if (sort) {
+          const dir = sort.direction === 'asc' ? asc : desc
+
+          switch (sort.column) {
+            case 'title': {
+              query = query.orderBy(dir(tracks.title))
+              break
+            }
+            case 'artists': {
+              // todo
+              break
+            }
+            case 'release': {
+              query = query
+                .innerJoin(releases, eq(tracks.releaseId, releases.id))
+                .orderBy(dir(releases.title))
+              break
+            }
+            case 'duration': {
+              query = query.orderBy(dir(tracks.duration))
+              break
+            }
+          }
+        }
 
         if (skip !== undefined) {
           query = query.offset(skip)
@@ -205,7 +235,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           query = query.limit(limit)
         }
 
-        return query.all().map(convertTrack)
+        return query.all().map((row) => convertTrack(row.tracks))
       },
 
       getByReleaseId: (releaseId) => {

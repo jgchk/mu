@@ -18,10 +18,23 @@ export const BoolLangString = z.string().transform((val, ctx) => {
   }
 })
 
+export type SortDirection = z.infer<typeof SortDirection>
+export const SortDirection = z.enum(['asc', 'desc'])
+
+export type TracksSortColumn = z.infer<typeof TracksSortColumn>
+export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration'])
+
+export type TracksSort = z.infer<typeof TracksSort>
+export const TracksSort = z.object({
+  column: TracksSortColumn,
+  direction: SortDirection,
+})
+
 export type TracksFilter = z.infer<typeof TracksFilter>
 export const TracksFilter = z.object({
   favorite: z.boolean().optional(),
   tags: BoolLangString.optional(),
+  sort: TracksSort.optional(),
   limit: z.number().min(1).max(100).optional(),
   cursor: z.number().optional(),
 })

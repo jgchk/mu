@@ -1,3 +1,5 @@
+import type { RouterInput } from '$lib/trpc'
+
 export type TrackListTrack = {
   id: number
   imageId: number | null
@@ -7,3 +9,5 @@ export type TrackListTrack = {
   release?: { id: number; title: string | null } | null
   artists: { id: number; name: string }[]
 }
+
+export type Sort = NonNullable<RouterInput['tracks']['getAllWithArtistsAndRelease']['sort']>
