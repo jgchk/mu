@@ -3,16 +3,24 @@
 
   import type { Sort } from './TrackList'
 
-  export let showRelease: boolean
-
   export let sort: Sort | undefined = undefined
+  export let showRelease: boolean
+  export let showCoverArt: boolean
+  export let showDelete: boolean
 
   const dispatch = createEventDispatcher<{ sort: { sort: Sort | undefined } }>()
   const setSort = (sort: Sort | undefined) => dispatch('sort', { sort })
+
+  $: numButtons = 3 + (showDelete ? 1 : 0)
 </script>
 
-<div class="contents">
-  <div class="col-start-2 mb-2">
+<div class="flex gap-2 p-1.5">
+  {#if showCoverArt}
+    <div class="w-11" />
+  {:else}
+    <div class="w-8" />
+  {/if}
+  <div class="flex-1">
     <button
       type="button"
       class="text-sm text-gray-400 transition hover:text-white"
@@ -39,7 +47,7 @@
         >{/if}
     </button>
   </div>
-  <div>
+  <div class="flex-[2]">
     {#if showRelease}
       <button
         type="button"
@@ -62,10 +70,10 @@
       </button>
     {/if}
   </div>
-  <div class="justify-self-end">
+  <div class="flex-1">
     <button
       type="button"
-      class="text-sm text-gray-400 transition hover:text-white"
+      class="float-right text-sm text-gray-400 transition hover:text-white"
       on:click={() => {
         if (sort?.column === 'duration') {
           if (sort.direction === 'asc') {
@@ -83,4 +91,5 @@
         >{' '}{/if}Length
     </button>
   </div>
+  <div style:width="{numButtons * 32 + (numButtons - 1) * 4}px" />
 </div>

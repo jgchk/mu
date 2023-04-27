@@ -28,48 +28,47 @@
   const delete_ = () => dispatch('delete')
 </script>
 
-<div class="group/track contents select-none rounded hover:bg-gray-700" on:dblclick={() => play()}>
-  <div class="col-start-1 flex items-center rounded-l p-1.5 pr-2 group-hover/track:bg-gray-700">
-    {#if showCoverArt}
-      <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
-        <CoverArt
-          src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
-          alt={track.title}
-          iconClass="w-5 h-5"
-          placeholderClass="text-[5px]"
-          rounding="rounded-sm"
-        >
-          <PlayIcon />
-        </CoverArt>
+<div
+  class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
+  on:dblclick={() => play()}
+>
+  {#if showCoverArt}
+    <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
+      <CoverArt
+        src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
+        alt={track.title}
+        iconClass="w-5 h-5"
+        placeholderClass="text-[5px]"
+        rounding="rounded-sm"
+      >
+        <PlayIcon />
+      </CoverArt>
+    </button>
+  {:else}
+    <div class="center relative h-11 w-8">
+      <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
+      <button
+        type="button"
+        class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
+        on:click={() => play()}
+      >
+        <PlayIcon />
       </button>
-    {:else}
-      <div class="center relative h-11 w-8">
-        <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
-        <button
-          type="button"
-          class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
-          on:click={() => play()}
-        >
-          <PlayIcon />
-        </button>
-      </div>
-    {/if}
-  </div>
-  <div class="flex items-center truncate group-hover/track:bg-gray-700">
-    <div>
-      {track.title || '[untitled]'}
-      <ul class="comma-list text-sm text-gray-400">
-        {#each track.artists as artist (artist.id)}
-          <li class="flex">
-            <a class="hover:underline group-hover/track:text-white" href="/artists/{artist.id}"
-              >{artist.name}</a
-            >
-          </li>
-        {/each}
-      </ul>
     </div>
+  {/if}
+  <div class="flex-1 truncate">
+    {track.title || '[untitled]'}
+    <ul class="comma-list text-sm text-gray-400">
+      {#each track.artists as artist (artist.id)}
+        <li class="flex">
+          <a class="hover:underline group-hover/track:text-white" href="/artists/{artist.id}"
+            >{artist.name}</a
+          >
+        </li>
+      {/each}
+    </ul>
   </div>
-  <div class="flex items-center truncate text-sm text-gray-400 group-hover/track:bg-gray-700">
+  <div class="flex-[2] truncate text-sm text-gray-400">
     {#if track.release}
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
@@ -80,12 +79,12 @@
       </a>
     {/if}
   </div>
-  <div
-    class="flex w-full items-center justify-end text-sm text-gray-400 group-hover/track:bg-gray-700"
-  >
-    {formatMilliseconds(track.duration)}
+  <div class="flex-1">
+    <div class="float-right text-sm text-gray-400">
+      {formatMilliseconds(track.duration)}
+    </div>
   </div>
-  <div class="flex items-center gap-1 rounded-r p-1.5 px-2 group-hover/track:bg-gray-700">
+  <div class="flex items-center gap-1">
     {#if showDelete}
       <IconButton kind="text" layer={700} tooltip="Remove from playlist" on:click={() => delete_()}>
         <DeleteIcon />

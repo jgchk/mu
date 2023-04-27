@@ -1,41 +1,69 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { flip } from 'svelte/animate'
 
-  import { tw } from '$lib/utils/classes'
+  import { dnd } from '$lib/actions/dnd'
 
-  import type { Sort, TrackListTrack as TrackListTrackType } from './TrackList'
+  import type { Sort, TrackListTrack as T } from './TrackList'
   import TrackListSort from './TrackListSort.svelte'
   import TrackListTrack from './TrackListTrack.svelte'
 
-  export let tracks: TrackListTrackType[]
+  // eslint-disable-next-line no-undef
+  type T = $$Generic<TrackListTrackType>
+
+  export let tracks: T[]
   export let showCoverArt = true
   let class_: string | undefined = undefined
   export { class_ as class }
-
-  const dispatch = createEventDispatcher<{
-    play: { track: TrackListTrackType; i: number }
-    favorite: { track: TrackListTrackType; favorite: boolean }
-  }>()
-  const play = (track: TrackListTrackType, i: number) => dispatch('play', { track, i })
-  const favorite = (track: TrackListTrackType) =>
-    dispatch('favorite', { track, favorite: !track.favorite })
+  export let reorderable = false
 
   export let sort: Sort | undefined = undefined
+
+  const dispatch = createEventDispatcher<{
+    play: { track: T; i: number }
+    favorite: { track: T; favorite: boolean }
+    delete: { track: T }
+    reorder: { tracks: T[] }
+  }>()
+
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  const play = (track: T, i: number) => dispatch('play', { track, i })
+  const favorite = (track: T) => dispatch('favorite', { track, favorite: !track.favorite })
+  const delete_ = (track: T) => dispatch('delete', { track })
+  const reorder = (tracks: T[]) => dispatch('reorder', { tracks })
+
   $: showRelease = tracks.some((track) => track.release)
+  $: showDelete = tracks.some((track) => track.playlistTrackId !== undefined)
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 </script>
 
-<div class={tw('grid', class_)} style:grid-template-columns="auto 1fr 1fr 1fr auto">
-  <TrackListSort {sort} {showRelease} on:sort />
+<div class={class_}>
+  <TrackListSort {sort} {showRelease} {showCoverArt} {showDelete} on:sort />
 
-  {#each tracks as track, i (track.id)}
-    <TrackListTrack
-      {track}
-      {i}
-      {showCoverArt}
-      on:play={() => play(track, i)}
-      on:favorite={() => favorite(track)}
-    />
-  {/each}
+  <div
+    use:dnd={{ items: tracks, dragDisabled: !reorderable }}
+    on:consider={(e) => {
+      tracks = e.detail.items
+    }}
+    on:finalize={(e) => {
+      tracks = e.detail.items
+      reorder(e.detail.items)
+    }}
+  >
+    {#each tracks as track, i (track.id)}
+      <div animate:flip={{ duration: reorderable ? dnd.defaults.flipDurationMs : 0 }}>
+        <TrackListTrack
+          {track}
+          {i}
+          {showCoverArt}
+          {showDelete}
+          on:play={() => play(track, i)}
+          on:favorite={() => favorite(track)}
+          on:delete={() => delete_(track)}
+        />
+      </div>
+    {/each}
+  </div>
 
   <slot name="footer" />
 </div>

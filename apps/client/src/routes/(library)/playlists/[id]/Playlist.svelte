@@ -4,13 +4,18 @@
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
+  import TrackList from '$lib/components/TrackList.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { playTrack } from '$lib/now-playing'
+  import {
+    createEditPlaylistTrackOrderMutation,
+    createRemoveTrackFromPlaylistMutation,
+  } from '$lib/services/playlists'
+  import { createFavoriteTrackMutation } from '$lib/services/tracks'
+  import { getContextClient } from '$lib/trpc'
   import type { RouterInput, RouterOutput } from '$lib/trpc'
-
-  import PlaylistTracks from './PlaylistTracks.svelte'
 
   export let playlist: RouterOutput['playlists']['get']
   export let tracks: RouterOutput['playlists']['tracks']
@@ -22,6 +27,16 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
+
+  const trpc = getContextClient()
+  const editTrackOrderMutation = createEditPlaylistTrackOrderMutation(trpc)
+  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
+    getPlaylistTracksQuery: tracksQuery,
+  })
+
+  const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)
+  const handleRemoveTrack = (playlistTrackId: number) =>
+    $removeTrackMutation.mutate({ playlistId: playlist.id, playlistTrackId })
 </script>
 
 <div class="space-y-4 p-4">
@@ -98,11 +113,28 @@
     </div>
   </div>
 
-  <PlaylistTracks
-    playlistId={playlist.id}
+  <TrackList
     {tracks}
-    {tracksQuery}
-    reorderable={playlist.filter === null}
-    on:play={(e) => playTrack(e.detail.id, makeQueueData(e.detail.index))}
+    reorderable={playlist.filter === null && !$editTrackOrderMutation.isLoading}
+    on:play={(e) => playTrack(e.detail.track.id, makeQueueData(e.detail.i))}
+    on:favorite={(e) =>
+      $favoriteMutation.mutate({ id: e.detail.track.id, favorite: !e.detail.favorite })}
+    on:delete={(e) =>
+      e.detail.track.playlistTrackId !== undefined &&
+      handleRemoveTrack(e.detail.track.playlistTrackId)}
+    on:reorder={(e) => {
+      const previousTracks = [...tracks]
+      $editTrackOrderMutation.mutate(
+        {
+          playlistId: playlist.id,
+          trackIds: e.detail.tracks.map((t) => t.id),
+        },
+        {
+          onError: () => {
+            tracks = previousTracks
+          },
+        }
+      )
+    }}
   />
 </div>

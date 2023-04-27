@@ -8,6 +8,7 @@ export type TrackListTrack = {
   favorite: boolean
   release?: { id: number; title: string | null } | null
   artists: { id: number; name: string }[]
+  playlistTrackId?: number
 }
 
 export type Sort = NonNullable<RouterInput['tracks']['getAllWithArtistsAndRelease']['sort']>
