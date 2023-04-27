@@ -11,7 +11,7 @@
   import { cn } from '$lib/utils/classes'
 
   import type { Toast } from './toast'
-  import { getContextToast, ToastDefaults } from './toast'
+  import { ToastDefaults, getContextToast } from './toast'
 
   export let item: Toast
   export let toast = getContextToast()

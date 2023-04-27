@@ -22,8 +22,8 @@
   import { useEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
-  import type { SpotifySchema } from './schemas'
   import SpotifyConfigStatus from './SpotifyConfigStatus.svelte'
+  import type { SpotifySchema } from './schemas'
 
   export let data: Validation<SpotifySchema>
   export let status: RouterOutput['system']['status']['spotify']

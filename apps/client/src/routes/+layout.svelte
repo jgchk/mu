@@ -1,8 +1,6 @@
 <script lang="ts">
-  import '../app.css'
   import '@fontsource/inter/variable.css'
   import '@fontsource/noto-emoji'
-
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import { onMount } from 'svelte'
   import { fly } from 'svelte/transition'
@@ -12,14 +10,15 @@
   import NavBar from '$lib/components/NavBar.svelte'
   import Player from '$lib/components/Player.svelte'
   import Queue from '$lib/components/Queue.svelte'
-  import { setContextDialogs } from '$lib/dialogs/dialogs'
   import Dialogs from '$lib/dialogs/Dialogs.svelte'
+  import { setContextDialogs } from '$lib/dialogs/dialogs'
   import { nowPlaying } from '$lib/now-playing'
-  import { createToast, setContextToast } from '$lib/toast/toast'
   import Toaster from '$lib/toast/Toaster.svelte'
+  import { createToast, setContextToast } from '$lib/toast/toast'
   import type { ErrorToastEvent } from '$lib/trpc'
   import { setContextClient } from '$lib/trpc'
 
+  import '../app.css'
   import type { LayoutData } from './$types'
 
   export let data: LayoutData

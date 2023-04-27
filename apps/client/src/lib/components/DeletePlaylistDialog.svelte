@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
+  import { createEventDispatcher } from 'svelte'
+
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import { createDeletePlaylistMutation } from '$lib/services/playlists'

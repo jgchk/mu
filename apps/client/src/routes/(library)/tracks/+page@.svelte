@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
   import { inview } from 'svelte-inview'
   import { pipe } from 'utils'
   import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import Button from '$lib/atoms/Button.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'

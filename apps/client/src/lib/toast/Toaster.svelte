@@ -1,8 +1,8 @@
 <script lang="ts">
   import { fly, slide } from 'svelte/transition'
 
-  import { getContextToast } from './toast'
   import Toast from './Toast.svelte'
+  import { getContextToast } from './toast'
 
   export let toast = getContextToast()
 

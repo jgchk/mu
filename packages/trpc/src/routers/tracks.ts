@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
-import { injectDescendants, TracksFilter } from '../utils'
+import { TracksFilter, injectDescendants } from '../utils'
 
 export const tracksRouter = router({
   getAllWithArtistsAndRelease: publicProcedure.input(TracksFilter).query(({ input, ctx }) => {

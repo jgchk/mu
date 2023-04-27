@@ -13,10 +13,10 @@ import { z } from 'zod'
 
 import {
   CollageOptions,
+  ResizeOptions,
   handleCreateCollage,
   handleResizeImage,
   isDownloadComplete,
-  ResizeOptions,
 } from './utils'
 
 const IMAGE_CACHE_HEADER = 'public, max-age=31536000, immutable'

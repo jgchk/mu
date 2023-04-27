@@ -1,7 +1,7 @@
 <script lang="ts">
   import { followCursor } from 'tippy.js'
 
-  import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import { TooltipDefaults, tooltip } from '$lib/actions/tooltip'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import { createDownloadMutation } from '$lib/services/downloads'

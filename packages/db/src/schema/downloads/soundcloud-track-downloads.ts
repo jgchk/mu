@@ -4,10 +4,10 @@ import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlit
 import type { FullTrack as SoundcloudFullTrack } from 'soundcloud'
 import type { Constructor } from 'utils'
 
+import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
-import type { DownloadStatus } from '.'
 import { soundcloudPlaylistDownloads } from './soundcloud-playlist-downloads'
 
 export type SoundcloudTrackDownload = InferModel<typeof soundcloudTrackDownloads>

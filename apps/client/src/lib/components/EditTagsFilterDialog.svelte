@@ -1,12 +1,12 @@
 <script lang="ts">
+  import { goto } from '$app/navigation'
+  import { page } from '$app/stores'
   import type { BoolLang } from 'bool-lang'
   import { decode, encode } from 'bool-lang'
   import { createEventDispatcher } from 'svelte'
   import { pipe, tryOr } from 'utils'
   import { toRelativeUrl } from 'utils/browser'
 
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import Button from '$lib/atoms/Button.svelte'
   import Dialog from '$lib/atoms/Dialog.svelte'
   import { getContextToast } from '$lib/toast/toast'

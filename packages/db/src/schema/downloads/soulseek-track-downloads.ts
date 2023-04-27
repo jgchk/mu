@@ -3,10 +3,10 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
+import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
-import type { DownloadStatus } from '.'
 import { soulseekReleaseDownloads } from './soulseek-release-downloads'
 
 export type SoulseekTrackDownload = InferModel<typeof soulseekTrackDownloads>

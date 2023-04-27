@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { page } from '$app/stores'
   import { pipe } from 'utils'
   import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
-  import { page } from '$app/stores'
   import Checkbox from '$lib/atoms/Checkbox.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'

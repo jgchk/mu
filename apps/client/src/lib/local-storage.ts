@@ -1,7 +1,6 @@
+import { browser } from '$app/environment'
 import type { Writable } from 'svelte/store'
 import { writable } from 'svelte/store'
-
-import { browser } from '$app/environment'
 
 export const createLocalStorage = <IV extends string | undefined>(
   key: string,

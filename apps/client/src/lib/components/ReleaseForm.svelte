@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { flip } from 'svelte/animate'
   import type { DndEvent } from 'svelte-dnd-action'
+  import { flip } from 'svelte/animate'
   import { superForm } from 'sveltekit-superforms/client'
   import { base64ToBlob } from 'utils/browser'
 

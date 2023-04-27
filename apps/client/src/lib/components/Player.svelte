@@ -3,7 +3,7 @@
   import { createEventDispatcher, raf } from 'svelte/internal'
   import { formatMilliseconds } from 'utils'
 
-  import { tooltip, TooltipDefaults } from '$lib/actions/tooltip'
+  import { TooltipDefaults, tooltip } from '$lib/actions/tooltip'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { makeImageUrl } from '$lib/cover-art'

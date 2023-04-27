@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { flip } from 'svelte/animate'
   import type { DndEvent } from 'svelte-dnd-action'
+  import { flip } from 'svelte/animate'
 
   import { dnd } from '$lib/actions/dnd'
   import TrackListTrack from '$lib/components/TrackListTrack.svelte'

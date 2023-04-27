@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AND_SYMBOL, decode, NOT_SYMBOL, OR_SYMBOL } from 'bool-lang'
+  import { AND_SYMBOL, NOT_SYMBOL, OR_SYMBOL, decode } from 'bool-lang'
   import { tryOr } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'

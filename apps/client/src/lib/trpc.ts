@@ -1,3 +1,4 @@
+import { browser, dev } from '$app/environment'
 import type { inferSvelteQueryProcedureOptions } from '@jgchk/trpc-svelte-query'
 import {
   createTRPCSvelte,
@@ -10,8 +11,6 @@ import {
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/svelte-query'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
-
-import { browser, dev } from '$app/environment'
 
 export const {
   createClient: __createClient,

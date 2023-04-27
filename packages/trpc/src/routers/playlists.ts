@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import type { Context } from '../context'
 import { publicProcedure, router } from '../trpc'
-import { injectDescendants, TracksFilter } from '../utils'
+import { TracksFilter, injectDescendants } from '../utils'
 
 export const playlistsRouter = router({
   new: publicProcedure

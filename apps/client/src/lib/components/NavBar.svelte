@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { goto } from '$app/navigation'
+  import { navigating, page } from '$app/stores'
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
 
-  import { goto } from '$app/navigation'
-  import { navigating, page } from '$app/stores'
   import { tooltip } from '$lib/actions/tooltip'
   import Loader from '$lib/atoms/Loader.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
