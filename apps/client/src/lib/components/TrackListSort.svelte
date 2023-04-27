@@ -39,6 +39,8 @@
   {/if}
   <div class="flex-1">
     <a
+      data-sveltekit-keepfocus
+      data-sveltekit-replacestate
       class="text-sm text-gray-400 transition hover:text-white"
       href={sort?.column === 'title'
         ? sort.direction === 'asc'
@@ -57,6 +59,8 @@
   <div class="flex-[2]">
     {#if showRelease}
       <a
+        data-sveltekit-keepfocus
+        data-sveltekit-replacestate
         class="text-sm text-gray-400 transition hover:text-white"
         href={sort?.column === 'release'
           ? sort.direction === 'asc'
@@ -71,6 +75,8 @@
   </div>
   <div class="flex-1">
     <a
+      data-sveltekit-keepfocus
+      data-sveltekit-replacestate
       class="float-right text-sm text-gray-400 transition hover:text-white"
       href={sort?.column === 'duration'
         ? sort.direction === 'asc'
