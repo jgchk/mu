@@ -3,7 +3,7 @@ import type { InferModel } from 'drizzle-orm'
 import { eq, inArray, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
-import { ifDefined } from 'utils'
+import { groupBy, ifDefined, mapValues, pipe } from 'utils'
 
 import type { UpdateData } from '../utils'
 import { makeUpdate } from '../utils'
@@ -162,27 +162,19 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
 
       getAll: ({ favorite, tags: filterTags, skip, limit } = {}) => {
         let query = this.db.select().from(tracks).orderBy(tracks.title)
+        let query2 = this.db.select().from(tracks).orderBy(tracks.title)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
+          query2 = query2.where(eq(tracks.favorite, favorite ? 1 : 0))
         }
 
         if (filterTags !== undefined) {
-          const tracksWithTags = this.db
-            .select()
-            .from(tracks)
-            .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
-            .all()
-
-          const trackTagsMap = new Map<number, Set<number>>()
-          for (const trackWithTags of tracksWithTags) {
-            const previous = trackTagsMap.get(trackWithTags.tracks.id)
-            if (previous) {
-              previous.add(trackWithTags.track_tags.tagId)
-            } else {
-              trackTagsMap.set(trackWithTags.tracks.id, new Set([trackWithTags.track_tags.tagId]))
-            }
-          }
+          const tagsMap = pipe(
+            query2.innerJoin(trackTags, eq(tracks.id, trackTags.trackId)).all(),
+            (i) => groupBy(i, (tag) => tag.tracks.id),
+            (i) => mapValues(i, (rows) => new Set(rows.map((row) => row.track_tags.tagId)))
+          )
 
           const allTracks = query.all()
 
@@ -191,8 +183,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
             (node: BoolLang): boolean => {
               switch (node.kind) {
                 case 'id': {
-                  const tags = trackTagsMap.get(track.id)
-                  return tags?.has(node.value) ?? false
+                  return tagsMap.get(track.id)?.has(node.value) ?? false
                 }
                 case 'not': {
                   return !makeFilter(track)(node.child)
