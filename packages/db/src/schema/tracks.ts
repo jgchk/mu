@@ -161,7 +161,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getAll: ({ favorite, tags: filterTags, skip, limit } = {}) => {
-        let query = this.db.select().from(tracks).orderBy(tracks.title)
+        let query = this.db.select().from(tracks)
 
         if (favorite !== undefined) {
           query = query.where(eq(tracks.favorite, favorite ? 1 : 0))
@@ -195,6 +195,8 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
 
           query = query.where(generateWhereClause(filterTags))
         }
+
+        query = query.orderBy(tracks.title)
 
         if (skip !== undefined) {
           query = query.offset(skip)
