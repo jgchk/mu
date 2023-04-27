@@ -119,6 +119,7 @@
     {@const tracks = $tracksQuery.data.pages.flatMap((page) => page.items)}
     <TrackList
       {tracks}
+      sortable
       sort={data.query.sort}
       class="p-4 pt-2"
       on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}

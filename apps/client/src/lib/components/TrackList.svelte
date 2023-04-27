@@ -13,11 +13,12 @@
 
   export let tracks: T[]
   export let showCoverArt = true
+  export let reorderable = false
+  export let sortable = false
+  export let sort: Sort | undefined = undefined
+
   let class_: string | undefined = undefined
   export { class_ as class }
-  export let reorderable = false
-
-  export let sort: Sort | undefined = undefined
 
   const dispatch = createEventDispatcher<{
     play: { track: T; i: number }
@@ -38,7 +39,9 @@
 </script>
 
 <div class={class_}>
-  <TrackListSort {sort} {showRelease} {showCoverArt} {showDelete} on:sort />
+  {#if sortable}
+    <TrackListSort {sort} {showRelease} {showCoverArt} {showDelete} on:sort />
+  {/if}
 
   <div
     use:dnd={{ items: tracks, dragDisabled: !reorderable }}
