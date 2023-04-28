@@ -38,7 +38,9 @@ export type CollageOptions =
       size: number
     }
 
-export const makeCollageUrl = (images: number[], opts: CollageOptions) => {
+export const makeCollageUrl = (images_: number[], opts: CollageOptions) => {
+  const images = uniq(images_)
+
   if (images.length === 0) return
   if (images.length === 1) return makeImageUrl(images[0], opts)
 
@@ -53,7 +55,7 @@ export const makeCollageUrl = (images: number[], opts: CollageOptions) => {
     searchParams.append('height', opts.height.toString())
   }
 
-  for (const image of uniq(images).slice(0, 4)) {
+  for (const image of images.slice(0, 4)) {
     searchParams.append('images', image.toString())
   }
 
