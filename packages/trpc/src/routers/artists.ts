@@ -2,6 +2,7 @@ import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { TracksFilter } from '../utils'
 
 export const artistsRouter = router({
   add: publicProcedure
@@ -70,13 +71,15 @@ export const artistsRouter = router({
         null,
     }))
   ),
-  tracks: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
-    ctx.db.tracks.getByArtist(input.id).map((track) => ({
-      ...track,
-      release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
-      artists: ctx.db.artists.getByTrackId(track.id),
-    }))
-  ),
+  tracks: publicProcedure
+    .input(z.object({ id: z.number() }).and(TracksFilter))
+    .query(({ ctx, input: { id, ...filter } }) =>
+      ctx.db.tracks.getByArtist(id, filter).map((track) => ({
+        ...track,
+        release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
+    ),
   getAll: publicProcedure.query(({ ctx }) => {
     const artists = ctx.db.artists.getAll()
     return artists.map((artist) => {

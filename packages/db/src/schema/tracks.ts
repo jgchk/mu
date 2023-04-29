@@ -72,11 +72,10 @@ export type TracksSortDirection = 'asc' | 'desc'
 
 export type TracksMixin = {
   tracks: {
-    preparedQueries: PreparedQueries
     insert: (track: InsertTrackPretty) => TrackPretty
     update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty
     getBySimilarTitle: (title: NonNullable<Track['title']>) => TrackPretty[]
-    getByArtist: (artistId: TrackArtist['artistId']) => TrackPretty[]
+    getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => TrackPretty[]
     getByArtistAndSimilarTitle: (
       artistId: Artist['id'],
       title: NonNullable<Track['title']>
@@ -91,6 +90,16 @@ export type TracksMixin = {
     get: (id: Track['id']) => TrackPretty
     getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
+
+    preparedQueries: PreparedQueries
+    withFilter: <
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      S extends Record<string, any>,
+      Q extends SQLiteSelect<'tracks', 'sync', Database.RunResult, S, 'partial' | 'multiple'>
+    >(
+      query_: Q,
+      filter?: TracksFilter
+    ) => Q
   }
 }
 
@@ -114,8 +123,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
 ): Constructor<TracksMixin> & TBase =>
   class extends Base implements TracksMixin {
     tracks: TracksMixin['tracks'] = {
-      preparedQueries: prepareQueries(this.db),
-
       insert: (track) => {
         return convertTrack(
           this.db.insert(tracks).values(convertInsertTrack(track)).returning().get()
@@ -144,15 +151,22 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .map(convertTrack)
       },
 
-      getByArtist: (artistId) => {
-        return this.db
-          .select()
+      getByArtist: (artistId, filter) => {
+        let query = this.db
+          .select({
+            tracks: {
+              ...tracks,
+              id: sql`distinct(${tracks.id})`,
+            },
+          })
           .from(tracks)
           .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
           .where(eq(trackArtists.artistId, artistId))
           .orderBy(tracks.title)
-          .all()
-          .map((track) => convertTrack(track.tracks))
+
+        query = this.tracks.withFilter(query, filter)
+
+        return query.all().map((row) => convertTrack(row.tracks))
       },
 
       getByArtistAndSimilarTitle: (artistId, title) => {
@@ -171,8 +185,8 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getAll: (filter) => {
-        let query = this.db.select({ tracks: tracks }).from(tracks)
-        query = withTracksFilter(query, filter)
+        let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.title)
+        query = this.tracks.withFilter(query, filter)
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
@@ -194,7 +208,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .where(eq(playlistTracks.playlistId, playlistId))
           .orderBy(playlistTracks.order)
 
-        query = withTracksFilter(query, filter)
+        query = this.tracks.withFilter(query, filter)
 
         return query.all().map((row) => ({
           ...convertTrack(row.tracks),
@@ -214,68 +228,68 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       delete: (id) => {
         return this.db.delete(tracks).where(eq(tracks.id, id)).run()
       },
+
+      preparedQueries: prepareQueries(this.db),
+
+      withFilter: (query_, filter) => {
+        let query = query_
+
+        if (filter?.favorite !== undefined) {
+          query = query.where(eq(tracks.favorite, filter.favorite ? 1 : 0))
+        }
+
+        if (filter?.tags !== undefined) {
+          query = query.where(generateWhereClause(filter.tags))
+        }
+
+        if (filter?.sort) {
+          const dir = filter.sort.direction === 'asc' ? asc : desc
+
+          switch (filter.sort.column) {
+            case 'title': {
+              query = query.orderBy(dir(tracks.title))
+              break
+            }
+            case 'artists': {
+              query = query.orderBy(
+                dir(
+                  this.db
+                    .select({ name: sql`group_concat(${artists.name}, ', ')` })
+                    .from(trackArtists)
+                    .where(eq(trackArtists.trackId, tracks.id))
+                    .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+                    .orderBy(trackArtists.order)
+                    .groupBy(trackArtists.trackId)
+                )
+              )
+              break
+            }
+            case 'release': {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              query = query
+                .innerJoin(releases, eq(tracks.releaseId, releases.id))
+                .orderBy(dir(releases.title))
+              break
+            }
+            case 'duration': {
+              query = query.orderBy(dir(tracks.duration))
+              break
+            }
+          }
+        }
+
+        if (filter?.skip !== undefined) {
+          query = query.offset(filter.skip)
+        }
+        if (filter?.limit !== undefined) {
+          query = query.limit(filter.limit)
+        }
+
+        return query
+      },
     }
   }
-
-const withTracksFilter = <
-  S extends { tracks: typeof tracks },
-  Q extends SQLiteSelect<'tracks', 'sync', Database.RunResult, S, 'partial'>
->(
-  query_: Q,
-  filter?: TracksFilter
-) => {
-  let query = query_
-
-  if (filter?.favorite !== undefined) {
-    query = query.where(eq(tracks.favorite, filter.favorite ? 1 : 0))
-  }
-
-  if (filter?.tags !== undefined) {
-    query = query.where(generateWhereClause(filter.tags))
-  }
-
-  if (filter?.sort) {
-    const dir = filter.sort.direction === 'asc' ? asc : desc
-
-    switch (filter.sort.column) {
-      case 'title': {
-        query = query.orderBy(dir(tracks.title))
-        break
-      }
-      case 'artists': {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        query = query
-          .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .where(eq(trackArtists.order, 0))
-          .orderBy(dir(artists.name))
-        break
-      }
-      case 'release': {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        query = query
-          .innerJoin(releases, eq(tracks.releaseId, releases.id))
-          .orderBy(dir(releases.title))
-        break
-      }
-      case 'duration': {
-        query = query.orderBy(dir(tracks.duration))
-        break
-      }
-    }
-  }
-
-  if (filter?.skip !== undefined) {
-    query = query.offset(filter.skip)
-  }
-  if (filter?.limit !== undefined) {
-    query = query.limit(filter.limit)
-  }
-
-  return query
-}
 
 const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
   switch (node.kind) {
