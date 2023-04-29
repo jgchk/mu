@@ -4,7 +4,7 @@ import path from 'path'
 import { toErrorString } from 'utils'
 import { ensureDir, fileExists } from 'utils/node'
 
-import type { Context } from '.'
+import type { Context, Logger } from '.'
 
 export type SoulseekDownload = {
   service: 'soulseek'
@@ -16,11 +16,21 @@ export class SoulseekDownloadManager {
   private getContext: () => Context
   private downloadDir: string
   private openFiles: Map<number, fs.WriteStream>
+  private logger: Logger
 
-  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
+  constructor({
+    getContext,
+    downloadDir,
+    logger,
+  }: {
+    getContext: () => Context
+    downloadDir: string
+    logger: Logger
+  }) {
     this.getContext = getContext
     this.downloadDir = downloadDir
     this.openFiles = new Map()
+    this.logger = logger
   }
 
   async downloadTrack(dbId: number) {
@@ -39,14 +49,14 @@ export class SoulseekDownloadManager {
 
       const existingPipe = this.openFiles.get(dbId)
       if (existingPipe) {
-        console.error('Already downloading track', dbId)
+        this.logger.error('Already downloading track', dbId)
         return
       }
 
       const dbTrack = db.soulseekTrackDownloads.get(dbId)
 
       if (dbTrack.status === 'done') {
-        console.error('Track already downloaded', dbId)
+        this.logger.error('Track already downloaded', dbId)
         return
       }
 

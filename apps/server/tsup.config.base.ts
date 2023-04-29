@@ -45,6 +45,7 @@ const config: Options = {
     'last-fm',
     'utils',
     'image-manager',
+    'log',
   ],
   esbuildOptions(options) {
     options.banner = {

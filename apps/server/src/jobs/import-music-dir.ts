@@ -2,6 +2,7 @@ import type { Artist } from 'db'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
 import { ImageManager } from 'image-manager'
+import { log } from 'log'
 import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
@@ -41,7 +42,7 @@ for await (const filePath of walkDir(musicDir)) {
 }
 const results = await Promise.all(promises)
 const imported = results.filter(Boolean).length
-console.log(`Imported ${imported} tracks`)
+log.info(`Imported ${imported} tracks`)
 
 async function handleFile(filePath_: string) {
   const filePath = path.resolve(filePath_)

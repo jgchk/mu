@@ -1,5 +1,6 @@
 import type { Database } from 'db'
 import { ImageManager } from 'image-manager'
+import { log } from 'log'
 import { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
@@ -253,9 +254,9 @@ export const makeContext = async (): Promise<Context> => {
 
       context.slsk = withProps(slsk, { status: 'logged-in' } as const)
       context.slsk
-        .on('listen-error', (error) => console.error('SLSK listen error', error))
-        .on('server-error', (error) => console.error('SLSK server error', error))
-        .on('client-error', (error) => console.error('SLSK client error', error))
+        .on('listen-error', (error) => log.error('SLSK listen error', error))
+        .on('server-error', (error) => log.error('SLSK server error', error))
+        .on('client-error', (error) => log.error('SLSK client error', error))
       return context.slsk
     },
     stopSoulseek: () => {

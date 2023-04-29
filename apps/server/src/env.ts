@@ -1,9 +1,11 @@
+import { log } from 'log'
 import { z } from 'zod'
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('production'),
   SERVER_HOST: z.string(),
   SERVER_PORT: z.coerce.number(),
+  WS_PORT: z.coerce.number(),
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),
   MUSIC_DIR: z.string(),
@@ -25,7 +27,7 @@ const envSchema = z.object({
 const envRes = envSchema.safeParse(process.env)
 
 if (!envRes.success) {
-  console.error('❌ Invalid environment variables:', JSON.stringify(envRes.error.format(), null, 4))
+  log.error('❌ Invalid environment variables:', JSON.stringify(envRes.error.format(), null, 4))
   process.exit(1)
 }
 

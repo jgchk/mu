@@ -15,6 +15,7 @@ export default defineConfig({
     '../../packages/last-fm',
     '../../packages/utils',
     '../../packages/image-manager',
+    '../../packages/log',
   ],
   ignoreWatch: [
     '../../**/node_modules/**/*',

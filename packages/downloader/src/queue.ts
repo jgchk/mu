@@ -11,7 +11,7 @@ import stream from 'stream'
 import { ifNotNull, uniqBy } from 'utils'
 import { ensureDir, fileExists } from 'utils/node'
 
-import type { Context } from '.'
+import type { Context, Logger } from '.'
 
 export type Task = SoundcloudTask | SpotifyTask
 
@@ -31,14 +31,25 @@ export class DownloadQueue {
   private q: fastq.queueAsPromised<Task>
   private downloadDir: string
   private getContext: () => Context
+  private logger: Logger
 
-  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
+  constructor({
+    getContext,
+    downloadDir,
+    logger,
+  }: {
+    getContext: () => Context
+    downloadDir: string
+    logger: Logger
+  }) {
     this.getContext = getContext
     this.downloadDir = downloadDir
+    this.logger = logger
+
     this.q = fastq.promise(this.worker.bind(this), 10)
     this.q.error((err, task) => {
       if (err) {
-        console.error('Error processing task:', task, err)
+        this.logger.error('Error processing task:', task, err)
       }
     })
   }

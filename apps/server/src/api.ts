@@ -1,15 +1,17 @@
 import cors from '@fastify/cors'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
+import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod'
 import { fileTypeFromBuffer, fileTypeFromFile, fileTypeStream } from 'file-type'
 import fs from 'fs'
+import { log } from 'log'
 import mime from 'mime-types'
 import { readTrackCoverArt } from 'music-metadata'
 import path from 'path'
-import type { Context } from 'trpc'
+import type { AppRouter, Context } from 'trpc'
 import { appRouter } from 'trpc'
 import { z } from 'zod'
 
@@ -30,10 +32,17 @@ export const makeApiServer = async (ctx: Context) => {
 
   await fastify.register(cors)
 
-  await fastify.register(fastifyTRPCPlugin, {
+  const fastifyTRPCOptions: FastifyTRPCPluginOptions<AppRouter> = {
     prefix: '/api/trpc',
-    trpcOptions: { router: appRouter, createContext: () => ctx },
-  })
+    trpcOptions: {
+      router: appRouter,
+      createContext: () => ctx,
+      onError: ({ error }) => {
+        log.error(error)
+      },
+    },
+  }
+  await fastify.register(fastifyTRPCPlugin, fastifyTRPCOptions)
 
   fastify
     .route({

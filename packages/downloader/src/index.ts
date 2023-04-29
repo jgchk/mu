@@ -52,18 +52,38 @@ export type SpotifyErrors = {
   webApi?: unknown
 }
 
+export type Logger = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  info: (...args: any[]) => any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  warn: (...args: any[]) => any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: (...args: any[]) => any
+}
+
 export class Downloader {
   private queue: DownloadQueue
   private soulseek: SoulseekDownloadManager
 
-  constructor({ getContext, downloadDir }: { getContext: () => Context; downloadDir: string }) {
+  constructor({
+    getContext,
+    downloadDir,
+    logger: logger_,
+  }: {
+    getContext: () => Context
+    downloadDir: string
+    logger?: Logger
+  }) {
+    const logger = logger_ ?? console
     this.queue = new DownloadQueue({
       getContext,
       downloadDir,
+      logger,
     })
     this.soulseek = new SoulseekDownloadManager({
       getContext,
       downloadDir,
+      logger,
     })
   }
 

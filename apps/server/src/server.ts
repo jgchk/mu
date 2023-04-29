@@ -1,5 +1,6 @@
 import { applyWSSHandler } from '@trpc/server/adapters/ws'
 import Bree from 'bree'
+import { log } from 'log'
 import { getMissingPythonDependencies } from 'music-metadata'
 import path from 'path'
 import { appRouter } from 'trpc'
@@ -13,7 +14,7 @@ import { env } from './env'
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
   if (missingPythonDeps.length > 0) {
-    console.error('❌ Missing Python dependencies:', missingPythonDeps)
+    log.error('❌ Missing Python dependencies:', missingPythonDeps)
     process.exit(1)
   }
 
@@ -22,6 +23,7 @@ const main = async () => {
   const bree = new Bree({
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
     jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
+    logger: log,
   })
   await bree.start()
 
@@ -45,11 +47,15 @@ const main = async () => {
   const apiServer = await makeApiServer(ctx)
 
   apiServer.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }, (err, address) => {
-    if (err) throw err
-    console.log(`> Running on ${address}`)
+    if (err) {
+      log.error(err)
+      process.exit(1)
+    } else {
+      log.info(`> Running on ${address}`)
+    }
   })
 
-  const wss = new WebSocketServer({ port: 8080 })
+  const wss = new WebSocketServer({ host: env.SERVER_HOST, port: env.WS_PORT })
   const trpcWsHandler = applyWSSHandler({
     wss,
     router: appRouter,
@@ -57,12 +63,12 @@ const main = async () => {
   })
 
   wss.on('connection', (ws) => {
-    console.log(`➕➕ Connection (${wss.clients.size})`)
+    log.info(`➕➕ Connection (${wss.clients.size})`)
     ws.once('close', () => {
-      console.log(`➖➖ Connection (${wss.clients.size})`)
+      log.info(`➖➖ Connection (${wss.clients.size})`)
     })
   })
-  console.log('✅ WebSocket Server listening on ws://localhost:8080')
+  log.info(`✅ WebSocket Server listening on ws://${env.SERVER_HOST}:${env.WS_PORT}`)
 
   let shuttingDown = false
   for (const sig of ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGUSR2']) {
@@ -70,7 +76,7 @@ const main = async () => {
       if (shuttingDown) return
       shuttingDown = true
 
-      console.log('Shutting down...')
+      log.info('Shutting down...')
       trpcWsHandler.broadcastReconnectNotification()
       wss.close()
       ctx.destroy()

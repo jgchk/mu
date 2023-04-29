@@ -1,4 +1,5 @@
 import type { Artist } from 'db'
+import { log } from 'log'
 import { compareTwoStrings } from 'string-similarity'
 import { groupBy, toErrorString } from 'utils'
 import { parentPort } from 'worker_threads'
@@ -35,7 +36,7 @@ if (lfm.status === 'stopped') {
 }
 
 const lovedTracks = await lfm.getAllLovedTracks()
-console.log('Loved tracks:', lovedTracks.length)
+log.info('Loved tracks:', lovedTracks.length)
 
 const groupedTracks = groupBy(lovedTracks, (track) => track.artist.mbid)
 
@@ -92,7 +93,7 @@ for (const tracks of groupedTracks.values()) {
   }
 }
 
-console.log('Matches:', numMatches)
+log.info('Matches:', numMatches)
 
 // signal to parent that the job is done
 if (parentPort) parentPort.postMessage('done')
