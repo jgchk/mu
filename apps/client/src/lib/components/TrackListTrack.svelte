@@ -30,7 +30,8 @@
 </script>
 
 <div
-  class="group flex select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
+  class="group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
+  style:grid-template-columns="auto 6fr 4fr 1fr auto"
   on:dblclick={() => play()}
 >
   {#if showCoverArt}
@@ -57,7 +58,7 @@
       </button>
     </div>
   {/if}
-  <div class="flex-1 overflow-hidden">
+  <div class="overflow-hidden">
     <div class="truncate">{track.title || '[untitled]'}</div>
     <div class="truncate text-sm text-gray-400">
       <CommaList items={track.artists} let:item>
@@ -65,7 +66,7 @@
       </CommaList>
     </div>
   </div>
-  <div class="flex-1 truncate text-sm text-gray-400">
+  <div class="truncate text-sm text-gray-400">
     {#if track.release}
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
@@ -76,10 +77,8 @@
       </a>
     {/if}
   </div>
-  <div class="flex-1">
-    <div class="float-right text-sm text-gray-400">
-      {formatMilliseconds(track.duration)}
-    </div>
+  <div class="justify-self-end text-sm text-gray-400">
+    {formatMilliseconds(track.duration)}
   </div>
   <div class="flex items-center gap-1">
     {#if showDelete}

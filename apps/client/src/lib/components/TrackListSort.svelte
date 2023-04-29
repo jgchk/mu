@@ -31,7 +31,7 @@
     )
 </script>
 
-<div class="flex gap-2 p-1.5">
+<div class="grid gap-2 p-1.5" style:grid-template-columns="auto 6fr 4fr 1fr auto">
   {#if showCoverArt}
     <div class="w-11" />
   {:else}
@@ -73,20 +73,18 @@
       >
     {/if}
   </div>
-  <div class="flex-1">
-    <a
-      data-sveltekit-keepfocus
-      data-sveltekit-replacestate
-      class="float-right text-sm text-gray-400 transition hover:text-white"
-      href={sort?.column === 'duration'
-        ? sort.direction === 'asc'
-          ? withSortUpdate({ column: 'duration', direction: 'desc' })
-          : withSortUpdate(undefined)
-        : withSortUpdate({ column: 'duration', direction: 'asc' })}
-      >{#if sort?.column === 'duration'}<span class="text-primary-500"
-          >{sort.direction === 'asc' ? '▲' : '▼'}</span
-        >{' '}{/if}Length</a
-    >
-  </div>
+  <a
+    data-sveltekit-keepfocus
+    data-sveltekit-replacestate
+    class="justify-self-end text-sm text-gray-400 transition hover:text-white"
+    href={sort?.column === 'duration'
+      ? sort.direction === 'asc'
+        ? withSortUpdate({ column: 'duration', direction: 'desc' })
+        : withSortUpdate(undefined)
+      : withSortUpdate({ column: 'duration', direction: 'asc' })}
+    >{#if sort?.column === 'duration'}<span class="text-primary-500"
+        >{sort.direction === 'asc' ? '▲' : '▼'}</span
+      >{' '}{/if}Length</a
+  >
   <div style:width="{numButtons * 32 + (numButtons - 1) * 4}px" />
 </div>
