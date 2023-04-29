@@ -187,6 +187,7 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       getAll: (filter) => {
         let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.title)
         query = this.tracks.withFilter(query, filter)
+        console.log(query.toSQL())
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
@@ -236,12 +237,23 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       withFilter: (query_, filter) => {
         let query = query_
 
+        const where = []
+
         if (filter?.favorite !== undefined) {
-          query = query.where(eq(tracks.favorite, filter.favorite ? 1 : 0))
+          where.push(eq(tracks.favorite, filter.favorite ? 1 : 0))
         }
 
         if (filter?.tags !== undefined) {
-          query = query.where(generateWhereClause(filter.tags))
+          const tagsWhere = generateWhereClause(filter.tags)
+          if (tagsWhere) {
+            where.push(tagsWhere)
+          }
+        }
+
+        if (where.length === 1) {
+          query = query.where(where[0])
+        } else if (where.length > 1) {
+          query = query.where(and(...where))
         }
 
         if (filter?.sort) {
