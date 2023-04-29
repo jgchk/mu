@@ -32,6 +32,8 @@ COPY packages/image-manager/package.json ./packages/image-manager/
 COPY packages/image-manager/pnpm-*.yaml ./packages/image-manager/
 COPY packages/last-fm/package.json ./packages/last-fm/
 COPY packages/last-fm/pnpm-*.yaml ./packages/last-fm/
+COPY packages/log/package.json ./packages/log/
+COPY packages/log/pnpm-*.yaml ./packages/log/
 COPY packages/music-metadata/package.json ./packages/music-metadata/
 COPY packages/music-metadata/pnpm-*.yaml ./packages/music-metadata/
 COPY packages/soundcloud/package.json ./packages/soundcloud/
