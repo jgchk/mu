@@ -3,13 +3,13 @@
   import { equalsWithOrder, isDefined } from 'utils'
 
   import { autoscroll } from '$lib/actions/autoscroll'
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { nowPlaying } from '$lib/now-playing'
   import { createFavoriteTrackMutation, createTracksQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
-  import Delay from './Delay.svelte'
   import TrackList from './TrackList.svelte'
 
   let class_: string | undefined = undefined

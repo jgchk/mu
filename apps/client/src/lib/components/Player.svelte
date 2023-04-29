@@ -4,8 +4,11 @@
   import { formatMilliseconds } from 'utils'
 
   import { TooltipDefaults, tooltip } from '$lib/actions/tooltip'
+  import CommaList from '$lib/atoms/CommaList.svelte'
+  import Delay from '$lib/atoms/Delay.svelte'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
+  import Range from '$lib/atoms/Range.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import ListIcon from '$lib/icons/ListIcon.svelte'
@@ -23,11 +26,8 @@
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
-  import Range from '../atoms/Range.svelte'
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
-  import CommaList from './CommaList.svelte'
   import CoverArt from './CoverArt.svelte'
-  import Delay from './Delay.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$lib/atoms/Button.svelte'
+  import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'

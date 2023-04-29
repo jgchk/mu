@@ -4,8 +4,8 @@
   import { fade } from 'svelte/transition'
   import { toErrorString } from 'utils'
 
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
-  import Delay from '$lib/components/Delay.svelte'
   import { createSearchSoulseekSubscription } from '$lib/services/search'
   import { getContextToast } from '$lib/toast/toast'
   import { getContextClient } from '$lib/trpc'

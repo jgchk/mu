@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition'
 
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { createSpotifyFriendsQuery } from '$lib/services/friends'
   import { createStartSpotifyMutation, createSystemStatusQuery } from '$lib/services/system'
@@ -8,7 +9,6 @@
   import { getContextClient } from '$lib/trpc'
   import { createEditLink } from '$lib/utils/system-config'
 
-  import Delay from './Delay.svelte'
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
 
   const trpc = getContextClient()

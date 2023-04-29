@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
+  import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { createSearchSoundcloudQuery } from '$lib/services/search'
   import { getContextClient } from '$lib/trpc'

@@ -1,6 +1,6 @@
 <script lang="ts">
+  import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { createAllArtistsQuery } from '$lib/services/artists'

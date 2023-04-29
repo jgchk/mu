@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { createLastFmFriendsQuery } from '$lib/services/friends'
   import { createSystemStatusQuery } from '$lib/services/system'
@@ -6,7 +7,6 @@
   import { getContextClient } from '$lib/trpc'
   import { createEditLink } from '$lib/utils/system-config'
 
-  import Delay from './Delay.svelte'
   import FriendsSidebarContent from './FriendsSidebarContent.svelte'
   import FullscreenLoader from './FullscreenLoader.svelte'
 

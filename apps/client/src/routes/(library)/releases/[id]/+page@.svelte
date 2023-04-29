@@ -1,6 +1,6 @@
 <script lang="ts">
+  import CommaList from '$lib/atoms/CommaList.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
-  import CommaList from '$lib/components/CommaList.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'

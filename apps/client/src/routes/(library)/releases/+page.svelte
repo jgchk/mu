@@ -1,7 +1,7 @@
 <script lang="ts">
-  import CommaList from '$lib/components/CommaList.svelte'
+  import CommaList from '$lib/atoms/CommaList.svelte'
+  import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import FlowGrid from '$lib/components/FlowGrid.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { makeImageUrl } from '$lib/cover-art'
   import { createAllReleasesWithArtistsQuery } from '$lib/services/releases'

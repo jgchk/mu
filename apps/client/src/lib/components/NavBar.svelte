@@ -5,11 +5,11 @@
   import { fade } from 'svelte/transition'
 
   import { tooltip } from '$lib/actions/tooltip'
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
 
-  import Delay from './Delay.svelte'
   import NavLink from './NavLink.svelte'
 
   let query = ''

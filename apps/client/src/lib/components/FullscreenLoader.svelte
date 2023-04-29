@@ -1,10 +1,9 @@
 <script lang="ts">
   import { fade } from 'svelte/transition'
 
+  import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { tw } from '$lib/utils/classes'
-
-  import Delay from './Delay.svelte'
 
   let class_: string | undefined = undefined
   export { class_ as class }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CommaList from '$lib/components/CommaList.svelte'
+  import CommaList from '$lib/atoms/CommaList.svelte'
   import { createReleaseTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 

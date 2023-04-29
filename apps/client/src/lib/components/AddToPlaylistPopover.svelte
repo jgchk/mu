@@ -5,6 +5,7 @@
   import type { PopperTooltipAction } from '$lib/actions/popper'
   import { tooltip } from '$lib/actions/tooltip'
   import Button from '$lib/atoms/Button.svelte'
+  import Delay from '$lib/atoms/Delay.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -17,7 +18,6 @@
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
-  import Delay from './Delay.svelte'
   import LinkToast from './LinkToast.svelte'
   import PopoverArrow from './PopoverArrow.svelte'
 

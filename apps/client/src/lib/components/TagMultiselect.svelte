@@ -1,11 +1,10 @@
 <script lang="ts">
   import type { ComponentProps } from 'svelte'
 
+  import type { Option } from '$lib/atoms/Multiselect'
+  import Multiselect from '$lib/atoms/Multiselect.svelte'
   import { createTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
-
-  import type { Option } from './Multiselect'
-  import Multiselect from './Multiselect.svelte'
 
   type Opt = Option<{ value: number }>
 
