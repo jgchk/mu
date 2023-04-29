@@ -62,6 +62,7 @@
           <Label for="filter-tag">Tags Filter</Label>
           <TagSelect
             id="filter-tag"
+            class="w-full"
             value={data.tags?.parsed.kind === 'id' ? data.tags.parsed.value : undefined}
             on:change={({ detail: { value } }) => {
               const url = new URL($page.url)

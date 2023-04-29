@@ -1,125 +1,38 @@
 <script lang="ts">
+  import type { ComponentProps } from 'svelte'
   import { createEventDispatcher } from 'svelte'
 
-  import { clickOutside } from '$lib/actions/clickOutside'
-  import { createPopperAction } from '$lib/actions/popper'
-  import Input from '$lib/atoms/Input.svelte'
+  import type { Option } from '$lib/atoms/Select'
+  import Select from '$lib/atoms/Select.svelte'
   import { createTagsQuery } from '$lib/services/tags'
-  import { dropdown } from '$lib/transitions/dropdown'
   import { getContextClient } from '$lib/trpc'
-  import { tw } from '$lib/utils/classes'
 
-  export let value: number | undefined = undefined
-  export let open = false
-  export let id: string | undefined = undefined
+  type Opt = Option<{ value: number }>
 
-  let class_: string | undefined = undefined
-  export { class_ as class }
+  interface $$Props extends Omit<ComponentProps<Select<Opt>>, 'value' | 'options'> {
+    value?: number
+  }
+
+  export let value: $$Props['value'] = undefined
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc)
 
-  export let filter = ''
-  $: filteredTags =
-    $tagsQuery.data?.filter((tag) => tag.name.toLowerCase().includes(filter.toLowerCase())) ?? []
+  $: options = $tagsQuery.data?.map((tag) => ({ value: tag.id, label: tag.name })) ?? []
+  $: valueOption = options?.find((opt) => opt.value === value)
 
-  let displayFilter = filter
-
-  $: {
-    if (value === undefined) {
-      displayFilter = ''
-    } else {
-      if ($tagsQuery.data) {
-        const artist = $tagsQuery.data.find((tag) => tag.id === value)
-        if (artist) {
-          displayFilter = artist.name
-        } else {
-          displayFilter = 'Unknown'
-        }
-      } else if ($tagsQuery.error) {
-        displayFilter = 'Error'
-      } else {
-        displayFilter = 'Loading...'
-      }
-    }
-  }
-
-  const [popperElement, popperTooltip] = createPopperAction()
-
-  const dispatch = createEventDispatcher<{ change: { value: number | undefined } }>()
-  const change = (v: number | undefined) => {
-    value = v
-    dispatch('change', { value: v })
-  }
+  const dispatch = createEventDispatcher<{
+    change: { value: number | undefined }
+  }>()
 </script>
 
-<div class={tw('relative w-fit', class_)} use:clickOutside={() => (open = false)}>
-  <div use:popperElement>
-    <Input
-      {id}
-      class="w-full"
-      type="text"
-      value={displayFilter}
-      on:input={(e) => {
-        filter = e.currentTarget.value
-        displayFilter = e.currentTarget.value
-      }}
-      on:focus={() => (open = true)}
-      on:keydown={(e) => {
-        switch (e.key) {
-          case 'Enter': {
-            e.preventDefault()
-            if (filteredTags.length === 0) {
-              change(undefined)
-            } else {
-              change(filteredTags[0].id)
-            }
-            filter = ''
-            break
-          }
-          case 'Tab': {
-            open = false
-            break
-          }
-        }
-      }}
-    />
-  </div>
-
-  {#if open}
-    <div
-      class="relative z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
-      transition:dropdown|local
-      use:popperTooltip={{
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ],
-      }}
-    >
-      {#if filteredTags.length > 0}
-        {#each filteredTags as tag}
-          <button
-            tabIndex={-1}
-            type="button"
-            class="block w-full px-2 py-1 text-left hover:bg-gray-600"
-            on:click={() => {
-              change(tag.id)
-              filter = ''
-            }}
-          >
-            {tag.name}
-          </button>
-        {/each}
-      {/if}
-
-      <div
-        class="pointer-events-none absolute left-0 top-0 h-full w-full rounded border border-white opacity-5"
-      />
-    </div>
-  {/if}
-</div>
+<Select
+  value={valueOption}
+  {options}
+  on:change={(e) => {
+    value = e.detail.value?.value
+    dispatch('change', { value })
+  }}
+  on:blur
+  {...$$restProps}
+/>

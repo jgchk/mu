@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { ComponentProps } from 'svelte'
 
-  import type { Option } from '$lib/atoms/Multiselect'
   import Multiselect from '$lib/atoms/Multiselect.svelte'
+  import type { Option } from '$lib/atoms/Select'
   import { createTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
@@ -13,7 +13,7 @@
     value: number[]
   }
 
-  export let value: number[] = []
+  export let value: $$Props['value'] = []
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc)
@@ -34,7 +34,7 @@
 <Multiselect
   value={values}
   {options}
-  on:change={(e) => (value = e.detail.map((v) => v.value))}
+  on:change={(e) => (value = e.detail.value.map((v) => v.value))}
   on:change
   on:blur
   {...$$restProps}
