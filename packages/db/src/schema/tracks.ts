@@ -187,7 +187,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       getAll: (filter) => {
         let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.title)
         query = this.tracks.withFilter(query, filter)
-        console.log(query.toSQL())
         return query.all().map((row) => convertTrack(row.tracks))
       },
 

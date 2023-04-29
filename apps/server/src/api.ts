@@ -164,14 +164,10 @@ export const makeApiServer = async (ctx: Context) => {
         const opts = req.query
 
         const { output, contentType } = await handleCreateCollage(opts)
-        console.log('ct', contentType)
         if (contentType) {
-          console.log('1')
           void res.header('Content-Type', contentType)
-          console.log('2')
         }
         void res.header('Cache-Control', IMAGE_CACHE_HEADER)
-        console.log('ayo')
         return res.send(output)
       },
     })
