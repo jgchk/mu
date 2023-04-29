@@ -80,7 +80,7 @@
       </InputGroup>
     {/if}
     <Button
-      kind={data.tags?.parsed.kind !== 'id' ? 'solid' : 'outline'}
+      kind={data.tags && data.tags.parsed.kind !== 'id' ? 'solid' : 'outline'}
       on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags?.parsed })}
     >
       Advanced
