@@ -1,7 +1,7 @@
 import {
+  prefetchArtistQuery,
   prefetchArtistReleasesQuery,
   prefetchArtistTracksQuery,
-  prefetchFullArtistQuery,
 } from '$lib/services/artists'
 import { paramNumber } from '$lib/utils/params'
 
@@ -12,7 +12,7 @@ export const load: PageLoad = async ({ parent, params }) => {
 
   const { trpc } = await parent()
   await Promise.all([
-    prefetchFullArtistQuery(trpc, id),
+    prefetchArtistQuery(trpc, id),
     prefetchArtistReleasesQuery(trpc, id),
     prefetchArtistTracksQuery(trpc, id),
   ])

@@ -8,9 +8,9 @@
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import {
+    createArtistQuery,
     createArtistReleasesQuery,
     createArtistTracksQuery,
-    createFullArtistQuery,
   } from '$lib/services/artists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
@@ -21,7 +21,7 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  const artistQuery = createFullArtistQuery(trpc, data.id)
+  const artistQuery = createArtistQuery(trpc, data.id)
   const releasesQuery = createArtistReleasesQuery(trpc, data.id)
   const tracksQuery = createArtistTracksQuery(trpc, data.id)
 

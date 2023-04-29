@@ -2,11 +2,8 @@ import type { RouterOptions, TRPCClient } from '$lib/trpc'
 
 export const createArtistQuery = (trpc: TRPCClient, id: number) => trpc.artists.get.query({ id })
 
-export const createFullArtistQuery = (trpc: TRPCClient, id: number) =>
-  trpc.artists.getFull.query({ id })
-
-export const prefetchFullArtistQuery = (trpc: TRPCClient, id: number) =>
-  trpc.artists.getFull.prefetchQuery({ id })
+export const prefetchArtistQuery = (trpc: TRPCClient, id: number) =>
+  trpc.artists.get.prefetchQuery({ id })
 
 export const createAllArtistsQuery = (trpc: TRPCClient) => trpc.artists.getAll.query()
 
@@ -22,9 +19,9 @@ export const createEditArtistMutation = (
   trpc.artists.edit.mutation({
     ...options,
     onSuccess: async (...args) => {
+      const [data] = args
       await Promise.all([
-        trpc.artists.get.utils.setData({ id: args[0].id }, args[0]),
-        trpc.artists.getFull.utils.invalidate({ id: args[0].id }),
+        trpc.artists.get.utils.invalidate({ id: data.id }),
         trpc.artists.getAll.utils.invalidate(),
         options?.onSuccess?.(...args),
       ])

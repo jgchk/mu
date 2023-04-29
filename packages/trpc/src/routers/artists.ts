@@ -40,10 +40,7 @@ export const artistsRouter = router({
 
       return artist
     }),
-  get: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => ctx.db.artists.get(input.id)),
-  getFull: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
+  get: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.db.artists.get(input.id)
 
     const releaseImageIds = ctx.db.releases
