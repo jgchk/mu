@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import { inview } from 'svelte-inview'
+  import { slide } from 'svelte/transition'
   import { pipe } from 'utils'
   import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
@@ -55,64 +56,66 @@
 <Layout>
   <svelte:fragment slot="sidebar">
     <FavoritesToggle />
-
-    <div class="space-y-1 px-4">
-      {#if data.tags === undefined || data.tags.parsed.kind === 'id'}
-        <InputGroup>
-          <Label for="filter-tag">Tags Filter</Label>
-          <TagSelect
-            id="filter-tag"
-            class="w-full"
-            value={data.tags?.parsed.kind === 'id' ? data.tags.parsed.value : undefined}
-            on:change={({ detail: { value } }) => {
-              const url = new URL($page.url)
-              if (value === undefined) {
-                url.searchParams.delete('tags')
-              } else {
-                url.searchParams.set('tags', value.toString())
-              }
-              void goto(url.toString(), { keepFocus: true, replaceState: true })
-            }}
-          />
-        </InputGroup>
-      {/if}
-
-      <div class="flex gap-1">
-        <Button
-          kind="outline"
-          on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags?.parsed })}
-        >
-          Advanced
-        </Button>
-        {#if data.tags !== undefined}
-          <Button
-            kind="text"
-            on:click={() => {
-              const url = pipe(
-                withUrlUpdate($page.url, (url) => {
-                  url.searchParams.delete('tags')
-                }),
-                toRelativeUrl,
-                decodeURIComponent
-              )
-              void goto(url, { keepFocus: true, replaceState: true })
-            }}
-          >
-            Clear
-          </Button>
-        {/if}
-      </div>
-      {#if data.tags !== undefined}
-        {@const filter = data.tags.text}
-        <Button kind="outline" on:click={() => dialogs.open('new-auto-playlist', { filter })}>
-          New Auto-Playlist
-        </Button>
-      {/if}
-    </div>
   </svelte:fragment>
 
-  {#if data.tags}
-    <div class="rounded bg-gray-900 px-2 py-1">
+  <div class="flex gap-1 rounded bg-gray-900 p-1">
+    {#if data.tags === undefined || data.tags.parsed.kind === 'id'}
+      <InputGroup>
+        <Label for="filter-tag" class="hidden">Tags Filter</Label>
+        <TagSelect
+          id="filter-tag"
+          value={data.tags?.parsed.kind === 'id' ? data.tags.parsed.value : undefined}
+          placeholder="Filter by tag..."
+          class="w-52"
+          on:change={({ detail: { value } }) => {
+            const url = new URL($page.url)
+            if (value === undefined) {
+              url.searchParams.delete('tags')
+            } else {
+              url.searchParams.set('tags', value.toString())
+            }
+            void goto(url.toString(), { keepFocus: true, replaceState: true })
+          }}
+        />
+      </InputGroup>
+    {/if}
+    <Button
+      kind={data.tags?.parsed.kind !== 'id' ? 'solid' : 'outline'}
+      on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags?.parsed })}
+    >
+      Advanced
+    </Button>
+    {#if data.tags !== undefined}
+      <Button
+        kind="text"
+        on:click={() => {
+          const url = pipe(
+            withUrlUpdate($page.url, (url) => {
+              url.searchParams.delete('tags')
+            }),
+            toRelativeUrl,
+            decodeURIComponent
+          )
+          void goto(url, { keepFocus: true, replaceState: true })
+        }}
+      >
+        Clear
+      </Button>
+    {/if}
+    {#if data.tags !== undefined}
+      {@const filter = data.tags.text}
+      <Button
+        kind="outline"
+        class="ml-auto"
+        on:click={() => dialogs.open('new-auto-playlist', { filter })}
+        tooltip="Create a new auto-playlist with this filter"
+      >
+        New Auto-Playlist
+      </Button>
+    {/if}
+  </div>
+  {#if data.tags && data.tags?.parsed.kind !== 'id'}
+    <div class="-mt-[3px] rounded-b bg-gray-900 px-2 py-1 pt-[5px]" transition:slide|local>
       <EditTagsFilterPlaintext filter={data.tags.parsed} tagClass="text-gray-300" />
     </div>
   {/if}
