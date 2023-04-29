@@ -56,7 +56,7 @@
         >{/if}</a
     >
   </div>
-  <div class="flex-[2]">
+  <div class="flex-1">
     {#if showRelease}
       <a
         data-sveltekit-keepfocus

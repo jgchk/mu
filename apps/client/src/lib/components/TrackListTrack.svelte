@@ -8,6 +8,7 @@
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
 
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
+  import CommaList from './CommaList.svelte'
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
   import type { TrackListTrack as TrackListTrackType } from './TrackList'
@@ -56,19 +57,15 @@
       </button>
     </div>
   {/if}
-  <div class="flex-1 truncate">
-    {track.title || '[untitled]'}
-    <ul class="comma-list text-sm text-gray-400">
-      {#each track.artists as artist (artist.id)}
-        <li class="flex">
-          <a class="hover:underline group-hover/track:text-white" href="/artists/{artist.id}"
-            >{artist.name}</a
-          >
-        </li>
-      {/each}
-    </ul>
+  <div class="flex-1 overflow-hidden">
+    <div class="truncate">{track.title || '[untitled]'}</div>
+    <div class="truncate text-sm text-gray-400">
+      <CommaList items={track.artists} let:item>
+        <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+      </CommaList>
+    </div>
   </div>
-  <div class="flex-[2] truncate text-sm text-gray-400">
+  <div class="flex-1 truncate text-sm text-gray-400">
     {#if track.release}
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
