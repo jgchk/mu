@@ -52,17 +52,33 @@ export const artistsRouter = router({
         ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
         null,
     }))
-    const tracks = ctx.db.tracks.getByArtist(artist.id).map((track) => ({
+
+    const releaseImageIds = ctx.db.releases
+      .getByArtist(artist.id)
+      .map(
+        (release) =>
+          ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)
+            ?.imageId ?? null
+      )
+      .filter(isNotNull)
+    const trackImageIds = ctx.db.tracks
+      .getByArtist(artist.id)
+      .map((track) => track.imageId)
+      .filter(isNotNull)
+
+    return {
+      ...artist,
+      releases,
+      imageIds: [...releaseImageIds, ...trackImageIds],
+    }
+  }),
+  tracks: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
+    ctx.db.tracks.getByArtist(input.id).map((track) => ({
       ...track,
       release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
       artists: ctx.db.artists.getByTrackId(track.id),
     }))
-    return {
-      ...artist,
-      releases,
-      tracks,
-    }
-  }),
+  ),
   getAll: publicProcedure.query(({ ctx }) => {
     const artists = ctx.db.artists.getAll()
     return artists.map((artist) => {

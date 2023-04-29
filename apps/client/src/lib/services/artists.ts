@@ -30,3 +30,9 @@ export const createEditArtistMutation = (
       ])
     },
   })
+
+export const createArtistTracksQuery = (trpc: TRPCClient, id: number) =>
+  trpc.artists.tracks.query({ id })
+
+export const prefetchArtistTracksQuery = (trpc: TRPCClient, id: number) =>
+  trpc.artists.tracks.prefetchQuery({ id })

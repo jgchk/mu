@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { isNotNull } from 'utils'
-
   import Button from '$lib/atoms/Button.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
@@ -9,7 +7,7 @@
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
-  import { createFullArtistQuery } from '$lib/services/artists'
+  import { createArtistTracksQuery, createFullArtistQuery } from '$lib/services/artists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -20,15 +18,13 @@
 
   const trpc = getContextClient()
   const artistQuery = createFullArtistQuery(trpc, data.id)
+  const tracksQuery = createArtistTracksQuery(trpc, data.id)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getFullArtistQuery: { id: data.id },
+    getArtistTracksQuery: { id: data.id },
   })
 
-  const makeQueueData = (
-    tracks: RouterOutput['artists']['getFull']['tracks'],
-    trackIndex: number
-  ) => ({
+  const makeQueueData = (tracks: RouterOutput['artists']['tracks'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
@@ -38,11 +34,6 @@
 
 {#if $artistQuery.data}
   {@const artist = $artistQuery.data}
-  {@const tracks = artist.tracks}
-  {@const imageIds = artist.releases
-    .map((r) => r.imageId)
-    .concat(artist.tracks.map((t) => t.imageId))
-    .filter(isNotNull)}
 
   <div class="p-4">
     <div class="relative flex items-end gap-6">
@@ -50,7 +41,7 @@
         <CoverArt
           src={artist.imageId !== null
             ? makeImageUrl(artist.imageId, { size: 512 })
-            : makeCollageUrl(imageIds, { size: 512 })}
+            : makeCollageUrl(artist.imageIds, { size: 512 })}
           alt={artist.name}
           hoverable={false}
         />
@@ -105,12 +96,19 @@
     </FlowGrid>
 
     <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
-    <TrackList
-      {tracks}
-      on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-      on:favorite={(e) =>
-        $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-    />
+    {#if $tracksQuery.data}
+      {@const tracks = $tracksQuery.data}
+      <TrackList
+        {tracks}
+        on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+        on:favorite={(e) =>
+          $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
+      />
+    {:else if $tracksQuery.error}
+      <p>Something went wrong</p>
+    {:else}
+      <FullscreenLoader />
+    {/if}
   </div>
 {:else if $artistQuery.error}
   <p>Something went wrong</p>

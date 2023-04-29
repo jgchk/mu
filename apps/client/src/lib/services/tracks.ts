@@ -34,7 +34,7 @@ export const createFavoriteTrackMutation = (
     >
     getReleaseWithTracksAndArtistsQuery?: RouterInput['releases']['getWithTracksAndArtists']
     getPlaylistTracksQuery?: RouterInput['playlists']['tracks']
-    getFullArtistQuery?: RouterInput['artists']['getFull']
+    getArtistTracksQuery?: RouterInput['artists']['tracks']
     getTracksByTagQuery?: RouterInput['tracks']['getByTag']
   }
 ) =>
@@ -48,7 +48,7 @@ export const createFavoriteTrackMutation = (
         >
         getReleaseWithTracksAndArtistsQuery?: RouterOutput['releases']['getWithTracksAndArtists']
         getPlaylistTracksQuery?: RouterOutput['playlists']['tracks']
-        getFullArtistQuery?: RouterOutput['artists']['getFull']
+        getArtistTracksQuery?: RouterOutput['artists']['tracks']
         getTracksByTagQuery?: RouterOutput['tracks']['getByTag']
       } = {}
 
@@ -143,21 +143,18 @@ export const createFavoriteTrackMutation = (
         )
       }
 
-      if (optimistic?.getFullArtistQuery) {
-        await trpc.artists.getFull.utils.cancel(optimistic.getFullArtistQuery)
+      if (optimistic?.getArtistTracksQuery) {
+        await trpc.artists.tracks.utils.cancel(optimistic.getArtistTracksQuery)
 
-        output.getFullArtistQuery = trpc.artists.getFull.utils.getData(
-          optimistic.getFullArtistQuery
+        output.getArtistTracksQuery = trpc.artists.tracks.utils.getData(
+          optimistic.getArtistTracksQuery
         )
 
-        trpc.artists.getFull.utils.setData(optimistic.getFullArtistQuery, (old) =>
+        trpc.artists.tracks.utils.setData(optimistic.getArtistTracksQuery, (old) =>
           old
-            ? {
-                ...old,
-                tracks: old.tracks.map((track) =>
-                  track.id === input.id ? { ...track, favorite: input.favorite } : track
-                ),
-              }
+            ? old.map((track) =>
+                track.id === input.id ? { ...track, favorite: input.favorite } : track
+              )
             : old
         )
       }
@@ -213,10 +210,10 @@ export const createFavoriteTrackMutation = (
         )
       }
 
-      if (optimistic?.getFullArtistQuery) {
-        trpc.artists.getFull.utils.setData(
-          optimistic.getFullArtistQuery,
-          context?.getFullArtistQuery
+      if (optimistic?.getArtistTracksQuery) {
+        trpc.artists.tracks.utils.setData(
+          optimistic.getArtistTracksQuery,
+          context?.getArtistTracksQuery
         )
       }
 
@@ -238,7 +235,7 @@ export const createFavoriteTrackMutation = (
           optimistic?.getReleaseWithTracksAndArtistsQuery
         ),
         trpc.playlists.tracks.utils.invalidate(optimistic?.getPlaylistTracksQuery),
-        trpc.artists.getFull.utils.invalidate(optimistic?.getFullArtistQuery),
+        trpc.artists.tracks.utils.invalidate(optimistic?.getArtistTracksQuery),
         trpc.tracks.getByTag.utils.invalidate(optimistic?.getTracksByTagQuery),
       ])
     },
