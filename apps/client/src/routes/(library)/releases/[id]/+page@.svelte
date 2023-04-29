@@ -1,5 +1,6 @@
 <script lang="ts">
   import LinkButton from '$lib/atoms/LinkButton.svelte'
+  import CommaList from '$lib/components/CommaList.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
@@ -70,15 +71,9 @@
             {release.title}
           </h1>
           <div class="flex items-center gap-2 text-sm">
-            <ul class="comma-list text-sm font-bold">
-              {#each release.artists as artist (artist.id)}
-                <li class="flex">
-                  <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
-                    >{artist.name}</a
-                  >
-                </li>
-              {/each}
-            </ul>
+            <CommaList class="text-sm font-bold" items={release.artists} let:item>
+              <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+            </CommaList>
             •
             <Tags releaseId={data.id} />
           </div>

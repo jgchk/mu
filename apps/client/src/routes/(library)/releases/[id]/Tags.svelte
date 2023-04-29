@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CommaList from '$lib/components/CommaList.svelte'
   import { createReleaseTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
@@ -15,15 +16,11 @@
 
   <div class="flex items-center">
     {#if tags.length}
-      <ul class="comma-list text-sm text-gray-400">
-        {#each tags as tag (tag.id)}
-          <li>
-            <a href="/tags/{tag.id}" class="transition hover:text-white hover:underline"
-              >{tag.name}</a
-            >
-          </li>
-        {/each}
-      </ul>
+      <CommaList class="text-sm text-gray-400" items={tags} let:item>
+        <a class="transition hover:text-white hover:underline" href="/artists/{item.id}"
+          >{item.name}</a
+        >
+      </CommaList>
     {:else}
       <div class="text-sm text-gray-400">No tags</div>
     {/if}

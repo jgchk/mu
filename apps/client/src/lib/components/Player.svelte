@@ -25,6 +25,7 @@
 
   import Range from '../atoms/Range.svelte'
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
+  import CommaList from './CommaList.svelte'
   import CoverArt from './CoverArt.svelte'
   import Delay from './Delay.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
@@ -118,15 +119,11 @@
         <div class="truncate">
           {track.title}
         </div>
-        <ul class="comma-list text-sm text-gray-400">
-          {#each track.artists as artist (artist.id)}
-            <li class="flex">
-              <a class="hover:underline group-hover:text-white" href="/artists/{artist.id}"
-                >{artist.name}</a
-              >
-            </li>
-          {/each}
-        </ul>
+        <div class="truncate text-sm text-gray-400">
+          <CommaList items={track.artists} let:item>
+            <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+          </CommaList>
+        </div>
       </div>
 
       <div class="flex items-center gap-1">

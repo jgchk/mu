@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CommaList from '$lib/components/CommaList.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FlowGrid from '$lib/components/FlowGrid.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
@@ -28,13 +29,11 @@
         >
           {release.title}
         </a>
-        <ul class="comma-list text-sm text-gray-400">
-          {#each release.artists as artist (artist.id)}
-            <li class="flex">
-              <a class="hover:underline" href="/artists/{artist.id}">{artist.name}</a>
-            </li>
-          {/each}
-        </ul>
+        <div class="truncate text-sm text-gray-400">
+          <CommaList items={release.artists} let:item>
+            <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+          </CommaList>
+        </div>
       </div>
     {/each}
   </FlowGrid>

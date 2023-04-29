@@ -11,18 +11,6 @@
     justify-content: center;
   }
 
-  .comma-list {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .comma-list > li + li::before {
-    content: ',\00a0';
-  }
-
   .skeleton::before {
     content: '';
     position: absolute;
