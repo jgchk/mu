@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('production'),
+  SERVER_HOST: z.string(),
   SERVER_PORT: z.coerce.number(),
   DATABASE_URL: z.string(),
   DOWNLOAD_DIR: z.string(),

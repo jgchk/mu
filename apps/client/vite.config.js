@@ -7,7 +7,7 @@ const config = {
     port: process.env.DEV_PORT,
     proxy: {
       '/api': {
-        target: `http://localhost:${process.env.SERVER_PORT}`,
+        target: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
         changeOrigin: true,
       }
     }

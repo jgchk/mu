@@ -44,7 +44,7 @@ const main = async () => {
 
   const apiServer = await makeApiServer(ctx)
 
-  apiServer.listen({ port: env.SERVER_PORT }, (err, address) => {
+  apiServer.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }, (err, address) => {
     if (err) throw err
     console.log(`> Running on ${address}`)
   })
