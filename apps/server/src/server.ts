@@ -1,16 +1,14 @@
 import { applyWSSHandler } from '@trpc/server/adapters/ws'
 import Bree from 'bree'
-import cors from 'cors'
-import express from 'express'
 import { getMissingPythonDependencies } from 'music-metadata'
 import path from 'path'
 import { appRouter } from 'trpc'
 import { fileURLToPath } from 'url'
 import { WebSocketServer } from 'ws'
 
+import { makeApiServer } from './api'
 import { makeContext } from './context'
 import { env } from './env'
-import { makeRouter } from './router'
 
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
@@ -44,10 +42,11 @@ const main = async () => {
     void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
-  const app = express().use(cors()).use(makeRouter(ctx))
+  const apiServer = await makeApiServer(ctx)
 
-  const server = app.listen({ port: env.SERVER_PORT }, () => {
-    console.log(`> Running on localhost:${env.SERVER_PORT}`)
+  apiServer.listen({ port: env.SERVER_PORT }, (err, address) => {
+    if (err) throw err
+    console.log(`> Running on ${address}`)
   })
 
   const wss = new WebSocketServer({ port: 8080 })
@@ -74,8 +73,8 @@ const main = async () => {
       console.log('Shutting down...')
       trpcWsHandler.broadcastReconnectNotification()
       wss.close()
-      server.close()
       ctx.destroy()
+      void apiServer.close()
     })
   }
 }
