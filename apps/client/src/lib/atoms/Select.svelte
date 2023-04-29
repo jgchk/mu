@@ -26,6 +26,7 @@
   let class_: string | undefined = undefined
   export { class_ as class }
   export let placeholder: string | undefined = undefined
+  export let closeOnSelect = true
 
   let propErrors: string[] | undefined = undefined
   export { propErrors as errors }
@@ -56,7 +57,11 @@
   }>()
 
   const handleSelect = (option: InternalOption) => {
-    open = false
+    if (closeOnSelect) {
+      open = false
+    } else {
+      inputRef?.focus()
+    }
 
     if (option.onSelect) {
       option.onSelect()
@@ -94,7 +99,9 @@
       // otherwise, add the focused option
       const focusedOption = filteredOptions[focusedIndex]
       if (focusedOption === undefined) {
-        open = false
+        if (closeOnSelect) {
+          open = false
+        }
         return
       }
 
@@ -198,7 +205,6 @@
               tabindex="-1"
               on:click={() => {
                 handleSelect(option)
-                inputRef?.focus()
               }}
               on:mouseenter={() => (focusedIndex = i)}
             >
