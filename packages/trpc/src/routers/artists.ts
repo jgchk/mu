@@ -45,13 +45,6 @@ export const artistsRouter = router({
     .query(({ ctx, input }) => ctx.db.artists.get(input.id)),
   getFull: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.db.artists.get(input.id)
-    const releases = ctx.db.releases.getByArtist(artist.id).map((release) => ({
-      ...release,
-      artists: ctx.db.artists.getByReleaseId(release.id),
-      imageId:
-        ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
-        null,
-    }))
 
     const releaseImageIds = ctx.db.releases
       .getByArtist(artist.id)
@@ -68,10 +61,18 @@ export const artistsRouter = router({
 
     return {
       ...artist,
-      releases,
       imageIds: [...releaseImageIds, ...trackImageIds],
     }
   }),
+  releases: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
+    ctx.db.releases.getByArtist(input.id).map((release) => ({
+      ...release,
+      artists: ctx.db.artists.getByReleaseId(release.id),
+      imageId:
+        ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)?.imageId ??
+        null,
+    }))
+  ),
   tracks: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
     ctx.db.tracks.getByArtist(input.id).map((track) => ({
       ...track,

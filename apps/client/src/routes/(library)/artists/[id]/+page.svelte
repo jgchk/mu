@@ -7,7 +7,11 @@
   import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
-  import { createArtistTracksQuery, createFullArtistQuery } from '$lib/services/artists'
+  import {
+    createArtistReleasesQuery,
+    createArtistTracksQuery,
+    createFullArtistQuery,
+  } from '$lib/services/artists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -18,6 +22,7 @@
 
   const trpc = getContextClient()
   const artistQuery = createFullArtistQuery(trpc, data.id)
+  const releasesQuery = createArtistReleasesQuery(trpc, data.id)
   const tracksQuery = createArtistTracksQuery(trpc, data.id)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
@@ -74,26 +79,33 @@
     </div>
 
     <h2 class="mb-4 mt-8 text-2xl font-bold">Releases</h2>
-    <FlowGrid>
-      {#each artist.releases as release (release.id)}
-        <div class="w-full">
-          <a href="/releases/{release.id}" class="w-full">
-            <CoverArt
-              src={release.imageId !== null
-                ? makeImageUrl(release.imageId, { size: 512 })
-                : undefined}
-            />
-          </a>
-          <a
-            href="/releases/{release.id}"
-            class="mt-1 block truncate font-medium hover:underline"
-            title={release.title}
-          >
-            {release.title}
-          </a>
-        </div>
-      {/each}
-    </FlowGrid>
+    {#if $releasesQuery.data}
+      {@const releases = $releasesQuery.data}
+      <FlowGrid>
+        {#each releases as release (release.id)}
+          <div class="w-full">
+            <a href="/releases/{release.id}" class="w-full">
+              <CoverArt
+                src={release.imageId !== null
+                  ? makeImageUrl(release.imageId, { size: 512 })
+                  : undefined}
+              />
+            </a>
+            <a
+              href="/releases/{release.id}"
+              class="mt-1 block truncate font-medium hover:underline"
+              title={release.title}
+            >
+              {release.title}
+            </a>
+          </div>
+        {/each}
+      </FlowGrid>
+    {:else if $releasesQuery.error}
+      <p>Something went wrong</p>
+    {:else}
+      <FullscreenLoader />
+    {/if}
 
     <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
     {#if $tracksQuery.data}
