@@ -1,17 +1,28 @@
-import { prefetchReleaseWithTracksAndArtistsQuery } from '$lib/services/releases'
+import { prefetchReleaseTracksQuery, prefetchReleaseWithArtistsQuery } from '$lib/services/releases'
 import { prefetchReleaseTagsQuery } from '$lib/services/tags'
+import { getTracksSort } from '$lib/tracks-sort'
 import { paramNumber } from '$lib/utils/params'
 
 import type { PageLoad } from './$types'
 
-export const load: PageLoad = async ({ parent, params }) => {
+export const load: PageLoad = async ({ parent, params, url }) => {
   const id = paramNumber(params.id, 'Release ID must be a number')
+
+  const favoritesOnly = url.searchParams.get('favorites') !== null
+  const sort = getTracksSort(url)
+
+  const tracksQuery = {
+    id,
+    ...(favoritesOnly ? { favorite: true } : {}),
+    ...(sort !== undefined ? { sort } : {}),
+  }
 
   const { trpc } = await parent()
   await Promise.all([
-    prefetchReleaseWithTracksAndArtistsQuery(trpc, id),
+    prefetchReleaseWithArtistsQuery(trpc, id),
+    prefetchReleaseTracksQuery(trpc, tracksQuery),
     prefetchReleaseTagsQuery(trpc, id),
   ])
 
-  return { id }
+  return { id, tracksQuery }
 }

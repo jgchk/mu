@@ -8,6 +8,7 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
   getAll: publicProcedure.query(({ ctx }) =>
@@ -27,22 +28,26 @@ export const releasesRouter = router({
         null,
     }))
   ),
-  getWithTracksAndArtists: publicProcedure
+  getWithArtists: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
       const release = ctx.db.releases.get(id)
       return {
         ...release,
         artists: ctx.db.artists.getByReleaseId(release.id),
-        tracks: ctx.db.tracks.getByReleaseId(release.id).map((track) => ({
-          ...track,
-          artists: ctx.db.artists.getByTrackId(track.id),
-        })),
         imageId:
           ctx.db.tracks.getByReleaseId(release.id).find((track) => track.imageId !== null)
             ?.imageId ?? null,
       }
     }),
+  tracks: publicProcedure
+    .input(z.object({ id: z.number() }).and(TracksFilter))
+    .query(({ input: { id, ...filter }, ctx }) =>
+      ctx.db.tracks.getByReleaseId(id, filter).map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
+      }))
+    ),
   getByTag: publicProcedure
     .input(z.object({ tagId: z.number() }))
     .query(({ input: { tagId }, ctx }) => {

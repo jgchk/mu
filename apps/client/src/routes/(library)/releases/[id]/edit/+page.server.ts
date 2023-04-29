@@ -6,7 +6,8 @@ import { z } from 'zod'
 
 import { makeImageUrl } from '$lib/cover-art'
 import {
-  fetchReleaseWithTracksAndArtistsQuery,
+  fetchReleaseTracksQuery,
+  fetchReleaseWithArtistsQuery,
   mutateReleaseWithTracksAndArtists,
 } from '$lib/services/releases'
 import { createClient } from '$lib/trpc'
@@ -40,11 +41,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   const id = paramNumber(params.id, 'Release ID must be a number')
 
   const trpc = createClient(fetch)
-  const data = await fetchReleaseWithTracksAndArtistsQuery(trpc, id)
+  const release = await fetchReleaseWithArtistsQuery(trpc, id)
+  const tracks = await fetchReleaseTracksQuery(trpc, { id })
 
   let art: string | undefined = undefined
-  if (data.imageId !== null && data.imageId !== undefined) {
-    const artBuffer = await fetch(makeImageUrl(data.imageId))
+  if (release.imageId !== null && release.imageId !== undefined) {
+    const artBuffer = await fetch(makeImageUrl(release.imageId))
       .then((res) => res.blob())
       .then((blob) => blob.arrayBuffer())
     art = Buffer.from(artBuffer).toString('base64')
@@ -55,13 +57,13 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       id,
       createArtists: new Map(),
       album: {
-        title: data.title ?? undefined,
-        artists: data.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
+        title: release.title ?? undefined,
+        artists: release.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
       },
-      tracks: data.tracks.map((track) => ({
+      tracks: tracks.map((track) => ({
         id: track.id,
         title: track.title ?? undefined,
-        artists: data.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
+        artists: release.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
       })),
     },
     schema

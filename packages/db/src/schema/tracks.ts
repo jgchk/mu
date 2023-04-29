@@ -82,7 +82,7 @@ export type TracksMixin = {
     ) => TrackPretty[]
     getByPath: (path: Track['path']) => TrackPretty | undefined
     getAll: (filter?: TracksFilter) => TrackPretty[]
-    getByReleaseId: (releaseId: Release['id']) => TrackPretty[]
+    getByReleaseId: (releaseId: Release['id'], filter?: TracksFilter) => TrackPretty[]
     getByPlaylistId: (
       playlistId: number,
       filter?: TracksFilter
@@ -190,14 +190,16 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
-      getByReleaseId: (releaseId) => {
-        return this.db
-          .select()
+      getByReleaseId: (releaseId, filter) => {
+        let query = this.db
+          .select({ tracks: tracks })
           .from(tracks)
           .where(eq(tracks.releaseId, releaseId))
           .orderBy(tracks.order)
-          .all()
-          .map(convertTrack)
+
+        query = this.tracks.withFilter(query, filter)
+
+        return query.all().map((row) => convertTrack(row.tracks))
       },
 
       getByPlaylistId: (playlistId, filter) => {
