@@ -18,7 +18,7 @@
   let tooltip_: string | undefined = undefined
   export { tooltip_ as tooltip }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-undef
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type C = $$Generic<typeof SvelteComponentTyped<any, any, any>>
   export let icon: C | undefined = undefined
 

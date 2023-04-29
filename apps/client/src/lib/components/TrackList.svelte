@@ -8,7 +8,6 @@
   import TrackListSort from './TrackListSort.svelte'
   import TrackListTrack from './TrackListTrack.svelte'
 
-  // eslint-disable-next-line no-undef
   type T = $$Generic<TrackListTrackType>
 
   export let tracks: T[]

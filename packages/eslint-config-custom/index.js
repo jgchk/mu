@@ -22,6 +22,9 @@ module.exports = {
       parserOptions: {
         parser: '@typescript-eslint/parser',
       },
+      globals: {
+        $$Generic: 'readonly',
+      },
     },
   ],
   settings: {
@@ -39,6 +42,7 @@ module.exports = {
   parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2020,
+    extraFileExtensions: ['.svelte'],
   },
   env: {
     browser: true,

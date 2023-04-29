@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte'
 
-  // eslint-disable-next-line no-undef
   type T = $$Generic<unknown>
 
   // props

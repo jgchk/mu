@@ -12,7 +12,6 @@
 
   import type { Option } from './Multiselect'
 
-  // eslint-disable-next-line no-undef
   type InternalOption = $$Generic<Option>
   type Value = InternalOption['value']
 

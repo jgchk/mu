@@ -1,5 +1,4 @@
 <script lang="ts">
-  // eslint-disable-next-line no-undef
   type T = $$Generic
 
   export let items: T[]
