@@ -279,11 +279,14 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
               break
             }
             case 'release': {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              query = query
-                .innerJoin(releases, eq(tracks.releaseId, releases.id))
-                .orderBy(dir(releases.title))
+              query = query.orderBy(
+                dir(
+                  this.db
+                    .select({ title: releases.title })
+                    .from(releases)
+                    .where(eq(tracks.releaseId, releases.id))
+                )
+              )
               break
             }
             case 'duration': {
