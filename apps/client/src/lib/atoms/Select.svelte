@@ -138,7 +138,7 @@
   <div class="focus-within:outline-auto flex rounded bg-gray-700">
     <input
       {id}
-      class="flex-1 bg-transparent px-2 py-1 text-white outline-none"
+      class="w-0 flex-1 bg-transparent py-1 pl-2 text-white outline-none"
       {disabled}
       {placeholder}
       type="text"
