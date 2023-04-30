@@ -36,7 +36,7 @@ if (lfm.status === 'stopped') {
 }
 
 const lovedTracks = await lfm.getAllLovedTracks()
-log.info('Loved tracks:', lovedTracks.length)
+log.info(`Loved tracks: ${lovedTracks.length}`)
 
 const groupedTracks = groupBy(lovedTracks, (track) => track.artist.mbid)
 
@@ -93,7 +93,7 @@ for (const tracks of groupedTracks.values()) {
   }
 }
 
-log.info('Matches:', numMatches)
+log.info(`Matches: ${numMatches}`)
 
 // signal to parent that the job is done
 if (parentPort) parentPort.postMessage('done')
