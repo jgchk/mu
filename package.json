@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "turbo run build",
+    "build": "dotenv -e .env -e .env.local -- turbo run build",
     "start": "dotenv -e .env -e .env.local -- pnpm --filter server start",
     "docker": "pnpm docker:build && pnpm docker:run",
     "docker:build": "docker build . -t jgchk/mu",

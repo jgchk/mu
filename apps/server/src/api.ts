@@ -1,4 +1,5 @@
 import cors from '@fastify/cors'
+import ws from '@fastify/websocket'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
@@ -30,10 +31,12 @@ export const makeApiServer = async (ctx: Context) => {
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
+  await fastify.register(ws)
   await fastify.register(cors)
 
   const fastifyTRPCOptions: FastifyTRPCPluginOptions<AppRouter> = {
     prefix: '/api/trpc',
+    useWSS: true,
     trpcOptions: {
       router: appRouter,
       createContext: () => ctx,

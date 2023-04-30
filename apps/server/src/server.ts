@@ -1,11 +1,8 @@
-import { applyWSSHandler } from '@trpc/server/adapters/ws'
 import Bree from 'bree'
 import { log } from 'log'
 import { getMissingPythonDependencies } from 'music-metadata'
 import path from 'path'
-import { appRouter } from 'trpc'
 import { fileURLToPath } from 'url'
-import { WebSocketServer } from 'ws'
 
 import { makeApiServer } from './api'
 import { makeContext } from './context'
@@ -55,21 +52,6 @@ const main = async () => {
     }
   })
 
-  const wss = new WebSocketServer({ host: env.SERVER_HOST, port: env.WS_PORT })
-  const trpcWsHandler = applyWSSHandler({
-    wss,
-    router: appRouter,
-    createContext: () => ctx,
-  })
-
-  wss.on('connection', (ws) => {
-    log.info(`➕➕ Connection (${wss.clients.size})`)
-    ws.once('close', () => {
-      log.info(`➖➖ Connection (${wss.clients.size})`)
-    })
-  })
-  log.info(`✅ WebSocket Server listening on ws://${env.SERVER_HOST}:${env.WS_PORT}`)
-
   let shuttingDown = false
   for (const sig of ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGUSR2']) {
     process.once(sig, () => {
@@ -77,8 +59,6 @@ const main = async () => {
       shuttingDown = true
 
       log.info('Shutting down...')
-      trpcWsHandler.broadcastReconnectNotification()
-      wss.close()
       ctx.destroy()
       void apiServer.close()
     })

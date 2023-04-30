@@ -11,10 +11,7 @@ import {
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/svelte-query'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
-
-const SERVER_HOST = import.meta.env.VITE_SERVER_HOST as string
-const SERVER_PORT = import.meta.env.VITE_SERVER_PORT as string
-const WS_PORT = import.meta.env.VITE_WS_PORT as string
+import { withUrlUpdate } from 'utils/browser'
 
 export const {
   createClient: __createClient,
@@ -76,7 +73,15 @@ export const createClient = (fetchFn: typeof fetch) => {
   if (browser) {
     url = '/api/trpc'
   } else {
-    url = `http://${SERVER_HOST}:${SERVER_PORT}/api/trpc`
+    const serverHost = process.env.SERVER_HOST
+    const serverPort = process.env.SERVER_PORT
+    if (!serverHost) {
+      throw new Error('SERVER_HOST not set')
+    }
+    if (!serverPort) {
+      throw new Error('SERVER_PORT not set')
+    }
+    url = `http://${serverHost}:${serverPort}/api/trpc`
   }
 
   const client = __createClient({
@@ -89,7 +94,13 @@ export const createClient = (fetchFn: typeof fetch) => {
         ? splitLink({
             condition: (op) => op.type === 'subscription',
             true: wsLink({
-              client: createWSClient({ url: `ws://${SERVER_HOST}:${WS_PORT}` }),
+              client: createWSClient({
+                url: withUrlUpdate(new URL(location.href), (url) => {
+                  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+                  url.pathname = '/api/trpc'
+                  url.search = ''
+                }).toString(),
+              }),
             }),
             false: httpBatchLink({ url, fetch: fetchFn }),
           })

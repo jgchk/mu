@@ -129,6 +129,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.2.1
         version: 8.2.1
+      '@fastify/websocket':
+        specifier: ^8.0.0
+        version: 8.0.0
       '@trpc/server':
         specifier: ^10.21.1
         version: 10.21.1
@@ -141,9 +144,6 @@ importers:
       '@types/string-similarity':
         specifier: ^4.0.0
         version: 4.0.0
-      '@types/ws':
-        specifier: ^8.5.4
-        version: 8.5.4
       better-sqlite3:
         specifier: ^8.3.0
         version: 8.3.0
@@ -207,9 +207,6 @@ importers:
       utils:
         specifier: workspace:*
         version: link:../../packages/utils
-      ws:
-        specifier: ^8.13.0
-        version: 8.13.0
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -1079,6 +1076,16 @@ packages:
       fast-json-stringify: 5.7.0
     dev: false
 
+  /@fastify/websocket@8.0.0:
+    resolution: {integrity: sha512-7NnTJVbpWkAHwuAw9tGKJP5RBOUqLhU50xP5FMlfShWvWPZeCGioy22v8noqw1KFi+Mdo5guCMmfQRGrFfIR1w==}
+    dependencies:
+      fastify-plugin: 4.5.0
+      ws: 8.13.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@fontsource/inter@4.5.15:
     resolution: {integrity: sha512-FzleM9AxZQK2nqsTDtBiY0PMEVWvnKnuu2i09+p6DHvrHsuucoV2j0tmw+kAT3L4hvsLdAIDv6MdGehsPIdT+Q==}
     dev: false
@@ -1436,12 +1443,6 @@ packages:
 
   /@types/string-similarity@4.0.0:
     resolution: {integrity: sha512-dMS4S07fbtY1AILG/RhuwmptmzK1Ql8scmAebOTJ/8iBtK/KI17NwGwKzu1uipjj8Kk+3mfPxum56kKZE93mzQ==}
-    dev: false
-
-  /@types/ws@8.5.4:
-    resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
-    dependencies:
-      '@types/node': 18.16.1
     dev: false
 
   /@typescript-eslint/eslint-plugin@5.59.1(@typescript-eslint/parser@5.59.1)(eslint@8.39.0)(typescript@5.0.4):
@@ -4727,6 +4728,22 @@ packages:
       postcss: 8.4.23
     dev: true
 
+  /postcss-load-config@3.1.4:
+    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
+    dependencies:
+      lilconfig: 2.1.0
+      yaml: 1.10.2
+    dev: true
+
   /postcss-load-config@3.1.4(postcss@8.4.23):
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
     engines: {node: '>= 10'}
@@ -5829,7 +5846,7 @@ packages:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 3.1.4(postcss@8.4.23)
+      postcss-load-config: 3.1.4
       resolve-from: 5.0.0
       rollup: 3.7.3
       source-map: 0.8.0-beta.0
