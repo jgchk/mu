@@ -17,15 +17,11 @@ RUN turbo prune --scope=server --docker
 # Add lockfile and package.json's of isolated subworkspace
 FROM node:alpine AS installer
 RUN apk add --no-cache libc6-compat
-RUN apk update
-
-WORKDIR /app
-
-# Set up pnpm
-RUN npm i -g pnpm
-ENV PNPM_HOME=/app/.pnpm
-ENV PATH=$PNPM_HOME:$PATH
-
+# Install python/pip
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
 # Install Rust & Cargo
 RUN apk add --no-cache \
 	build-base \
@@ -37,9 +33,18 @@ RUN apk add --no-cache \
 	musl-dev
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-
 # Install other build dependencies
 RUN apk add alsa-utils alsa-utils-doc alsa-lib alsa-lib-dev alsaconf alsa-ucm-conf
+# Update
+RUN apk update
+
+WORKDIR /app
+
+# Set up pnpm
+RUN npm i -g pnpm
+ENV PNPM_HOME=/app/.pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
