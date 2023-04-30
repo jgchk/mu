@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^8.2.1",
+    "@fastify/multipart": "^7.6.0",
     "@fastify/websocket": "^8.0.0",
     "@trpc/server": "^10.21.1",
     "@types/mime-types": "^2.1.1",

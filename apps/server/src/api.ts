@@ -1,4 +1,5 @@
 import cors from '@fastify/cors'
+import multipart from '@fastify/multipart'
 import ws from '@fastify/websocket'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
@@ -33,6 +34,7 @@ export const makeApiServer = async (ctx: Context) => {
 
   await fastify.register(ws)
   await fastify.register(cors)
+  await fastify.register(multipart)
 
   const fastifyTRPCOptions: FastifyTRPCPluginOptions<AppRouter> = {
     prefix: '/api/trpc',
