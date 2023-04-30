@@ -254,9 +254,9 @@ export const makeContext = async (): Promise<Context> => {
 
       context.slsk = withProps(slsk, { status: 'logged-in' } as const)
       context.slsk
-        .on('listen-error', (error) => log.error('SLSK listen error', error))
-        .on('server-error', (error) => log.error('SLSK server error', error))
-        .on('client-error', (error) => log.error('SLSK client error', error))
+        .on('listen-error', (error) => log.error(error, 'SLSK listen error'))
+        .on('server-error', (error) => log.error(error, 'SLSK server error'))
+        .on('client-error', (error) => log.error(error, 'SLSK client error'))
       return context.slsk
     },
     stopSoulseek: () => {

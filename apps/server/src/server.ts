@@ -11,7 +11,7 @@ import { env } from './env'
 const main = async () => {
   const missingPythonDeps = await getMissingPythonDependencies()
   if (missingPythonDeps.length > 0) {
-    log.error('❌ Missing Python dependencies:', missingPythonDeps)
+    log.error({ missingPythonDeps }, '❌ Missing Python dependencies')
     process.exit(1)
   }
 
