@@ -68,6 +68,7 @@ ENV SERVER_PORT=3001
 ENV MUSIC_DIR=/data/music
 ENV DOWNLOAD_DIR=/data/downloads
 ENV IMAGES_DIR=/data/images
+ENV ORIGIN=http://localhost:3001
 
 COPY --from=installer /app .
 
