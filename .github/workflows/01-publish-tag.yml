@@ -9,6 +9,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  metadata: read
+
 jobs:
   publish_tag:
     if: github.event.workflow_run.conclusion == 'success'
@@ -28,7 +32,6 @@ jobs:
       - name: Create new tag
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const version = "v" + `${{ steps.package_version.outputs.version }}`;
             let tagName = version;
