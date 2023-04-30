@@ -52,4 +52,8 @@ COPY . .
 # Build app
 RUN pnpm build
 
+# Expose ports
+EXPOSE 3001
+EXPOSE 8080
+
 CMD [ "pnpm", "start" ]
