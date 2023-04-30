@@ -1,59 +1,74 @@
-FROM ubuntu:22.04
+FROM node:alpine AS builder
+RUN apk add --no-cache libc6-compat
+RUN apk update
 
-# Install system dependencies
-RUN apt-get update
-RUN apt-get install curl gcc pkg-config libasound2-dev python3-pip -y
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install nodejs -y
-RUN npm i -g pnpm
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-RUN pip3 install mutagen six
-
-# Create app directory
 WORKDIR /app
 
-# Install app dependencies
-COPY package.json .
-COPY pnpm-*.yaml .
-COPY apps/client/package.json ./apps/client/
-COPY apps/client/pnpm-*.yaml ./apps/client/
-COPY apps/server/package.json ./apps/server/
-COPY apps/server/pnpm-*.yaml ./apps/server/
-COPY packages/bool-lang/package.json ./packages/bool-lang/
-COPY packages/bool-lang/pnpm-*.yaml ./packages/bool-lang/
-COPY packages/db/package.json ./packages/db/
-COPY packages/db/pnpm-*.yaml ./packages/db/
-COPY packages/downloader/package.json ./packages/downloader/
-COPY packages/downloader/pnpm-*.yaml ./packages/downloader/
-COPY packages/eslint-config-custom/package.json ./packages/eslint-config-custom/
-COPY packages/eslint-config-custom/pnpm-*.yaml ./packages/eslint-config-custom/
-COPY packages/image-manager/package.json ./packages/image-manager/
-COPY packages/image-manager/pnpm-*.yaml ./packages/image-manager/
-COPY packages/last-fm/package.json ./packages/last-fm/
-COPY packages/last-fm/pnpm-*.yaml ./packages/last-fm/
-COPY packages/log/package.json ./packages/log/
-COPY packages/log/pnpm-*.yaml ./packages/log/
-COPY packages/music-metadata/package.json ./packages/music-metadata/
-COPY packages/music-metadata/pnpm-*.yaml ./packages/music-metadata/
-COPY packages/soundcloud/package.json ./packages/soundcloud/
-COPY packages/soundcloud/pnpm-*.yaml ./packages/soundcloud/
-COPY packages/spotify/package.json ./packages/spotify/
-COPY packages/spotify/pnpm-*.yaml ./packages/spotify/
-COPY packages/trpc/package.json ./packages/trpc/
-COPY packages/trpc/pnpm-*.yaml ./packages/trpc/
-COPY packages/utils/package.json ./packages/utils/
-COPY packages/utils/pnpm-*.yaml ./packages/utils/
+# Set up pnpm
+RUN npm i -g pnpm
+ENV PNPM_HOME=/app/.pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
+# Set working directory
+RUN pnpm i -g turbo
+COPY . .
+RUN turbo prune --scope=server --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM node:alpine AS installer
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+WORKDIR /app
+
+# Set up pnpm
+RUN npm i -g pnpm
+ENV PNPM_HOME=/app/.pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
+# Install Rust & Cargo
+RUN apk add --no-cache \
+	build-base \
+	curl \
+	gcc \
+	git \
+	libffi-dev \
+	openssl-dev \
+	musl-dev
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install other build dependencies
+RUN apk add alsa-utils alsa-utils-doc alsa-lib alsa-lib-dev alsaconf alsa-ucm-conf
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm install
 
-# Bundle app source
-COPY . .
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
 
-# Build app
-RUN pnpm build
+RUN pnpm turbo run build --filter=server...
 
-# Expose ports
-EXPOSE 3001
-EXPOSE 8080
+FROM node:alpine AS runner
+WORKDIR /app
 
-CMD [ "pnpm", "start" ]
+
+# Create a volume for the database
+RUN mkdir -p /data
+VOLUME /data
+
+ENV DATABASE_URL=/data/db.sqlite
+ENV SERVER_HOST=0.0.0.0
+ENV SERVER_PORT=3001
+ENV MUSIC_DIR=/data/music
+ENV DOWNLOAD_DIR=/data/downloads
+ENV IMAGES_DIR=/data/images
+
+COPY --from=installer /app .
+
+CMD cd apps/server && node ./dist/server.js
