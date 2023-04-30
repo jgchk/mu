@@ -26,7 +26,7 @@ jobs:
       - name: Read package.json version
         id: package_version
         run: |
-          echo "version=$(jq -r ".version" package.json)" > $GITHUB_OUTPUT
+          echo "version=$(jq -r ".version" package.json)" > "$GITHUB_OUTPUT"
 
       - name: Create new tag
         uses: actions/github-script@v6
