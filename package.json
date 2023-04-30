@@ -1,5 +1,6 @@
 {
   "private": true,
+  "version": "0.0.0",
   "scripts": {
     "build": "dotenv -e .env -e .env.local -- turbo run build",
     "start": "dotenv -e .env -e .env.local -- pnpm --filter server start",
