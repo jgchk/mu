@@ -3,7 +3,7 @@ name: Publish Tag
 on:
   workflow_run:
     workflows:
-      - CI
+      - Check build
     types:
       - completed
     branches:
