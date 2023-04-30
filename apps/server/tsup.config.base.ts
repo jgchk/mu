@@ -13,13 +13,16 @@ const dirnamePlugin: Plugin = {
   name: 'dirname',
 
   setup(build) {
-    build.onLoad({ filter: /.*/ }, ({ path: filePath }) => {
-      let contents = fs.readFileSync(filePath, 'utf8')
-      let loader = path.extname(filePath).substring(1)
+    build.onLoad({ filter: /.*/ }, ({ path: absoluteFilePath }) => {
+      let contents = fs.readFileSync(absoluteFilePath, 'utf8')
+      let loader = path.extname(absoluteFilePath).substring(1)
       if (loader === 'mjs') {
         loader = 'js'
       }
+
+      const filePath = path.relative(__dirname, absoluteFilePath)
       const dirname = path.dirname(filePath)
+
       contents = contents
         .replaceAll('__dirname', `"${dirname}"`)
         .replaceAll('__filename', `"${filePath}"`)
