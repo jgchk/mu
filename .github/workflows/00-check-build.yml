@@ -23,6 +23,8 @@ jobs:
           node-version: 18.x
           cache: 'pnpm'
 
+      - uses: dtinth/setup-github-actions-caching-for-turbo@v1
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run ci
 
