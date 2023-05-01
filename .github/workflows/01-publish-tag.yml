@@ -9,67 +9,16 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
-  publish_tag:
-    if: github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install jq
-        run: sudo apt-get install jq
-
-      - name: Read package.json version
-        id: package_version
-        run: |
-          echo "version=$(jq -r ".version" package.json)" > "$GITHUB_OUTPUT"
-
-      - name: Create new tag
-        uses: actions/github-script@v6
+      - uses: actions/checkout@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const version = "v" + `${{ steps.package_version.outputs.version }}`;
-            let tagName = version;
-            let index = 1;
+          fetch-depth: '0'
 
-            let tags = [];
-            let page = 1;
-            let perPage = 100;
-            let hasMoreTags = true;
-
-            while (hasMoreTags) {
-              const response = await github.rest.repos.listTags({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                per_page: perPage,
-                page: page
-              });
-
-              tags = tags.concat(response.data);
-
-              if (response.data.length < perPage) {
-                hasMoreTags = false;
-              } else {
-                page++;
-              }
-            }
-
-            const existingTags = tags.map(tag => tag.name);
-
-            while (existingTags.includes(tagName)) {
-              tagName = `${version}-${index}`;
-              index++;
-            }
-
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/${tagName}`,
-              sha: context.sha
-            });
-            console.log(`Created new tag: ${tagName}`);
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.61.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
