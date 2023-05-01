@@ -7,7 +7,7 @@
     "docker": "pnpm docker:build && pnpm docker:run",
     "docker:build": "docker build . -t jgchk/mu",
     "docker:run": "dotenv -e .env -e .env.local -- pnpm docker:run:cmd",
-    "docker:run:cmd": "docker run --expose $SERVER_PORT -p $SERVER_PORT:$SERVER_PORT --rm jgchk/mu",
+    "docker:run:cmd": "docker run --rm -it -p 3001:3001 -v ./docker-data:/data jgchk/mu",
     "dev": "test -f ./apps/client/build/index.js && true || turbo run build --filter client && NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev --concurrency 15",
     "lint": "turbo run lint",
     "format": "prettier --write . **/*.svelte && turbo run format",
