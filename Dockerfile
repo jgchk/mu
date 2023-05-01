@@ -22,6 +22,7 @@ ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
+RUN pip3 install mutagen six
 # Install Rust & Cargo
 RUN apk add --no-cache \
 	build-base \
@@ -44,7 +45,6 @@ WORKDIR /app
 RUN npm i -g pnpm
 ENV PNPM_HOME=/app/.pnpm
 ENV PATH=$PNPM_HOME:$PATH
-
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
