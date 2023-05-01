@@ -21,9 +21,7 @@ export async function dirExists(dirPath: string): Promise<boolean> {
 }
 
 export async function ensureDir(dirPath: string): Promise<void> {
-  if (!(await dirExists(dirPath))) {
-    await fs.mkdir(dirPath, { recursive: true })
-  }
+  await fs.mkdir(dirPath, { recursive: true })
 }
 
 export async function getFileSize(filePath: string): Promise<number> {
