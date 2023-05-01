@@ -16,6 +16,8 @@ jobs:
   release:
     name: Publish tag & release
     runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.bump-version.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -54,7 +56,7 @@ jobs:
           images: jgchk/mu
           tags: |
             type=raw,value=latest
-            type=semver,pattern={{version}},value=${{ steps.bump-version.outputs.tag }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
