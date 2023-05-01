@@ -2,6 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { and, eq, isNull } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
+import { ifDefined } from 'utils'
 
 import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
@@ -74,7 +75,14 @@ export const SoulseekTrackDownloadsMixin = <TBase extends Constructor<DatabaseBa
       },
 
       update: (id, data) => {
-        const update = makeUpdate(data)
+        const update = makeUpdate({
+          ...data,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          error: ifDefined(data.error, (error) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+          ),
+        })
         if (!hasUpdate(update)) return this.soulseekTrackDownloads.get(id)
         return this.db
           .update(soulseekTrackDownloads)

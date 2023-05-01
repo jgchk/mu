@@ -3,6 +3,7 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { FullTrack as SoundcloudFullTrack } from 'soundcloud'
 import type { Constructor } from 'utils'
+import { ifDefined } from 'utils'
 
 import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
@@ -71,7 +72,14 @@ export const SoundcloudTrackDownloadsMixin = <TBase extends Constructor<Database
       },
 
       update: (id, data) => {
-        const update = makeUpdate(data)
+        const update = makeUpdate({
+          ...data,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          error: ifDefined(data.error, (error) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+          ),
+        })
         if (!hasUpdate(update)) return this.soundcloudTrackDownloads.get(id)
         return this.db
           .update(soundcloudTrackDownloads)

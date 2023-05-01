@@ -12,6 +12,10 @@ export const toErrorString = (error: unknown) => {
     return error.message
   }
 
+  if (typeof error === 'object' && error !== null) {
+    return JSON.stringify(error)
+  }
+
   return String(error)
 }
 
