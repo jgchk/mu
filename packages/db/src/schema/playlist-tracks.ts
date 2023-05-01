@@ -4,7 +4,7 @@ import { integer, sqliteTable } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../utils'
-import { makeUpdate, withCreatedAt } from '../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../utils'
 import type { DatabaseBase } from './base'
 import { playlists } from './playlists'
 import { tracks } from './tracks'
@@ -25,6 +25,7 @@ export const playlistTracks = sqliteTable('playlist_tracks', {
 
 export type PlaylistTracksMixin = {
   playlistTracks: {
+    get: (id: PlaylistTrack['id']) => PlaylistTrack
     insert: (playlistTrack: AutoCreatedAt<InsertPlaylistTrack>) => PlaylistTrack
     insertMany: (playlistTracks: AutoCreatedAt<InsertPlaylistTrack>[]) => PlaylistTrack[]
     insertManyByPlaylistId: (
@@ -54,6 +55,10 @@ export const PlaylistTracksMixin = <TBase extends Constructor<DatabaseBase>>(
 ): Constructor<PlaylistTracksMixin> & TBase =>
   class extends Base implements PlaylistTracksMixin {
     playlistTracks: PlaylistTracksMixin['playlistTracks'] = {
+      get: (id) => {
+        return this.db.select().from(playlistTracks).where(eq(playlistTracks.id, id)).get()
+      },
+
       insert: (playlistTrack) => {
         return this.db.insert(playlistTracks).values(withCreatedAt(playlistTrack)).returning().get()
       },
@@ -78,9 +83,11 @@ export const PlaylistTracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.playlistTracks.get(id)
         return this.db
           .update(playlistTracks)
-          .set(makeUpdate(data))
+          .set(update)
           .where(eq(playlistTracks.id, id))
           .returning()
           .get()

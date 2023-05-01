@@ -6,7 +6,7 @@ import type { Constructor } from 'utils'
 
 import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
-import { makeUpdate, withCreatedAt } from '../../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
 import { soundcloudPlaylistDownloads } from './soundcloud-playlist-downloads'
 
@@ -71,9 +71,11 @@ export const SoundcloudTrackDownloadsMixin = <TBase extends Constructor<Database
       },
 
       update: (id, data) => {
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.soundcloudTrackDownloads.get(id)
         return this.db
           .update(soundcloudTrackDownloads)
-          .set(makeUpdate(data))
+          .set(update)
           .where(eq(soundcloudTrackDownloads.id, id))
           .returning()
           .get()

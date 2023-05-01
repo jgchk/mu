@@ -8,7 +8,7 @@ import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
 
 import type { UpdateData } from '../utils'
-import { makeUpdate } from '../utils'
+import { hasUpdate, makeUpdate } from '../utils'
 import type { Artist } from './artists'
 import { artists } from './artists'
 import type { DatabaseBase } from './base'
@@ -130,18 +130,13 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
+        const update = makeUpdate({
+          ...data,
+          favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
+        })
+        if (!hasUpdate(update)) return this.tracks.get(id)
         return convertTrack(
-          this.db
-            .update(tracks)
-            .set(
-              makeUpdate({
-                ...data,
-                favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
-              })
-            )
-            .where(eq(tracks.id, id))
-            .returning()
-            .get()
+          this.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
         )
       },
 

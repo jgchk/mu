@@ -5,7 +5,7 @@ import type { FullAlbum as SpotifyFullAlbum } from 'spotify'
 import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
-import { makeUpdate, withCreatedAt } from '../../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
 
 export type SpotifyAlbumDownload = InferModel<typeof spotifyAlbumDownloads>
@@ -54,9 +54,11 @@ export const SpotifyAlbumDownloadsMixin = <TBase extends Constructor<DatabaseBas
       },
 
       update: (id, data) => {
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.spotifyAlbumDownloads.get(id)
         return this.db
           .update(spotifyAlbumDownloads)
-          .set(makeUpdate(data))
+          .set(update)
           .where(eq(spotifyAlbumDownloads.id, id))
           .returning()
           .get()

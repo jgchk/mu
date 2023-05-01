@@ -4,7 +4,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../utils'
-import { makeUpdate, withCreatedAt } from '../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../utils'
 import { artists } from './artists'
 import type { DatabaseBase } from './base'
 import { playlists } from './playlists'
@@ -58,12 +58,9 @@ export const ImagesMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
-        return this.db
-          .update(images)
-          .set(makeUpdate(data))
-          .where(eq(images.id, id))
-          .returning()
-          .get()
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.images.get(id)
+        return this.db.update(images).set(update).where(eq(images.id, id)).returning().get()
       },
 
       delete: (id) => {

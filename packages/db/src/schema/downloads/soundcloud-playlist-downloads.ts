@@ -5,7 +5,7 @@ import type { Playlist as SoundcloudPlaylist } from 'soundcloud'
 import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
-import { makeUpdate, withCreatedAt } from '../../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
 
 export type SoundcloudPlaylistDownload = InferModel<typeof soundcloudPlaylistDownloads>
@@ -61,9 +61,11 @@ export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<Datab
       },
 
       update: (id, data) => {
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.soundcloudPlaylistDownloads.get(id)
         return this.db
           .update(soundcloudPlaylistDownloads)
-          .set(makeUpdate(data))
+          .set(update)
           .where(eq(soundcloudPlaylistDownloads.id, id))
           .returning()
           .get()

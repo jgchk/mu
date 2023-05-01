@@ -5,7 +5,7 @@ import type { Constructor } from 'utils'
 import { ifDefined } from 'utils'
 
 import type { UpdateData } from '../utils'
-import { makeUpdate } from '../utils'
+import { hasUpdate, makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
 import type { ReleaseTag } from './release-tags'
 import { releaseTags } from './release-tags'
@@ -97,17 +97,13 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
         return convertTag(result)
       },
       update: (id, { parents, children, ...data }) => {
-        const result = this.db
-          .update(tags)
-          .set(
-            makeUpdate({
-              ...data,
-              taggable: ifDefined(data.taggable, (taggable) => (taggable ? 1 : 0)),
-            })
-          )
-          .where(eq(tags.id, id))
-          .returning()
-          .get()
+        const update = makeUpdate({
+          ...data,
+          taggable: ifDefined(data.taggable, (taggable) => (taggable ? 1 : 0)),
+        })
+        const result = hasUpdate(update)
+          ? convertTag(this.db.update(tags).set(update).where(eq(tags.id, id)).returning().get())
+          : this.tags.get(id)
 
         if (parents) {
           this.db.delete(tagRelationships).where(eq(tagRelationships.childId, id)).run()
@@ -128,7 +124,7 @@ export const TagsMixin = <TBase extends Constructor<DatabaseBase>>(
           }
         }
 
-        return convertTag(result)
+        return result
       },
       get: (id) => {
         return convertTag(this.db.select().from(tags).where(eq(tags.id, id)).get())

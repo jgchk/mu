@@ -4,7 +4,7 @@ import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core
 import type { Constructor } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
-import { makeUpdate, withCreatedAt } from '../../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
 
 export type SoulseekReleaseDownload = InferModel<typeof soulseekReleaseDownloads>
@@ -58,9 +58,11 @@ export const SoulseekReleaseDownloadsMixin = <TBase extends Constructor<Database
       },
 
       update: (id, data) => {
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.soulseekReleaseDownloads.get(id)
         return this.db
           .update(soulseekReleaseDownloads)
-          .set(makeUpdate(data))
+          .set(update)
           .where(eq(soulseekReleaseDownloads.id, id))
           .returning()
           .get()

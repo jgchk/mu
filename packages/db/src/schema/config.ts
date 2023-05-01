@@ -3,7 +3,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
 
 import type { UpdateData } from '../utils'
-import { makeUpdate } from '../utils'
+import { hasUpdate, makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
 
 export type Config = InferModel<typeof configs>
@@ -46,7 +46,7 @@ export const defaultConfig: Omit<Config, 'id'> = {
 export type ConfigMixin = {
   config: {
     get: () => Omit<Config, 'id'>
-    update: (data: UpdateData<InsertConfig>) => Config
+    update: (data: UpdateData<InsertConfig>) => Omit<Config, 'id'>
   }
 }
 
@@ -62,7 +62,9 @@ export const ConfigMixin = <TBase extends Constructor<DatabaseBase>>(
       update: (data) => {
         const config = this.config.get()
         if ('id' in config) {
-          return this.db.update(configs).set(makeUpdate(data)).returning().get()
+          const update = makeUpdate(data)
+          if (!hasUpdate(update)) return this.config.get()
+          return this.db.update(configs).set(update).returning().get()
         } else {
           const insert: InsertConfig = {
             lastFmKey: data.lastFmKey ?? defaultConfig.lastFmKey,

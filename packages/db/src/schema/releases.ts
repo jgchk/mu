@@ -5,7 +5,7 @@ import type { Constructor } from 'utils'
 import { equalsWithoutOrder } from 'utils'
 
 import type { UpdateData } from '../utils'
-import { makeUpdate } from '../utils'
+import { hasUpdate, makeUpdate } from '../utils'
 import type { Artist } from './artists'
 import type { DatabaseBase } from './base'
 import { releaseArtists } from './release-artists'
@@ -54,12 +54,9 @@ export const ReleasesMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       update: (id, data) => {
-        return this.db
-          .update(releases)
-          .set(makeUpdate(data))
-          .where(eq(releases.id, id))
-          .returning()
-          .get()
+        const update = makeUpdate(data)
+        if (!hasUpdate(update)) return this.releases.get(id)
+        return this.db.update(releases).set(update).where(eq(releases.id, id)).returning().get()
       },
 
       getAll: () => {

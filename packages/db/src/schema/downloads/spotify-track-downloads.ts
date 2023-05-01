@@ -7,7 +7,7 @@ import { ifDefined } from 'utils'
 
 import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
-import { makeUpdate, withCreatedAt } from '../../utils'
+import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
 import type { DatabaseBase } from '../base'
 import { spotifyAlbumDownloads } from './spotify-album-downloads'
 
@@ -70,18 +70,18 @@ export const SpotifyTrackDownloadsMixin = <TBase extends Constructor<DatabaseBas
       },
 
       update: (id: SpotifyTrackDownload['id'], data: UpdateData<InsertSpotifyTrackDownload>) => {
+        const update = makeUpdate({
+          ...data,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          error: ifDefined(data.error, (error) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+          ),
+        })
+        if (!hasUpdate(update)) return this.spotifyTrackDownloads.get(id)
         return this.db
           .update(spotifyTrackDownloads)
-          .set(
-            makeUpdate({
-              ...data,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              error: ifDefined(data.error, (error) =>
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-              ),
-            })
-          )
+          .set(update)
           .where(eq(spotifyTrackDownloads.id, id))
           .returning()
           .get()
