@@ -1,5 +1,8 @@
 import { browser, dev } from '$app/environment'
-import type { inferSvelteQueryProcedureOptions } from '@jgchk/trpc-svelte-query'
+import type {
+  HttpBatchLinkOptions,
+  inferSvelteQueryProcedureOptions,
+} from '@jgchk/trpc-svelte-query'
 import {
   createTRPCSvelte,
   createWSClient,
@@ -84,6 +87,8 @@ export const createClient = (fetchFn: typeof fetch) => {
     url = `http://${serverHost}:${serverPort}/api/trpc`
   }
 
+  const httpBatchLinkOpts: HttpBatchLinkOptions = { url, fetch: fetchFn, maxURLLength: 2083 }
+
   const client = __createClient({
     queryClient,
     fetch: fetchFn,
@@ -102,9 +107,9 @@ export const createClient = (fetchFn: typeof fetch) => {
                 }).toString(),
               }),
             }),
-            false: httpBatchLink({ url, fetch: fetchFn }),
+            false: httpBatchLink(httpBatchLinkOpts),
           })
-        : httpBatchLink({ url, fetch: fetchFn }),
+        : httpBatchLink(httpBatchLinkOpts),
     ],
     transformer: superjson,
   })

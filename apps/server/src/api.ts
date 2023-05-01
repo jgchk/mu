@@ -28,7 +28,10 @@ import {
 const IMAGE_CACHE_HEADER = 'public, max-age=31536000, immutable'
 
 export const makeApiServer = async (ctx: Context) => {
-  const fastify = Fastify({ logger: false }).withTypeProvider<ZodTypeProvider>()
+  const fastify = Fastify({
+    logger: false,
+    maxParamLength: 2084,
+  }).withTypeProvider<ZodTypeProvider>()
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
