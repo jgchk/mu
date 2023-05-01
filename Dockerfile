@@ -17,6 +17,11 @@ RUN turbo prune --scope=server --docker
 # Add lockfile and package.json's of isolated subworkspace
 FROM node:alpine AS installer
 RUN apk add --no-cache libc6-compat
+# Install python/pip
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
 # Install Rust & Cargo
 RUN apk add --no-cache \
 	build-base \
