@@ -31,6 +31,7 @@ export const makeApiServer = async (ctx: Context) => {
   const fastify = Fastify({
     logger: false,
     maxParamLength: 2084,
+    bodyLimit: 1024 * 1024 * 1024,
   }).withTypeProvider<ZodTypeProvider>()
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
