@@ -6,6 +6,7 @@
   import { createSystemStatusQuery } from '$lib/services/system'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
+  import { createEditLink } from '$lib/utils/system-config'
 
   import FriendsSidebarLastFm from './FriendsSidebarLastFm.svelte'
   import FriendsSidebarSpotify from './FriendsSidebarSpotify.svelte'
@@ -15,15 +16,17 @@
 
   type Source = 'lastfm' | 'spotify'
 
-  $: tab = createLocalStorage<Source>(
-    'friends-tab',
+  let defaultValue: Source | undefined
+  $: defaultValue =
     $statusQuery.data?.lastFm.status === 'logged-in'
-      ? 'lastfm'
+      ? ('lastfm' as const)
       : $statusQuery.data?.spotify.status === 'running' &&
         $statusQuery.data?.spotify.features.friendActivity
-      ? 'spotify'
+      ? ('spotify' as const)
       : undefined
-  )
+
+  $: tab = createLocalStorage<Source>('friends-tab', defaultValue)
+  const editLink = createEditLink(['spotify', 'last-fm'])
 </script>
 
 <div class="flex w-72 shrink-0 flex-col overflow-hidden rounded bg-gray-900">
@@ -32,6 +35,13 @@
       <FriendsSidebarLastFm />
     {:else if $tab === 'spotify'}
       <FriendsSidebarSpotify />
+    {:else if defaultValue === undefined}
+      <div class="flex h-full max-h-72 items-center justify-center">
+        <div class="text-center text-gray-600">
+          <a class="underline" href={$editLink}>Configure Last.fm or Spotify</a>
+          to see your friends
+        </div>
+      </div>
     {/if}
   </div>
 
