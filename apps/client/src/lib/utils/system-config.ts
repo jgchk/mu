@@ -4,14 +4,22 @@ import { page } from '$app/stores'
 import { onDestroy } from 'svelte'
 import { derived } from 'svelte/store'
 
-export const createEditLink = (service: string) =>
+export const createEditLink = (service?: string | string[]) =>
   derived(page, (page) => {
     const editUrl = new URL(page.url)
     if (editUrl.pathname !== '/system') {
       editUrl.pathname = '/system'
       editUrl.search = ''
     }
-    editUrl.searchParams.set(service, 'true')
+    if (service !== undefined) {
+      if (Array.isArray(service)) {
+        for (const s of service) {
+          editUrl.searchParams.set(s, 'true')
+        }
+      } else {
+        editUrl.searchParams.set(service, 'true')
+      }
+    }
     return `${editUrl.pathname}${editUrl.search}`
   })
 
