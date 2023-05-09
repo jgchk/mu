@@ -97,6 +97,7 @@ ENV MUSIC_DIR=/data/music
 ENV DOWNLOAD_DIR=/data/downloads
 ENV IMAGES_DIR=/data/images
 ENV ORIGIN=http://localhost:3001
+ENV LEVEL=info
 
 COPY --from=installer /app .
 
