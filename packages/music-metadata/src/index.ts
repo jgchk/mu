@@ -2,8 +2,6 @@ import { execa } from 'execa'
 import path from 'path'
 import { z } from 'zod'
 
-export * from './dependencies'
-
 export type Metadata = z.infer<typeof Metadata>
 export const Metadata = z.object({
   title: z.string().nullable(),

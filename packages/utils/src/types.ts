@@ -48,6 +48,9 @@ export type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T,
 export type DistributivePick<T, K extends keyof T> = T extends unknown ? Pick<T, K> : never
 
 export type EmptyObject = Record<string, never>
+export type IsEmptyObject<T, TypeIfTrue = true, TypeIfFalse = false> = keyof T extends never
+  ? TypeIfTrue
+  : TypeIfFalse
 
 type AllProperties<T> = { [K in keyof T]: T[K] }
 type NoProperties<T> = { [K in keyof T]?: never }

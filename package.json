@@ -8,7 +8,7 @@
     "docker:build": "docker build . -t jgchk/mu",
     "docker:run": "dotenv -e .env -e .env.local -- pnpm docker:run:cmd",
     "docker:run:cmd": "docker run --rm -it -p 3001:3001 -v ./docker-data:/data jgchk/mu",
-    "dev": "test -f ./apps/client/build/index.js && true || turbo run build --filter client && NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev --concurrency 15",
+    "dev": "test -f ./apps/client/build/index.js && true || turbo run build --filter client && NODE_ENV=development dotenv -e .env -e .env.local -- turbo run dev --concurrency 17",
     "lint": "turbo run lint",
     "format": "prettier --write . **/*.svelte && turbo run format",
     "test": "turbo run test",
@@ -23,7 +23,8 @@
     "prettier": "^2.8.8",
     "prettier-plugin-svelte": "^2.10.0",
     "prettier-plugin-tailwindcss": "^0.2.7",
-    "turbo": "^1.9.3"
+    "turbo": "^1.9.3",
+    "typescript": "^5.0.4"
   },
   "packageManager": "pnpm@8.0.0",
   "dependencies": {

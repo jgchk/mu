@@ -23,6 +23,7 @@
     "@trpc/client": "^10.21.1",
     "bool-lang": "workspace:*",
     "isomorphic-ws": "^5.0.0",
+    "services": "workspace:*",
     "superjson": "^1.12.3",
     "svelte-dnd-action": "^0.9.22",
     "svelte-inview": "^4.0.0",

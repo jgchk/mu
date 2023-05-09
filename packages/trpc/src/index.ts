@@ -9,10 +9,4 @@ export type AppRouterInput = inferRouterInputs<AppRouter>
 export type AppRouterOutput = inferRouterOutputs<AppRouter>
 export type AppSubscriptionData<S> = S extends Observable<infer T, unknown> ? T : never
 
-export type {
-  Context,
-  ContextLastFm,
-  ContextSlsk,
-  ContextSpotify,
-  ContextSpotifyErrors,
-} from './context'
+export * from './context'

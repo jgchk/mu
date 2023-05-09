@@ -293,7 +293,12 @@ export const importRouter = router({
           }
 
           let favorite = false
-          if (ctx.lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
+          const status = await ctx.getStatus()
+          if (
+            status.lastFm.status === 'logged-in' &&
+            metadata.title !== null &&
+            artists.length > 0
+          ) {
             favorite = await ctx.lfm.getLovedTrack({
               track: metadata.title,
               artist: artists.map((artist) => artist.name).join(', '),
@@ -528,7 +533,12 @@ export const importRouter = router({
       }
 
       let favorite = false
-      if (ctx.lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
+      const status = await ctx.getStatus()
+      if (
+        status.lastFm.status === 'logged-in' &&
+        metadata.title !== null &&
+        trackArtists.length > 0
+      ) {
         favorite = await ctx.lfm.getLovedTrack({
           track: metadata.title,
           artist: trackArtists.map((artist) => artist.name).join(', '),

@@ -25,7 +25,7 @@ export type DownloadOptions = {
 }
 
 export class Soundcloud {
-  private authToken: string
+  authToken: string
 
   constructor(authToken: string) {
     this.authToken = authToken

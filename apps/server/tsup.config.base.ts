@@ -39,16 +39,18 @@ const config: Options = {
   format: ['esm'],
   platform: 'node',
   noExternal: [
-    'trpc',
-    'downloader',
     'db',
+    'downloader',
+    'env',
+    'image-manager',
+    'last-fm',
+    'log',
     'music-metadata',
+    'services',
     'soundcloud',
     'spotify',
-    'last-fm',
+    'trpc',
     'utils',
-    'image-manager',
-    'log',
   ],
   esbuildOptions(options) {
     options.banner = {

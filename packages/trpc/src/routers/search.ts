@@ -45,9 +45,8 @@ export const searchRouter = router({
     .input(z.object({ query: z.string() }))
     .use(isSoulseekAvailable)
     .subscription(({ input: { query }, ctx }) => {
-      const slsk = ctx.slsk
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        void slsk.search(query, { onResult: (result) => emit.next(result) })
+        void ctx.slsk.search(query, { onResult: (result) => emit.next(result) })
       })
     }),
 })
