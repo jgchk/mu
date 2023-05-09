@@ -13,6 +13,10 @@ const main = async () => {
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
     jobs: [{ name: 'services' }, { name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
     logger: log,
+    errorHandler: (error, workerMetadata) => {
+      log.error(error)
+      log.error(workerMetadata)
+    },
     workerMessageHandler: ({ name, message }) => {
       log.debug(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions
