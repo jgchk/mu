@@ -627,7 +627,8 @@ export const makeWorker = async () => {
   ) => {
     if (data.kind === 'soulseek-search') {
       if (soulseek.status !== 'logged-in') {
-        throw new Error('Soulseek not logged in')
+        postMessage({ id, error: new Error('Soulseek not logged in') })
+        return
       }
       void soulseek
         .search(data.query, {
