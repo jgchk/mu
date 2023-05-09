@@ -152,9 +152,15 @@ export class DownloadQueue {
         progress: dbTrack.progress ?? 0,
       })
 
+      let lastUpdate: Date | undefined = undefined
       const { pipe: dlPipe, extension } = await sc.downloadTrack(scTrack, {
-        onProgress: ({ progress }) =>
-          db.soundcloudTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) }),
+        onProgress: ({ progress }) => {
+          // update every second
+          if (lastUpdate === undefined || Date.now() - lastUpdate.getTime() > 1000) {
+            db.soundcloudTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) })
+            lastUpdate = new Date()
+          }
+        },
       })
 
       let filePath = dbTrack.path
@@ -322,10 +328,16 @@ export class DownloadQueue {
         await fs.promises.rm(filePath)
       }
 
+      let lastUpdate: Date | undefined = undefined
       const fsPipe = fs.createWriteStream(filePath)
       const dlPipe = sp.downloadTrack(spotTrack.id, {
-        onProgress: ({ progress }) =>
-          db.spotifyTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) }),
+        onProgress: ({ progress }) => {
+          // update every second
+          if (lastUpdate === undefined || Date.now() - lastUpdate.getTime() > 1000) {
+            db.spotifyTrackDownloads.update(trackId, { progress: Math.floor(progress * 100) })
+            lastUpdate = new Date()
+          }
+        },
       })
       dlPipe.pipe(fsPipe)
 
