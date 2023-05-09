@@ -75,6 +75,10 @@ COPY --from=builder /app/out/full/packages/trpc ./packages/trpc
 COPY --from=builder /app/out/full/packages/utils ./packages/utils
 RUN pnpm turbo run build --filter=server...
 
+# Delete unnecessary rust build files
+RUN rm -r ./packages/spotify/downloader/target/release/build
+RUN rm -r ./packages/spotify/downloader/target/release/deps
+
 FROM node:18-alpine AS runner
 
 # Install python/pip
