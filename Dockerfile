@@ -1,4 +1,4 @@
-FROM node:alpine AS builder
+FROM node:18-alpine AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 
@@ -15,7 +15,7 @@ COPY . .
 RUN turbo prune --scope=server --docker
 
 # Add lockfile and package.json's of isolated subworkspace
-FROM node:alpine AS installer
+FROM node:18-alpine AS installer
 RUN apk add --no-cache libc6-compat
 # Install python/pip
 ENV PYTHONUNBUFFERED=1
@@ -75,7 +75,7 @@ COPY --from=builder /app/out/full/packages/trpc ./packages/trpc
 COPY --from=builder /app/out/full/packages/utils ./packages/utils
 RUN pnpm turbo run build --filter=server...
 
-FROM node:alpine AS runner
+FROM node:18-alpine AS runner
 
 # Install python/pip
 ENV PYTHONUNBUFFERED=1
