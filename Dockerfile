@@ -52,10 +52,27 @@ COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 RUN pnpm install
 
-# Build the project and its dependencies
-COPY --from=builder /app/out/full/ .
+# Build spotify
+COPY --from=builder /app/out/full/packages/spotify ./packages/spotify
 COPY turbo.json turbo.json
+RUN pnpm turbo run build --filter=spotify
 
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/apps/client ./apps/client
+COPY --from=builder /app/out/full/apps/server ./apps/server
+COPY --from=builder /app/out/full/packages/bool-lang ./packages/bool-lang
+COPY --from=builder /app/out/full/packages/db ./packages/db
+COPY --from=builder /app/out/full/packages/downloader ./packages/downloader
+COPY --from=builder /app/out/full/packages/env ./packages/env
+COPY --from=builder /app/out/full/packages/eslint-config-custom ./packages/eslint-config-custom
+COPY --from=builder /app/out/full/packages/image-manager ./packages/image-manager
+COPY --from=builder /app/out/full/packages/last-fm ./packages/last-fm
+COPY --from=builder /app/out/full/packages/log ./packages/log
+COPY --from=builder /app/out/full/packages/music-metadata ./packages/music-metadata
+COPY --from=builder /app/out/full/packages/services ./packages/services
+COPY --from=builder /app/out/full/packages/soundcloud ./packages/soundcloud
+COPY --from=builder /app/out/full/packages/trpc ./packages/trpc
+COPY --from=builder /app/out/full/packages/utils ./packages/utils
 RUN pnpm turbo run build --filter=server...
 
 FROM node:alpine AS runner
