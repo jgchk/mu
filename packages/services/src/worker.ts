@@ -253,18 +253,22 @@ export const makeWorker = async () => {
   }
 
   const startSoulseek = async () => {
+    log.debug('startSoulseek: Stopping soulseek')
     stopSoulseek()
 
+    log.debug('startSoulseek: Getting config')
     const { soulseekUsername: username, soulseekPassword: password } = db.config.get()
 
     if (!username) {
       if (!password) {
+        log.debug('startSoulseek: Username & password are not configured')
         soulseek = {
           status: 'errored',
           error: new Error('Soulseek username & password are not configured'),
         }
         return
       } else {
+        log.debug('startSoulseek: Username is not configured')
         soulseek = {
           status: 'errored',
           error: new Error('Soulseek username is not configured'),
@@ -273,6 +277,7 @@ export const makeWorker = async () => {
       }
     } else {
       if (!password) {
+        log.debug('startSoulseek: Password is not configured')
         soulseek = {
           status: 'errored',
           error: new Error('Soulseek password is not configured'),
@@ -281,26 +286,37 @@ export const makeWorker = async () => {
       }
     }
 
+    log.debug('startSoulseek: Creating client')
     const slsk = new SlskClient()
+    log.debug('startSoulseek: Constructed client')
     soulseek = withProps(slsk, { status: 'logging-in' } as const)
 
     try {
+      log.debug('startSoulseek: Logging in')
       await slsk.login(username, password)
+      log.debug('startSoulseek: Logged in')
     } catch (e) {
+      log.debug('startSoulseek: Failed to log in')
       slsk.destroy()
+      log.debug('startSoulseek: Destroyed client')
       let error = e
       if (e instanceof Error && e.message.includes('INVALIDPASS')) {
+        log.debug('startSoulseek: Invalid password')
         error = new Error('Invalid password')
       }
+      log.debug('startSoulseek: Setting error')
       soulseek = { status: 'errored', error }
       return
     }
 
+    log.debug('startSoulseek: Setting status')
     soulseek = withProps(slsk, { status: 'logged-in' } as const)
+    log.debug('startSoulseek: Setting listeners')
     slsk
       .on('listen-error', (error) => log.error(error, 'SLSK listen error'))
       .on('server-error', (error) => log.error(error, 'SLSK server error'))
       .on('client-error', (error) => log.error(error, 'SLSK client error'))
+    log.debug('startSoulseek: Done')
   }
   const stopSoulseek = () => {
     if (soulseek.status === 'logging-in' || soulseek.status === 'logged-in') {
