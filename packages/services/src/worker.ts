@@ -656,12 +656,17 @@ export const makeWorker = async () => {
         .then(() => {
           postMessage({ id, ended: true })
         })
+        .catch((error: unknown) => {
+          log.error({ data, error }, 'Error handling request')
+          postMessage({ id, error })
+        })
     } else {
       void handleRequest(data)
         .then((response) => {
           postMessage({ id, data: response })
         })
         .catch((error: unknown) => {
+          log.error({ data, error }, 'Error handling request')
           postMessage({ id, error })
         })
     }

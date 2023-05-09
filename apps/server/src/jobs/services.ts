@@ -7,10 +7,6 @@ if (parentPort_ === null) {
 }
 const parentPort = parentPort_
 
-setInterval(() => {
-  // ignore
-}, 100)
-
 const worker = await makeWorker()
 
 parentPort.on('message', (message) => {
