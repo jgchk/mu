@@ -3,8 +3,9 @@ import { toErrorString } from 'utils'
 
 import { t } from './trpc'
 
-export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
-  const lfm = ctx.lfm
+export const isLastFmLoggedIn = t.middleware(async ({ next, ctx }) => {
+  const status = await ctx.getStatus()
+  const lfm = status.lastFm
 
   if (lfm.status === 'stopped') {
     throw new TRPCError({
@@ -40,15 +41,12 @@ export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
     })
   }
 
-  return next({
-    ctx: {
-      lfm,
-    },
-  })
+  return next()
 })
 
-export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
-  const slsk = ctx.slsk
+export const isSoulseekAvailable = t.middleware(async ({ next, ctx }) => {
+  const status = await ctx.getStatus()
+  const slsk = status.soulseek
 
   if (slsk.status === 'stopped') {
     throw new TRPCError({
@@ -68,15 +66,12 @@ export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
     })
   }
 
-  return next({
-    ctx: {
-      slsk,
-    },
-  })
+  return next()
 })
 
-export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
-  const sp = ctx.sp
+export const isSpotifyWebApiAvailable = t.middleware(async ({ next, ctx }) => {
+  const status = await ctx.getStatus()
+  const sp = status.spotify
 
   if (sp.status === 'stopped') {
     throw new TRPCError({
@@ -107,22 +102,19 @@ export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
       message: `Spotify ran into an error: ${toErrorString(sp.errors.webApi)}`,
       cause: sp.errors.webApi,
     })
-  } else if (!sp.webApi) {
+  } else if (!sp.features.webApi) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
       message: 'Spotify is not configured to use the Web API',
     })
   }
 
-  return next({
-    ctx: {
-      sp,
-    },
-  })
+  return next()
 })
 
-export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
-  const sc = ctx.sc
+export const isSoundcloudAvailable = t.middleware(async ({ next, ctx }) => {
+  const status = await ctx.getStatus()
+  const sc = status.soundcloud
 
   if (sc.status === 'stopped') {
     throw new TRPCError({
@@ -142,15 +134,12 @@ export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
     })
   }
 
-  return next({
-    ctx: {
-      sc,
-    },
-  })
+  return next()
 })
 
-export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => {
-  const sp = ctx.sp
+export const isSpotifyFriendActivityAvailable = t.middleware(async ({ next, ctx }) => {
+  const status = await ctx.getStatus()
+  const sp = status.spotify
 
   if (sp.status === 'stopped') {
     throw new TRPCError({
@@ -181,16 +170,12 @@ export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => 
       message: `Spotify ran into an error: ${toErrorString(sp.errors.friendActivity)}`,
       cause: sp.errors.friendActivity,
     })
-  } else if (!sp.friendActivity) {
+  } else if (!sp.features.friendActivity) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
       message: 'Spotify is not configured to use the Friend Activity API',
     })
   }
 
-  return next({
-    ctx: {
-      sp,
-    },
-  })
+  return next()
 })

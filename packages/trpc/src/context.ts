@@ -1,81 +1,64 @@
 import type { Database } from 'db'
-import type { Downloader } from 'downloader'
+import type { Download } from 'downloader'
 import type { ImageManager } from 'image-manager'
 import type { LastFM, LastFMAuthenticated } from 'last-fm'
+import type {
+  FormattedLastFmStatus,
+  FormattedSoulseekStatus,
+  FormattedSoundcloudStatus,
+  FormattedSpotifyStatus,
+  FormattedStatus,
+} from 'services'
 import type { SlskClient } from 'soulseek-ts'
 import type { Soundcloud } from 'soundcloud'
-import type { Spotify } from 'spotify'
+import type { FriendActivityEnabled } from 'spotify/src/features/friends'
+import type { WebApiEnabled } from 'spotify/src/features/web-api'
 
 export type Context = {
   db: Database
-  dl: Downloader
-  sc: ContextSoundcloud
-  sp: ContextSpotify
-  slsk: ContextSlsk
-  lfm: ContextLastFm
   img: ImageManager
   imagesDir: string
   musicDir: string
 
-  startSoulseek: () => Promise<ContextSlsk>
-  stopSoulseek: () => ContextSlsk
+  getStatus: () => Promise<FormattedStatus>
 
-  startLastFm: () => Promise<ContextLastFm>
-  stopLastFm: () => ContextLastFm
+  startSoulseek: () => Promise<FormattedSoulseekStatus>
+  stopSoulseek: () => Promise<FormattedSoulseekStatus>
 
-  startSpotify: () => Promise<ContextSpotify>
-  stopSpotify: () => ContextSpotify
+  startLastFm: () => Promise<FormattedLastFmStatus>
+  stopLastFm: () => Promise<FormattedLastFmStatus>
 
-  startSoundcloud: () => Promise<ContextSoundcloud>
-  stopSoundcloud: () => ContextSoundcloud
+  startSpotify: () => Promise<FormattedSpotifyStatus>
+  stopSpotify: () => Promise<FormattedSpotifyStatus>
 
-  destroy: () => void
+  startSoundcloud: () => Promise<FormattedSoundcloudStatus>
+  stopSoundcloud: () => Promise<FormattedSoundcloudStatus>
+
+  download: (dl: Download) => Promise<void>
+
+  lfm: {
+    getFriends: LastFMAuthenticated['getFriends']
+    getRecentTracks: LastFM['getRecentTracks']
+    getLovedTrack: LastFMAuthenticated['getLovedTrack']
+    updateNowPlaying: LastFMAuthenticated['updateNowPlaying']
+    scrobble: LastFMAuthenticated['scrobble']
+    loveTrack: LastFMAuthenticated['loveTrack']
+    unloveTrack: LastFMAuthenticated['unloveTrack']
+  }
+
+  sc: {
+    searchTracks: Soundcloud['searchTracks']
+    searchAlbums: Soundcloud['searchAlbums']
+  }
+
+  slsk: {
+    search: SlskClient['search']
+  }
+
+  sp: {
+    getFriendActivity: FriendActivityEnabled['getFriendActivity']
+    search: WebApiEnabled['search']
+  }
+
+  destroy: () => Promise<void>
 }
-
-export type ContextLastFm =
-  | { status: 'stopped'; error?: undefined }
-  | { status: 'errored'; error: unknown }
-  | ({ status: 'authenticating'; error?: undefined } & LastFM)
-  | ({ status: 'authenticated'; error?: undefined } & LastFM)
-  | ({ status: 'logging-in'; error?: undefined } & LastFM)
-  | ({ status: 'degraded'; error: unknown } & LastFM)
-  | ({ status: 'logged-in'; error?: undefined } & LastFMAuthenticated)
-
-export type ContextSlsk =
-  | { status: 'stopped' }
-  | { status: 'errored'; error: unknown }
-  | ({ status: 'logging-in' } & SlskClient)
-  | ({ status: 'logged-in' } & SlskClient)
-
-export type ContextSpotify =
-  | { status: 'stopped'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
-  | { status: 'starting'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
-  | { status: 'errored'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
-  | ({
-      status: 'degraded'
-      features: ContextSpotifyFeatures
-      errors: ContextSpotifyErrors
-    } & Spotify)
-  | ({
-      status: 'running'
-      features: ContextSpotifyFeatures
-      errors: ContextSpotifyErrors
-    } & Spotify)
-
-export type ContextSpotifyFeatures = {
-  downloads: boolean
-  friendActivity: boolean
-  webApi: boolean
-}
-
-export type ContextSpotifyErrors = {
-  downloads?: unknown
-  friendActivity?: unknown
-  webApi?: unknown
-}
-
-export type ContextSoundcloud =
-  | { status: 'stopped' }
-  | { status: 'starting' }
-  | { status: 'errored'; error: unknown }
-  | ({ status: 'running' } & Soundcloud)

@@ -1,3 +1,4 @@
+import { env } from 'env'
 import { fileTypeStream } from 'file-type'
 import fs from 'fs'
 import { isAnimatedGifStream } from 'is-animated-gif'
@@ -9,8 +10,6 @@ import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
 import { streamToBuffer } from 'utils/node'
 import { z } from 'zod'
-
-import { env } from './env'
 
 const handleResizeStream = async (
   stream: Readable,

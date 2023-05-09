@@ -1,4 +1,4 @@
-import type { ContextSpotifyErrors } from 'trpc'
+import type { ContextSpotifyErrors } from 'services'
 import { isDefined, toErrorString } from 'utils'
 
 import type { ToastStore } from '$lib/toast/toast'

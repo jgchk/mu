@@ -1,5 +1,7 @@
 import pino from 'pino'
 
+export type Log = ReturnType<typeof pino>
+
 export const log = pino(
   process.env.NODE_ENV === 'development'
     ? {

@@ -1,3 +1,4 @@
+import { uriToUrl } from 'spotify'
 import { ifDefined, undefIfEmpty, withinLastMinutes } from 'utils'
 
 import { isLastFmLoggedIn, isSpotifyFriendActivityAvailable } from '../middleware'
@@ -85,13 +86,13 @@ export const friendsRouter = router({
     return friends.map((friend) => {
       const baseData = {
         title: friend.track.name,
-        url: ctx.sp.uriToUrl(friend.track.uri),
+        url: uriToUrl(friend.track.uri),
         artist: friend.track.artist.name,
-        artistUrl: ctx.sp.uriToUrl(friend.track.artist.uri),
+        artistUrl: uriToUrl(friend.track.artist.uri),
         album: friend.track.album.name,
-        albumUrl: ctx.sp.uriToUrl(friend.track.album.uri),
+        albumUrl: uriToUrl(friend.track.album.uri),
         friendName: friend.user.name,
-        friendUrl: ctx.sp.uriToUrl(friend.user.uri),
+        friendUrl: uriToUrl(friend.user.uri),
         art: friend.track.imageUrl,
       }
 

@@ -1,4 +1,5 @@
 import type { Artist } from 'db'
+import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
 import { ImageManager } from 'image-manager'
@@ -6,12 +7,9 @@ import { log } from 'log'
 import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
+import { makeDb, makeLastFm } from 'services'
 import { isAudio, tryOr } from 'utils'
 import { dirExists, fileExists, walkDir } from 'utils/node'
-
-import { makeDb } from '../context/db'
-import { makeLastFm } from '../context/lfm'
-import { env } from '../env'
 
 const musicDir = env.MUSIC_DIR
 const imagesDir = env.IMAGES_DIR

@@ -1,7 +1,6 @@
 import { ifDefined, ifNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
-import { isLastFmLoggedIn } from '../middleware'
 import { publicProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 
@@ -74,7 +73,6 @@ export const tracksRouter = router({
     }),
   favorite: publicProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
-    .use(isLastFmLoggedIn)
     .mutation(async ({ input: { id, favorite }, ctx }) => {
       const dbTrack = ctx.db.tracks.update(id, { favorite })
 
@@ -83,10 +81,13 @@ export const tracksRouter = router({
         .map((artist) => artist.name)
         .join(', ')
 
-      if (favorite) {
-        await ctx.lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
-      } else {
-        await ctx.lfm.unloveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+      const status = await ctx.getStatus()
+      if (status.lastFm.status === 'logged-in') {
+        if (favorite) {
+          await ctx.lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+        } else {
+          await ctx.lfm.unloveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+        }
       }
 
       return dbTrack

@@ -1,44 +1,51 @@
 import Bree from 'bree'
+import { env } from 'env'
 import { log } from 'log'
-import { getMissingPythonDependencies } from 'music-metadata'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { sleep } from 'utils'
 
 import { makeApiServer } from './api'
 import { makeContext } from './context'
-import { env } from './env'
 
 const main = async () => {
-  const missingPythonDeps = await getMissingPythonDependencies()
-  if (missingPythonDeps.length > 0) {
-    log.error({ missingPythonDeps }, '❌ Missing Python dependencies')
-    process.exit(1)
-  }
-
-  const ctx = await makeContext()
-
   const bree = new Bree({
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
-    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
+    jobs: [{ name: 'services' }, { name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
     logger: log,
+    workerMessageHandler: ({ name, message }) => {
+      log.debug(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions
+        `Worker for job "${name}" sent a message: ${JSON.stringify(message).slice(0, 4096)}`
+      )
+    },
   })
   await bree.start()
 
+  let servicesWorker
+  while (!(servicesWorker = bree.workers.get('services'))) {
+    log.info('Waiting for services to start')
+    await sleep(100)
+  }
+  servicesWorker.setMaxListeners(50)
+
+  const ctx = await makeContext(servicesWorker)
+
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+    void ctx.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
   for (const download of ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
+    void ctx.download({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
   for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
-    void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
+    void ctx.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
   for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
-    void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
+    void ctx.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
   for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
+    void ctx.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
   const apiServer = await makeApiServer(ctx)
@@ -59,7 +66,7 @@ const main = async () => {
       shuttingDown = true
 
       log.info('Shutting down...')
-      ctx.destroy()
+      void ctx.destroy()
       void apiServer.close()
     })
   }

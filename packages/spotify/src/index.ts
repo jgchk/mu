@@ -10,6 +10,8 @@ import { WebApiMixin } from './features/web-api'
 
 export * from './model'
 
+export { uriToUrl, parseUri } from './features/base'
+
 export type SpotifyOptions = {
   downloads?: DownloadsParams
   friendActivity?: FriendActivityParams
