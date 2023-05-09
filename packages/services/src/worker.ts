@@ -3,7 +3,7 @@ import { Downloader } from 'downloader'
 import { env } from 'env'
 import type { LastFMAuthenticated } from 'last-fm'
 import { log } from 'log'
-import { SlskClient } from 'soulseek-ts'
+import type { SlskClient } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import type { SpotifyOptions } from 'spotify'
 import { Spotify } from 'spotify'
@@ -254,53 +254,54 @@ export const makeWorker = async () => {
 
   const startSoulseek = async () => {
     stopSoulseek()
+    return Promise.resolve()
 
-    const { soulseekUsername: username, soulseekPassword: password } = db.config.get()
-
-    if (!username) {
-      if (!password) {
-        soulseek = {
-          status: 'errored',
-          error: new Error('Soulseek username & password are not configured'),
-        }
-        return
-      } else {
-        soulseek = {
-          status: 'errored',
-          error: new Error('Soulseek username is not configured'),
-        }
-        return
-      }
-    } else {
-      if (!password) {
-        soulseek = {
-          status: 'errored',
-          error: new Error('Soulseek password is not configured'),
-        }
-        return
-      }
-    }
-
-    const slsk = new SlskClient()
-    soulseek = withProps(slsk, { status: 'logging-in' } as const)
-
-    try {
-      await slsk.login(username, password)
-    } catch (e) {
-      slsk.destroy()
-      let error = e
-      if (e instanceof Error && e.message.includes('INVALIDPASS')) {
-        error = new Error('Invalid password')
-      }
-      soulseek = { status: 'errored', error }
-      return
-    }
-
-    soulseek = withProps(slsk, { status: 'logged-in' } as const)
-    slsk
-      .on('listen-error', (error) => log.error(error, 'SLSK listen error'))
-      .on('server-error', (error) => log.error(error, 'SLSK server error'))
-      .on('client-error', (error) => log.error(error, 'SLSK client error'))
+    // const { soulseekUsername: username, soulseekPassword: password } = db.config.get()
+    //
+    // if (!username) {
+    //   if (!password) {
+    //     soulseek = {
+    //       status: 'errored',
+    //       error: new Error('Soulseek username & password are not configured'),
+    //     }
+    //     return
+    //   } else {
+    //     soulseek = {
+    //       status: 'errored',
+    //       error: new Error('Soulseek username is not configured'),
+    //     }
+    //     return
+    //   }
+    // } else {
+    //   if (!password) {
+    //     soulseek = {
+    //       status: 'errored',
+    //       error: new Error('Soulseek password is not configured'),
+    //     }
+    //     return
+    //   }
+    // }
+    //
+    // const slsk = new SlskClient()
+    // soulseek = withProps(slsk, { status: 'logging-in' } as const)
+    //
+    // try {
+    //   await slsk.login(username, password)
+    // } catch (e) {
+    //   slsk.destroy()
+    //   let error = e
+    //   if (e instanceof Error && e.message.includes('INVALIDPASS')) {
+    //     error = new Error('Invalid password')
+    //   }
+    //   soulseek = { status: 'errored', error }
+    //   return
+    // }
+    //
+    // soulseek = withProps(slsk, { status: 'logged-in' } as const)
+    // slsk
+    //   .on('listen-error', (error) => log.error(error, 'SLSK listen error'))
+    //   .on('server-error', (error) => log.error(error, 'SLSK server error'))
+    //   .on('client-error', (error) => log.error(error, 'SLSK client error'))
   }
   const stopSoulseek = () => {
     if (soulseek.status === 'logging-in' || soulseek.status === 'logged-in') {
