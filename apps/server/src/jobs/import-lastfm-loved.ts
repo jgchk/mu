@@ -33,6 +33,7 @@ if (lfm.status === 'stopped') {
   throw new Error(`Last.fm is authenticated, but login failed: ${toErrorString(lfm.error)}`)
 }
 
+log.debug('Fetching loved tracks...')
 const lovedTracks = await lfm.getAllLovedTracks()
 log.info(`Loved tracks: ${lovedTracks.length}`)
 
