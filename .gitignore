@@ -32,8 +32,13 @@ yarn-error.log*
 # eslint
 .eslintcache
 
-# docker
+# local data
+db.sqlite
+/music
+/images
+/downloads
 /docker-data
 
 # local scripts
 publish
+

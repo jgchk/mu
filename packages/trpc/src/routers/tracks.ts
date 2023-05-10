@@ -34,10 +34,12 @@ export const tracksRouter = router({
       nextCursor,
     }
   }),
+
   getById: publicProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => ({
     ...ctx.db.tracks.get(id),
     artists: ctx.db.artists.getByTrackId(id),
   })),
+
   getMany: publicProcedure
     .input(z.object({ ids: z.array(z.number()) }))
     .query(({ input: { ids }, ctx }) => {
@@ -47,9 +49,11 @@ export const tracksRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
+
   getByReleaseId: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
+
   getByReleaseIdWithArtists: publicProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => {
@@ -59,6 +63,7 @@ export const tracksRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
+
   getByTag: publicProcedure
     .input(z.object({ tagId: z.number() }))
     .query(({ input: { tagId }, ctx }) => {
@@ -71,6 +76,7 @@ export const tracksRouter = router({
         artists: ctx.db.artists.getByTrackId(id),
       }))
     }),
+
   favorite: publicProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .mutation(async ({ input: { id, favorite }, ctx }) => {

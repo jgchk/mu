@@ -30,34 +30,36 @@
 </script>
 
 <div
-  class="group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700"
-  style:grid-template-columns="auto 6fr 4fr 1fr auto"
+  class="group/track grid select-none grid-cols-[6fr_4fr_1fr_auto] items-center gap-2 rounded p-1.5 hover:bg-gray-700 sm:grid-cols-[auto_6fr_4fr_1fr_auto]"
   on:dblclick={() => play()}
 >
-  {#if showCoverArt}
-    <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
-      <CoverArt
-        src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
-        alt={track.title}
-        iconClass="w-5 h-5"
-        placeholderClass="text-[5px]"
-        rounding="rounded-sm"
-      >
-        <PlayIcon />
-      </CoverArt>
-    </button>
-  {:else}
-    <div class="center relative h-11 w-8">
-      <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
-      <button
-        type="button"
-        class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
-        on:click={() => play()}
-      >
-        <PlayIcon />
+  <div class="hidden sm:block">
+    {#if showCoverArt}
+      <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
+        <CoverArt
+          src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
+          alt={track.title}
+          iconClass="w-5 h-5"
+          placeholderClass="text-[5px]"
+          rounding="rounded-sm"
+        >
+          <PlayIcon />
+        </CoverArt>
       </button>
-    </div>
-  {/if}
+    {:else}
+      <div class="center relative h-11 w-8">
+        <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
+        <button
+          type="button"
+          class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
+          on:click={() => play()}
+        >
+          <PlayIcon />
+        </button>
+      </div>
+    {/if}
+  </div>
+
   <div class="overflow-hidden">
     <div class="truncate">{track.title || '[untitled]'}</div>
     <div class="truncate text-sm text-gray-400">
@@ -66,6 +68,7 @@
       </CommaList>
     </div>
   </div>
+
   <div class="truncate text-sm text-gray-400">
     {#if track.release}
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
@@ -77,9 +80,11 @@
       </a>
     {/if}
   </div>
+
   <div class="justify-self-end text-sm text-gray-400">
     {formatMilliseconds(track.duration)}
   </div>
+
   <div class="flex items-center gap-1">
     {#if showDelete}
       <IconButton kind="text" layer={700} tooltip="Remove from playlist" on:click={() => delete_()}>

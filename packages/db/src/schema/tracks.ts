@@ -97,7 +97,8 @@ export type TracksMixin = {
       Q extends SQLiteSelect<'tracks', 'sync', Database.RunResult, S, 'partial' | 'multiple'>
     >(
       query_: Q,
-      filter?: TracksFilter
+      filter?: TracksFilter,
+      where?: SQL[]
     ) => Q
   }
 }
@@ -144,10 +145,9 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           })
           .from(tracks)
           .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
-          .where(eq(trackArtists.artistId, artistId))
           .orderBy(tracks.title)
 
-        query = this.tracks.withFilter(query, filter)
+        query = this.tracks.withFilter(query, filter, [eq(trackArtists.artistId, artistId)])
 
         return query.all().map((row) => convertTrack(row.tracks))
       },
@@ -177,13 +177,9 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getByReleaseId: (releaseId, filter) => {
-        let query = this.db
-          .select({ tracks: tracks })
-          .from(tracks)
-          .where(eq(tracks.releaseId, releaseId))
-          .orderBy(tracks.order)
+        let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.order)
 
-        query = this.tracks.withFilter(query, filter)
+        query = this.tracks.withFilter(query, filter, [eq(tracks.releaseId, releaseId)])
 
         return query.all().map((row) => convertTrack(row.tracks))
       },
@@ -193,10 +189,9 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           .select({ tracks: tracks, playlistTrackId: playlistTracks.id })
           .from(tracks)
           .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
-          .where(eq(playlistTracks.playlistId, playlistId))
           .orderBy(playlistTracks.order)
 
-        query = this.tracks.withFilter(query, filter)
+        query = this.tracks.withFilter(query, filter, [eq(playlistTracks.playlistId, playlistId)])
 
         return query.all().map((row) => ({
           ...convertTrack(row.tracks),
@@ -219,10 +214,10 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
 
       preparedQueries: prepareQueries(this.db),
 
-      withFilter: (query_, filter) => {
+      withFilter: (query_, filter, where_ = []) => {
         let query = query_
 
-        const where = []
+        const where = where_
 
         if (filter?.favorite !== undefined) {
           where.push(eq(tracks.favorite, filter.favorite ? 1 : 0))

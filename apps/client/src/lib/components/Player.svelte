@@ -144,6 +144,7 @@
       </div>
     {/if}
   </div>
+
   <div class="max-w-[722px] flex-[4]">
     <div class="flex w-full items-center justify-center gap-3.5">
       <button
@@ -196,7 +197,8 @@
       </div>
     </div>
   </div>
-  <div class="flex flex-[2.25] items-center justify-end gap-1">
+
+  <div class="hidden flex-[2.25] items-center justify-end gap-1 lg:flex">
     <IconButton
       kind="text"
       tooltip="Queue"
@@ -225,6 +227,7 @@
         <VolumeOnIcon />
       {/if}
     </IconButton>
+
     <div class="mr-4 w-[125px]">
       <Range bind:value={$volume} min={0} max={1} />
     </div>

@@ -7,22 +7,26 @@
   import LibraryLink from './LibraryLink.svelte'
 </script>
 
-<div class="flex h-full gap-2">
-  <div class="w-48 overflow-auto rounded bg-gray-900 py-2">
+<div class="flex h-full flex-col gap-2 md:flex-row">
+  <div
+    class="order-2 flex w-full justify-around overflow-auto rounded bg-gray-900 py-2 md:order-1 md:w-48 md:flex-col md:justify-start"
+  >
     <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
     <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
     <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>
 
-    {#if $$slots.sidebar}
-      <div class="p-2">
-        <div class="h-px bg-gray-800" />
-      </div>
-      <slot name="sidebar" />
-    {/if}
+    <div class="flex md:flex-col">
+      {#if $$slots.sidebar}
+        <div class="pr-2 md:p-2 md:pr-2">
+          <div class="h-full w-px bg-gray-800 md:h-px md:w-full" />
+        </div>
+        <slot name="sidebar" />
+      {/if}
+    </div>
   </div>
 
-  <div class="h-full flex-1 overflow-auto">
+  <div class="order-1 h-full flex-1 overflow-auto md:order-2">
     <slot />
   </div>
 </div>
