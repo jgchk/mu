@@ -6,6 +6,7 @@ import type {
   SpotifyAlbumDownload,
   SpotifyTrackDownload,
 } from 'db'
+import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -242,7 +243,7 @@ export const importRouter = router({
 
           const newPath = path.resolve(
             path.join(
-              ctx.musicDir,
+              env.MUSIC_DIR,
               filenamify(
                 albumArtists.length > 0
                   ? albumArtists.map((artist) => artist.name).join(', ')
@@ -293,12 +294,7 @@ export const importRouter = router({
           }
 
           let favorite = false
-          const status = await ctx.getStatus()
-          if (
-            status.lastFm.status === 'logged-in' &&
-            metadata.title !== null &&
-            artists.length > 0
-          ) {
+          if (ctx.lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
             favorite = await ctx.lfm.getLovedTrack({
               track: metadata.title,
               artist: artists.map((artist) => artist.name).join(', '),
@@ -494,7 +490,7 @@ export const importRouter = router({
 
       const newPath = path.resolve(
         path.join(
-          ctx.musicDir,
+          env.MUSIC_DIR,
           filenamify(
             albumArtists.length > 0
               ? albumArtists.map((artist) => artist.name).join(', ')
@@ -533,12 +529,7 @@ export const importRouter = router({
       }
 
       let favorite = false
-      const status = await ctx.getStatus()
-      if (
-        status.lastFm.status === 'logged-in' &&
-        metadata.title !== null &&
-        trackArtists.length > 0
-      ) {
+      if (ctx.lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
         favorite = await ctx.lfm.getLovedTrack({
           track: metadata.title,
           artist: trackArtists.map((artist) => artist.name).join(', '),

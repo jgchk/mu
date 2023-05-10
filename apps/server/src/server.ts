@@ -1,17 +1,16 @@
 import Bree from 'bree'
+import { makeContext } from 'context'
 import { env } from 'env'
 import { log } from 'log'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { sleep } from 'utils'
 
 import { makeApiServer } from './api'
-import { makeContext } from './context'
 
 const main = async () => {
   const bree = new Bree({
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
-    jobs: [{ name: 'services' }, { name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
+    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
     logger: log,
     errorHandler: (error, workerMetadata) => {
       log.error(error)
@@ -26,30 +25,23 @@ const main = async () => {
   })
   await bree.start()
 
-  let servicesWorker
-  while (!(servicesWorker = bree.workers.get('services'))) {
-    log.info('Waiting for services to start')
-    await sleep(100)
-  }
-  servicesWorker.setMaxListeners(50)
-
-  const ctx = await makeContext(servicesWorker)
+  const ctx = await makeContext()
 
   // Resume downloads
   for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
-    void ctx.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+    void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
   }
   for (const download of ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void ctx.download({ service: 'soundcloud', type: 'track', dbId: download.id })
+    void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
   }
   for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
-    void ctx.download({ service: 'spotify', type: 'album', dbId: download.id })
+    void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
   }
   for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
-    void ctx.download({ service: 'spotify', type: 'track', dbId: download.id })
+    void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
   }
   for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
-    void ctx.download({ service: 'soulseek', type: 'track', dbId: download.id })
+    void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
   }
 
   const apiServer = await makeApiServer(ctx)

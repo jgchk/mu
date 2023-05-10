@@ -1,5 +1,5 @@
 {
-  "name": "services",
+  "name": "context",
   "version": "0.0.0",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -12,6 +12,7 @@
     "db": "workspace:*",
     "downloader": "workspace:*",
     "env": "workspace:*",
+    "image-manager": "workspace:*",
     "last-fm": "workspace:*",
     "log": "workspace:*",
     "soulseek-ts": "^2.1.2",

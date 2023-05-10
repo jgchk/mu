@@ -56,12 +56,12 @@ importers:
       bool-lang:
         specifier: workspace:*
         version: link:../../packages/bool-lang
+      context:
+        specifier: workspace:*
+        version: link:../../packages/context
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
-      services:
-        specifier: workspace:*
-        version: link:../../packages/services
       superjson:
         specifier: ^1.12.3
         version: 1.12.3
@@ -162,6 +162,9 @@ importers:
       client:
         specifier: workspace:*
         version: link:../client
+      context:
+        specifier: workspace:*
+        version: link:../../packages/context
       db:
         specifier: workspace:*
         version: link:../../packages/db
@@ -201,9 +204,6 @@ importers:
       nanoid:
         specifier: ^4.0.2
         version: 4.0.2
-      services:
-        specifier: workspace:*
-        version: link:../../packages/services
       sharp:
         specifier: ^0.32.0
         version: 0.32.0
@@ -247,6 +247,39 @@ importers:
       vitest:
         specifier: ^0.30.1
         version: 0.30.1
+
+  packages/context:
+    dependencies:
+      db:
+        specifier: workspace:*
+        version: link:../db
+      downloader:
+        specifier: workspace:*
+        version: link:../downloader
+      env:
+        specifier: workspace:*
+        version: link:../env
+      image-manager:
+        specifier: workspace:*
+        version: link:../image-manager
+      last-fm:
+        specifier: workspace:*
+        version: link:../last-fm
+      log:
+        specifier: workspace:*
+        version: link:../log
+      soulseek-ts:
+        specifier: ^2.1.2
+        version: 2.1.2
+      soundcloud:
+        specifier: workspace:*
+        version: link:../soundcloud
+      spotify:
+        specifier: workspace:*
+        version: link:../spotify
+      utils:
+        specifier: workspace:*
+        version: link:../utils
 
   packages/db:
     dependencies:
@@ -405,36 +438,6 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config-custom
 
-  packages/services:
-    dependencies:
-      db:
-        specifier: workspace:*
-        version: link:../db
-      downloader:
-        specifier: workspace:*
-        version: link:../downloader
-      env:
-        specifier: workspace:*
-        version: link:../env
-      last-fm:
-        specifier: workspace:*
-        version: link:../last-fm
-      log:
-        specifier: workspace:*
-        version: link:../log
-      soulseek-ts:
-        specifier: ^2.1.2
-        version: 2.1.2
-      soundcloud:
-        specifier: workspace:*
-        version: link:../soundcloud
-      spotify:
-        specifier: workspace:*
-        version: link:../spotify
-      utils:
-        specifier: workspace:*
-        version: link:../utils
-
   packages/soundcloud:
     dependencies:
       execa:
@@ -495,12 +498,18 @@ importers:
       content-disposition:
         specifier: ^0.5.4
         version: 0.5.4
+      context:
+        specifier: workspace:*
+        version: link:../context
       db:
         specifier: workspace:*
         version: link:../db
       downloader:
         specifier: workspace:*
         version: link:../downloader
+      env:
+        specifier: workspace:*
+        version: link:../env
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -528,9 +537,6 @@ importers:
       music-metadata:
         specifier: workspace:*
         version: link:../music-metadata
-      services:
-        specifier: workspace:*
-        version: link:../services
       soulseek-ts:
         specifier: ^2.1.2
         version: 2.1.2

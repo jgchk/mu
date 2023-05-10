@@ -1,10 +1,10 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
+import type { Context } from 'context'
 import type { Playlist, PlaylistTrack, TrackPretty } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
-import type { Context } from '../context'
 import { publicProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 

@@ -1,3 +1,4 @@
+import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
@@ -7,7 +8,6 @@ import { log } from 'log'
 import type { Metadata } from 'music-metadata'
 import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { makeDb, makeLastFm } from 'services'
 import { isAudio, tryOr } from 'utils'
 import { dirExists, fileExists, walkDir } from 'utils/node'
 

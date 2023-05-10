@@ -4,8 +4,7 @@ import { toErrorString } from 'utils'
 import { t } from './trpc'
 
 export const isLastFmLoggedIn = t.middleware(async ({ next, ctx }) => {
-  const status = await ctx.getStatus()
-  const lfm = status.lastFm
+  const lfm = ctx.lfm
 
   if (lfm.status === 'stopped') {
     throw new TRPCError({
@@ -41,12 +40,11 @@ export const isLastFmLoggedIn = t.middleware(async ({ next, ctx }) => {
     })
   }
 
-  return next()
+  return next({ ctx: { lfm } })
 })
 
 export const isSoulseekAvailable = t.middleware(async ({ next, ctx }) => {
-  const status = await ctx.getStatus()
-  const slsk = status.soulseek
+  const slsk = ctx.slsk
 
   if (slsk.status === 'stopped') {
     throw new TRPCError({
@@ -66,12 +64,11 @@ export const isSoulseekAvailable = t.middleware(async ({ next, ctx }) => {
     })
   }
 
-  return next()
+  return next({ ctx: { slsk } })
 })
 
 export const isSpotifyWebApiAvailable = t.middleware(async ({ next, ctx }) => {
-  const status = await ctx.getStatus()
-  const sp = status.spotify
+  const sp = ctx.sp
 
   if (sp.status === 'stopped') {
     throw new TRPCError({
@@ -102,19 +99,18 @@ export const isSpotifyWebApiAvailable = t.middleware(async ({ next, ctx }) => {
       message: `Spotify ran into an error: ${toErrorString(sp.errors.webApi)}`,
       cause: sp.errors.webApi,
     })
-  } else if (!sp.features.webApi) {
+  } else if (!sp.webApi) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
       message: 'Spotify is not configured to use the Web API',
     })
   }
 
-  return next()
+  return next({ ctx: { sp } })
 })
 
 export const isSoundcloudAvailable = t.middleware(async ({ next, ctx }) => {
-  const status = await ctx.getStatus()
-  const sc = status.soundcloud
+  const sc = ctx.sc
 
   if (sc.status === 'stopped') {
     throw new TRPCError({
@@ -134,12 +130,11 @@ export const isSoundcloudAvailable = t.middleware(async ({ next, ctx }) => {
     })
   }
 
-  return next()
+  return next({ ctx: { sc } })
 })
 
 export const isSpotifyFriendActivityAvailable = t.middleware(async ({ next, ctx }) => {
-  const status = await ctx.getStatus()
-  const sp = status.spotify
+  const sp = ctx.sp
 
   if (sp.status === 'stopped') {
     throw new TRPCError({
@@ -170,12 +165,12 @@ export const isSpotifyFriendActivityAvailable = t.middleware(async ({ next, ctx 
       message: `Spotify ran into an error: ${toErrorString(sp.errors.friendActivity)}`,
       cause: sp.errors.friendActivity,
     })
-  } else if (!sp.features.friendActivity) {
+  } else if (!sp.friendActivity) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
       message: 'Spotify is not configured to use the Friend Activity API',
     })
   }
 
-  return next()
+  return next({ ctx: { sp } })
 })

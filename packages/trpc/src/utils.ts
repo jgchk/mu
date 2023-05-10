@@ -1,9 +1,8 @@
 import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
+import type { Context } from 'context'
 import { toErrorString } from 'utils'
 import { z } from 'zod'
-
-import type { Context } from './context'
 
 export const BoolLangString = z.string().transform((val, ctx) => {
   try {

@@ -1,6 +1,6 @@
+import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
 import { log } from 'log'
-import { makeDb, makeLastFm } from 'services'
 import { compareTwoStrings } from 'string-similarity'
 import { groupBy, toErrorString } from 'utils'
 import { parentPort } from 'worker_threads'

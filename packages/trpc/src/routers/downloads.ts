@@ -46,14 +46,14 @@ export const downloadsRouter = router({
             const dbPlaylist =
               ctx.db.soundcloudPlaylistDownloads.getByPlaylistId(input.id) ??
               ctx.db.soundcloudPlaylistDownloads.insert({ playlistId: input.id })
-            void ctx.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
+            void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
             return { id: dbPlaylist.id }
           }
           case 'track': {
             const dbTrack =
               ctx.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(input.id, null) ??
               ctx.db.soundcloudTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -64,14 +64,14 @@ export const downloadsRouter = router({
             const dbAlbum =
               ctx.db.spotifyAlbumDownloads.getByAlbumId(input.id) ??
               ctx.db.spotifyAlbumDownloads.insert({ albumId: input.id })
-            void ctx.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
+            void ctx.dl.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
             return { id: dbAlbum.id }
           }
           case 'track': {
             const dbTrack =
               ctx.db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(input.id, null) ??
               ctx.db.spotifyTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -86,7 +86,7 @@ export const downloadsRouter = router({
                 file: input.file,
                 status: 'pending',
               })
-            void ctx.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
           case 'tracks': {
@@ -120,7 +120,7 @@ export const downloadsRouter = router({
                 })
             )
             for (const dbTrack of dbTracks) {
-              void ctx.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+              void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             }
             return dbTracks.map((dbTrack) => ({ id: dbTrack.id }))
           }
@@ -131,7 +131,7 @@ export const downloadsRouter = router({
   retryTrackDownload: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(({ input: { service, id }, ctx }) => {
-      void ctx.download({ service, type: 'track', dbId: id })
+      void ctx.dl.download({ service, type: 'track', dbId: id })
     }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
