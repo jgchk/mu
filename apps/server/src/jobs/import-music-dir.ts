@@ -6,10 +6,12 @@ import fs from 'fs/promises'
 import { ImageManager } from 'image-manager'
 import { log } from 'log'
 import type { Metadata } from 'music-metadata'
-import { readTrackCoverArt, readTrackMetadata } from 'music-metadata'
+import { readTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { isAudio, tryOr } from 'utils'
-import { dirExists, fileExists, walkDir } from 'utils/node'
+import { isAudio } from 'utils'
+import { dirExists, walkDir } from 'utils/node'
+
+import { getCoverArtImage } from '../utils'
 
 const musicDir = env.MUSIC_DIR
 const imagesDir = env.IMAGES_DIR
@@ -51,7 +53,7 @@ async function handleFile(filePath_: string) {
   if (existingTrack) return false
 
   const metadata = await readTrackMetadata(filePath)
-  const image = await getCoverArtImage(filePath)
+  const image = await getCoverArtImage(imageManager, filePath)
 
   const albumArtists = metadata.albumArtists.map((name) => getArtist(name))
   const artists = metadata.artists.map((name) => getArtist(name))
@@ -78,41 +80,6 @@ async function handleFile(filePath_: string) {
   )
 
   return true
-}
-
-async function getCoverArtImage(filePath: string) {
-  // check for embedded art
-  const embeddedArt = await readTrackCoverArt(filePath)
-  if (embeddedArt) {
-    return imageManager.getImage(embeddedArt)
-  }
-
-  // check for art in the same directory
-  const dirPath = path.dirname(filePath)
-
-  const fileNames = ['cover', 'folder', 'album', 'front']
-  const fileExtensions = ['jpg', 'jpeg', 'png', 'gif']
-
-  const filePaths = fileNames.flatMap((fileName) =>
-    fileExtensions.map((fileExtension) => path.join(dirPath, `${fileName}.${fileExtension}`))
-  )
-
-  const image = await tryOr(
-    () =>
-      Promise.any(
-        filePaths.map(async (filePath) => {
-          const exists = await fileExists(filePath)
-          if (!exists) {
-            throw new Error('No album art found')
-          }
-
-          return imageManager.getImageFromFile(filePath)
-        })
-      ),
-    undefined
-  )
-
-  return image
 }
 
 function getArtist(name: string) {
