@@ -12,3 +12,13 @@ export const createRetryTrackDownloadMutation = (trpc: TRPCClient) =>
   trpc.downloads.retryTrackDownload.mutation({
     onSuccess: () => trpc.downloads.getAll.utils.invalidate(),
   })
+
+export const createDeleteTrackDownloadMutation = (trpc: TRPCClient) =>
+  trpc.downloads.deleteTrackDownload.mutation({
+    onSuccess: () => trpc.downloads.getAll.utils.invalidate(),
+  })
+
+export const createDeleteGroupDownloadMutation = (trpc: TRPCClient) =>
+  trpc.downloads.deleteGroupDownload.mutation({
+    onSuccess: () => trpc.downloads.getAll.utils.invalidate(),
+  })

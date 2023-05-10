@@ -1,8 +1,17 @@
 import type { DownloadStatus } from 'db'
+import fs from 'fs'
+import path from 'path'
 import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import {
+  deleteGroupDownload,
+  deleteTrackDownload,
+  getGroupDownload,
+  getGroupTrackDownloads,
+  getTrackDownload,
+} from '../utils'
 
 const SoundcloudDownloadRequest = z.object({
   service: z.literal('soundcloud'),
@@ -150,11 +159,43 @@ export const downloadsRouter = router({
       }
     }
   }),
+
   retryTrackDownload: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(({ input: { service, id }, ctx }) => {
       void ctx.dl.download({ service, type: 'track', dbId: id })
     }),
+
+  deleteTrackDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const track = getTrackDownload(ctx.db, input.service, input.id)
+      if (track.path !== null) {
+        await fs.promises.rm(path.resolve(track.path))
+      }
+      deleteTrackDownload(ctx.db, input.service, input.id)
+      return { success: true }
+    }),
+
+  deleteGroupDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const group = getGroupDownload(ctx.db, input.service, input.id)
+      const tracks = getGroupTrackDownloads(ctx.db, input.service, group.id)
+
+      await Promise.all(
+        tracks.map(async (track) => {
+          if (track.path !== null) {
+            await fs.promises.rm(path.resolve(track.path))
+          }
+          deleteTrackDownload(ctx.db, input.service, track.id)
+        })
+      )
+
+      deleteGroupDownload(ctx.db, input.service, group.id)
+      return { success: true }
+    }),
+
   getAll: publicProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
       [
