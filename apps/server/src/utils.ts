@@ -1,14 +1,17 @@
 import { env } from 'env'
 import { fileTypeStream } from 'file-type'
 import fs from 'fs'
+import type { ImageManager } from 'image-manager'
 import { isAnimatedGifStream } from 'is-animated-gif'
 import mime from 'mime-types'
+import { readTrackCoverArt } from 'music-metadata'
 import path from 'path'
 import type { OverlayOptions } from 'sharp'
 import sharp from 'sharp'
 import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
-import { streamToBuffer } from 'utils/node'
+import { capitalize, ifDefined, tryOr } from 'utils'
+import { fileExists, streamToBuffer } from 'utils/node'
 import { z } from 'zod'
 
 const handleResizeStream = async (
@@ -135,4 +138,51 @@ export const handleCreateCollage = async (
     .png()
 
   return { output: collage, contentType: 'image/png' }
+}
+
+export const getCoverArtImage = async (imageManager: ImageManager, filePath: string) => {
+  // check for embedded art
+  const embeddedArt = await readTrackCoverArt(filePath)
+  if (embeddedArt) {
+    return imageManager.getImage(embeddedArt)
+  }
+
+  // check for art in the same directory
+  const coverArtFile = await getCoverArtFile(filePath)
+  return ifDefined(coverArtFile, (imageFilePath) => imageManager.getImageFromFile(imageFilePath))
+}
+
+export const getCoverArtFile = async (filePath: string) => {
+  // check for art in the same directory
+  const dirPath = path.dirname(filePath)
+
+  const fileNames = ['cover', 'folder', 'album', 'front']
+  const fileExtensions = ['jpg', 'jpeg', 'png', 'gif']
+
+  const filePaths = fileNames.flatMap((fileName) => {
+    const capitalizedFileName = capitalize(fileName)
+    return [
+      ...fileExtensions.map((fileExtension) => path.join(dirPath, `${fileName}.${fileExtension}`)),
+      ...fileExtensions.map((fileExtension) =>
+        path.join(dirPath, `${capitalizedFileName}.${fileExtension}`)
+      ),
+    ]
+  })
+
+  const imageFilePath = await tryOr(
+    () =>
+      Promise.any(
+        filePaths.map(async (filePath) => {
+          const exists = await fileExists(filePath)
+          if (!exists) {
+            throw new Error('No album art found')
+          }
+
+          return filePath
+        })
+      ),
+    undefined
+  )
+
+  return imageFilePath
 }
