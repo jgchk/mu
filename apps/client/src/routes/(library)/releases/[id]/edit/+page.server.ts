@@ -63,7 +63,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
       tracks: tracks.map((track) => ({
         id: track.id,
         title: track.title ?? undefined,
-        artists: release.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
+        artists: track.artists.map((artist) => ({ action: 'connect', id: artist.id } as const)),
       })),
     },
     schema
