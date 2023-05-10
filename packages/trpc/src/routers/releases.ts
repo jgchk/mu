@@ -135,18 +135,20 @@ export const releasesRouter = router({
             filename += track.title ?? '[untitled]'
             filename += path.extname(existingDbTrack.path)
 
-            const newPath = path.join(
-              env.MUSIC_DIR,
-              filenamify(
-                albumArtists.length > 0
-                  ? albumArtists.map((artist) => artist.name).join(', ')
-                  : '[unknown]'
-              ),
-              filenamify(albumTitle || '[untitled]'),
-              filenamify(filename)
+            const newPath = path.resolve(
+              path.join(
+                env.MUSIC_DIR,
+                filenamify(
+                  albumArtists.length > 0
+                    ? albumArtists.map((artist) => artist.name).join(', ')
+                    : '[unknown]'
+                ),
+                filenamify(albumTitle || '[untitled]'),
+                filenamify(filename)
+              )
             )
 
-            if (path.resolve(existingDbTrack.path) !== path.resolve(newPath)) {
+            if (existingDbTrack.path !== newPath) {
               await ensureDir(path.dirname(newPath))
               await fs.rename(existingDbTrack.path, newPath)
             }
