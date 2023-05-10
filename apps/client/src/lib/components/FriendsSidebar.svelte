@@ -29,7 +29,7 @@
   const editLink = createEditLink(['spotify', 'last-fm'])
 </script>
 
-<div class="flex w-72 shrink-0 flex-col overflow-hidden rounded bg-gray-900">
+<div class="flex w-72 shrink-0 flex-col overflow-hidden rounded bg-gray-900 h-full">
   <div class="flex-1 space-y-6 overflow-auto p-4 pt-3">
     {#if $tab === 'lastfm'}
       <FriendsSidebarLastFm />

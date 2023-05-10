@@ -84,6 +84,8 @@
       {/if}
     </div>
 
-    <FriendsSidebar />
+    <div class="hidden lg:block">
+      <FriendsSidebar />
+    </div>
   </div>
 </QueryClientProvider>
