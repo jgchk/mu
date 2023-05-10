@@ -1,21 +1,22 @@
+import type { DownloadStatus } from 'db'
 import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
 
-const SoundcloudDownload = z.object({
+const SoundcloudDownloadRequest = z.object({
   service: z.literal('soundcloud'),
   kind: z.enum(['track', 'playlist']),
   id: z.number(),
 })
 
-const SpotifyDownload = z.object({
+const SpotifyDownloadRequest = z.object({
   service: z.literal('spotify'),
   kind: z.enum(['track', 'album']),
   id: z.string(),
 })
 
-const SoulseekDownload = z
+const SoulseekDownloadRequest = z
   .object({
     service: z.literal('soulseek'),
     kind: z.enum(['track']),
@@ -35,7 +36,28 @@ const SoulseekDownload = z
     })
   )
 
-const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload])
+const DownloadRequest = z.union([
+  SoundcloudDownloadRequest,
+  SpotifyDownloadRequest,
+  SoulseekDownloadRequest,
+])
+
+type GroupDownloadType = {
+  service: 'soundcloud' | 'spotify' | 'soulseek'
+  id: number
+  name: string | undefined
+  createdAt: Date
+}
+type TrackDownloadType = {
+  service: 'soundcloud' | 'spotify' | 'soulseek'
+  id: number
+  parentId: number | undefined
+  status: DownloadStatus
+  progress: number | undefined
+  error: unknown | undefined
+  name: string | undefined
+  createdAt: Date
+}
 
 export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
@@ -212,9 +234,6 @@ export const downloadsRouter = router({
       tracks: [...scTracks, ...spTracks, ...slskTracks],
     }
 
-    type GroupDownloadType = (typeof rawData.groups)[number]
-    type TrackDownloadType = (typeof rawData.tracks)[number]
-
     const groupedData: {
       groups: { [id: string]: GroupDownloadType & { tracks: TrackDownloadType[] } }
       tracks: TrackDownloadType[]
@@ -225,8 +244,14 @@ export const downloadsRouter = router({
       tracks: [],
     }
 
-    for (const track of rawData.tracks) {
-      if (track.parentId === null) {
+    for (const track_ of rawData.tracks) {
+      const track = {
+        ...track_,
+        parentId: track_.parentId ?? undefined,
+        progress: track_.progress ?? undefined,
+        error: track_.error ?? undefined,
+      }
+      if (track.parentId === undefined) {
         groupedData.tracks.push(track)
       } else {
         groupedData.groups[`${track.service}-${track.parentId}`].tracks.push(track)
