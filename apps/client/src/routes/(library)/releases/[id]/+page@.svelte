@@ -65,7 +65,7 @@
 
         <div class="space-y-1 pb-2">
           <h1
-            class="mr-11 line-clamp-2 break-all text-3xl lg:text-4xl xl:text-6xl font-bold leading-[1.19]"
+            class="mr-11 line-clamp-2 break-all text-2xl sm:text-3xl md:text-4xl xl:text-5xl 2xl:text-6xl font-bold leading-[1.19]"
             title={release.title}
           >
             {release.title}
