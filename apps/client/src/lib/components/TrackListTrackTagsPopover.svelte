@@ -3,18 +3,19 @@
   import { ifDefined } from 'utils'
 
   import type { PopperTooltipAction } from '$lib/actions/popper'
-  import { createTrackTagMutation, createTrackTagsQuery } from '$lib/services/tags'
+  import { createTrackTagMutation } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
+  import type { RouterOutput } from '$lib/trpc'
 
   import TagsPopover from './TagsPopover.svelte'
 
   export let trackId: number
+  export let trackTags: RouterOutput['tags']['getByTrack'] | undefined
 
   export let popperTooltip: PopperTooltipAction
 
   const trpc = getContextClient()
-  const trackTagsQuery = createTrackTagsQuery(trpc, trackId)
-  $: selectedTagIds = ifDefined($trackTagsQuery.data, (tags) => tags.map((t) => t.id)) ?? []
+  $: selectedTagIds = ifDefined(trackTags, (tags) => tags.map((t) => t.id)) ?? []
 
   const tagMutation = createTrackTagMutation(trpc)
   const handleTag = (tagId: number, tagged: boolean) => {

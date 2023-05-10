@@ -43,3 +43,6 @@ export const prefetchArtistTracksQuery = (
   trpc: TRPCClient,
   input: RouterInput['artists']['tracks']
 ) => trpc.artists.tracks.prefetchQuery(input)
+
+export const fetchArtistTracksQuery = (trpc: TRPCClient, input: RouterInput['artists']['tracks']) =>
+  trpc.artists.tracks.fetchQuery(input)

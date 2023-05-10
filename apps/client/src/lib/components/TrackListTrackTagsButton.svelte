@@ -5,6 +5,8 @@
   import { createPopperAction } from '$lib/actions/popper'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
+  import TagOutlineIcon from '$lib/icons/TagOutlineIcon.svelte'
+  import { createTrackTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
   import TagsPopover from './TrackListTrackTagsPopover.svelte'
@@ -16,6 +18,9 @@
   const [popperElement, popperTooltip] = createPopperAction()
 
   const trpc = getContextClient()
+  const trackTagsQuery = createTrackTagsQuery(trpc, trackId)
+  $: hasTags = !!$trackTagsQuery.data?.length
+
   const close = () => {
     void trpc.tracks.getByTag.utils.invalidate()
     void trpc.playlists.tracks.utils.invalidate()
@@ -36,10 +41,14 @@
       }
     }}
   >
-    <TagIcon />
+    {#if hasTags}
+      <TagIcon />
+    {:else}
+      <TagOutlineIcon />
+    {/if}
   </IconButton>
 
   {#if showAddTagPopover}
-    <TagsPopover {trackId} {popperTooltip} on:close={close} />
+    <TagsPopover {trackId} trackTags={$trackTagsQuery.data} {popperTooltip} on:close={close} />
   {/if}
 </div>
