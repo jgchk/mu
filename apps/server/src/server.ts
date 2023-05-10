@@ -31,11 +31,9 @@ const main = async () => {
     process.once(sig, () => {
       if (shuttingDown) return
       shuttingDown = true
-
       log.info('Shutting down...')
-      void bree.stop()
-      ctx.destroy()
-      void apiServer.close()
+
+      void Promise.all([ctx.destroy(), bree.stop(), apiServer.close()])
     })
   }
 }
