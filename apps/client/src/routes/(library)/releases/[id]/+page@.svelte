@@ -49,13 +49,13 @@
           disabled={!tracks?.length}
           on:click={() => tracks && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
         >
-          <div class="relative w-64 shrink-0">
+          <div class="relative w-32 lg:w-48 xl:w-64 shrink-0">
             <CoverArt
               src={release.imageId !== null
                 ? makeImageUrl(release.imageId, { size: 512 })
                 : undefined}
               alt={release.title}
-              iconClass="w-16 h-16"
+              iconClass="w-8 h-8 lg:w-16 lg:h-16"
               hoverable={!!tracks?.length}
             >
               <PlayIcon />
@@ -65,7 +65,7 @@
 
         <div class="space-y-1 pb-2">
           <h1
-            class="mr-11 line-clamp-2 break-all text-6xl font-bold leading-[1.19]"
+            class="mr-11 line-clamp-2 break-all text-3xl lg:text-4xl xl:text-6xl font-bold leading-[1.19]"
             title={release.title}
           >
             {release.title}
