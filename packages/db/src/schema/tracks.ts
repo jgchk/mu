@@ -1,7 +1,7 @@
 import type Database from 'better-sqlite3'
 import type { BoolLang } from 'bool-lang'
 import type { InferModel, SQL } from 'drizzle-orm'
-import { and, asc, desc, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, not, or, sql } from 'drizzle-orm'
 import type { SQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
@@ -74,9 +74,8 @@ export type TracksMixin = {
   tracks: {
     insert: (track: InsertTrackPretty) => TrackPretty
     update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty
-    getBySimilarTitle: (title: NonNullable<Track['title']>) => TrackPretty[]
     getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => TrackPretty[]
-    getByArtistAndSimilarTitle: (
+    getByArtistAndTitleCaseInsensitive: (
       artistId: Artist['id'],
       title: NonNullable<Track['title']>
     ) => TrackPretty[]
@@ -91,7 +90,6 @@ export type TracksMixin = {
     getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
 
-    preparedQueries: PreparedQueries
     withFilter: <
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       S extends Record<string, any>,
@@ -102,21 +100,6 @@ export type TracksMixin = {
     ) => Q
   }
 }
-
-type PreparedQueries = ReturnType<typeof prepareQueries>
-const prepareQueries = (db: DatabaseBase['db']) => ({
-  getTracksBySimilarTitle: db
-    .select()
-    .from(tracks)
-    .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
-    .prepare(),
-  getTracksByArtistAndSimilarTitle: db
-    .select()
-    .from(tracks)
-    .where(eq(trackArtists.artistId, placeholder('artistId')))
-    .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
-    .prepare(),
-})
 
 export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
   Base: TBase
@@ -140,12 +123,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         )
       },
 
-      getBySimilarTitle: (title) => {
-        return this.tracks.preparedQueries.getTracksBySimilarTitle
-          .all({ title: `%${title.toLowerCase()}%` })
-          .map(convertTrack)
-      },
-
       getByArtist: (artistId, filter) => {
         let query = this.db
           .select({
@@ -164,9 +141,13 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
-      getByArtistAndSimilarTitle: (artistId, title) => {
-        return this.tracks.preparedQueries.getTracksByArtistAndSimilarTitle
-          .all({ artistId, title: `%${title.toLowerCase()}%` })
+      getByArtistAndTitleCaseInsensitive: (artistId, title) => {
+        return this.db
+          .select()
+          .from(tracks)
+          .where(eq(trackArtists.artistId, artistId))
+          .where(sql`lower(${tracks.title}) = '${title.toLowerCase()}'`)
+          .all()
           .map(convertTrack)
       },
 
@@ -225,8 +206,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       delete: (id) => {
         return this.db.delete(tracks).where(eq(tracks.id, id)).run()
       },
-
-      preparedQueries: prepareQueries(this.db),
 
       withFilter: (query_, filter) => {
         let query = query_

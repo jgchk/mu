@@ -1,7 +1,7 @@
 import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
+import { distance } from 'fastest-levenshtein'
 import { log } from 'log'
-import { compareTwoStrings } from 'string-similarity'
 import { groupBy, toErrorString } from 'utils'
 import { parentPort } from 'worker_threads'
 
@@ -41,15 +41,12 @@ const groupedTracks = groupBy(lovedTracks, (track) => track.artist.mbid)
 const tryMatchTrack = (dbArtists: Artist[], lfmTrack: (typeof lovedTracks)[number]) => {
   for (const dbArtist of dbArtists) {
     const dbTrack = db.tracks
-      .getByArtistAndSimilarTitle(dbArtist.id, lfmTrack.name)
+      .getByArtistAndTitleCaseInsensitive(dbArtist.id, lfmTrack.name)
       .map((dbMatch) => ({
         dbMatch,
-        similarity: compareTwoStrings(
-          (dbMatch.title ?? '').toLowerCase(),
-          lfmTrack.name.toLowerCase()
-        ),
+        distance: distance((dbMatch.title ?? '').toLowerCase(), lfmTrack.name.toLowerCase()),
       }))
-      .sort((a, b) => b.similarity - a.similarity)
+      .sort((a, b) => a.distance - b.distance)
       .at(0)?.dbMatch
 
     if (!dbTrack) {
@@ -74,9 +71,9 @@ for (const tracks of groupedTracks.values()) {
     .getBySimilarName(artist.name)
     .map((dbMatch) => ({
       dbMatch,
-      similarity: compareTwoStrings(dbMatch.name.toLowerCase(), artist.name.toLowerCase()),
+      distance: distance(dbMatch.name.toLowerCase(), artist.name.toLowerCase()),
     }))
-    .sort((a, b) => b.similarity - a.similarity)
+    .sort((a, b) => a.distance - b.distance)
     .map((a) => a.dbMatch)
 
   if (dbArtists.length === 0) {
