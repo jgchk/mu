@@ -43,14 +43,22 @@ export const ImagesMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getNumberOfUses: (id) => {
-        return this.db
-          .select({ id: images.id })
-          .from(images)
-          .where(eq(images.id, id))
-          .innerJoin(tracks, eq(images.id, tracks.imageId))
-          .innerJoin(playlists, eq(images.id, playlists.imageId))
-          .innerJoin(artists, eq(images.id, artists.imageId))
+        const tracks_ = this.db
+          .select({ id: tracks.id })
+          .from(tracks)
+          .where(eq(tracks.imageId, id))
           .all().length
+        const artists_ = this.db
+          .select({ id: artists.id })
+          .from(artists)
+          .where(eq(artists.imageId, id))
+          .all().length
+        const playlists_ = this.db
+          .select({ id: playlists.id })
+          .from(playlists)
+          .where(eq(playlists.imageId, id))
+          .all().length
+        return tracks_ + artists_ + playlists_
       },
 
       findHash: (hash) => {
