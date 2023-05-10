@@ -7,8 +7,10 @@
   import LibraryLink from './LibraryLink.svelte'
 </script>
 
-<div class="flex h-full gap-2">
-  <div class="w-48 overflow-auto rounded bg-gray-900 py-2">
+<div class="flex h-full gap-2 flex-col md:flex-row">
+  <div
+    class="overflow-auto rounded bg-gray-900 py-2 order-2 md:order-1 flex flex-row md:flex-col w-full md:w-48 justify-around md:justify-start"
+  >
     <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
     <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
@@ -22,7 +24,7 @@
     {/if}
   </div>
 
-  <div class="h-full flex-1 overflow-auto">
+  <div class="h-full flex-1 overflow-auto order-1 md:order-2">
     <slot />
   </div>
 </div>
