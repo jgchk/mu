@@ -198,7 +198,7 @@
     </div>
   </div>
 
-  <div class="flex-[2.25] items-center justify-end gap-1 hidden lg:flex">
+  <div class="hidden flex-[2.25] items-center justify-end gap-1 lg:flex">
     <IconButton
       kind="text"
       tooltip="Queue"

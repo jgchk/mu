@@ -30,7 +30,7 @@
 </script>
 
 <div
-  class="group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700 grid-cols-[6fr_4fr_1fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]"
+  class="group/track grid select-none grid-cols-[6fr_4fr_1fr_auto] items-center gap-2 rounded p-1.5 hover:bg-gray-700 sm:grid-cols-[auto_6fr_4fr_1fr_auto]"
   on:dblclick={() => play()}
 >
   <div class="hidden sm:block">
