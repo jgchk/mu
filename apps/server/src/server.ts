@@ -1,4 +1,5 @@
 import Bree from 'bree'
+import type { Context } from 'context'
 import { makeContext } from 'context'
 import { env } from 'env'
 import { log } from 'log'
@@ -8,43 +9,13 @@ import { fileURLToPath } from 'url'
 import { makeApiServer } from './api'
 
 const main = async () => {
-  const bree = new Bree({
-    root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
-    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
-    logger: log,
-    errorHandler: (error, workerMetadata) => {
-      log.error(error)
-      log.error(workerMetadata)
-    },
-    workerMessageHandler: ({ name, message }) => {
-      log.debug(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions
-        `Worker for job "${name}" sent a message: ${JSON.stringify(message).slice(0, 4096)}`
-      )
-    },
-  })
-  await bree.start()
-
   const ctx = await makeContext()
 
-  // Resume downloads
-  for (const download of ctx.db.soundcloudPlaylistDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
-  }
-  for (const download of ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(null)) {
-    void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
-  }
-  for (const download of ctx.db.spotifyAlbumDownloads.getAll()) {
-    void ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })
-  }
-  for (const download of ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(null)) {
-    void ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })
-  }
-  for (const download of ctx.db.soulseekTrackDownloads.getAll()) {
-    void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
-  }
-
-  const apiServer = await makeApiServer(ctx)
+  const [bree, apiServer] = await Promise.all([
+    startBree(),
+    makeApiServer(ctx),
+    resumeDownloads(ctx),
+  ])
 
   apiServer.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }, (err, address) => {
     if (err) {
@@ -62,10 +33,56 @@ const main = async () => {
       shuttingDown = true
 
       log.info('Shutting down...')
-      void ctx.destroy()
+      void bree.stop()
+      ctx.destroy()
       void apiServer.close()
     })
   }
 }
+
+const startBree = async () => {
+  const bree = new Bree({
+    root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
+    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
+    logger: log,
+    errorHandler: (error, workerMetadata) => {
+      log.error(error)
+      log.error(workerMetadata)
+    },
+    workerMessageHandler: ({ name, message }) => {
+      log.debug(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions
+        `Worker for job "${name}" sent a message: ${JSON.stringify(message).slice(0, 4096)}`
+      )
+    },
+  })
+  await bree.start()
+  return bree
+}
+
+const resumeDownloads = (ctx: Context) =>
+  Promise.all([
+    ...ctx.db.soundcloudPlaylistDownloads
+      .getAll()
+      .map((download) =>
+        ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: download.id })
+      ),
+    ...ctx.db.soundcloudTrackDownloads
+      .getByPlaylistDownloadId(null)
+      .map((download) =>
+        ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: download.id })
+      ),
+    ...ctx.db.spotifyAlbumDownloads
+      .getAll()
+      .map((download) => ctx.dl.download({ service: 'spotify', type: 'album', dbId: download.id })),
+    ...ctx.db.spotifyTrackDownloads
+      .getByAlbumDownloadId(null)
+      .map((download) => ctx.dl.download({ service: 'spotify', type: 'track', dbId: download.id })),
+    ...ctx.db.soulseekTrackDownloads
+      .getAll()
+      .map((download) =>
+        ctx.dl.download({ service: 'soulseek', type: 'track', dbId: download.id })
+      ),
+  ])
 
 void main()
