@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "execa": "^7.1.1",
-    "file-type": "^18.2.1",
+    "file-type": "^18.3.0",
     "got": "^12.6.0",
     "m3u8-parser": "^6.0.0",
     "utils": "workspace:*",

@@ -32,6 +32,11 @@ export const prefetchPlaylistTracksQuery = (
   input: RouterInput['playlists']['tracks']
 ) => trpc.playlists.tracks.prefetchQuery(input)
 
+export const fetchPlaylistTracksQuery = (
+  trpc: TRPCClient,
+  input: RouterInput['playlists']['tracks']
+) => trpc.playlists.tracks.fetchQuery(input)
+
 export const createNewPlaylistMutation = (
   trpc: TRPCClient,
   options?: RouterOptions['playlists']['new']

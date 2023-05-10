@@ -23,6 +23,11 @@ export const prefetchAllTracksWithArtistsAndReleaseQuery = (
   input: RouterInput['tracks']['getAllWithArtistsAndRelease']
 ) => trpc.tracks.getAllWithArtistsAndRelease.prefetchInfiniteQuery(input)
 
+export const fetchAllTracksWithArtistsAndReleaseQuery = (
+  trpc: TRPCClient,
+  input: RouterInput['tracks']['getAllWithArtistsAndRelease']
+) => trpc.tracks.getAllWithArtistsAndRelease.fetchInfiniteQuery(input)
+
 export const createFavoriteTrackMutation = (
   trpc: TRPCClient,
   optimistic?: {

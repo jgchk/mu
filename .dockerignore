@@ -35,4 +35,5 @@ yarn-error.log*
 /apps/server/downloads
 /apps/server/music
 /apps/server/images
+/packages/spotify/downloader/target
 **/db.sqlite

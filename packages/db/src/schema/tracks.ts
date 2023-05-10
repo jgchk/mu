@@ -74,9 +74,8 @@ export type TracksMixin = {
   tracks: {
     insert: (track: InsertTrackPretty) => TrackPretty
     update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty
-    getBySimilarTitle: (title: NonNullable<Track['title']>) => TrackPretty[]
     getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => TrackPretty[]
-    getByArtistAndSimilarTitle: (
+    getByArtistAndTitleCaseInsensitive: (
       artistId: Artist['id'],
       title: NonNullable<Track['title']>
     ) => TrackPretty[]
@@ -105,16 +104,11 @@ export type TracksMixin = {
 
 type PreparedQueries = ReturnType<typeof prepareQueries>
 const prepareQueries = (db: DatabaseBase['db']) => ({
-  getTracksBySimilarTitle: db
-    .select()
-    .from(tracks)
-    .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
-    .prepare(),
-  getTracksByArtistAndSimilarTitle: db
+  getByArtistAndTitleCaseInsensitive: db
     .select()
     .from(tracks)
     .where(eq(trackArtists.artistId, placeholder('artistId')))
-    .where(sql`lower(${tracks.title}) like ${placeholder('title')}`)
+    .where(sql`lower(${tracks.title}) = ${placeholder('title')}`)
     .prepare(),
 })
 
@@ -140,12 +134,6 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         )
       },
 
-      getBySimilarTitle: (title) => {
-        return this.tracks.preparedQueries.getTracksBySimilarTitle
-          .all({ title: `%${title.toLowerCase()}%` })
-          .map(convertTrack)
-      },
-
       getByArtist: (artistId, filter) => {
         let query = this.db
           .select({
@@ -164,9 +152,12 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
-      getByArtistAndSimilarTitle: (artistId, title) => {
-        return this.tracks.preparedQueries.getTracksByArtistAndSimilarTitle
-          .all({ artistId, title: `%${title.toLowerCase()}%` })
+      getByArtistAndTitleCaseInsensitive: (artistId, title) => {
+        return this.tracks.preparedQueries.getByArtistAndTitleCaseInsensitive
+          .all({
+            artistId,
+            title: title.toLowerCase(),
+          })
           .map(convertTrack)
       },
 

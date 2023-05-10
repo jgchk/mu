@@ -34,3 +34,6 @@ yarn-error.log*
 
 # docker
 /docker-data
+
+# local scripts
+publish

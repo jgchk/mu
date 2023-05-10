@@ -1,4 +1,4 @@
-FROM node:alpine AS builder
+FROM node:18-alpine AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 
@@ -15,7 +15,7 @@ COPY . .
 RUN turbo prune --scope=server --docker
 
 # Add lockfile and package.json's of isolated subworkspace
-FROM node:alpine AS installer
+FROM node:18-alpine AS installer
 RUN apk add --no-cache libc6-compat
 # Install python/pip
 ENV PYTHONUNBUFFERED=1
@@ -61,6 +61,7 @@ RUN pnpm turbo run build --filter=spotify
 COPY --from=builder /app/out/full/apps/client ./apps/client
 COPY --from=builder /app/out/full/apps/server ./apps/server
 COPY --from=builder /app/out/full/packages/bool-lang ./packages/bool-lang
+COPY --from=builder /app/out/full/packages/context ./packages/context
 COPY --from=builder /app/out/full/packages/db ./packages/db
 COPY --from=builder /app/out/full/packages/downloader ./packages/downloader
 COPY --from=builder /app/out/full/packages/env ./packages/env
@@ -69,13 +70,16 @@ COPY --from=builder /app/out/full/packages/image-manager ./packages/image-manage
 COPY --from=builder /app/out/full/packages/last-fm ./packages/last-fm
 COPY --from=builder /app/out/full/packages/log ./packages/log
 COPY --from=builder /app/out/full/packages/music-metadata ./packages/music-metadata
-COPY --from=builder /app/out/full/packages/services ./packages/services
 COPY --from=builder /app/out/full/packages/soundcloud ./packages/soundcloud
 COPY --from=builder /app/out/full/packages/trpc ./packages/trpc
 COPY --from=builder /app/out/full/packages/utils ./packages/utils
 RUN pnpm turbo run build --filter=server...
 
-FROM node:alpine AS runner
+# Delete unnecessary rust build files
+RUN rm -r ./packages/spotify/downloader/target/release/build
+RUN rm -r ./packages/spotify/downloader/target/release/deps
+
+FROM node:18-alpine AS runner
 
 # Install python/pip
 ENV PYTHONUNBUFFERED=1

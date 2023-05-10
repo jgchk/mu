@@ -1,3 +1,4 @@
+import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
@@ -135,7 +136,7 @@ export const releasesRouter = router({
             filename += path.extname(existingDbTrack.path)
 
             const newPath = path.join(
-              ctx.musicDir,
+              env.MUSIC_DIR,
               filenamify(
                 albumArtists.length > 0
                   ? albumArtists.map((artist) => artist.name).join(', ')

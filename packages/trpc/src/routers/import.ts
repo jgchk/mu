@@ -1,11 +1,4 @@
-import type {
-  SoulseekReleaseDownload,
-  SoulseekTrackDownload,
-  SoundcloudPlaylistDownload,
-  SoundcloudTrackDownload,
-  SpotifyAlbumDownload,
-  SpotifyTrackDownload,
-} from 'db'
+import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -23,6 +16,13 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import {
+  deleteGroupDownload,
+  deleteTrackDownload,
+  getGroupDownload,
+  getGroupTrackDownloads,
+  getTrackDownload,
+} from '../utils'
 
 type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -37,26 +37,10 @@ export const importRouter = router({
   groupDownloadData: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
-      let releaseDownload
-      let trackDownloads
-      let completeDownloads
-
-      if (input.service === 'soulseek') {
-        releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
-        trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
-      } else if (input.service === 'soundcloud') {
-        releaseDownload = ctx.db.soundcloudPlaylistDownloads.get(input.id)
-        trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
-      } else if (input.service === 'spotify') {
-        releaseDownload = ctx.db.spotifyAlbumDownloads.get(input.id)
-        trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(releaseDownload.id)
-        completeDownloads = trackDownloads.filter(isDownloadComplete)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Invalid service: ${input.service}`)
-      }
+      const releaseDownload = getGroupDownload(ctx.db, input.service, input.id)
+      const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
+        getGroupTrackDownloads(ctx.db, input.service, releaseDownload.id)
+      const completeDownloads = trackDownloads.filter(isDownloadComplete)
 
       if (completeDownloads.length !== trackDownloads.length) {
         throw new Error('Not all downloads are complete')
@@ -146,6 +130,7 @@ export const importRouter = router({
           })),
       }
     }),
+
   groupDownloadManual: publicProcedure
     .input(
       z.object({
@@ -167,24 +152,9 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      let releaseDownload:
-        | SoulseekReleaseDownload
-        | SoundcloudPlaylistDownload
-        | SpotifyAlbumDownload
-      let trackDownloads: (SoulseekTrackDownload | SoundcloudTrackDownload | SpotifyTrackDownload)[]
-      if (input.service === 'soulseek') {
-        releaseDownload = ctx.db.soulseekReleaseDownloads.get(input.id)
-        trackDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(releaseDownload.id)
-      } else if (input.service === 'soundcloud') {
-        releaseDownload = ctx.db.soundcloudPlaylistDownloads.get(input.id)
-        trackDownloads = ctx.db.soundcloudTrackDownloads.getByPlaylistDownloadId(releaseDownload.id)
-      } else if (input.service === 'spotify') {
-        releaseDownload = ctx.db.spotifyAlbumDownloads.get(input.id)
-        trackDownloads = ctx.db.spotifyTrackDownloads.getByAlbumDownloadId(releaseDownload.id)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Invalid service: ${input.service}`)
-      }
+      const releaseDownload = getGroupDownload(ctx.db, input.service, input.id)
+      const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
+        getGroupTrackDownloads(ctx.db, input.service, releaseDownload.id)
 
       const completeDownloads = trackDownloads.filter(isDownloadComplete)
       if (completeDownloads.length !== trackDownloads.length) {
@@ -242,7 +212,7 @@ export const importRouter = router({
 
           const newPath = path.resolve(
             path.join(
-              ctx.musicDir,
+              env.MUSIC_DIR,
               filenamify(
                 albumArtists.length > 0
                   ? albumArtists.map((artist) => artist.name).join(', ')
@@ -293,12 +263,7 @@ export const importRouter = router({
           }
 
           let favorite = false
-          const status = await ctx.getStatus()
-          if (
-            status.lastFm.status === 'logged-in' &&
-            metadata.title !== null &&
-            artists.length > 0
-          ) {
+          if (ctx.lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
             favorite = await ctx.lfm.getLovedTrack({
               track: metadata.title,
               artist: artists.map((artist) => artist.name).join(', '),
@@ -319,32 +284,14 @@ export const importRouter = router({
             artists.map((a) => a.id)
           )
 
-          if (input.service === 'soulseek') {
-            ctx.db.soulseekTrackDownloads.delete(download.dbDownload.id)
-          } else if (input.service === 'soundcloud') {
-            ctx.db.soundcloudTrackDownloads.delete(download.dbDownload.id)
-          } else if (input.service === 'spotify') {
-            ctx.db.spotifyTrackDownloads.delete(download.dbDownload.id)
-          } else {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            throw new Error(`Invalid service: ${input.service}`)
-          }
+          deleteTrackDownload(ctx.db, input.service, download.dbDownload.id)
 
           return { track: dbTrack, artists: dbTrackArtists }
         })
       )
 
       if (trackDownloads.length === downloads.length) {
-        if (input.service === 'soulseek') {
-          ctx.db.soulseekReleaseDownloads.delete(releaseDownload.id)
-        } else if (input.service === 'soundcloud') {
-          ctx.db.soundcloudPlaylistDownloads.delete(releaseDownload.id)
-        } else if (input.service === 'spotify') {
-          ctx.db.spotifyAlbumDownloads.delete(releaseDownload.id)
-        } else {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          throw new Error(`Invalid service: ${input.service}`)
-        }
+        deleteGroupDownload(ctx.db, input.service, releaseDownload.id)
       }
 
       return {
@@ -352,20 +299,11 @@ export const importRouter = router({
         tracks: dbTracks,
       }
     }),
+
   trackDownloadData: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
-    .query(async ({ input: { service, id }, ctx }) => {
-      let dbDownload
-      if (service === 'soulseek') {
-        dbDownload = ctx.db.soulseekTrackDownloads.get(id)
-      } else if (service === 'soundcloud') {
-        dbDownload = ctx.db.soundcloudTrackDownloads.get(id)
-      } else if (service === 'spotify') {
-        dbDownload = ctx.db.spotifyTrackDownloads.get(id)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Invalid service: ${service}`)
-      }
+    .query(async ({ input, ctx }) => {
+      const dbDownload = getTrackDownload(ctx.db, input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -417,6 +355,7 @@ export const importRouter = router({
         art: coverArt?.toString('base64'),
       }
     }),
+
   trackDownloadManual: publicProcedure
     .input(
       z.object({
@@ -435,17 +374,7 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      let dbDownload
-      if (input.service === 'soulseek') {
-        dbDownload = ctx.db.soulseekTrackDownloads.get(input.id)
-      } else if (input.service === 'soundcloud') {
-        dbDownload = ctx.db.soundcloudTrackDownloads.get(input.id)
-      } else if (input.service === 'spotify') {
-        dbDownload = ctx.db.spotifyTrackDownloads.get(input.id)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Invalid service: ${input.service}`)
-      }
+      const dbDownload = getTrackDownload(ctx.db, input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -494,7 +423,7 @@ export const importRouter = router({
 
       const newPath = path.resolve(
         path.join(
-          ctx.musicDir,
+          env.MUSIC_DIR,
           filenamify(
             albumArtists.length > 0
               ? albumArtists.map((artist) => artist.name).join(', ')
@@ -533,12 +462,7 @@ export const importRouter = router({
       }
 
       let favorite = false
-      const status = await ctx.getStatus()
-      if (
-        status.lastFm.status === 'logged-in' &&
-        metadata.title !== null &&
-        trackArtists.length > 0
-      ) {
+      if (ctx.lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
         favorite = await ctx.lfm.getLovedTrack({
           track: metadata.title,
           artist: trackArtists.map((artist) => artist.name).join(', '),
@@ -559,16 +483,7 @@ export const importRouter = router({
         trackArtists.map((a) => a.id)
       )
 
-      if (input.service === 'soulseek') {
-        ctx.db.soulseekTrackDownloads.delete(dbDownload.id)
-      } else if (input.service === 'soundcloud') {
-        ctx.db.soundcloudTrackDownloads.delete(dbDownload.id)
-      } else if (input.service === 'spotify') {
-        ctx.db.spotifyTrackDownloads.delete(dbDownload.id)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Invalid service: ${input.service}`)
-      }
+      deleteTrackDownload(ctx.db, input.service, input.id)
 
       return {
         release: dbRelease,

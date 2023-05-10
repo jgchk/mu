@@ -39,6 +39,7 @@ const config: Options = {
   format: ['esm'],
   platform: 'node',
   noExternal: [
+    'context',
     'db',
     'downloader',
     'env',
@@ -46,7 +47,6 @@ const config: Options = {
     'last-fm',
     'log',
     'music-metadata',
-    'services',
     'soundcloud',
     'spotify',
     'trpc',

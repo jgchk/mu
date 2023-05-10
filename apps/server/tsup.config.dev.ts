@@ -6,6 +6,7 @@ export default defineConfig({
   ...baseConfig,
   watch: [
     'src',
+    '../../packages/context',
     '../../packages/db',
     '../../packages/downloader',
     '../../packages/env',

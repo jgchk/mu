@@ -1,5 +1,5 @@
-import { prefetchPlaylistQuery, prefetchPlaylistTracksQuery } from '$lib/services/playlists'
-import { prefetchTagsQuery } from '$lib/services/tags'
+import { fetchPlaylistTracksQuery, prefetchPlaylistQuery } from '$lib/services/playlists'
+import { prefetchTagsQuery, prefetchTrackTagsQuery } from '$lib/services/tags'
 import { getTracksSort } from '$lib/tracks-sort'
 import { paramNumber } from '$lib/utils/params'
 
@@ -20,7 +20,9 @@ export const load: PageLoad = async ({ parent, params, url }) => {
   const { trpc } = await parent()
   await Promise.all([
     prefetchPlaylistQuery(trpc, id),
-    prefetchPlaylistTracksQuery(trpc, tracksQuery),
+    fetchPlaylistTracksQuery(trpc, tracksQuery).then((tracks) =>
+      Promise.all(tracks.map((track) => prefetchTrackTagsQuery(trpc, track.id)))
+    ),
     prefetchTagsQuery(trpc),
   ])
 

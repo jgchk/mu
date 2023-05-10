@@ -3,8 +3,12 @@
 
   import { tooltip } from '$lib/actions/tooltip'
   import IconButton from '$lib/atoms/IconButton.svelte'
+  import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import RefreshIcon from '$lib/icons/RefreshIcon.svelte'
-  import { createRetryTrackDownloadMutation } from '$lib/services/downloads'
+  import {
+    createDeleteTrackDownloadMutation,
+    createRetryTrackDownloadMutation,
+  } from '$lib/services/downloads'
   import { getContextClient } from '$lib/trpc'
 
   import type { TrackDownload as TrackDownloadType } from './types'
@@ -12,9 +16,15 @@
   export let track: TrackDownloadType
 
   const trpc = getContextClient()
+
   const retryTrackDownloadMutation = createRetryTrackDownloadMutation(trpc)
   const handleRetryTrackDownload = () => {
     $retryTrackDownloadMutation.mutate({ id: track.id, service: track.service })
+  }
+
+  const deleteTrackDownloadMutation = createDeleteTrackDownloadMutation(trpc)
+  const handleDeleteTrackDownload = () => {
+    $deleteTrackDownloadMutation.mutate({ id: track.id, service: track.service })
   }
 </script>
 
@@ -36,7 +46,8 @@
       </span>
     {/if}
   </div>
-  {#if track.status === 'error'}
+
+  <div class="flex items-center">
     <IconButton
       tooltip="Retry"
       on:click={handleRetryTrackDownload}
@@ -44,5 +55,12 @@
     >
       <RefreshIcon />
     </IconButton>
-  {/if}
+    <IconButton
+      tooltip="Delete"
+      on:click={handleDeleteTrackDownload}
+      loading={$deleteTrackDownloadMutation.isLoading}
+    >
+      <DeleteIcon />
+    </IconButton>
+  </div>
 </div>

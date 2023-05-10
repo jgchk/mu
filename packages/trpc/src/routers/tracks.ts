@@ -81,8 +81,7 @@ export const tracksRouter = router({
         .map((artist) => artist.name)
         .join(', ')
 
-      const status = await ctx.getStatus()
-      if (status.lastFm.status === 'logged-in') {
+      if (ctx.lfm.status === 'logged-in') {
         if (favorite) {
           await ctx.lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
         } else {

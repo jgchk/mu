@@ -91,9 +91,14 @@ export class SoulseekDownloadManager {
       this.openFiles.set(dbId, fsPipe)
       slskDownload.stream.pipe(fsPipe)
 
+      let lastUpdate: Date | undefined = undefined
       slskDownload.events
         .on('progress', ({ progress }) => {
-          db.soulseekTrackDownloads.update(dbId, { progress: Math.floor(progress * 100) })
+          // update every second
+          if (lastUpdate === undefined || Date.now() - lastUpdate.getTime() > 1000) {
+            db.soulseekTrackDownloads.update(dbId, { progress: Math.floor(progress * 100) })
+            lastUpdate = new Date()
+          }
         })
         .on('complete', () => {
           this.openFiles.delete(dbId)

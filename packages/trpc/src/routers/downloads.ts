@@ -1,21 +1,31 @@
+import type { DownloadStatus } from 'db'
+import fs from 'fs'
+import path from 'path'
 import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
+import {
+  deleteGroupDownload,
+  deleteTrackDownload,
+  getGroupDownload,
+  getGroupTrackDownloads,
+  getTrackDownload,
+} from '../utils'
 
-const SoundcloudDownload = z.object({
+const SoundcloudDownloadRequest = z.object({
   service: z.literal('soundcloud'),
   kind: z.enum(['track', 'playlist']),
   id: z.number(),
 })
 
-const SpotifyDownload = z.object({
+const SpotifyDownloadRequest = z.object({
   service: z.literal('spotify'),
   kind: z.enum(['track', 'album']),
   id: z.string(),
 })
 
-const SoulseekDownload = z
+const SoulseekDownloadRequest = z
   .object({
     service: z.literal('soulseek'),
     kind: z.enum(['track']),
@@ -35,7 +45,28 @@ const SoulseekDownload = z
     })
   )
 
-const DownloadRequest = z.union([SoundcloudDownload, SpotifyDownload, SoulseekDownload])
+const DownloadRequest = z.union([
+  SoundcloudDownloadRequest,
+  SpotifyDownloadRequest,
+  SoulseekDownloadRequest,
+])
+
+type GroupDownloadType = {
+  service: 'soundcloud' | 'spotify' | 'soulseek'
+  id: number
+  name: string | undefined
+  createdAt: Date
+}
+type TrackDownloadType = {
+  service: 'soundcloud' | 'spotify' | 'soulseek'
+  id: number
+  parentId: number | undefined
+  status: DownloadStatus
+  progress: number | undefined
+  error: unknown | undefined
+  name: string | undefined
+  createdAt: Date
+}
 
 export const downloadsRouter = router({
   download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
@@ -46,14 +77,14 @@ export const downloadsRouter = router({
             const dbPlaylist =
               ctx.db.soundcloudPlaylistDownloads.getByPlaylistId(input.id) ??
               ctx.db.soundcloudPlaylistDownloads.insert({ playlistId: input.id })
-            void ctx.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
+            void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
             return { id: dbPlaylist.id }
           }
           case 'track': {
             const dbTrack =
               ctx.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(input.id, null) ??
               ctx.db.soundcloudTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -64,14 +95,14 @@ export const downloadsRouter = router({
             const dbAlbum =
               ctx.db.spotifyAlbumDownloads.getByAlbumId(input.id) ??
               ctx.db.spotifyAlbumDownloads.insert({ albumId: input.id })
-            void ctx.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
+            void ctx.dl.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
             return { id: dbAlbum.id }
           }
           case 'track': {
             const dbTrack =
               ctx.db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(input.id, null) ??
               ctx.db.spotifyTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -86,7 +117,7 @@ export const downloadsRouter = router({
                 file: input.file,
                 status: 'pending',
               })
-            void ctx.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+            void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
           case 'tracks': {
@@ -120,7 +151,7 @@ export const downloadsRouter = router({
                 })
             )
             for (const dbTrack of dbTracks) {
-              void ctx.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+              void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             }
             return dbTracks.map((dbTrack) => ({ id: dbTrack.id }))
           }
@@ -128,11 +159,43 @@ export const downloadsRouter = router({
       }
     }
   }),
+
   retryTrackDownload: publicProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(({ input: { service, id }, ctx }) => {
-      void ctx.download({ service, type: 'track', dbId: id })
+      void ctx.dl.download({ service, type: 'track', dbId: id })
     }),
+
+  deleteTrackDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const track = getTrackDownload(ctx.db, input.service, input.id)
+      if (track.path !== null) {
+        await fs.promises.rm(path.resolve(track.path))
+      }
+      deleteTrackDownload(ctx.db, input.service, input.id)
+      return { success: true }
+    }),
+
+  deleteGroupDownload: publicProcedure
+    .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const group = getGroupDownload(ctx.db, input.service, input.id)
+      const tracks = getGroupTrackDownloads(ctx.db, input.service, group.id)
+
+      await Promise.all(
+        tracks.map(async (track) => {
+          if (track.path !== null) {
+            await fs.promises.rm(path.resolve(track.path))
+          }
+          deleteTrackDownload(ctx.db, input.service, track.id)
+        })
+      )
+
+      deleteGroupDownload(ctx.db, input.service, group.id)
+      return { success: true }
+    }),
+
   getAll: publicProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
       [
@@ -212,9 +275,6 @@ export const downloadsRouter = router({
       tracks: [...scTracks, ...spTracks, ...slskTracks],
     }
 
-    type GroupDownloadType = (typeof rawData.groups)[number]
-    type TrackDownloadType = (typeof rawData.tracks)[number]
-
     const groupedData: {
       groups: { [id: string]: GroupDownloadType & { tracks: TrackDownloadType[] } }
       tracks: TrackDownloadType[]
@@ -225,8 +285,14 @@ export const downloadsRouter = router({
       tracks: [],
     }
 
-    for (const track of rawData.tracks) {
-      if (track.parentId === null) {
+    for (const track_ of rawData.tracks) {
+      const track = {
+        ...track_,
+        parentId: track_.parentId ?? undefined,
+        progress: track_.progress ?? undefined,
+        error: track_.error ?? undefined,
+      }
+      if (track.parentId === undefined) {
         groupedData.tracks.push(track)
       } else {
         groupedData.groups[`${track.service}-${track.parentId}`].tracks.push(track)

@@ -9,19 +9,21 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "devDependencies": {
-    "@types/node": "^18.16.0",
+    "@types/node": "^18.16.6",
     "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
-    "@trpc/server": "^10.21.1",
+    "@trpc/server": "^10.25.1",
     "@types/content-disposition": "^0.5.5",
     "@types/mime": "^3.0.1",
     "bool-lang": "workspace:*",
     "content-disposition": "^0.5.4",
+    "context": "workspace:*",
     "db": "workspace:*",
     "downloader": "workspace:*",
+    "env": "workspace:*",
     "execa": "^7.1.1",
-    "file-type": "^18.2.1",
+    "file-type": "^18.3.0",
     "filenamify": "^6.0.0",
     "got": "^12.6.0",
     "image-manager": "workspace:*",
@@ -29,7 +31,6 @@
     "log": "workspace:*",
     "mime": "^3.0.0",
     "music-metadata": "workspace:*",
-    "services": "workspace:*",
     "soulseek-ts": "^2.1.2",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
