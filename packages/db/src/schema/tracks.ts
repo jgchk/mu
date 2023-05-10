@@ -1,7 +1,7 @@
 import type Database from 'better-sqlite3'
 import type { BoolLang } from 'bool-lang'
 import type { InferModel, SQL } from 'drizzle-orm'
-import { and, asc, desc, eq, inArray, not, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
 import type { SQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Constructor } from 'utils'
@@ -90,6 +90,7 @@ export type TracksMixin = {
     getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
 
+    preparedQueries: PreparedQueries
     withFilter: <
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       S extends Record<string, any>,
@@ -100,6 +101,16 @@ export type TracksMixin = {
     ) => Q
   }
 }
+
+type PreparedQueries = ReturnType<typeof prepareQueries>
+const prepareQueries = (db: DatabaseBase['db']) => ({
+  getByArtistAndTitleCaseInsensitive: db
+    .select()
+    .from(tracks)
+    .where(eq(trackArtists.artistId, placeholder('artistId')))
+    .where(sql`lower(${tracks.title}) = ${placeholder('title')}`)
+    .prepare(),
+})
 
 export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
   Base: TBase
@@ -142,12 +153,11 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getByArtistAndTitleCaseInsensitive: (artistId, title) => {
-        return this.db
-          .select()
-          .from(tracks)
-          .where(eq(trackArtists.artistId, artistId))
-          .where(sql`lower(${tracks.title}) = '${title.toLowerCase()}'`)
-          .all()
+        return this.tracks.preparedQueries.getByArtistAndTitleCaseInsensitive
+          .all({
+            artistId,
+            title: title.toLowerCase(),
+          })
           .map(convertTrack)
       },
 
@@ -206,6 +216,8 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       delete: (id) => {
         return this.db.delete(tracks).where(eq(tracks.id, id)).run()
       },
+
+      preparedQueries: prepareQueries(this.db),
 
       withFilter: (query_, filter) => {
         let query = query_
