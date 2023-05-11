@@ -112,11 +112,11 @@
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
 </script>
 
-<div class="flex items-center gap-4 rounded bg-black p-2 pb-3 sm:pb-2 relative">
+<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-3 sm:pb-2">
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <a href="/releases/{track.releaseId}" class="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
+      <a href="/releases/{track.releaseId}" class="h-12 w-12 shrink-0 sm:h-16 sm:w-16">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
@@ -124,7 +124,7 @@
         />
       </a>
 
-      <div class="overflow-hidden flex-1 sm:flex-[unset]">
+      <div class="flex-1 overflow-hidden sm:flex-[unset]">
         <div class="truncate">
           {track.title}
         </div>
@@ -158,7 +158,7 @@
     <div class="flex w-full items-center justify-center gap-3.5">
       <button
         type="button"
-        class="h-8 w-8 text-gray-400 transition hover:text-white hidden sm:center"
+        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
         use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
         on:click={() => previousTrack()}
       >
@@ -178,7 +178,7 @@
       </button>
       <button
         type="button"
-        class="h-8 w-8 text-gray-400 transition hover:text-white hidden sm:center"
+        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
         use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
         on:click={() => nextTrack()}
       >
@@ -186,9 +186,9 @@
       </button>
     </div>
     <div
-      class="items-center gap-2 absolute -bottom-2 inset-x-2 flex sm:relative sm:bottom-[unset] sm:inset-x-[unset]"
+      class="absolute inset-x-2 -bottom-2 flex items-center gap-2 sm:relative sm:inset-x-[unset] sm:bottom-[unset]"
     >
-      <div class="text-right text-xs text-gray-400 hidden sm:block" style:min-width={timeMinWidth}>
+      <div class="hidden text-right text-xs text-gray-400 sm:block" style:min-width={timeMinWidth}>
         {formattedCurrentTime}
       </div>
       <div class="flex-1">
@@ -203,7 +203,7 @@
           }}
         />
       </div>
-      <div class="text-xs text-gray-400 hidden sm:block" style:min-width={timeMinWidth}>
+      <div class="hidden text-xs text-gray-400 sm:block" style:min-width={timeMinWidth}>
         {formattedDuration}
       </div>
     </div>
