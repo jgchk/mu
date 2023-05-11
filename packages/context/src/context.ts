@@ -177,12 +177,14 @@ export const makeContext = async (): Promise<Context> => {
 
   const startSpotify = async () => {
     spotify = spotifyStopped
+    log.debug('startSpotify: Stopped Spotify')
 
     const config = db.config.get()
 
     const opts: SpotifyOptions = {}
 
     if (config.spotifyUsername && config.spotifyPassword) {
+      log.debug('startSpotify: Downloads are configured')
       opts.downloads = {
         username: config.spotifyUsername,
         password: config.spotifyPassword,
@@ -191,12 +193,14 @@ export const makeContext = async (): Promise<Context> => {
     }
 
     if (config.spotifyDcCookie) {
+      log.debug('startSpotify: Friend Activity is configured')
       opts.friendActivity = {
         dcCookie: config.spotifyDcCookie,
       }
     }
 
     if (config.spotifyClientId && config.spotifyClientSecret) {
+      log.debug('startSpotify: Web API is configured')
       opts.webApi = {
         clientId: config.spotifyClientId,
         clientSecret: config.spotifyClientSecret,
@@ -206,10 +210,12 @@ export const makeContext = async (): Promise<Context> => {
     const enabledFeatures = keys(opts)
 
     if (enabledFeatures.length === 0) {
+      log.debug('startSpotify: No features are enabled')
       spotify = spotifyStopped
       return spotify
     }
 
+    log.debug('startSpotify: Creating client')
     const sp = Spotify(opts)
 
     spotify = {
@@ -218,13 +224,16 @@ export const makeContext = async (): Promise<Context> => {
       errors: spotifyNoErrors,
     }
 
+    log.debug('startSpotify: Starting...')
     const errors: ContextSpotifyErrors = {}
     await Promise.all([
       (async () => {
         if (sp.downloads) {
           try {
             await sp.checkCredentials()
+            log.debug('startSpotify: Started Downloads')
           } catch (e) {
+            log.debug(e, 'startSpotify: Failed to start Downloads')
             errors.downloads = e
           }
         }
@@ -233,7 +242,9 @@ export const makeContext = async (): Promise<Context> => {
         if (sp.friendActivity) {
           try {
             await sp.getFriendActivity()
+            log.debug('startSpotify: Started Friend Activity')
           } catch (e) {
+            log.debug(e, 'startSpotify: Failed to start Friend Activity')
             errors.friendActivity = e
           }
         }
@@ -242,7 +253,9 @@ export const makeContext = async (): Promise<Context> => {
         if (sp.webApi) {
           try {
             await sp.getAccessToken()
+            log.debug('startSpotify: Started Web API')
           } catch (e) {
+            log.debug(e, 'startSpotify: Failed to start Web API')
             errors.webApi = e
           }
         }
@@ -253,12 +266,14 @@ export const makeContext = async (): Promise<Context> => {
     const allFailed = numFailed === enabledFeatures.length
     const someFailed = numFailed > 0
     if (allFailed) {
+      log.debug('startSpotify: All features failed')
       spotify = {
         status: 'errored',
         errors,
         features: spotifyNoFeatures,
       }
     } else if (someFailed) {
+      log.debug('startSpotify: Some features failed')
       spotify = withProps(sp, {
         status: 'degraded',
         errors,
@@ -269,6 +284,7 @@ export const makeContext = async (): Promise<Context> => {
         },
       } as const)
     } else {
+      log.debug('startSpotify: All features started')
       spotify = withProps(sp, {
         status: 'running',
         features: {
