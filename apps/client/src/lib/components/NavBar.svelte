@@ -9,7 +9,6 @@
   import Loader from '$lib/atoms/Loader.svelte'
   import CogIcon from '$lib/icons/CogIcon.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
-  import HomeIcon from '$lib/icons/HomeIcon.svelte'
   import LibraryIcon from '$lib/icons/LibraryIcon.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
@@ -31,7 +30,6 @@
 <nav
   class="flex items-center justify-around overflow-auto rounded text-white md:justify-start md:bg-black md:p-2 md:px-3"
 >
-  <NavLink label="Home" href="/"><HomeIcon /></NavLink>
   <NavLink label="Library" href="/artists" otherMatches={['/playlists', '/releases', '/tracks']}
     ><LibraryIcon /></NavLink
   >
