@@ -1,7 +1,10 @@
 <script lang="ts">
   import { page } from '$app/stores'
+  import { pipe } from 'utils'
   import { toRelativeUrl, withUrlUpdate } from 'utils/browser'
 
+  import HeartIcon from '$lib/icons/HeartIcon.svelte'
+  import HeartOutlineIcon from '$lib/icons/HeartOutlineIcon.svelte'
   import {
     TRACKS_SORT_COLUMN_PARAM,
     TRACKS_SORT_DIRECTION_PARAM,
@@ -14,6 +17,7 @@
   export let showRelease: boolean
   export let showCoverArt: boolean
   export let showDelete: boolean
+  export let favorites: boolean | undefined
 
   $: sort = getTracksSort($page.url)
   $: numButtons = 3 + (showDelete ? 1 : 0)
@@ -98,5 +102,28 @@
       >{' '}{/if}Length</a
   >
 
-  <div style:width="{numButtons * 32 + (numButtons - 1) * 4}px" />
+  <div style:width="{numButtons * 32 + (numButtons - 1) * 4}px">
+    {#if favorites !== undefined}
+      <a
+        class={cn('center block h-full w-8', numButtons > 3 && 'ml-9')}
+        href={pipe(
+          withUrlUpdate($page.url, (url) => {
+            if (favorites) {
+              url.searchParams.delete('favorites')
+            } else {
+              url.searchParams.set('favorites', 'true')
+            }
+          }),
+          toRelativeUrl,
+          decodeURIComponent
+        )}
+      >
+        {#if favorites}
+          <HeartIcon class="h-4 w-4 text-gray-300" />
+        {:else}
+          <HeartOutlineIcon class="h-4 w-4 text-gray-300" />
+        {/if}
+      </a>
+    {/if}
+  </div>
 </div>

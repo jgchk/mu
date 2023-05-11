@@ -115,6 +115,7 @@
 
   <TrackList
     {tracks}
+    favorites={tracksQuery.favorite ?? false}
     sortable
     reorderable={playlist.filter === null &&
       !tracksQuery.sort &&

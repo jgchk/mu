@@ -15,15 +15,6 @@
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
     <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
     <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
-
-    {#if $$slots.sidebar}
-      <div class="flex md:flex-col">
-        <div class="pr-2 md:p-2 md:pr-2">
-          <div class="h-full w-px bg-gray-800 md:h-px md:w-full" />
-        </div>
-        <slot name="sidebar" />
-      </div>
-    {/if}
   </div>
 
   <div class="order-1 h-full flex-1 overflow-auto p-2 md:order-2">
