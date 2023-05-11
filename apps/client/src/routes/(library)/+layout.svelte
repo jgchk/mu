@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <div class="order-1 h-full flex-1 overflow-auto md:order-2">
+  <div class="order-1 h-full flex-1 overflow-auto p-2 md:order-2">
     <slot />
   </div>
 </div>

@@ -14,8 +14,8 @@
   const dialogs = getContextDialogs()
 </script>
 
-<div class="flex h-full flex-col gap-2 overflow-auto p-1">
-  <div class="flex gap-1 pl-2">
+<div class="flex h-full flex-col gap-2 space-y-2 overflow-auto">
+  <div class="flex gap-1">
     <Button on:click={() => dialogs.open('new-playlist')}>New Playlist</Button>
     <Button kind="outline" on:click={() => dialogs.open('new-auto-playlist')}>
       New Auto-Playlist
@@ -25,7 +25,7 @@
   {#if $playlistsQuery.data}
     {@const playlists = $playlistsQuery.data}
 
-    <FlowGrid class="p-4">
+    <FlowGrid>
       {#each playlists as playlist (playlist.id)}
         <div class="w-full">
           <a href="/playlists/{playlist.id}" class="relative block w-full">

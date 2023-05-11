@@ -124,7 +124,7 @@
     <TrackList
       {tracks}
       sortable
-      class="p-4 pt-2"
+      class="pt-2"
       on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       on:favorite={(e) =>
         $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}

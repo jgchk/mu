@@ -42,7 +42,7 @@
   {#if $releaseQuery.data}
     {@const release = $releaseQuery.data}
 
-    <div class="space-y-4 p-4">
+    <div class="space-y-4">
       <div class="group/tags relative flex items-end gap-6">
         <button
           type="button"

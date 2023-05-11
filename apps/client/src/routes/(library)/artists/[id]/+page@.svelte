@@ -47,7 +47,7 @@
   {#if $artistQuery.data}
     {@const artist = $artistQuery.data}
 
-    <div class="p-4">
+    <div>
       <div class="relative flex items-end gap-6">
         <div class="relative w-64 shrink-0">
           <CoverArt

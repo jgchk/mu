@@ -39,7 +39,7 @@
     $removeTrackMutation.mutate({ playlistId: playlist.id, playlistTrackId })
 </script>
 
-<div class="space-y-4 p-4">
+<div class="space-y-4">
   <div class="relative flex items-end gap-6">
     <button
       type="button"
