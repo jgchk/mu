@@ -58,9 +58,11 @@
 <QueryClientProvider client={data.trpc.queryClient}>
   <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
     <div class="flex min-w-0 flex-1 flex-col gap-2">
-      <NavBar />
+      <div class="order-3 md:order-1">
+        <NavBar />
+      </div>
 
-      <main class="relative flex-1 overflow-auto">
+      <main class="relative order-1 flex-1 overflow-auto md:order-2">
         <div class="relative h-full w-full overflow-auto">
           <slot />
         </div>
@@ -76,11 +78,13 @@
       </main>
 
       {#if $nowPlaying.track}
-        <Player
-          track={$nowPlaying.track}
-          on:toggleQueue={() => (showQueue = !showQueue)}
-          queueOpen={showQueue}
-        />
+        <div class="order-2 md:order-3">
+          <Player
+            track={$nowPlaying.track}
+            on:toggleQueue={() => (showQueue = !showQueue)}
+            queueOpen={showQueue}
+          />
+        </div>
       {/if}
     </div>
 

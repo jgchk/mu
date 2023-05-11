@@ -7,7 +7,12 @@
   import { tooltip } from '$lib/actions/tooltip'
   import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
+  import CogIcon from '$lib/icons/CogIcon.svelte'
+  import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
+  import HomeIcon from '$lib/icons/HomeIcon.svelte'
+  import LibraryIcon from '$lib/icons/LibraryIcon.svelte'
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
+  import TagIcon from '$lib/icons/TagIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
 
   import NavLink from './NavLink.svelte'
@@ -23,15 +28,19 @@
   let input: HTMLInputElement | undefined
 </script>
 
-<nav class="flex items-center overflow-auto rounded bg-black p-2 px-3 text-white">
-  <NavLink href="/">Home</NavLink>
-  <NavLink href="/artists" otherMatches={['/releases', '/tracks']}>Library</NavLink>
-  <NavLink href="/tags">Tags</NavLink>
-  <NavLink href="/downloads">Downloads</NavLink>
-  <NavLink href="/system">System</NavLink>
+<nav
+  class="flex items-center justify-around overflow-auto rounded text-white md:justify-start md:bg-black md:p-2 md:px-3"
+>
+  <NavLink label="Home" href="/"><HomeIcon /></NavLink>
+  <NavLink label="Library" href="/artists" otherMatches={['/playlists', '/releases', '/tracks']}
+    ><LibraryIcon /></NavLink
+  >
+  <NavLink label="Tags" href="/tags"><TagIcon /></NavLink>
+  <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
+  <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
   <form
-    class="inline"
+    class="hidden md:inline"
     on:submit|preventDefault={() => {
       if (query.length > 0) {
         if ($page.url.pathname.startsWith('/search')) {

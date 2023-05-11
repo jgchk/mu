@@ -14,7 +14,7 @@
 <a
   data-sveltekit-keepfocus
   data-sveltekit-replacestate
-  class="group/favorites flex h-10 w-full cursor-pointer items-center px-4"
+  class="group/favorites flex h-8 w-full cursor-pointer items-center px-4 md:h-10"
   href={pipe(
     withUrlUpdate($page.url, (url) => {
       if (favorites) {

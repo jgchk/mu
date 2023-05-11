@@ -12,7 +12,7 @@
 
 <a
   class={cn(
-    'flex h-10 select-none items-center gap-2 px-4 transition hover:text-white',
+    'flex h-8 select-none items-center gap-2 px-4 transition hover:text-white md:h-10',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   {href}

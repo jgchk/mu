@@ -16,14 +16,14 @@
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
     <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>
 
-    <div class="flex md:flex-col">
-      {#if $$slots.sidebar}
+    {#if $$slots.sidebar}
+      <div class="flex md:flex-col">
         <div class="pr-2 md:p-2 md:pr-2">
           <div class="h-full w-px bg-gray-800 md:h-px md:w-full" />
         </div>
         <slot name="sidebar" />
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
 
   <div class="order-1 h-full flex-1 overflow-auto p-2 md:order-2">
