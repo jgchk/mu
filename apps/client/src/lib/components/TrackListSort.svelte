@@ -36,17 +36,15 @@
   class={cn(
     'grid gap-2 p-1.5',
     showRelease
-      ? 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
-      : 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+      ? 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
   )}
 >
-  <div class="hidden sm:block">
-    {#if showCoverArt}
-      <div class="w-11" />
-    {:else}
-      <div class="w-8" />
-    {/if}
-  </div>
+  {#if showCoverArt}
+    <div class="w-11" />
+  {:else}
+    <div class="w-8" />
+  {/if}
 
   <div class="flex-1">
     <a

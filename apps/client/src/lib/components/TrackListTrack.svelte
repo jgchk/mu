@@ -34,37 +34,35 @@
   class={cn(
     'group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700',
     track.release
-      ? 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
-      : 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+      ? 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
   )}
   on:dblclick={() => play()}
 >
-  <div class="hidden sm:block">
-    {#if showCoverArt}
-      <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
-        <CoverArt
-          src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
-          alt={track.title}
-          iconClass="w-5 h-5"
-          placeholderClass="text-[5px]"
-          rounding="rounded-sm"
-        >
-          <PlayIcon />
-        </CoverArt>
+  {#if showCoverArt}
+    <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
+      <CoverArt
+        src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
+        alt={track.title}
+        iconClass="w-5 h-5"
+        placeholderClass="text-[5px]"
+        rounding="rounded-sm"
+      >
+        <PlayIcon />
+      </CoverArt>
+    </button>
+  {:else}
+    <div class="center relative h-11 w-8">
+      <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
+      <button
+        type="button"
+        class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
+        on:click={() => play()}
+      >
+        <PlayIcon />
       </button>
-    {:else}
-      <div class="center relative h-11 w-8">
-        <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
-        <button
-          type="button"
-          class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
-          on:click={() => play()}
-        >
-          <PlayIcon />
-        </button>
-      </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 
   <div class="overflow-hidden">
     <div class="truncate">{track.title || '[untitled]'}</div>
