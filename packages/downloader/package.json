@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "db": "workspace:*",
+    "env": "workspace:*",
     "fastq": "^1.15.0",
     "got": "^12.6.0",
     "music-metadata": "workspace:*",

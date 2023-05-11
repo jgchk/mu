@@ -30,6 +30,7 @@ const envSchema = z.object({
   LASTFM_SECRET: z.string().optional(),
   LASTFM_USERNAME: z.string().optional(),
   LASTFM_PASSWORD: z.string().optional(),
+  DOWNLOADER_CONCURRENCY: z.coerce.number().min(1).default(1),
 })
 
 const envRes = envSchema.safeParse(process.env)
