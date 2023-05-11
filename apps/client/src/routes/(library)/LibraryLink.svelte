@@ -16,9 +16,10 @@
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   {href}
+  use:tooltip={{ content: label }}
 >
   {#if $$slots.default}
-    <div class="h-5 w-5" use:tooltip={{ content: label }}>
+    <div class="h-5 w-5">
       <slot />
     </div>
   {/if}

@@ -18,9 +18,10 @@
     matches ? 'text-primary-500' : 'text-gray-300 hover:text-white'
   )}
   {href}
+  use:tooltip={{ content: label }}
 >
   {#if $$slots.default}
-    <div class="h-5 w-5 md:hidden" use:tooltip={{ content: label }}>
+    <div class="h-5 w-5 md:hidden">
       <slot />
     </div>
   {/if}
