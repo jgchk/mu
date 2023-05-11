@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores'
 
-  import { tooltip } from '$lib/actions/tooltip'
   import { cn } from '$lib/utils/classes'
 
   export let href: string
@@ -12,18 +11,18 @@
 
 <a
   class={cn(
-    'flex h-8 w-full select-none items-center justify-center gap-2 px-4 transition hover:text-white md:h-10 md:w-[unset] md:justify-start',
+    'flex h-8 w-full select-none flex-col items-center justify-center px-4 transition hover:text-white md:h-10 md:w-[unset] md:flex-row md:justify-start md:gap-2',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   {href}
-  use:tooltip={{ content: label }}
 >
   {#if $$slots.default}
     <div class="h-5 w-5">
       <slot />
     </div>
   {/if}
-  <span class="hidden md:inline">
+
+  <span class="text-xs md:text-base">
     {label}
   </span>
 </a>
