@@ -9,7 +9,7 @@
 
 <div class="flex h-full flex-col gap-2 md:flex-row">
   <div
-    class="order-2 flex w-full justify-around overflow-auto rounded bg-gray-900 py-2 md:order-1 md:w-48 md:flex-col md:justify-start"
+    class="order-2 flex w-full justify-around overflow-auto rounded bg-gray-900 md:order-1 md:w-48 md:flex-col md:justify-start md:py-2"
   >
     <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>
     <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
