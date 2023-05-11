@@ -7,6 +7,7 @@
     TRACKS_SORT_DIRECTION_PARAM,
     getTracksSort,
   } from '$lib/tracks-sort'
+  import { cn } from '$lib/utils/classes'
 
   import type { Sort } from './TrackList'
 
@@ -31,12 +32,22 @@
     )
 </script>
 
-<div class="grid gap-2 p-1.5" style:grid-template-columns="auto 6fr 4fr 1fr auto">
-  {#if showCoverArt}
-    <div class="w-11" />
-  {:else}
-    <div class="w-8" />
-  {/if}
+<div
+  class={cn(
+    'grid gap-2 p-1.5',
+    showRelease
+      ? 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+  )}
+>
+  <div class="hidden sm:block">
+    {#if showCoverArt}
+      <div class="w-11" />
+    {:else}
+      <div class="w-8" />
+    {/if}
+  </div>
+
   <div class="flex-1">
     <a
       data-sveltekit-keepfocus
@@ -56,8 +67,9 @@
         >{/if}</a
     >
   </div>
-  <div class="flex-1">
-    {#if showRelease}
+
+  {#if showRelease}
+    <div class="hidden flex-1 sm:block">
       <a
         data-sveltekit-keepfocus
         data-sveltekit-replacestate
@@ -71,12 +83,13 @@
             >{sort.direction === 'asc' ? '▲' : '▼'}</span
           >{/if}</a
       >
-    {/if}
-  </div>
+    </div>
+  {/if}
+
   <a
     data-sveltekit-keepfocus
     data-sveltekit-replacestate
-    class="justify-self-end text-sm text-gray-400 transition hover:text-white"
+    class="hidden justify-self-end whitespace-nowrap text-sm text-gray-400 transition hover:text-white sm:block"
     href={sort?.column === 'duration'
       ? sort.direction === 'asc'
         ? withSortUpdate({ column: 'duration', direction: 'desc' })
@@ -86,5 +99,6 @@
         >{sort.direction === 'asc' ? '▲' : '▼'}</span
       >{' '}{/if}Length</a
   >
+
   <div style:width="{numButtons * 32 + (numButtons - 1) * 4}px" />
 </div>

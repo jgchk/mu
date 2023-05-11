@@ -7,6 +7,7 @@
   import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import { cn } from '$lib/utils/classes'
 
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
@@ -30,7 +31,12 @@
 </script>
 
 <div
-  class="group/track grid select-none grid-cols-[6fr_4fr_1fr_auto] items-center gap-2 rounded p-1.5 hover:bg-gray-700 sm:grid-cols-[auto_6fr_4fr_1fr_auto]"
+  class={cn(
+    'group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700',
+    track.release
+      ? 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+  )}
   on:dblclick={() => play()}
 >
   <div class="hidden sm:block">
@@ -69,8 +75,8 @@
     </div>
   </div>
 
-  <div class="truncate text-sm text-gray-400">
-    {#if track.release}
+  {#if track.release}
+    <div class="hidden truncate text-sm text-gray-400 sm:block">
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
           {track.release.title}
@@ -78,10 +84,10 @@
           [untitled]
         {/if}
       </a>
-    {/if}
-  </div>
+    </div>
+  {/if}
 
-  <div class="justify-self-end text-sm text-gray-400">
+  <div class="hidden justify-self-end text-sm text-gray-400 sm:block">
     {formatMilliseconds(track.duration)}
   </div>
 
