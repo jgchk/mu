@@ -38,8 +38,10 @@
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, { getTrackByIdQuery: { id: trackId } })
 
+  $: durationMs = $nowPlaying.track?.duration ?? $nowPlayingTrack.data?.duration
+  $: formattedDuration = formatMilliseconds(durationMs ?? 0)
+
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
-  $: formattedDuration = formatMilliseconds($nowPlayingTrack.data?.duration ?? 0)
   $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
 
   const volume = createLocalStorageJson('volume', 1)
@@ -191,7 +193,7 @@
         <Range
           bind:value={track.currentTime}
           min={0}
-          max={track.duration ?? 1}
+          max={(durationMs ?? 1000) / 1000}
           on:change={(e) => {
             if (player) {
               player.currentTime = e.detail
@@ -242,22 +244,20 @@
 </div>
 
 {#if $nowPlaying.track}
-  {#key $nowPlaying.track.__playSignal}
-    <audio
-      autoplay
-      class="hidden"
-      bind:this={player}
-      bind:paused
-      bind:volume={$volume}
-      on:ended={() => nextTrack()}
-      on:timeupdate={handleTimeUpdate}
-      on:durationchange={(e) => {
-        if ($nowPlaying.track) {
-          $nowPlaying.track.duration = e.currentTarget.duration
-        }
-      }}
-    >
-      <source src="/api/tracks/{track.id}/stream" type="audio/mpeg" />
-    </audio>
-  {/key}
+  <audio
+    autoplay
+    class="hidden"
+    bind:this={player}
+    bind:paused
+    bind:volume={$volume}
+    on:ended={nextTrack}
+    on:timeupdate={handleTimeUpdate}
+    on:durationchange={(e) => {
+      const durationSec = e.currentTarget.duration
+      if ($nowPlaying.track && durationSec !== Infinity) {
+        $nowPlaying.track.duration = durationSec * 1000
+      }
+    }}
+    src="/api/tracks/{track.id}/stream"
+  />
 {/if}
