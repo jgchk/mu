@@ -37,21 +37,27 @@ export class DownloadQueue {
     getContext,
     downloadDir,
     logger,
+    concurrency,
   }: {
     getContext: () => Context
     downloadDir: string
     logger: Logger
+    concurrency: number
   }) {
     this.getContext = getContext
     this.downloadDir = downloadDir
     this.logger = logger
 
-    this.q = fastq.promise(this.worker.bind(this), 10)
+    this.q = fastq.promise(this.worker.bind(this), concurrency)
     this.q.error((err, task) => {
       if (err) {
         this.logger.error('Error processing task:', task, err)
       }
     })
+  }
+
+  setConcurrency(concurrency: number) {
+    this.q.concurrency = concurrency
   }
 
   queue(task: Task) {

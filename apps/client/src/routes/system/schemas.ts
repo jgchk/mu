@@ -85,3 +85,21 @@ export const soundcloudToServerData = (
 ): RouterInput['system']['updateConfig'] => ({
   soundcloudAuthToken: data.soundcloudAuthToken || null,
 })
+
+export type DownloaderSchema = typeof downloaderSchema
+type DownloaderData = z.infer<DownloaderSchema>
+export const downloaderSchema = z.object({
+  downloaderConcurrency: z.number().min(1),
+})
+
+export const downloaderFromServerData = (
+  data: RouterOutput['system']['config']
+): DownloaderData => ({
+  downloaderConcurrency: data.downloaderConcurrency,
+})
+
+export const downloaderToServerData = (
+  data: DownloaderData
+): RouterInput['system']['updateConfig'] => ({
+  downloaderConcurrency: data.downloaderConcurrency,
+})

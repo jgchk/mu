@@ -4,6 +4,7 @@
   import { getContextClient } from '$lib/trpc'
 
   import type { PageServerData } from './$types'
+  import DownloaderConfig from './DownloaderConfig.svelte'
   import LastFmConfig from './LastFmConfig.svelte'
   import SlskConfig from './SlskConfig.svelte'
   import SoundcloudConfig from './SoundcloudConfig.svelte'
@@ -21,6 +22,7 @@
   <SlskConfig data={data.slskForm} status={status.soulseek} />
   <SoundcloudConfig data={data.soundcloudForm} status={status.soundcloud} />
   <SpotifyConfig data={data.spotifyForm} status={status.spotify} />
+  <DownloaderConfig data={data.downloaderForm} />
 {:else if $statusQuery.error}
   <p>Failed to load system status</p>
 {:else}

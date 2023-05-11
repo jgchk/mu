@@ -69,22 +69,29 @@ export class Downloader {
     getContext,
     downloadDir,
     logger: logger_,
+    concurrency,
   }: {
     getContext: () => Context
     downloadDir: string
     logger?: Logger
+    concurrency: number
   }) {
     const logger = logger_ ?? console
     this.queue = new DownloadQueue({
       getContext,
       downloadDir,
       logger,
+      concurrency,
     })
     this.soulseek = new SoulseekDownloadManager({
       getContext,
       downloadDir,
       logger,
     })
+  }
+
+  setConcurrency(concurrency: number) {
+    this.queue.setConcurrency(concurrency)
   }
 
   async download(download: Download) {
