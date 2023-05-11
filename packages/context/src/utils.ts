@@ -7,7 +7,7 @@ import type { ContextLastFm } from './types'
 
 export const setConfigFromEnv = (db: Database) => {
   const config = db.config.get()
-  db.config.update({
+  return db.config.update({
     soundcloudAuthToken: config.soundcloudAuthToken ?? env.SOUNDCLOUD_AUTH_TOKEN,
     spotifyClientId: config.spotifyClientId ?? env.SPOTIFY_CLIENT_ID,
     spotifyClientSecret: config.spotifyClientSecret ?? env.SPOTIFY_CLIENT_SECRET,
@@ -20,6 +20,7 @@ export const setConfigFromEnv = (db: Database) => {
     lastFmSecret: config.lastFmSecret ?? env.LASTFM_SECRET,
     lastFmUsername: config.lastFmUsername ?? env.LASTFM_USERNAME,
     lastFmPassword: config.lastFmPassword ?? env.LASTFM_PASSWORD,
+    downloaderConcurrency: config.downloaderConcurrency ?? env.DOWNLOADER_CONCURRENCY,
   })
 }
 

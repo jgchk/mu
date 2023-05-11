@@ -26,6 +26,8 @@ export const configs = sqliteTable('config', {
   spotifyDcCookie: text('spotify_dc_cookie'),
 
   soundcloudAuthToken: text('soundcloud_auth_token'),
+
+  downloaderConcurrency: integer('downloader_concurrency').notNull().default(1),
 })
 
 export const defaultConfig: Omit<Config, 'id'> = {
@@ -41,6 +43,7 @@ export const defaultConfig: Omit<Config, 'id'> = {
   spotifyPassword: null,
   spotifyDcCookie: null,
   soundcloudAuthToken: null,
+  downloaderConcurrency: 1,
 }
 
 export type ConfigMixin = {

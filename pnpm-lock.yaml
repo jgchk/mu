@@ -320,9 +320,6 @@ importers:
       db:
         specifier: workspace:*
         version: link:../db
-      env:
-        specifier: workspace:*
-        version: link:../env
       fastq:
         specifier: ^1.15.0
         version: 1.15.0

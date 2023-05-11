@@ -6,6 +6,9 @@ import { createClient } from '$lib/trpc'
 
 import type { Actions, PageServerLoad } from './$types'
 import {
+  downloaderFromServerData,
+  downloaderSchema,
+  downloaderToServerData,
   lastFmFromServerData,
   lastFmSchema,
   lastFmToServerData,
@@ -35,7 +38,10 @@ export const load: PageServerLoad = async ({ fetch }) => {
   const soundcloudForm = await superValidate(soundcloudFromServerData(data), soundcloudSchema, {
     id: 'soundcloudForm',
   })
-  return { lastFmForm, slskForm, spotifyForm, soundcloudForm }
+  const downloaderForm = await superValidate(downloaderFromServerData(data), downloaderSchema, {
+    id: 'downloaderForm',
+  })
+  return { lastFmForm, slskForm, spotifyForm, soundcloudForm, downloaderForm }
 }
 
 export const actions: Actions = {
@@ -98,5 +104,20 @@ export const actions: Actions = {
     soundcloudForm.data = soundcloudFromServerData(result.config)
 
     return { soundcloudForm, status: result.status }
+  },
+  downloader: async ({ request, fetch }) => {
+    const formData = await request.formData()
+    const downloaderForm = await superValidate(formData, downloaderSchema)
+
+    if (!downloaderForm.valid) {
+      return fail(400, { downloaderForm })
+    }
+
+    const trpc = createClient(fetch)
+    const result = await mutateConfig(trpc, downloaderToServerData(downloaderForm.data))
+
+    downloaderForm.data = downloaderFromServerData(result.config)
+
+    return { downloaderForm, status: result.status }
   },
 }

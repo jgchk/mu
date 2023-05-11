@@ -33,7 +33,7 @@ export const makeContext = async (): Promise<Context> => {
   }
 
   const db = makeDb()
-  setConfigFromEnv(db)
+  const config = setConfigFromEnv(db)
 
   let lastFm: ContextLastFm = { status: 'stopped' }
   let soulseek: ContextSlsk = { status: 'stopped' }
@@ -43,6 +43,7 @@ export const makeContext = async (): Promise<Context> => {
     getContext: () => ({ db, lfm: lastFm, slsk: soulseek, sc: soundcloud, sp: spotify }),
     downloadDir: env.DOWNLOAD_DIR,
     logger: log,
+    concurrency: config.downloaderConcurrency,
   })
   const imageManager = new ImageManager({ imagesDir: env.IMAGES_DIR, db })
 

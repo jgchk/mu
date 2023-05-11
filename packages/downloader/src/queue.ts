@@ -1,5 +1,4 @@
 import { randomInt } from 'crypto'
-import { env } from 'env'
 import fastq from 'fastq'
 import fs from 'fs'
 import got from 'got'
@@ -38,21 +37,27 @@ export class DownloadQueue {
     getContext,
     downloadDir,
     logger,
+    concurrency,
   }: {
     getContext: () => Context
     downloadDir: string
     logger: Logger
+    concurrency: number
   }) {
     this.getContext = getContext
     this.downloadDir = downloadDir
     this.logger = logger
 
-    this.q = fastq.promise(this.worker.bind(this), env.DOWNLOADER_CONCURRENCY)
+    this.q = fastq.promise(this.worker.bind(this), concurrency)
     this.q.error((err, task) => {
       if (err) {
         this.logger.error('Error processing task:', task, err)
       }
     })
+  }
+
+  setConcurrency(concurrency: number) {
+    this.q.concurrency = concurrency
   }
 
   queue(task: Task) {

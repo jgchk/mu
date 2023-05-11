@@ -29,6 +29,7 @@ export const systemRouter = router({
         spotifyPassword: z.string().nullish(),
         spotifyDcCookie: z.string().nullish(),
         soundcloudAuthToken: z.string().nullish(),
+        downloaderConcurrency: z.number().min(1).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,6 +60,10 @@ export const systemRouter = router({
 
       if (input.soundcloudAuthToken !== undefined) {
         await ctx.startSoundcloud()
+      }
+
+      if (input.downloaderConcurrency !== undefined) {
+        ctx.dl.setConcurrency(input.downloaderConcurrency)
       }
 
       return { config: updated, status: formatStatus(ctx) }
