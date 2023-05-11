@@ -101,6 +101,13 @@
   export let queueOpen: boolean
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
   const toggleQueue = () => dispatch('toggleQueue')
+
+  navigator.mediaSession.setActionHandler('play', () => play())
+  navigator.mediaSession.setActionHandler('pause', () => pause())
+  // navigator.mediaSession.setActionHandler('seekbackward', function () {})
+  // navigator.mediaSession.setActionHandler('seekforward', function () {})
+  navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
+  navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
 </script>
 
 <div class="flex items-center gap-4 rounded bg-black p-2">
