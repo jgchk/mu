@@ -14,7 +14,7 @@
 
 <a
   class={cn(
-    'flex flex-col items-center rounded px-2 py-1 font-medium transition hover:bg-gray-900 md:flex-[unset]',
+    'flex w-full flex-col items-center rounded px-2 py-1 font-medium transition hover:bg-gray-900 md:w-[unset] md:flex-[unset]',
     matches ? 'text-primary-500' : 'text-gray-300 hover:text-white'
   )}
   {href}
