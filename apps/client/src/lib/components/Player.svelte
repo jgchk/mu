@@ -112,7 +112,7 @@
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
 </script>
 
-<div class="flex items-center gap-4 rounded bg-black p-2">
+<div class="flex items-center gap-4 rounded bg-black p-2 pb-3 sm:pb-2 relative">
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
@@ -124,7 +124,7 @@
         />
       </a>
 
-      <div class="overflow-hidden">
+      <div class="overflow-hidden flex-1 sm:flex-[unset]">
         <div class="truncate">
           {track.title}
         </div>
@@ -154,11 +154,11 @@
     {/if}
   </div>
 
-  <div class="max-w-[722px] flex-[4]">
+  <div class="max-w-[722px] sm:flex-[4]">
     <div class="flex w-full items-center justify-center gap-3.5">
       <button
         type="button"
-        class="center h-8 w-8 text-gray-400 transition hover:text-white"
+        class="h-8 w-8 text-gray-400 transition hover:text-white hidden sm:center"
         use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
         on:click={() => previousTrack()}
       >
@@ -178,15 +178,15 @@
       </button>
       <button
         type="button"
-        class="center h-8 w-8 text-gray-400 transition hover:text-white"
+        class="h-8 w-8 text-gray-400 transition hover:text-white hidden sm:center"
         use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
         on:click={() => nextTrack()}
       >
         <FastForwardIcon class="h-6 w-6" />
       </button>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="text-right text-xs text-gray-400" style:min-width={timeMinWidth}>
+    <div class="items-center gap-2 absolute -bottom-2 inset-x-2 flex sm:relative sm:bottom-[unset] sm:inset-x-[unset]">
+      <div class="text-right text-xs text-gray-400 hidden sm:block" style:min-width={timeMinWidth}>
         {formattedCurrentTime}
       </div>
       <div class="flex-1">
@@ -201,7 +201,7 @@
           }}
         />
       </div>
-      <div class="text-xs text-gray-400" style:min-width={timeMinWidth}>
+      <div class="text-xs text-gray-400 hidden sm:block" style:min-width={timeMinWidth}>
         {formattedDuration}
       </div>
     </div>
