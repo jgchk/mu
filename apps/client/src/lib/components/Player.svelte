@@ -116,7 +116,7 @@
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <a href="/releases/{track.releaseId}" class="h-16 w-16 shrink-0">
+      <a href="/releases/{track.releaseId}" class="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
@@ -185,7 +185,9 @@
         <FastForwardIcon class="h-6 w-6" />
       </button>
     </div>
-    <div class="items-center gap-2 absolute -bottom-2 inset-x-2 flex sm:relative sm:bottom-[unset] sm:inset-x-[unset]">
+    <div
+      class="items-center gap-2 absolute -bottom-2 inset-x-2 flex sm:relative sm:bottom-[unset] sm:inset-x-[unset]"
+    >
       <div class="text-right text-xs text-gray-400 hidden sm:block" style:min-width={timeMinWidth}>
         {formattedCurrentTime}
       </div>
