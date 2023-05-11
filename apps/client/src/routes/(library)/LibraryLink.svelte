@@ -11,7 +11,7 @@
 
 <a
   class={cn(
-    'flex h-8 w-full select-none flex-col items-center justify-center px-4 transition hover:text-white md:h-10 md:w-[unset] md:flex-row md:justify-start md:gap-2',
+    'flex w-full select-none flex-col items-center justify-center px-4 transition hover:text-white md:h-10 md:w-[unset] md:flex-row md:justify-start md:gap-2',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   {href}
