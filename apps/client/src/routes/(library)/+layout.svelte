@@ -11,10 +11,10 @@
   <div
     class="order-2 flex w-full justify-around overflow-auto rounded bg-gray-900 py-2 md:order-1 md:w-48 md:flex-col md:justify-start"
   >
-    <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
-    <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
-    <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
     <LibraryLink href="/tracks" label="Tracks"><MusicNoteIcon /></LibraryLink>
+    <LibraryLink href="/releases" label="Releases"><AlbumIcon /></LibraryLink>
+    <LibraryLink href="/artists" label="Artists"><PersonIcon /></LibraryLink>
+    <LibraryLink href="/playlists" label="Playlists"><CollectionIcon /></LibraryLink>
 
     {#if $$slots.sidebar}
       <div class="flex md:flex-col">
