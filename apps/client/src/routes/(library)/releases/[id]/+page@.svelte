@@ -43,27 +43,26 @@
     {@const release = $releaseQuery.data}
 
     <div class="space-y-4">
-      <div class="group/tags relative flex items-end gap-6">
+      <div class="group/tags relative flex flex-col items-center gap-6 sm:flex-row sm:items-end">
         <button
           type="button"
+          class="relative w-64 max-w-full shrink-0 overflow-hidden sm:w-32 lg:w-48 xl:w-64"
           disabled={!tracks?.length}
           on:click={() => tracks && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
         >
-          <div class="relative w-32 shrink-0 lg:w-48 xl:w-64">
-            <CoverArt
-              src={release.imageId !== null
-                ? makeImageUrl(release.imageId, { size: 512 })
-                : undefined}
-              alt={release.title}
-              iconClass="w-8 h-8 lg:w-16 lg:h-16"
-              hoverable={!!tracks?.length}
-            >
-              <PlayIcon />
-            </CoverArt>
-          </div>
+          <CoverArt
+            src={release.imageId !== null
+              ? makeImageUrl(release.imageId, { size: 512 })
+              : undefined}
+            alt={release.title}
+            iconClass="w-8 h-8 lg:w-16 lg:h-16"
+            hoverable={!!tracks?.length}
+          >
+            <PlayIcon />
+          </CoverArt>
         </button>
 
-        <div class="space-y-1 pb-2">
+        <div class="space-y-1 self-start px-1.5 pb-2 md:px-0">
           <h1
             class="mr-11 line-clamp-2 break-all text-2xl font-bold leading-[1.19] sm:text-3xl md:text-4xl xl:text-5xl 2xl:text-6xl"
             title={release.title}
@@ -82,7 +81,7 @@
         <LinkButton
           href="/releases/{release.id}/edit"
           kind="outline"
-          class="absolute right-0 top-0"
+          class="absolute bottom-4 right-0 md:bottom-[unset] md:top-0"
         >
           Edit
         </LinkButton>
