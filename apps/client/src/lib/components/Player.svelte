@@ -116,19 +116,20 @@
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <a href="/releases/{track.releaseId}" class="h-12 w-12 shrink-0 sm:h-16 sm:w-16">
+      <a href="/releases/{track.releaseId}" class="w-10 shrink-0 sm:w-16">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
+          rounding="rounded-sm sm:rounded"
           placeholderClass="text-[8px]"
         />
       </a>
 
       <div class="flex-1 overflow-hidden sm:flex-[unset]">
-        <div class="truncate">
+        <div class="truncate text-sm font-medium sm:text-base">
           {track.title}
         </div>
-        <div class="truncate text-sm text-gray-400">
+        <div class="truncate text-xs text-gray-400 sm:text-sm">
           <CommaList items={track.artists} let:item>
             <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
           </CommaList>
