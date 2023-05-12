@@ -6,8 +6,10 @@
   import ServiceLink from './ServiceLink.svelte'
 </script>
 
-<div class="flex h-full gap-2">
-  <div class="w-48 overflow-auto rounded bg-gray-900 py-2">
+<div class="flex h-full flex-col gap-2 md:flex-row">
+  <div
+    class="order-2 flex w-full justify-around overflow-auto rounded bg-gray-900 md:order-1 md:w-48 md:flex-col md:justify-start md:py-2"
+  >
     <ServiceLink service="Soulseek">
       <SoulseekIcon />
     </ServiceLink>
@@ -19,7 +21,7 @@
     </ServiceLink>
   </div>
 
-  <div class="h-full flex-1 overflow-auto">
+  <div class="order-1 h-full flex-1 overflow-auto p-2 md:order-2">
     <slot />
   </div>
 </div>
