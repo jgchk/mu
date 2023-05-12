@@ -9,6 +9,7 @@
   export let increment = (max - min) / 20
   export let id: string | null = null
   export let value = 0
+  export let height = 'h-1'
 
   // Node Bindings
   let container: HTMLDivElement | undefined
@@ -148,7 +149,7 @@
 />
 <div class="relative w-full">
   <div
-    class="group/range relative box-border min-w-full py-2 outline-none"
+    class="group/range box-border min-w-full py-2 outline-none"
     tabindex="0"
     on:keydown={onKeyPress}
     bind:this={element}
@@ -161,10 +162,10 @@
     on:touchstart={onTrackEvent}
   >
     <div
-      class="group-focus-visible/range:outline-auto h-1 rounded-full bg-gray-700"
+      class={cn('group-focus-visible/range:outline-auto relative rounded-full bg-gray-700', height)}
       bind:this={container}
     >
-      <div class="bg-primary-500 absolute h-1 w-0 rounded-full" bind:this={progressBar} />
+      <div class="bg-primary-500 absolute h-full w-0 rounded-full" bind:this={progressBar} />
       <div
         class={cn(
           'range__thumb absolute -mt-[5px] h-[14px] w-[14px] cursor-pointer select-none rounded-full bg-white',

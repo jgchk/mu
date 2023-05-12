@@ -236,8 +236,12 @@ export const createFavoriteTrackMutation = (
     },
   })
 
-export const createTracksByTagQuery = (trpc: TRPCClient, tagId: number) =>
-  trpc.tracks.getByTag.query({ tagId })
+export const createTracksByTagQuery = (
+  trpc: TRPCClient,
+  input: RouterInput['tracks']['getByTag']
+) => trpc.tracks.getByTag.query(input)
 
-export const prefetchTracksByTagQuery = (trpc: TRPCClient, tagId: number) =>
-  trpc.tracks.getByTag.prefetchQuery({ tagId })
+export const prefetchTracksByTagQuery = (
+  trpc: TRPCClient,
+  input: RouterInput['tracks']['getByTag']
+) => trpc.tracks.getByTag.prefetchQuery(input)

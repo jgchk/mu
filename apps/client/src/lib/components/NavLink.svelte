@@ -6,15 +6,27 @@
   export let href: string
   export let otherMatches: string[] = []
 
-  $: matches = $page.url.pathname === href || otherMatches.includes($page.url.pathname)
+  export let label: string
+
+  $: matches =
+    $page.url.pathname.startsWith(href) ||
+    otherMatches.some((url) => $page.url.pathname.startsWith(url))
 </script>
 
 <a
   class={cn(
-    'rounded px-2 py-1 font-medium transition hover:bg-gray-900',
+    'flex w-full flex-col items-center rounded px-2 py-1 font-medium transition hover:bg-gray-900 md:w-[unset] md:flex-[unset]',
     matches ? 'text-primary-500' : 'text-gray-300 hover:text-white'
   )}
   {href}
 >
-  <slot />
+  {#if $$slots.default}
+    <div class="h-5 w-5 md:hidden">
+      <slot />
+    </div>
+  {/if}
+
+  <span class="text-xs md:text-base">
+    {label}
+  </span>
 </a>

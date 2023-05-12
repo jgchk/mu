@@ -13,7 +13,7 @@
 {#if $artistsQuery.data}
   {@const artists = $artistsQuery.data}
 
-  <FlowGrid class="p-4">
+  <FlowGrid>
     {#each artists as artist (artist.id)}
       <div class="w-full">
         <a href="/artists/{artist.id}" class="w-full">

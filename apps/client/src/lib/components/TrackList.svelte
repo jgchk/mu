@@ -15,6 +15,8 @@
   export let reorderable = false
   export let sortable = false
 
+  export let favorites: boolean | undefined = undefined
+
   let class_: string | undefined = undefined
   export { class_ as class }
 
@@ -38,7 +40,7 @@
 
 <div class={class_}>
   {#if sortable}
-    <TrackListSort {showRelease} {showCoverArt} {showDelete} />
+    <TrackListSort {showRelease} {showCoverArt} {showDelete} {favorites} />
   {/if}
 
   <div

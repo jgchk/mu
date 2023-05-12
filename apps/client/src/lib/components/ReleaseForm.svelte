@@ -92,7 +92,7 @@
 </script>
 
 <div class="h-full overflow-auto">
-  <form class="p-4" method="POST" use:enhance>
+  <form method="POST" use:enhance>
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="flex gap-4">
       <div class="h-64 w-64">

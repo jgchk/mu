@@ -22,7 +22,6 @@
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
   export { class_ as class }
-  export let offset = 8
 
   const trpc = getContextClient()
   const tagsQuery = createTagsQuery(trpc, { taggable: true })
@@ -48,7 +47,7 @@
     'z-40 w-screen max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg',
     class_
   )}
-  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, offset] } }] }}
+  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] }}
   transition:fade|local={{ duration: 75 }}
 >
   <PopoverArrow />

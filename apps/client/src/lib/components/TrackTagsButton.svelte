@@ -6,10 +6,10 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
   import TagOutlineIcon from '$lib/icons/TagOutlineIcon.svelte'
-  import { createTrackTagsQuery } from '$lib/services/tags'
+  import { createTrackTagsQuery, prefetchTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
-  import TagsPopover from './TrackListTrackTagsPopover.svelte'
+  import TagsPopover from './TrackTagsPopover.svelte'
 
   export let trackId: number
   export let layer: ComponentProps<IconButton>['layer'] = undefined
@@ -20,6 +20,8 @@
   const trpc = getContextClient()
   const trackTagsQuery = createTrackTagsQuery(trpc, trackId)
   $: hasTags = !!$trackTagsQuery.data?.length
+
+  void prefetchTagsQuery(trpc, { taggable: true })
 
   const close = () => {
     void trpc.tracks.getByTag.utils.invalidate()

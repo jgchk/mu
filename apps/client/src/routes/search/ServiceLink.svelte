@@ -17,7 +17,7 @@
 
 <a
   class={cn(
-    'flex h-10 select-none items-center gap-2 px-4 transition hover:text-white',
+    'flex w-full select-none flex-col items-center justify-center py-2 transition hover:text-white md:flex-row md:justify-start md:gap-2 md:px-4',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   href={url.pathname + url.search}
@@ -27,5 +27,8 @@
       <slot />
     </div>
   {/if}
-  {service}
+
+  <span class="text-xs md:text-base">
+    {service}
+  </span>
 </a>

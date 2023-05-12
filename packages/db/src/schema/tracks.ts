@@ -86,6 +86,7 @@ export type TracksMixin = {
       playlistId: number,
       filter?: TracksFilter
     ) => (TrackPretty & { playlistTrackId: PlaylistTrack['id'] })[]
+    getByTagIds: (tagIds: number[], filter?: TracksFilter) => TrackPretty[]
     get: (id: Track['id']) => TrackPretty
     getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
@@ -171,13 +172,13 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
       },
 
       getAll: (filter) => {
-        let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.title)
+        let query = this.db.select({ tracks }).from(tracks).orderBy(tracks.title)
         query = this.tracks.withFilter(query, filter)
         return query.all().map((row) => convertTrack(row.tracks))
       },
 
       getByReleaseId: (releaseId, filter) => {
-        let query = this.db.select({ tracks: tracks }).from(tracks).orderBy(tracks.order)
+        let query = this.db.select({ tracks }).from(tracks).orderBy(tracks.order)
 
         query = this.tracks.withFilter(query, filter, [eq(tracks.releaseId, releaseId)])
 
@@ -197,6 +198,18 @@ export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
           ...convertTrack(row.tracks),
           playlistTrackId: row.playlistTrackId,
         }))
+      },
+
+      getByTagIds: (tagIds, filter) => {
+        let query = this.db
+          .select({ tracks })
+          .from(tracks)
+          .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
+          .orderBy(tracks.title)
+
+        query = this.tracks.withFilter(query, filter, [inArray(trackTags.tagId, tagIds)])
+
+        return query.all().map((row) => convertTrack(row.tracks))
       },
 
       get: (id) => {

@@ -35,7 +35,12 @@
   })
 </script>
 
-<div class={tw('space-y-4 overflow-auto rounded bg-black p-4', class_)}>
+<div
+  class={tw(
+    'space-y-4 overflow-auto rounded bg-gray-900 bg-opacity-95 p-2 backdrop-blur-md',
+    class_
+  )}
+>
   {#if $tracksQuery.data}
     {@const previousTracks = $tracksQuery.data.filter((t) =>
       $nowPlaying.previousTracks.includes(t.id)
@@ -45,7 +50,7 @@
 
     {#if previousTracks.length}
       <div>
-        <h6 class="mb-1 font-bold text-gray-400">Previous</h6>
+        <h6 class="mb-1 ml-1 font-semibold text-gray-400">Previous</h6>
         <TrackList
           tracks={previousTracks}
           on:favorite={(e) =>
@@ -55,7 +60,7 @@
     {/if}
 
     <div use:autoscroll>
-      <h6 class="text-primary-600 mb-1 font-bold">Now playing</h6>
+      <h6 class="text-primary-500 mb-1 ml-1 font-bold">Now playing</h6>
       {#if nowPlayingTrack}
         <TrackList
           tracks={[nowPlayingTrack]}
@@ -67,7 +72,7 @@
 
     {#if nextTracks.length}
       <div>
-        <h6 class="mb-1 font-bold text-gray-400">Next</h6>
+        <h6 class="mb-1 ml-1 font-semibold text-gray-400">Next</h6>
         <TrackList
           tracks={nextTracks}
           on:favorite={(e) =>

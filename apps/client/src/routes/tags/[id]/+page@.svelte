@@ -27,10 +27,10 @@
   $: tagsMap = ifDefined($tagsQuery.data, (tags) => new Map(tags.map((t) => [t.id, t])))
 
   $: releasesQuery = createReleasesByTagQuery(trpc, data.id)
-  $: tracksQuery = createTracksByTagQuery(trpc, data.id)
+  $: tracksQuery = createTracksByTagQuery(trpc, data.tracksQuery)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getTracksByTagQuery: { tagId: data.id },
+    getTracksByTagQuery: data.tracksQuery,
   })
 
   const makeQueueData = (tracks: RouterOutput['tracks']['getByTag'], trackIndex: number) => ({
@@ -150,6 +150,8 @@
       {#if tracks.length > 0}
         <TrackList
           {tracks}
+          sortable
+          favorites={data.tracksQuery.filter?.favorite ?? false}
           on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
           on:favorite={(e) =>
             $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}

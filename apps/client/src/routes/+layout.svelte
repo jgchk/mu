@@ -3,7 +3,7 @@
   import '@fontsource/noto-emoji'
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import { onMount } from 'svelte'
-  import { fly } from 'svelte/transition'
+  import { fade } from 'svelte/transition'
   import { toErrorString } from 'utils'
 
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
@@ -58,15 +58,17 @@
 <QueryClientProvider client={data.trpc.queryClient}>
   <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
     <div class="flex min-w-0 flex-1 flex-col gap-2">
-      <NavBar />
+      <div class="order-3 md:order-1">
+        <NavBar />
+      </div>
 
-      <main class="relative flex-1 overflow-auto">
+      <main class="relative order-1 min-h-0 flex-1 md:order-2">
         <div class="relative h-full w-full overflow-auto">
           <slot />
         </div>
         {#if showQueue}
-          <div class="absolute left-0 top-0 h-full w-full overflow-hidden rounded">
-            <div class="h-full w-full" transition:fly={{ y: 20, duration: 150 }}>
+          <div class="absolute -bottom-2 -left-2 -right-2 -top-2 p-2">
+            <div class="h-full w-full rounded shadow" transition:fade={{ duration: 150 }}>
               <Queue class="h-full w-full" />
             </div>
           </div>
@@ -76,15 +78,17 @@
       </main>
 
       {#if $nowPlaying.track}
-        <Player
-          track={$nowPlaying.track}
-          on:toggleQueue={() => (showQueue = !showQueue)}
-          queueOpen={showQueue}
-        />
+        <div class="order-2 md:order-3">
+          <Player
+            track={$nowPlaying.track}
+            on:toggleQueue={() => (showQueue = !showQueue)}
+            queueOpen={showQueue}
+          />
+        </div>
       {/if}
     </div>
 
-    <div class="hidden lg:block">
+    <div class="hidden xl:block">
       <FriendsSidebar />
     </div>
   </div>

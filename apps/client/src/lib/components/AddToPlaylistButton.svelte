@@ -10,7 +10,6 @@
 
   export let trackId: number
   export let layer: ComponentProps<IconButton>['layer'] = undefined
-  export let offset: ComponentProps<AddToPlaylistPopover>['offset'] = undefined
   export let excludePlaylistId: ComponentProps<AddToPlaylistPopover>['excludePlaylistId'] =
     undefined
 
@@ -39,7 +38,6 @@
       trackId={showAddToPlaylistPopover.trackId}
       on:close={() => (showAddToPlaylistPopover = false)}
       {popperTooltip}
-      {offset}
       {excludePlaylistId}
     />
   {/if}

@@ -12,7 +12,7 @@
 </script>
 
 {#if $releasesQuery.data}
-  <FlowGrid class="p-4">
+  <FlowGrid>
     {#each $releasesQuery.data as release (release.id)}
       <div class="w-full">
         <a href="/releases/{release.id}" class="w-full">

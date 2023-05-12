@@ -1,4 +1,4 @@
-import { ifDefined, ifNotNull, uniq } from 'utils'
+import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { publicProcedure, router } from '../trpc'
@@ -65,15 +65,14 @@ export const tracksRouter = router({
     }),
 
   getByTag: publicProcedure
-    .input(z.object({ tagId: z.number() }))
-    .query(({ input: { tagId }, ctx }) => {
+    .input(z.object({ tagId: z.number(), filter: TracksFilter.optional() }))
+    .query(({ input: { tagId, filter }, ctx }) => {
       const descendants = ctx.db.tags.getDescendants(tagId)
       const ids = [tagId, ...descendants.map((t) => t.id)]
-      const trackTags = ctx.db.trackTags.getByTags(ids)
-      const trackIds = uniq(trackTags.map((tt) => tt.trackId))
-      return trackIds.map((id) => ({
-        ...ctx.db.tracks.get(id),
-        artists: ctx.db.artists.getByTrackId(id),
+      const tracks = ctx.db.tracks.getByTagIds(ids, filter)
+      return tracks.map((track) => ({
+        ...track,
+        artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
 
