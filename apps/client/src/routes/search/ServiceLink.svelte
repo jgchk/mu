@@ -17,7 +17,7 @@
 
 <a
   class={cn(
-    'flex w-full select-none flex-col items-center justify-center py-2 transition hover:text-white md:w-[unset] md:flex-row md:justify-start md:gap-2 md:px-4',
+    'flex w-full select-none flex-col items-center justify-center py-2 transition hover:text-white md:flex-row md:justify-start md:gap-2 md:px-4',
     isCurrentUrl ? 'text-white' : 'text-gray-500'
   )}
   href={url.pathname + url.search}
