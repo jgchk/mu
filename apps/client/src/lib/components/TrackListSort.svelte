@@ -107,7 +107,7 @@
     {#if favorites !== undefined}
       <a
         class={cn(
-          'center block h-full w-8 text-gray-300 hover:text-white',
+          'center block h-full w-8 text-gray-400 hover:text-white',
           numButtons > 3 && 'ml-9'
         )}
         href={pipe(
