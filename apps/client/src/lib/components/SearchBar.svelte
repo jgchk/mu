@@ -4,13 +4,21 @@
 
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
+  import { cn } from '$lib/utils/classes'
 
-  export let query = ''
+  export let initialQuery: string | undefined = undefined
+  let query = initialQuery ?? ''
+
   let input: HTMLInputElement | undefined
+
+  let class_: string | undefined = undefined
+  export { class_ as class }
+
+  export let layer: 'black' | 800 = 'black'
 </script>
 
 <form
-  class="hidden md:inline"
+  class={class_}
   on:submit|preventDefault={() => {
     if (query.length > 0) {
       if ($page.url.pathname.startsWith('/search')) {
@@ -25,12 +33,16 @@
 >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
-    class="group ml-2 inline-flex cursor-text items-center gap-2 rounded-full bg-gray-800 py-1 pl-3 pr-1 transition-all focus-within:bg-white"
+    class={cn(
+      'group inline-flex w-full cursor-text items-center gap-2 rounded-full py-1 pl-3 pr-1 transition-all focus-within:bg-white',
+      layer === 'black' && 'bg-gray-800',
+      layer === 800 && 'bg-gray-700'
+    )}
     on:click={() => input?.focus()}
   >
     <SearchIcon class="h-4 w-4 text-gray-400 group-focus-within:text-gray-600" />
     <input
-      class="bg-transparent text-white outline-none group-focus-within:text-black"
+      class="min-w-0 flex-1 bg-transparent text-white outline-none group-focus-within:text-black"
       bind:this={input}
       type="text"
       bind:value={query}

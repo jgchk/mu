@@ -1,6 +1,5 @@
 <script lang="ts">
   import { navigating, page } from '$app/stores'
-  import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
 
   import { tooltip } from '$lib/actions/tooltip'
@@ -15,13 +14,9 @@
   import NavLink from './NavLink.svelte'
   import SearchBar from './SearchBar.svelte'
 
-  let query = ''
-  onMount(() => {
-    const unsubscribe = page.subscribe((page) => {
-      query = (page.url.pathname.startsWith('/search') && page.url.searchParams.get('q')) || ''
-    })
-    return () => unsubscribe()
-  })
+  const initialQuery = $page.url.pathname.startsWith('/search')
+    ? $page.url.searchParams.get('q') ?? undefined
+    : undefined
 </script>
 
 <nav
@@ -35,7 +30,7 @@
   <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
-  <SearchBar {query} />
+  <SearchBar class="ml-2 hidden md:inline" {initialQuery} />
 
   {#if $navigating}
     <Delay>
