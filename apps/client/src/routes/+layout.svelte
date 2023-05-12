@@ -3,7 +3,7 @@
   import '@fontsource/noto-emoji'
   import { QueryClientProvider } from '@tanstack/svelte-query'
   import { onMount } from 'svelte'
-  import { fly } from 'svelte/transition'
+  import { fade } from 'svelte/transition'
   import { toErrorString } from 'utils'
 
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
@@ -62,13 +62,13 @@
         <NavBar />
       </div>
 
-      <main class="relative order-1 flex-1 overflow-auto md:order-2">
+      <main class="relative order-1 min-h-0 flex-1 md:order-2">
         <div class="relative h-full w-full overflow-auto">
           <slot />
         </div>
         {#if showQueue}
-          <div class="absolute left-0 top-0 h-full w-full overflow-hidden rounded">
-            <div class="h-full w-full" transition:fly={{ y: 20, duration: 150 }}>
+          <div class="absolute -bottom-2 -left-2 -right-2 -top-2 p-2">
+            <div class="h-full w-full rounded shadow" transition:fade={{ duration: 150 }}>
               <Queue class="h-full w-full" />
             </div>
           </div>
