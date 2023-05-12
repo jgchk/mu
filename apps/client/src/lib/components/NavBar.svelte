@@ -5,6 +5,7 @@
   import { tooltip } from '$lib/actions/tooltip'
   import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
+  import LoaderLine from '$lib/atoms/LoaderLine.svelte'
   import CogIcon from '$lib/icons/CogIcon.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import LibraryIcon from '$lib/icons/LibraryIcon.svelte'
@@ -43,6 +44,7 @@
       >
         <Loader class="text-primary-500 h-6 w-6" />
       </div>
+      <LoaderLine class="text-primary-500 fixed inset-0 top-0 md:hidden" />
     </Delay>
   {/if}
 </nav>
