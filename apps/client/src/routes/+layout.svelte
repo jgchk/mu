@@ -88,7 +88,7 @@
       {/if}
     </div>
 
-    <div class="hidden lg:block">
+    <div class="hidden xl:block">
       <FriendsSidebar />
     </div>
   </div>

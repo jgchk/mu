@@ -58,7 +58,7 @@
   <div
     class={cn(
       'flex w-full gap-y-1 rounded bg-gray-900 p-1',
-      hasFilter ? 'flex-col gap-x-8 sm:flex-row' : 'flex-row gap-x-1'
+      hasFilter ? 'flex-col gap-x-8 md:flex-row' : 'flex-row gap-x-1'
     )}
   >
     <div class="flex flex-1 gap-1">
@@ -108,9 +108,9 @@
         </Button>
       {/if}
     </div>
-    <div class="flex flex-nowrap gap-1 sm:self-center">
+    <div class="flex flex-nowrap gap-1 md:self-center">
       <Button
-        class="order-1 sm:order-2"
+        class="order-1 md:order-2"
         kind={hasAdvancedFilter ? 'solid' : 'outline'}
         on:click={() => dialogs.open('edit-tags-filter', { filter: data.tags?.parsed })}
       >
@@ -120,7 +120,7 @@
         {@const filter = data.tags.text}
         <Button
           kind="text"
-          class="order-2 whitespace-nowrap sm:order-1"
+          class="order-2 whitespace-nowrap md:order-1"
           on:click={() => dialogs.open('new-auto-playlist', { filter })}
           tooltip="Create a new auto-playlist with this filter"
         >

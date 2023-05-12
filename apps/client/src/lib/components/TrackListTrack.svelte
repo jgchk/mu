@@ -34,8 +34,8 @@
   class={cn(
     'group/track grid select-none items-center gap-2 rounded p-1.5 hover:bg-gray-700',
     track.release
-      ? 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
-      : 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+      ? 'grid-cols-[auto_6fr_auto] md:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[auto_6fr_auto] md:grid-cols-[auto_6fr_1fr_auto]'
   )}
   on:dblclick={() => play()}
 >
@@ -74,7 +74,7 @@
   </div>
 
   {#if track.release}
-    <div class="hidden truncate text-sm text-gray-400 sm:block">
+    <div class="hidden truncate text-sm text-gray-400 md:block">
       <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
         >{#if track.release.title}
           {track.release.title}
@@ -85,7 +85,7 @@
     </div>
   {/if}
 
-  <div class="hidden justify-self-end text-sm text-gray-400 sm:block">
+  <div class="hidden justify-self-end text-sm text-gray-400 md:block">
     {formatMilliseconds(track.duration)}
   </div>
 

@@ -41,8 +41,8 @@
   class={cn(
     'grid gap-2 p-1.5',
     showRelease
-      ? 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_4fr_1fr_auto]'
-      : 'grid-cols-[auto_6fr_auto] sm:grid-cols-[auto_6fr_1fr_auto]'
+      ? 'grid-cols-[auto_6fr_auto] md:grid-cols-[auto_6fr_4fr_1fr_auto]'
+      : 'grid-cols-[auto_6fr_auto] md:grid-cols-[auto_6fr_1fr_auto]'
   )}
 >
   {#if showCoverArt}
@@ -72,7 +72,7 @@
   </div>
 
   {#if showRelease}
-    <div class="hidden flex-1 sm:block">
+    <div class="hidden flex-1 md:block">
       <a
         data-sveltekit-keepfocus
         data-sveltekit-replacestate
@@ -92,7 +92,7 @@
   <a
     data-sveltekit-keepfocus
     data-sveltekit-replacestate
-    class="hidden justify-self-end whitespace-nowrap text-sm text-gray-400 transition hover:text-white sm:block"
+    class="hidden justify-self-end whitespace-nowrap text-sm text-gray-400 transition hover:text-white md:block"
     href={sort?.column === 'duration'
       ? sort.direction === 'asc'
         ? withSortUpdate({ column: 'duration', direction: 'desc' })

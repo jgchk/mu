@@ -113,24 +113,24 @@
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
 </script>
 
-<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] sm:pb-2">
-  <div class="flex min-w-[180px] flex-[3] items-center gap-4">
+<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] md:pb-2">
+  <div class="flex min-w-[180px] max-w-fit flex-1 items-center gap-4 lg:flex-[3]">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <a href="/releases/{track.releaseId}" class="w-10 shrink-0 sm:w-16">
+      <a href="/releases/{track.releaseId}" class="w-10 shrink-0 md:w-16">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
-          rounding="rounded-sm sm:rounded"
+          rounding="rounded-sm md:rounded"
           placeholderClass="text-[8px]"
         />
       </a>
 
-      <div class="flex-1 overflow-hidden sm:flex-[unset]">
-        <div class="truncate text-sm font-medium sm:text-base">
+      <div class="flex-1 overflow-hidden md:flex-[unset]">
+        <div class="truncate text-sm font-medium md:text-base">
           {track.title}
         </div>
-        <div class="truncate text-xs text-gray-400 sm:text-sm">
+        <div class="truncate text-xs text-gray-400 md:text-sm">
           <CommaList items={track.artists} let:item>
             <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
           </CommaList>
@@ -157,63 +157,68 @@
     {/if}
   </div>
 
-  <div class="max-w-[722px] sm:flex-[4]">
-    <div class="flex w-full items-center justify-center gap-3.5">
-      <button
-        type="button"
-        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
-        use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => previousTrack()}
-      >
-        <RewindIcon class="h-6 w-6" />
-      </button>
-      <button
-        type="button"
-        class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
-        on:click={togglePlaying}
-        use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
-      >
-        {#if paused}
-          <PlayIcon />
-        {:else}
-          <PauseIcon />
-        {/if}
-      </button>
-      <button
-        type="button"
-        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
-        use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => nextTrack()}
-      >
-        <FastForwardIcon class="h-6 w-6" />
-      </button>
-    </div>
-    <div
-      class="absolute inset-x-2 -bottom-2 flex items-center gap-2 sm:relative sm:inset-x-[unset] sm:bottom-[unset]"
-    >
-      <div class="hidden text-right text-xs text-gray-400 sm:block" style:min-width={timeMinWidth}>
-        {formattedCurrentTime}
+  <div class="ml-auto flex justify-center md:ml-[unset] md:flex-1 xl:flex-[4]">
+    <div class="w-full max-w-[722px]">
+      <div class="flex w-full items-center justify-center gap-3.5">
+        <button
+          type="button"
+          class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
+          use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
+          on:click={() => previousTrack()}
+        >
+          <RewindIcon class="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
+          on:click={togglePlaying}
+          use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
+        >
+          {#if paused}
+            <PlayIcon />
+          {:else}
+            <PauseIcon />
+          {/if}
+        </button>
+        <button
+          type="button"
+          class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
+          use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
+          on:click={() => nextTrack()}
+        >
+          <FastForwardIcon class="h-6 w-6" />
+        </button>
       </div>
-      <div class="flex-1">
-        <Range
-          bind:value={track.currentTime}
-          min={0}
-          max={(durationMs ?? 1000) / 1000}
-          height="h-[3px]"
-          on:change={(e) => {
-            if (player) {
-              player.currentTime = e.detail
-            }
-          }}
-        />
-      </div>
-      <div class="hidden text-xs text-gray-400 sm:block" style:min-width={timeMinWidth}>
-        {formattedDuration}
+      <div
+        class="absolute inset-x-2 -bottom-2 flex items-center gap-2 md:relative md:inset-x-[unset] md:bottom-[unset]"
+      >
+        <div
+          class="hidden text-right text-xs text-gray-400 md:block"
+          style:min-width={timeMinWidth}
+        >
+          {formattedCurrentTime}
+        </div>
+        <div class="flex-1">
+          <Range
+            bind:value={track.currentTime}
+            min={0}
+            max={(durationMs ?? 1000) / 1000}
+            height="h-[3px]"
+            on:change={(e) => {
+              if (player) {
+                player.currentTime = e.detail
+              }
+            }}
+          />
+        </div>
+        <div class="hidden text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
+          {formattedDuration}
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="hidden flex-[2.25] items-center justify-end gap-1 lg:flex">
+  <div class="hidden items-center justify-end gap-1 md:flex">
     <IconButton
       kind="text"
       tooltip="Queue"
@@ -243,7 +248,7 @@
       {/if}
     </IconButton>
 
-    <div class="mr-4 w-[125px]">
+    <div class="mr-4 hidden w-[125px] lg:block">
       <Range bind:value={$volume} min={0} max={1} />
     </div>
   </div>
