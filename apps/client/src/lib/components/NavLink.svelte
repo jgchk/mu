@@ -8,7 +8,9 @@
 
   export let label: string
 
-  $: matches = $page.url.pathname === href || otherMatches.includes($page.url.pathname)
+  $: matches =
+    $page.url.pathname.startsWith(href) ||
+    otherMatches.some((url) => $page.url.pathname.startsWith(url))
 </script>
 
 <a

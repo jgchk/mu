@@ -30,10 +30,11 @@
 <nav
   class="flex items-center justify-around overflow-auto rounded text-white md:justify-start md:bg-black md:p-2 md:px-3"
 >
-  <NavLink label="Library" href="/artists" otherMatches={['/playlists', '/releases', '/tracks']}
-    ><LibraryIcon /></NavLink
-  >
+  <NavLink label="Library" href="/artists" otherMatches={['/playlists', '/releases', '/tracks']}>
+    <LibraryIcon />
+  </NavLink>
   <NavLink label="Tags" href="/tags"><TagIcon /></NavLink>
+  <NavLink label="Search" href="/search"><SearchIcon /></NavLink>
   <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
