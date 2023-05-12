@@ -41,6 +41,7 @@
         ? makeImageUrl(release.imageId, { size: 512 })
         : undefined}
       coverArtClickable={!!tracks?.length}
+      on:clickCoverArt={() => tracks && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
       class="group/tags"
     >
       <div class="flex items-center gap-2 text-sm" slot="subtitle">

@@ -46,6 +46,7 @@
       ? makeImageUrl(playlist.imageId, { size: 512 })
       : makeCollageUrl(playlist.imageIds, { size: 512 })}
     coverArtClickable={tracks.length > 0}
+    on:clickCoverArt={() => playTrack(tracks[0].id, makeQueueData(0))}
   >
     <svelte:fragment slot="cover-art-icon">
       {#if playlist.filter !== null}
