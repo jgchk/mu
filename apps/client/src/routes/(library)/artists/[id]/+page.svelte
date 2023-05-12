@@ -25,6 +25,7 @@
   $: artistQuery = createArtistQuery(trpc, data.id)
   $: releasesQuery = createArtistReleasesQuery(trpc, data.id)
   $: tracksQuery = createArtistTracksQuery(trpc, data.tracksQuery)
+  $: tracks = $tracksQuery.data
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
     getArtistTracksQuery: { id: data.id },
@@ -46,7 +47,8 @@
     coverArtSrc={artist.imageId !== null
       ? makeImageUrl(artist.imageId, { size: 512 })
       : makeCollageUrl(artist.imageIds, { size: 512 })}
-    coverArtClickable={false}
+    coverArtClickable={!!tracks?.length}
+    on:clickCoverArt={() => tracks?.length && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
   >
     <svelte:fragment slot="subtitle">
       {#if artist.description}
@@ -94,13 +96,13 @@
   {/if}
 
   <h2 class="mb-4 mt-12 text-2xl font-bold">Tracks</h2>
-  {#if $tracksQuery.data}
-    {@const tracks = $tracksQuery.data}
+  {#if tracks}
     <TrackList
       {tracks}
       favorites={data.tracksQuery.favorite ?? false}
       sortable
-      on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+      on:play={(e) =>
+        tracks?.length && playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       on:favorite={(e) =>
         $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
     />
