@@ -112,7 +112,7 @@
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
 </script>
 
-<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-3 sm:pb-2">
+<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] sm:pb-2">
   <div class="flex min-w-[180px] flex-[3] items-center gap-4">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
@@ -196,6 +196,7 @@
           bind:value={track.currentTime}
           min={0}
           max={(durationMs ?? 1000) / 1000}
+          height="h-[3px]"
           on:change={(e) => {
             if (player) {
               player.currentTime = e.detail
