@@ -30,12 +30,14 @@
   <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
-  <SearchBar class="ml-2 hidden md:inline" {initialQuery} />
+  <div class="ml-2 hidden min-w-0 flex-1 md:inline">
+    <SearchBar class="w-full max-w-fit" {initialQuery} />
+  </div>
 
   {#if $navigating}
     <Delay>
       <div
-        class="pointer-events-none ml-auto"
+        class="ml-auto hidden pl-2 md:block"
         use:tooltip={{ content: 'Navigating...' }}
         in:fade|local
       >
