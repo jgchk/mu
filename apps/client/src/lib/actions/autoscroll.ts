@@ -1,3 +1,5 @@
+import { isElementInView } from 'utils/browser'
+
 import type { Action } from './types'
 
 export type AutoscrollOptions = NonNullable<
@@ -5,5 +7,7 @@ export type AutoscrollOptions = NonNullable<
 > | void
 
 export const autoscroll: Action<AutoscrollOptions> = (el, opts) => {
-  el.scrollIntoView(opts ?? undefined)
+  if (!isElementInView(el)) {
+    el.scrollIntoView(opts ?? undefined)
+  }
 }
