@@ -29,6 +29,7 @@
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
+  import TrackTagsButton from './TrackTagsButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
 
@@ -143,6 +144,7 @@
           on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
         />
         <AddToPlaylistButton trackId={track.id} layer="black" offset={32} />
+        <TrackTagsButton trackId={track.id} layer="black" />
       </div>
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>

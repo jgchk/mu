@@ -13,7 +13,7 @@
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
   import type { TrackListTrack as TrackListTrackType } from './TrackList'
-  import TrackListTrackTagsButton from './TrackListTrackTagsButton.svelte'
+  import TrackTagsButton from './TrackTagsButton.svelte'
 
   export let track: TrackListTrackType
   export let showCoverArt = true
@@ -97,6 +97,6 @@
     {/if}
     <FavoriteButton layer={700} favorite={track.favorite} on:click={() => favorite()} />
     <AddToPlaylistButton trackId={track.id} layer={700} />
-    <TrackListTrackTagsButton trackId={track.id} layer={700} />
+    <TrackTagsButton trackId={track.id} layer={700} />
   </div>
 </div>
