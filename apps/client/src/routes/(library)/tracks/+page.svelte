@@ -57,8 +57,8 @@
 <div class="-mx-2 -mt-2">
   <div
     class={cn(
-      'flex w-full flex-col gap-y-1 rounded bg-gray-900 p-1 sm:flex-row',
-      hasFilter ? 'gap-x-8' : 'gap-x-1'
+      'flex w-full gap-y-1 rounded bg-gray-900 p-1',
+      hasFilter ? 'flex-col gap-x-8 sm:flex-row' : 'flex-row gap-x-1'
     )}
   >
     <div class="flex flex-1 gap-1">
