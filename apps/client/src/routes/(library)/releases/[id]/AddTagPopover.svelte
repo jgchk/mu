@@ -24,7 +24,6 @@
 <TagsPopover
   {selectedTagIds}
   {popperTooltip}
-  offset={12}
   on:close={close}
   on:tag={(e) => handleTag(e.detail.id, e.detail.tagged)}
 />

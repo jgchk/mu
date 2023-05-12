@@ -143,7 +143,7 @@
           favorite={track.favorite}
           on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
         />
-        <AddToPlaylistButton trackId={track.id} layer="black" offset={32} />
+        <AddToPlaylistButton trackId={track.id} layer="black" />
         <TrackTagsButton trackId={track.id} layer="black" />
       </div>
     {:else if $nowPlayingTrack.error}

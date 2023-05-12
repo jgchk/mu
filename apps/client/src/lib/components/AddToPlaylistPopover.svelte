@@ -25,7 +25,6 @@
   export let popperTooltip: PopperTooltipAction
   let class_: string | undefined = undefined
   export { class_ as class }
-  export let offset = 8
   export let excludePlaylistId: number | undefined = undefined
   export let id: string | undefined = undefined
 
@@ -89,7 +88,7 @@
 <div
   {id}
   class={tw('z-40 w-full max-w-xs rounded-lg border border-gray-600 bg-gray-700 shadow-lg', class_)}
-  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, offset] } }] }}
+  use:popperTooltip={{ modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] }}
   transition:fade|local={{ duration: 75 }}
 >
   <PopoverArrow />
