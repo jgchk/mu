@@ -8,11 +8,11 @@ import { numDigits, uniq } from 'utils'
 import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAll: publicProcedure.query(({ ctx }) =>
+  getAll: protectedProcedure.query(({ ctx }) =>
     ctx.db.releases.getAll().map((release) => ({
       ...release,
       imageId:
@@ -21,7 +21,7 @@ export const releasesRouter = router({
     }))
   ),
 
-  getAllWithArtists: publicProcedure.query(({ ctx }) =>
+  getAllWithArtists: protectedProcedure.query(({ ctx }) =>
     ctx.db.releases.getAll().map((release) => ({
       ...release,
       artists: ctx.db.artists.getByReleaseId(release.id),
@@ -31,7 +31,7 @@ export const releasesRouter = router({
     }))
   ),
 
-  getWithArtists: publicProcedure
+  getWithArtists: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
       const release = ctx.db.releases.get(id)
@@ -44,7 +44,7 @@ export const releasesRouter = router({
       }
     }),
 
-  tracks: publicProcedure
+  tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ input: { id, ...filter }, ctx }) =>
       ctx.db.tracks.getByReleaseId(id, filter).map((track) => ({
@@ -53,7 +53,7 @@ export const releasesRouter = router({
       }))
     ),
 
-  getByTag: publicProcedure
+  getByTag: protectedProcedure
     .input(z.object({ tagId: z.number() }))
     .query(({ input: { tagId }, ctx }) => {
       const descendants = ctx.db.tags.getDescendants(tagId)
@@ -67,7 +67,7 @@ export const releasesRouter = router({
       }))
     }),
 
-  updateWithTracksAndArtists: publicProcedure
+  updateWithTracksAndArtists: protectedProcedure
     .input(
       z.object({
         id: z.number(),

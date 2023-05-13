@@ -1,11 +1,11 @@
 import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 
 export const tracksRouter = router({
-  getAllWithArtistsAndRelease: publicProcedure.input(TracksFilter).query(({ input, ctx }) => {
+  getAllWithArtistsAndRelease: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 
@@ -35,12 +35,14 @@ export const tracksRouter = router({
     }
   }),
 
-  getById: publicProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => ({
-    ...ctx.db.tracks.get(id),
-    artists: ctx.db.artists.getByTrackId(id),
-  })),
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(({ input: { id }, ctx }) => ({
+      ...ctx.db.tracks.get(id),
+      artists: ctx.db.artists.getByTrackId(id),
+    })),
 
-  getMany: publicProcedure
+  getMany: protectedProcedure
     .input(z.object({ ids: z.array(z.number()) }))
     .query(({ input: { ids }, ctx }) => {
       const tracks = ctx.db.tracks.getMany(ids)
@@ -50,11 +52,11 @@ export const tracksRouter = router({
       }))
     }),
 
-  getByReleaseId: publicProcedure
+  getByReleaseId: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
 
-  getByReleaseIdWithArtists: publicProcedure
+  getByReleaseIdWithArtists: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => {
       const tracks = ctx.db.tracks.getByReleaseId(releaseId)
@@ -64,7 +66,7 @@ export const tracksRouter = router({
       }))
     }),
 
-  getByTag: publicProcedure
+  getByTag: protectedProcedure
     .input(z.object({ tagId: z.number(), filter: TracksFilter.optional() }))
     .query(({ input: { tagId, filter }, ctx }) => {
       const descendants = ctx.db.tags.getDescendants(tagId)
@@ -76,7 +78,7 @@ export const tracksRouter = router({
       }))
     }),
 
-  favorite: publicProcedure
+  favorite: protectedProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .mutation(async ({ input: { id, favorite }, ctx }) => {
       const dbTrack = ctx.db.tracks.update(id, { favorite })

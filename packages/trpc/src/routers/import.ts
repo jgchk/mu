@@ -15,7 +15,7 @@ import { ifDefined, isAudio, numDigits } from 'utils'
 import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import {
   deleteGroupDownload,
   deleteTrackDownload,
@@ -34,7 +34,7 @@ const isDownloadComplete = <T extends { path: string | null }>(
 }
 
 export const importRouter = router({
-  groupDownloadData: publicProcedure
+  groupDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
       const releaseDownload = getGroupDownload(ctx.db, input.service, input.id)
@@ -131,7 +131,7 @@ export const importRouter = router({
       }
     }),
 
-  groupDownloadManual: publicProcedure
+  groupDownloadManual: protectedProcedure
     .input(
       z.object({
         service: z.enum(['soundcloud', 'spotify', 'soulseek']),
@@ -300,7 +300,7 @@ export const importRouter = router({
       }
     }),
 
-  trackDownloadData: publicProcedure
+  trackDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
       const dbDownload = getTrackDownload(ctx.db, input.service, input.id)
@@ -356,7 +356,7 @@ export const importRouter = router({
       }
     }),
 
-  trackDownloadManual: publicProcedure
+  trackDownloadManual: protectedProcedure
     .input(
       z.object({
         service: z.enum(['soundcloud', 'spotify', 'soulseek']),

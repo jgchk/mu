@@ -59,6 +59,9 @@ importers:
       context:
         specifier: workspace:*
         version: link:../../packages/context
+      esm-env:
+        specifier: ^1.0.0
+        version: 1.0.0
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
@@ -132,6 +135,9 @@ importers:
 
   apps/server:
     dependencies:
+      '@fastify/cookie':
+        specifier: ^8.3.0
+        version: 8.3.0
       '@fastify/cors':
         specifier: ^8.2.1
         version: 8.2.1
@@ -483,12 +489,18 @@ importers:
       '@trpc/server':
         specifier: ^10.25.1
         version: 10.25.1
+      '@types/bcryptjs':
+        specifier: ^2.4.2
+        version: 2.4.2
       '@types/content-disposition':
         specifier: ^0.5.5
         version: 0.5.5
       '@types/mime':
         specifier: ^3.0.1
         version: 3.0.1
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
       bool-lang:
         specifier: workspace:*
         version: link:../bool-lang
@@ -1139,6 +1151,13 @@ packages:
       text-decoding: 1.0.0
     dev: false
 
+  /@fastify/cookie@8.3.0:
+    resolution: {integrity: sha512-P9hY9GO11L20TnZ33XN3i0bt+3x0zaT7S0ohAzWO950E9PB2xnNhLYzPFJIGFi5AVN0yr5+/iZhWxeYvR6KCzg==}
+    dependencies:
+      cookie: 0.5.0
+      fastify-plugin: 4.5.0
+    dev: false
+
   /@fastify/cors@8.2.1:
     resolution: {integrity: sha512-2H2MrDD3ea7g707g1CNNLWb9/tYbmw7HS+MK2SDcgjxwzbOFR93JortelTIO8DBFsZqFtEpKNxiZfSyrGgYcbw==}
     dependencies:
@@ -1461,6 +1480,10 @@ packages:
 
   /@trpc/server@10.25.1:
     resolution: {integrity: sha512-zi08QKVvWPK0EEGpEy7i5PlOK9CBlQb3LqiIdmaIpe27DzFNz6+yZ4qXwsLXTwDcDphELl/BNw+RzzQ2+Ou2vw==}
+    dev: false
+
+  /@types/bcryptjs@2.4.2:
+    resolution: {integrity: sha512-LiMQ6EOPob/4yUL66SZzu6Yh77cbzJFYll+ZfaPiPPFswtIlA/Fs1MzdKYA7JApHU49zQTbJGX3PDmCpIdDBRQ==}
     dev: false
 
   /@types/better-sqlite3@7.6.4:
@@ -1979,6 +2002,10 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+    dev: false
+
+  /bcryptjs@2.4.3:
+    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
     dev: false
 
   /better-sqlite3@8.3.0:

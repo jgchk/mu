@@ -4,7 +4,7 @@ import path from 'path'
 import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import {
   deleteGroupDownload,
   deleteTrackDownload,
@@ -69,7 +69,7 @@ type TrackDownloadType = {
 }
 
 export const downloadsRouter = router({
-  download: publicProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
+  download: protectedProcedure.input(DownloadRequest).mutation(({ input, ctx }) => {
     switch (input.service) {
       case 'soundcloud': {
         switch (input.kind) {
@@ -160,13 +160,13 @@ export const downloadsRouter = router({
     }
   }),
 
-  retryTrackDownload: publicProcedure
+  retryTrackDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(({ input: { service, id }, ctx }) => {
       void ctx.dl.download({ service, type: 'track', dbId: id })
     }),
 
-  deleteTrackDownload: publicProcedure
+  deleteTrackDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const track = getTrackDownload(ctx.db, input.service, input.id)
@@ -177,7 +177,7 @@ export const downloadsRouter = router({
       return { success: true }
     }),
 
-  deleteGroupDownload: publicProcedure
+  deleteGroupDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const group = getGroupDownload(ctx.db, input.service, input.id)
@@ -196,7 +196,7 @@ export const downloadsRouter = router({
       return { success: true }
     }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
       [
         ctx.db.soundcloudPlaylistDownloads.getAll().map(

@@ -1,8 +1,8 @@
 import { uriToUrl } from 'spotify'
 import { ifDefined, undefIfEmpty, withinLastMinutes } from 'utils'
 
-import { isLastFmLoggedIn, isSpotifyFriendActivityAvailable } from '../middleware'
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
+import { isLastFmLoggedIn, isSpotifyFriendActivityAvailable } from '../trpc/middleware'
 
 type LastTrack = {
   title: string
@@ -17,7 +17,7 @@ type LastTrack = {
 } & ({ nowPlaying: true } | { nowPlaying: false; date: Date })
 
 export const friendsRouter = router({
-  lastFm: publicProcedure.use(isLastFmLoggedIn).query(async ({ ctx }) => {
+  lastFm: protectedProcedure.use(isLastFmLoggedIn).query(async ({ ctx }) => {
     const friends = await ctx.lfm.getFriends()
 
     const lastTracks = await Promise.all(
@@ -81,7 +81,7 @@ export const friendsRouter = router({
       return b.date.getTime() - a.date.getTime()
     })
   }),
-  spotify: publicProcedure.use(isSpotifyFriendActivityAvailable).query(async ({ ctx }) => {
+  spotify: protectedProcedure.use(isSpotifyFriendActivityAvailable).query(async ({ ctx }) => {
     const friends = await ctx.sp.getFriendActivity()
     return friends.map((friend) => {
       const baseData = {

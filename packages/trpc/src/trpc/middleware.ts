@@ -1,9 +1,31 @@
 import { TRPCError } from '@trpc/server'
 import { toErrorString } from 'utils'
 
-import { t } from './trpc'
+import { t } from './t'
 
-export const isLastFmLoggedIn = t.middleware(async ({ next, ctx }) => {
+export const isLoggedIn = t.middleware(({ next, ctx }) => {
+  const token = ctx.token
+
+  if (token === undefined) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Not logged in',
+    })
+  }
+
+  const session = ctx.db.sessions.findByToken(token)
+
+  if (session === undefined) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Not logged in',
+    })
+  }
+
+  return next({ ctx: { session } })
+})
+
+export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
   const lfm = ctx.lfm
 
   if (lfm.status === 'stopped') {
@@ -43,7 +65,7 @@ export const isLastFmLoggedIn = t.middleware(async ({ next, ctx }) => {
   return next({ ctx: { lfm } })
 })
 
-export const isSoulseekAvailable = t.middleware(async ({ next, ctx }) => {
+export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
   const slsk = ctx.slsk
 
   if (slsk.status === 'stopped') {
@@ -67,7 +89,7 @@ export const isSoulseekAvailable = t.middleware(async ({ next, ctx }) => {
   return next({ ctx: { slsk } })
 })
 
-export const isSpotifyWebApiAvailable = t.middleware(async ({ next, ctx }) => {
+export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
   const sp = ctx.sp
 
   if (sp.status === 'stopped') {
@@ -109,7 +131,7 @@ export const isSpotifyWebApiAvailable = t.middleware(async ({ next, ctx }) => {
   return next({ ctx: { sp } })
 })
 
-export const isSoundcloudAvailable = t.middleware(async ({ next, ctx }) => {
+export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
   const sc = ctx.sc
 
   if (sc.status === 'stopped') {
@@ -133,7 +155,7 @@ export const isSoundcloudAvailable = t.middleware(async ({ next, ctx }) => {
   return next({ ctx: { sc } })
 })
 
-export const isSpotifyFriendActivityAvailable = t.middleware(async ({ next, ctx }) => {
+export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => {
   const sp = ctx.sp
 
   if (sp.status === 'stopped') {

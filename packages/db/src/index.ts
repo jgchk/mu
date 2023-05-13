@@ -1,6 +1,13 @@
 import { pipe } from 'utils'
 
-import { ConfigMixin, ImagesMixin, SoulseekReleaseDownloadsMixin, TrackTagsMixin } from './schema'
+import {
+  ConfigMixin,
+  ImagesMixin,
+  SessionsMixin,
+  SoulseekReleaseDownloadsMixin,
+  TrackTagsMixin,
+} from './schema'
+import { AccountsMixin } from './schema/accounts'
 import { ArtistsMixin } from './schema/artists'
 import { DatabaseBase } from './schema/base'
 import { SoulseekTrackDownloadsMixin } from './schema/downloads/soulseek-track-downloads'
@@ -30,15 +37,21 @@ const DatabaseClass = pipe(
   TracksMixin,
   PlaylistsMixin,
   PlaylistTracksMixin,
-  SoundcloudPlaylistDownloadsMixin,
-  SoundcloudTrackDownloadsMixin,
-  SpotifyAlbumDownloadsMixin,
-  SpotifyTrackDownloadsMixin,
-  SoulseekReleaseDownloadsMixin,
-  SoulseekTrackDownloadsMixin,
-  TagsMixin,
-  ReleaseTagsMixin,
-  TrackTagsMixin
+  (s) =>
+    pipe(
+      s,
+      SoundcloudPlaylistDownloadsMixin,
+      SoundcloudTrackDownloadsMixin,
+      SpotifyAlbumDownloadsMixin,
+      SpotifyTrackDownloadsMixin,
+      SoulseekReleaseDownloadsMixin,
+      SoulseekTrackDownloadsMixin,
+      TagsMixin,
+      ReleaseTagsMixin,
+      TrackTagsMixin,
+      AccountsMixin,
+      SessionsMixin
+    )
 )
 
 export const Database = (url: string) => new DatabaseClass(url)

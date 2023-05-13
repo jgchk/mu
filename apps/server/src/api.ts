@@ -1,3 +1,4 @@
+import cookie from '@fastify/cookie'
 import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
 import ws from '@fastify/websocket'
@@ -40,13 +41,16 @@ export const makeApiServer = async (ctx: Context) => {
   await fastify.register(ws)
   await fastify.register(cors)
   await fastify.register(multipart)
+  await fastify.register(cookie)
 
   const fastifyTRPCOptions: FastifyTRPCPluginOptions<AppRouter> = {
     prefix: '/api/trpc',
     useWSS: true,
     trpcOptions: {
       router: appRouter,
-      createContext: () => ctx,
+      createContext: ({ req }) => {
+        return { ...ctx, token: req.cookies?.['session_token'] }
+      },
       onError: ({ error }) => {
         log.error(error)
       },

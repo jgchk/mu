@@ -7,6 +7,8 @@ import type { Soundcloud } from 'soundcloud'
 import type { Spotify } from 'spotify'
 
 export type Context = {
+  token?: string
+
   db: Database
   dl: Downloader
   img: ImageManager

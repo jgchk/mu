@@ -23,6 +23,14 @@ export const withProps = <T, P extends Record<string, unknown>>(something: T, pr
   return something as T & P
 }
 
+export const omit = <T, P extends keyof T>(something: T, props: P[]): Omit<T, P> => {
+  const result = { ...something }
+  for (const prop of props) {
+    delete result[prop]
+  }
+  return result
+}
+
 export const isObject = (error: unknown): error is object =>
   typeof error === 'object' && error !== null
 

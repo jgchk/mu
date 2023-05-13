@@ -4,11 +4,15 @@ import { Soundcloud } from 'soundcloud'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { isSoulseekAvailable, isSoundcloudAvailable, isSpotifyWebApiAvailable } from '../middleware'
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
+import {
+  isSoulseekAvailable,
+  isSoundcloudAvailable,
+  isSpotifyWebApiAvailable,
+} from '../trpc/middleware'
 
 export const searchRouter = router({
-  soundcloud: publicProcedure
+  soundcloud: protectedProcedure
     .input(z.object({ query: z.string() }))
     .use(isSoundcloudAvailable)
     .query(async ({ input: { query }, ctx }) => {
@@ -31,7 +35,7 @@ export const searchRouter = router({
         })),
       }
     }),
-  spotify: publicProcedure
+  spotify: protectedProcedure
     .input(z.object({ query: z.string() }))
     .use(isSpotifyWebApiAvailable)
     .query(async ({ input: { query }, ctx }) => {
@@ -41,7 +45,7 @@ export const searchRouter = router({
         albums: results.albums.items,
       }
     }),
-  soulseekSubscription: publicProcedure
+  soulseekSubscription: protectedProcedure
     .input(z.object({ query: z.string() }))
     .use(isSoulseekAvailable)
     .subscription(({ input: { query }, ctx }) => {

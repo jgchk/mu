@@ -9,6 +9,7 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "dependencies": {
+    "@fastify/cookie": "^8.3.0",
     "@fastify/cors": "^8.2.1",
     "@fastify/multipart": "^7.6.0",
     "@fastify/websocket": "^8.0.0",

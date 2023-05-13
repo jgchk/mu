@@ -5,11 +5,11 @@ import type { Playlist, PlaylistTrack, TrackPretty } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 
 export const playlistsRouter = router({
-  new: publicProcedure
+  new: protectedProcedure
     .input(
       z
         .object({
@@ -49,7 +49,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
-  edit: publicProcedure
+  edit: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -98,7 +98,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
-  editTrackOrder: publicProcedure
+  editTrackOrder: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
     .mutation(({ ctx, input }) => {
       const oldPlaylist = ctx.db.playlists.get(input.playlistId)
@@ -112,7 +112,7 @@ export const playlistsRouter = router({
       ctx.db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
       return ctx.db.playlists.get(input.playlistId)
     }),
-  addTrack: publicProcedure
+  addTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, trackId } }) => {
       const oldPlaylist = ctx.db.playlists.get(playlistId)
@@ -130,7 +130,7 @@ export const playlistsRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
-  removeTrack: publicProcedure
+  removeTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, playlistTrackId } }) => {
       const oldPlaylist = ctx.db.playlists.get(playlistId)
@@ -147,7 +147,7 @@ export const playlistsRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
-  getAll: publicProcedure
+  getAll: protectedProcedure
     .input(z.object({ auto: z.boolean().optional() }))
     .query(({ input, ctx }) =>
       ctx.db.playlists.getAll(input).map((playlist) => ({
@@ -157,7 +157,7 @@ export const playlistsRouter = router({
           .filter(isNotNull),
       }))
     ),
-  getAllHasTrack: publicProcedure
+  getAllHasTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
       const playlists = ctx.db.playlists.getAll({ auto: false })
@@ -166,7 +166,7 @@ export const playlistsRouter = router({
         return { ...playlist, hasTrack }
       })
     }),
-  get: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
+  get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
     const playlist = ctx.db.playlists.get(id)
     const imageIds = getPlaylistTracks(ctx.db, playlist)
       .map((track) => track.imageId)
@@ -176,7 +176,7 @@ export const playlistsRouter = router({
       imageIds,
     }
   }),
-  tracks: publicProcedure
+  tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) => {
       const playlist = ctx.db.playlists.get(id)
@@ -185,14 +185,16 @@ export const playlistsRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     }),
-  delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
-    const imageId = ctx.db.playlists.get(input.id).imageId
-    if (imageId !== null) {
-      await ctx.img.cleanupImage(imageId)
-    }
-    ctx.db.playlists.delete(input.id)
-    return null
-  }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const imageId = ctx.db.playlists.get(input.id).imageId
+      if (imageId !== null) {
+        await ctx.img.cleanupImage(imageId)
+      }
+      ctx.db.playlists.delete(input.id)
+      return null
+    }),
 })
 
 const getPlaylistTracks = (
