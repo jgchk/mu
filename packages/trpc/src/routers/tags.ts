@@ -1,10 +1,10 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 
 export const tagsRouter = router({
-  add: publicProcedure
+  add: protectedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -24,7 +24,7 @@ export const tagsRouter = router({
       }
       return ctx.db.tags.insert(input)
     }),
-  edit: publicProcedure
+  edit: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -47,17 +47,17 @@ export const tagsRouter = router({
       }
       return ctx.db.tags.update(input.id, input.data)
     }),
-  delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ ctx, input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ ctx, input }) => {
     ctx.db.tags.delete(input.id)
     return true
   }),
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.get(input.id)),
-  getAll: publicProcedure
+  getAll: protectedProcedure
     .input(z.object({ taggable: z.boolean().optional() }))
     .query(({ input, ctx }) => ctx.db.tags.getAll(input)),
-  getAllTree: publicProcedure.query(({ ctx }) =>
+  getAllTree: protectedProcedure.query(({ ctx }) =>
     ctx.db.tags.getAll().map((tag) => ({
       ...tag,
       parents: ctx.db.tags.getParents(tag.id).map((t) => t.id),
@@ -65,10 +65,10 @@ export const tagsRouter = router({
     }))
   ),
 
-  getByRelease: publicProcedure
+  getByRelease: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.getByRelease(input.releaseId)),
-  tagRelease: publicProcedure
+  tagRelease: protectedProcedure
     .input(
       z.object({
         releaseId: z.number(),
@@ -88,10 +88,10 @@ export const tagsRouter = router({
       return ctx.db.tags.getByRelease(input.releaseId)
     }),
 
-  getByTrack: publicProcedure
+  getByTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ ctx, input }) => ctx.db.tags.getByTrack(input.trackId)),
-  tagTrack: publicProcedure
+  tagTrack: protectedProcedure
     .input(
       z.object({
         trackId: z.number(),

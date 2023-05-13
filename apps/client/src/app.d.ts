@@ -1,16 +1,23 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
   namespace App {
     // interface Error {}
-    // interface Locals {}
+    interface Locals {
+      token?: string
+      session?: NonNullable<import('trpc').AppRouterOutput['accounts']['getSession']>
+    }
     // interface PageData {}
-    // interface Platform {}
+    interface Platform {
+      req: import('http').IncomingMessage & {
+        token?: string
+      }
+    }
   }
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   declare type Item = import('svelte-dnd-action').Item
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   declare type DndEvent<ItemType = Item> = import('svelte-dnd-action').DndEvent<ItemType>
   declare namespace svelte.JSX {
     interface HTMLAttributes<T> {

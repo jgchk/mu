@@ -1,11 +1,11 @@
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
-import { isLastFmLoggedIn } from '../middleware'
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
+import { isLastFmLoggedIn } from '../trpc/middleware'
 
 export const playbackRouter = router({
-  updateNowPlaying: publicProcedure
+  updateNowPlaying: protectedProcedure
     .input(z.object({ id: z.number() }))
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
@@ -38,7 +38,7 @@ export const playbackRouter = router({
       })
     }),
 
-  scrobble: publicProcedure
+  scrobble: protectedProcedure
     .input(
       z.object({
         id: z.number(),

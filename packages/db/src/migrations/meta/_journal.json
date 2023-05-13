@@ -15,6 +15,13 @@
       "when": 1683778202579,
       "tag": "0001_slim_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1683939959299,
+      "tag": "0002_new_gargoyle",
+      "breakpoints": true
     }
   ]
 }

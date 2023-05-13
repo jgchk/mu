@@ -9,12 +9,12 @@ import type {
 import { ifDefined, toErrorString } from 'utils'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 
 export const systemRouter = router({
-  status: publicProcedure.query(({ ctx }) => formatStatus(ctx)),
-  config: publicProcedure.query(({ ctx }) => ctx.db.config.get()),
-  updateConfig: publicProcedure
+  status: protectedProcedure.query(({ ctx }) => formatStatus(ctx)),
+  config: protectedProcedure.query(({ ctx }) => ctx.db.config.get()),
+  updateConfig: protectedProcedure
     .input(
       z.object({
         lastFmKey: z.string().nullish(),
@@ -68,35 +68,35 @@ export const systemRouter = router({
 
       return { config: updated, status: formatStatus(ctx) }
     }),
-  startSoulseek: publicProcedure.mutation(async ({ ctx }) => {
+  startSoulseek: protectedProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.startSoulseek()
     return formatSlskStatus(status)
   }),
-  stopSoulseek: publicProcedure.mutation(({ ctx }) => {
+  stopSoulseek: protectedProcedure.mutation(({ ctx }) => {
     const status = ctx.stopSoulseek()
     return formatSlskStatus(status)
   }),
-  startLastFm: publicProcedure.mutation(async ({ ctx }) => {
+  startLastFm: protectedProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.startLastFm()
     return formatLastFmStatus(status)
   }),
-  stopLastFm: publicProcedure.mutation(({ ctx }) => {
+  stopLastFm: protectedProcedure.mutation(({ ctx }) => {
     const status = ctx.stopLastFm()
     return formatLastFmStatus(status)
   }),
-  startSpotify: publicProcedure.mutation(async ({ ctx }) => {
+  startSpotify: protectedProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.startSpotify()
     return formatSpotifyStatus(status)
   }),
-  stopSpotify: publicProcedure.mutation(({ ctx }) => {
+  stopSpotify: protectedProcedure.mutation(({ ctx }) => {
     const status = ctx.stopSpotify()
     return formatSpotifyStatus(status)
   }),
-  startSoundcloud: publicProcedure.mutation(async ({ ctx }) => {
+  startSoundcloud: protectedProcedure.mutation(async ({ ctx }) => {
     const status = await ctx.startSoundcloud()
     return formatSoundcloudStatus(status)
   }),
-  stopSoundcloud: publicProcedure.mutation(({ ctx }) => {
+  stopSoundcloud: protectedProcedure.mutation(({ ctx }) => {
     const status = ctx.stopSoundcloud()
     return formatSoundcloudStatus(status)
   }),

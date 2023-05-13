@@ -1,8 +1,5 @@
 import { browser, dev } from '$app/environment'
-import type {
-  HttpBatchLinkOptions,
-  inferSvelteQueryProcedureOptions,
-} from '@jgchk/trpc-svelte-query'
+import { goto } from '$app/navigation'
 import {
   createTRPCSvelte,
   createWSClient,
@@ -11,10 +8,16 @@ import {
   splitLink,
   wsLink,
 } from '@jgchk/trpc-svelte-query'
+import type {
+  HttpBatchLinkOptions,
+  inferSvelteQueryProcedureOptions,
+} from '@jgchk/trpc-svelte-query'
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/svelte-query'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 import { withUrlUpdate } from 'utils/browser'
+
+import { notLoggedInError } from './strings'
 
 export const {
   createClient: __createClient,
@@ -46,6 +49,10 @@ export const createClient = (fetchFn: typeof fetch) => {
     queryCache: browser
       ? new QueryCache({
           onError: (error, query) => {
+            if (error instanceof Error && error.message === notLoggedInError()) {
+              void goto('/login')
+            }
+
             if (query.options.showToast) {
               onErrorToast(error)
             }
@@ -55,6 +62,10 @@ export const createClient = (fetchFn: typeof fetch) => {
     mutationCache: browser
       ? new MutationCache({
           onError: (error, variables, context, mutation) => {
+            if (error instanceof Error && error.message === notLoggedInError()) {
+              void goto('/login')
+            }
+
             if (mutation.options.showToast) {
               onErrorToast(error)
             }

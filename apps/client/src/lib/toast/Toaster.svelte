@@ -1,10 +1,15 @@
 <script lang="ts">
   import { fly, slide } from 'svelte/transition'
 
+  import { tw } from '$lib/utils/classes'
+
   import Toast from './Toast.svelte'
   import { getContextToast } from './toast'
 
   export let toast = getContextToast()
+
+  export let class_: string | undefined = undefined
+  export { class_ as class }
 
   const IN_DURATION = 200
   const OUT_DURATION = 175
@@ -12,7 +17,10 @@
 </script>
 
 <ul
-  class="pointer-events-none absolute right-0 top-0 z-50 flex h-full max-w-full flex-col items-end overflow-x-hidden"
+  class={tw(
+    'pointer-events-none absolute right-0 top-0 z-50 flex h-full max-w-full flex-col items-end overflow-x-hidden',
+    class_
+  )}
 >
   {#each $toast as item (item.id)}
     <li

@@ -1,14 +1,14 @@
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../trpc'
+import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const artistsRouter = router({
-  add: publicProcedure
+  add: protectedProcedure
     .input(z.object({ name: z.string() }))
     .mutation(({ ctx, input }) => ctx.db.artists.insert({ name: input.name })),
-  edit: publicProcedure
+  edit: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -41,7 +41,7 @@ export const artistsRouter = router({
 
       return artist
     }),
-  get: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
+  get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.db.artists.get(input.id)
 
     const releaseImageIds = ctx.db.releases
@@ -62,7 +62,7 @@ export const artistsRouter = router({
       imageIds: [...releaseImageIds, ...trackImageIds],
     }
   }),
-  releases: publicProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
+  releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
     ctx.db.releases.getByArtist(input.id).map((release) => ({
       ...release,
       artists: ctx.db.artists.getByReleaseId(release.id),
@@ -71,7 +71,7 @@ export const artistsRouter = router({
         null,
     }))
   ),
-  tracks: publicProcedure
+  tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) =>
       ctx.db.tracks.getByArtist(id, filter).map((track) => ({
@@ -80,7 +80,7 @@ export const artistsRouter = router({
         artists: ctx.db.artists.getByTrackId(track.id),
       }))
     ),
-  getAll: publicProcedure.query(({ ctx }) => {
+  getAll: protectedProcedure.query(({ ctx }) => {
     const artists = ctx.db.artists.getAll()
     return artists.map((artist) => {
       const releaseImageIds = ctx.db.releases

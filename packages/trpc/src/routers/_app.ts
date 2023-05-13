@@ -1,4 +1,5 @@
 import { router } from '../trpc'
+import { accountsRouter } from './accounts'
 import { artistsRouter } from './artists'
 import { downloadsRouter } from './downloads'
 import { friendsRouter } from './friends'
@@ -23,6 +24,7 @@ export const appRouter = router({
   playback: playbackRouter,
   system: systemRouter,
   tags: tagsRouter,
+  accounts: accountsRouter,
 })
 
 export type AppRouter = typeof appRouter

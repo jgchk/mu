@@ -23,6 +23,7 @@
     "@trpc/client": "^10.25.1",
     "bool-lang": "workspace:*",
     "context": "workspace:*",
+    "esm-env": "^1.0.0",
     "isomorphic-ws": "^5.0.0",
     "superjson": "^1.12.3",
     "svelte-dnd-action": "^0.9.22",
