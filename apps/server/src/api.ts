@@ -6,6 +6,7 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
 import type { Context } from 'context'
+import type { Session } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod'
@@ -29,6 +30,12 @@ import {
 
 const IMAGE_CACHE_HEADER = 'public, max-age=31536000, immutable'
 
+declare module 'fastify' {
+  interface FastifyRequest {
+    session?: Session
+  }
+}
+
 export const makeApiServer = async (ctx: Context) => {
   const fastify = Fastify({
     logger: false,
@@ -43,14 +50,28 @@ export const makeApiServer = async (ctx: Context) => {
   await fastify.register(multipart)
   await fastify.register(cookie)
 
+  fastify.decorateRequest('session', undefined)
+  fastify.addHook('preHandler', (req, _, done) => {
+    const sessionToken = req.cookies['session_token']
+    if (sessionToken) {
+      const session = ctx.db.sessions.findByToken(sessionToken)
+      if (session) {
+        if (session.expiresAt < new Date()) {
+          ctx.db.sessions.delete(sessionToken)
+        } else {
+          req.session = session
+        }
+      }
+    }
+    done()
+  })
+
   const fastifyTRPCOptions: FastifyTRPCPluginOptions<AppRouter> = {
     prefix: '/api/trpc',
     useWSS: true,
     trpcOptions: {
       router: appRouter,
-      createContext: ({ req }) => {
-        return { ...ctx, token: req.cookies?.['session_token'] }
-      },
+      createContext: ({ req }) => ({ ...ctx, token: req.cookies?.['session_token'] }),
       onError: ({ error }) => {
         log.error(error)
       },
@@ -66,6 +87,10 @@ export const makeApiServer = async (ctx: Context) => {
         params: z.object({ id: z.coerce.number() }),
       },
       handler: (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const track = ctx.db.tracks.get(req.params.id)
         const stream = fs.createReadStream(track.path)
         return res.send(stream)
@@ -81,6 +106,10 @@ export const makeApiServer = async (ctx: Context) => {
         }),
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const { service, id } = req.params
 
         if (service !== 'soulseek') {
@@ -142,6 +171,10 @@ export const makeApiServer = async (ctx: Context) => {
         }),
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const { service, id } = req.params
 
         let fileDownload
@@ -184,6 +217,10 @@ export const makeApiServer = async (ctx: Context) => {
         querystring: CollageOptions,
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const opts = req.query
 
         const { output, contentType } = await handleCreateCollage(opts)
@@ -202,6 +239,10 @@ export const makeApiServer = async (ctx: Context) => {
         querystring: ResizeOptions,
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const { id } = req.params
         const { width, height } = req.query
 
@@ -221,6 +262,10 @@ export const makeApiServer = async (ctx: Context) => {
         querystring: ResizeOptions,
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const { id } = req.params
         const { width, height } = req.query
 
@@ -245,6 +290,10 @@ export const makeApiServer = async (ctx: Context) => {
         querystring: ResizeOptions,
       },
       handler: async (req, res) => {
+        if (!req.session) {
+          return res.status(401).send('Unauthorized')
+        }
+
         const { id } = req.params
         const { width, height } = req.query
 

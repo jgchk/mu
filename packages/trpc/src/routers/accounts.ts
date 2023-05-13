@@ -54,21 +54,6 @@ export const accountsRouter = router({
       return session
     }),
 
-  getAccountFromSession: publicProcedure
-    .input(z.object({ token: z.string() }))
-    .query(({ ctx, input: { token } }) => {
-      const session = ctx.db.sessions.findByToken(token)
-      if (session === undefined) {
-        return null
-      }
-      if (session.expiresAt < new Date()) {
-        ctx.db.sessions.delete(session.token)
-        return null
-      }
-      const account = ctx.db.accounts.get(session.accountId)
-      return { account: formatAccount(account), session }
-    }),
-
   isEmpty: publicProcedure.query(({ ctx }) => ctx.db.accounts.isEmpty()),
 })
 
