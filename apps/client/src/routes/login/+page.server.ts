@@ -12,8 +12,10 @@ const schema = z.object({
   password: z.string().min(1),
 })
 
-export const load: PageServerLoad = async ({ fetch }) => {
-  const form = await superValidate(schema)
+export const load: PageServerLoad = async ({ fetch, locals }) => {
+  if (locals.session) {
+    throw redirect(302, '/')
+  }
 
   const trpc = createClient(fetch)
   const hasNoAccounts = await trpc.accounts.isEmpty.fetchQuery()
@@ -22,6 +24,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     throw redirect(302, '/register')
   }
 
+  const form = await superValidate(schema)
   return { form }
 }
 

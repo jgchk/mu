@@ -18,8 +18,10 @@ const schema = z
     path: ['confirmPassword'],
   })
 
-export const load: PageServerLoad = async ({ fetch }) => {
-  const form = await superValidate(schema)
+export const load: PageServerLoad = async ({ fetch, locals }) => {
+  if (locals.session) {
+    throw redirect(302, '/')
+  }
 
   const trpc = createClient(fetch)
   const hasNoAccounts = await trpc.accounts.isEmpty.fetchQuery()
@@ -28,6 +30,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     throw redirect(302, '/login')
   }
 
+  const form = await superValidate(schema)
   return { form }
 }
 
