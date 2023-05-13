@@ -29,18 +29,14 @@ export const handle: Handle = async ({ event, resolve }) => {
   return resolve(event)
 }
 
-const serverHost = process.env.SERVER_HOST
-const serverPort = process.env.SERVER_PORT
-if (!serverHost) {
-  throw new Error('SERVER_HOST not set')
-}
-if (!serverPort) {
-  throw new Error('SERVER_PORT not set')
-}
-const host = `${serverHost}:${serverPort}`
-const devHost = DEV && process.env.DEV_PORT ? `${serverHost}:${process.env.DEV_PORT}` : undefined
-
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
+  const serverHost = process.env.SERVER_HOST
+  const serverPort = process.env.SERVER_PORT
+  if (!serverHost) throw new Error('SERVER_HOST not set')
+  if (!serverPort) throw new Error('SERVER_PORT not set')
+  const host = `${serverHost}:${serverPort}`
+  const devHost = DEV && process.env.DEV_PORT ? `${serverHost}:${process.env.DEV_PORT}` : undefined
+
   const url = new URL(request.url)
   if (url.host === host || url.host === devHost) {
     const cookie = event.request.headers.get('cookie')
