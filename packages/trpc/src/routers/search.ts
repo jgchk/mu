@@ -52,7 +52,7 @@ export const searchRouter = router({
     .use(isSoulseekAvailable)
     .subscription(({ input: { query }, ctx }) => {
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        void ctx.slsk.search(query, { onResult: (result) => emit.next(result) })
+        void ctx.slsk.client.search(query, { onResult: (result) => emit.next(result) })
       })
     }),
 })

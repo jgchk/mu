@@ -42,8 +42,8 @@ export type Context = {
   slsk:
     | { status: 'stopped' }
     | { status: 'errored'; error: unknown }
-    | ({ status: 'logging-in' } & SlskClient)
-    | ({ status: 'logged-in' } & SlskClient)
+    | { status: 'logging-in'; client: SlskClient }
+    | { status: 'logged-in'; client: SlskClient }
 }
 
 export type SpotifyErrors = {

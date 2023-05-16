@@ -1,6 +1,5 @@
 import { log } from 'log'
 import { SlskClient } from 'soulseek-ts'
-import { withProps } from 'utils'
 
 import type { Getter, Setter } from '../context'
 import type { SystemContext } from '../types'
@@ -54,7 +53,7 @@ export const makeSoulseekContext = (
     log.debug('startSoulseek: Creating client')
     const slsk = new SlskClient()
     log.debug('startSoulseek: Constructed client')
-    set({ slsk: withProps(slsk, { status: 'logging-in' } as const) })
+    set({ slsk: { status: 'logging-in', client: slsk } })
 
     try {
       log.debug('startSoulseek: Logging in')
@@ -75,7 +74,7 @@ export const makeSoulseekContext = (
     }
 
     log.debug('startSoulseek: Setting status')
-    set({ slsk: withProps(slsk, { status: 'logged-in' } as const) })
+    set({ slsk: { status: 'logged-in', client: slsk } })
     log.debug('startSoulseek: Setting listeners')
     slsk
       .on('listen-error', (error) => log.error(error, 'SLSK listen error'))
@@ -88,7 +87,7 @@ export const makeSoulseekContext = (
   stopSoulseek: () => {
     const slsk = get().slsk
     if (slsk.status === 'logging-in' || slsk.status === 'logged-in') {
-      slsk.destroy()
+      slsk.client.destroy()
     }
     set({ slsk: { status: 'stopped' } })
     return get().slsk

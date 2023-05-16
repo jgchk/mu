@@ -42,7 +42,7 @@ export const makeContext = async (): Promise<SystemContext> => {
       db.close()
       ctx.dl.close()
       if (ctx.slsk.status === 'logging-in' || ctx.slsk.status === 'logged-in') {
-        ctx.slsk.destroy()
+        ctx.slsk.client.destroy()
       }
     },
   }
