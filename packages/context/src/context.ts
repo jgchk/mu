@@ -13,12 +13,13 @@ import { makeDb, setConfigFromEnv } from './utils'
 export type Setter = (update: Partial<SystemContext>) => void
 export type Getter = () => SystemContext
 
-export const makeContext = async (): Promise<SystemContext> => {
+export const makeContext = async (): Promise<() => SystemContext> => {
   const db = makeDb()
   const config = setConfigFromEnv(db)
 
   const set: Setter = (update) => {
     ctx = { ...ctx, ...update }
+    console.log('ayoooo', ctx.slsk.status)
   }
 
   const get: Getter = () => ctx
@@ -54,5 +55,5 @@ export const makeContext = async (): Promise<SystemContext> => {
     ctx.startSpotify(),
   ])
 
-  return ctx
+  return () => ctx
 }
