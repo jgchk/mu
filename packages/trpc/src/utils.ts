@@ -1,6 +1,5 @@
 import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
-import type { Context } from 'context'
 import type { Database } from 'db'
 import { toErrorString } from 'utils'
 import { z } from 'zod'
@@ -40,7 +39,7 @@ export const TracksFilter = z.object({
 })
 
 export const injectDescendants =
-  (db: Context['db']) =>
+  (db: Database) =>
   (node: BoolLang): BoolLang => {
     switch (node.kind) {
       case 'id': {

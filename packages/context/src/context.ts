@@ -7,13 +7,13 @@ import { makeLastFmContext } from './slices/last-fm'
 import { makeSoulseekContext } from './slices/soulseek'
 import { makeSoundcloudContext } from './slices/soundcloud'
 import { makeSpotifyContext } from './slices/spotify'
-import type { Context } from './types'
+import type { SystemContext } from './types'
 import { makeDb, setConfigFromEnv } from './utils'
 
-export type Setter = (update: Partial<Context>) => void
-export type Getter = () => Context
+export type Setter = (update: Partial<SystemContext>) => void
+export type Getter = () => SystemContext
 
-export const makeContext = async (): Promise<Context> => {
+export const makeContext = async (): Promise<SystemContext> => {
   const db = makeDb()
   const config = setConfigFromEnv(db)
 
@@ -23,7 +23,7 @@ export const makeContext = async (): Promise<Context> => {
 
   const get: Getter = () => ctx
 
-  let ctx: Context = {
+  let ctx: SystemContext = {
     db,
     dl: new Downloader({
       getContext: () => ({ db, lfm: ctx.lfm, slsk: ctx.slsk, sc: ctx.sc, sp: ctx.sp }),

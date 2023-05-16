@@ -6,10 +6,10 @@ import { keys, withProps } from 'utils'
 
 import type { Getter, Setter } from '../context'
 import type {
-  Context,
   ContextSpotify,
   ContextSpotifyErrors,
   ContextSpotifyFeatures,
+  SystemContext,
 } from '../types'
 
 const spotifyNoFeatures: ContextSpotifyFeatures = {
@@ -27,7 +27,7 @@ const spotifyStopped: ContextSpotify = {
 export const makeSpotifyContext = (
   set: Setter,
   get: Getter
-): Pick<Context, 'sp' | 'startSpotify' | 'stopSpotify'> => ({
+): Pick<SystemContext, 'sp' | 'startSpotify' | 'stopSpotify'> => ({
   sp: spotifyStopped,
 
   startSpotify: async () => {

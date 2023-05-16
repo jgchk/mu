@@ -3,12 +3,12 @@ import { SlskClient } from 'soulseek-ts'
 import { withProps } from 'utils'
 
 import type { Getter, Setter } from '../context'
-import type { Context } from '../types'
+import type { SystemContext } from '../types'
 
 export const makeSoulseekContext = (
   set: Setter,
   get: Getter
-): Pick<Context, 'slsk' | 'startSoulseek' | 'stopSoulseek'> => ({
+): Pick<SystemContext, 'slsk' | 'startSoulseek' | 'stopSoulseek'> => ({
   slsk: { status: 'stopped' },
 
   startSoulseek: async () => {

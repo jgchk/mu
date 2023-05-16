@@ -1,13 +1,13 @@
 import { withProps } from 'utils'
 
 import type { Getter, Setter } from '../context'
-import type { Context } from '../types'
+import type { SystemContext } from '../types'
 import { makeLastFm } from '../utils'
 
 export const makeLastFmContext = (
   set: Setter,
   get: Getter
-): Pick<Context, 'lfm' | 'startLastFm' | 'stopLastFm'> => ({
+): Pick<SystemContext, 'lfm' | 'startLastFm' | 'stopLastFm'> => ({
   lfm: { status: 'stopped' },
 
   startLastFm: async () => {

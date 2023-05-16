@@ -2,12 +2,12 @@ import { Soundcloud } from 'soundcloud'
 import { withProps } from 'utils'
 
 import type { Getter, Setter } from '../context'
-import type { Context } from '../types'
+import type { SystemContext } from '../types'
 
 export const makeSoundcloudContext = (
   set: Setter,
   get: Getter
-): Pick<Context, 'sc' | 'startSoundcloud' | 'stopSoundcloud'> => ({
+): Pick<SystemContext, 'sc' | 'startSoundcloud' | 'stopSoundcloud'> => ({
   sc: { status: 'stopped' },
 
   startSoundcloud: async () => {

@@ -37,9 +37,9 @@ export const importRouter = router({
   groupDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
-      const releaseDownload = getGroupDownload(ctx.db, input.service, input.id)
+      const releaseDownload = getGroupDownload(ctx.sys().db, input.service, input.id)
       const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
-        getGroupTrackDownloads(ctx.db, input.service, releaseDownload.id)
+        getGroupTrackDownloads(ctx.sys().db, input.service, releaseDownload.id)
       const completeDownloads = trackDownloads.filter(isDownloadComplete)
 
       if (completeDownloads.length !== trackDownloads.length) {
@@ -98,7 +98,7 @@ export const importRouter = router({
         if (artist) {
           return artist
         } else {
-          const dbArtist = ctx.db.artists.getByNameCaseInsensitive(name).at(0)
+          const dbArtist = ctx.sys().db.artists.getByNameCaseInsensitive(name).at(0)
           if (dbArtist) {
             const artist = { action: 'connect', id: dbArtist.id } as const
             artistMap.set(name, artist)
@@ -152,9 +152,9 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const releaseDownload = getGroupDownload(ctx.db, input.service, input.id)
+      const releaseDownload = getGroupDownload(ctx.sys().db, input.service, input.id)
       const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
-        getGroupTrackDownloads(ctx.db, input.service, releaseDownload.id)
+        getGroupTrackDownloads(ctx.sys().db, input.service, releaseDownload.id)
 
       const completeDownloads = trackDownloads.filter(isDownloadComplete)
       if (completeDownloads.length !== trackDownloads.length) {
@@ -175,7 +175,7 @@ export const importRouter = router({
       const artistMap = new Map(
         [...input.createArtists.entries()].map(([id, name]) => [
           id,
-          ctx.db.artists.insert({ name }),
+          ctx.sys().db.artists.insert({ name }),
         ])
       )
 
@@ -188,13 +188,13 @@ export const importRouter = router({
           }
           return dbArtist
         } else {
-          return ctx.db.artists.get(artist.id)
+          return ctx.sys().db.artists.get(artist.id)
         }
       })
-      const dbRelease = ctx.db.releases.insert({
+      const dbRelease = ctx.sys().db.releases.insert({
         title: albumTitle,
       })
-      ctx.db.releaseArtists.insertManyByReleaseId(
+      ctx.sys().db.releaseArtists.insertManyByReleaseId(
         dbRelease.id,
         albumArtists.map((a) => a.id)
       )
@@ -236,7 +236,7 @@ export const importRouter = router({
               }
               return dbArtist
             } else {
-              return ctx.db.artists.get(artist.id)
+              return ctx.sys().db.artists.get(artist.id)
             }
           })
 
@@ -252,7 +252,7 @@ export const importRouter = router({
           let imageId: number | null = null
           const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
           if (albumArt) {
-            imageId = (await ctx.img.getImage(albumArt)).id
+            imageId = (await ctx.sys().img.getImage(albumArt)).id
 
             try {
               await writeTrackCoverArt(newPath, albumArt)
@@ -263,14 +263,15 @@ export const importRouter = router({
           }
 
           let favorite = false
-          if (ctx.lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
-            favorite = await ctx.lfm.getLovedTrack({
+          const lfm = ctx.sys().lfm
+          if (lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
+            favorite = await lfm.getLovedTrack({
               track: metadata.title,
               artist: artists.map((artist) => artist.name).join(', '),
             })
           }
 
-          const dbTrack = ctx.db.tracks.insert({
+          const dbTrack = ctx.sys().db.tracks.insert({
             title: metadata.title,
             path: newPath,
             releaseId: dbRelease.id,
@@ -279,19 +280,19 @@ export const importRouter = router({
             duration: outputMetadata.length,
             favorite,
           })
-          const dbTrackArtists = ctx.db.trackArtists.insertManyByTrackId(
+          const dbTrackArtists = ctx.sys().db.trackArtists.insertManyByTrackId(
             dbTrack.id,
             artists.map((a) => a.id)
           )
 
-          deleteTrackDownload(ctx.db, input.service, download.dbDownload.id)
+          deleteTrackDownload(ctx.sys().db, input.service, download.dbDownload.id)
 
           return { track: dbTrack, artists: dbTrackArtists }
         })
       )
 
       if (trackDownloads.length === downloads.length) {
-        deleteGroupDownload(ctx.db, input.service, releaseDownload.id)
+        deleteGroupDownload(ctx.sys().db, input.service, releaseDownload.id)
       }
 
       return {
@@ -303,7 +304,7 @@ export const importRouter = router({
   trackDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
-      const dbDownload = getTrackDownload(ctx.db, input.service, input.id)
+      const dbDownload = getTrackDownload(ctx.sys().db, input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -329,7 +330,7 @@ export const importRouter = router({
         if (artist) {
           return artist
         } else {
-          const dbArtist = ctx.db.artists.getByNameCaseInsensitive(name).at(0)
+          const dbArtist = ctx.sys().db.artists.getByNameCaseInsensitive(name).at(0)
           if (dbArtist) {
             const artist = { action: 'connect', id: dbArtist.id } as const
             artistMap.set(name, artist)
@@ -374,7 +375,7 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const dbDownload = getTrackDownload(ctx.db, input.service, input.id)
+      const dbDownload = getTrackDownload(ctx.sys().db, input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -383,7 +384,7 @@ export const importRouter = router({
       const artistMap = new Map(
         [...input.createArtists.entries()].map(([id, name]) => [
           id,
-          ctx.db.artists.insert({ name }),
+          ctx.sys().db.artists.insert({ name }),
         ])
       )
 
@@ -395,7 +396,7 @@ export const importRouter = router({
           }
           return dbArtist
         } else {
-          return ctx.db.artists.get(artist.id)
+          return ctx.sys().db.artists.get(artist.id)
         }
       })
       const trackArtists = input.track.artists.map((artist) => {
@@ -406,14 +407,14 @@ export const importRouter = router({
           }
           return dbArtist
         } else {
-          return ctx.db.artists.get(artist.id)
+          return ctx.sys().db.artists.get(artist.id)
         }
       })
 
-      const dbRelease = ctx.db.releases.insert({
+      const dbRelease = ctx.sys().db.releases.insert({
         title: input.album.title,
       })
-      ctx.db.releaseArtists.insertManyByReleaseId(
+      ctx.sys().db.releaseArtists.insertManyByReleaseId(
         dbRelease.id,
         albumArtists.map((a) => a.id)
       )
@@ -451,7 +452,7 @@ export const importRouter = router({
       let imageId: number | null = null
       const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
       if (albumArt) {
-        imageId = (await ctx.img.getImage(albumArt)).id
+        imageId = (await ctx.sys().img.getImage(albumArt)).id
 
         try {
           await writeTrackCoverArt(newPath, albumArt)
@@ -462,14 +463,15 @@ export const importRouter = router({
       }
 
       let favorite = false
-      if (ctx.lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
-        favorite = await ctx.lfm.getLovedTrack({
+      const lfm = ctx.sys().lfm
+      if (lfm.status === 'logged-in' && metadata.title !== null && trackArtists.length > 0) {
+        favorite = await lfm.getLovedTrack({
           track: metadata.title,
           artist: trackArtists.map((artist) => artist.name).join(', '),
         })
       }
 
-      const dbTrack = ctx.db.tracks.insert({
+      const dbTrack = ctx.sys().db.tracks.insert({
         title: metadata.title,
         path: newPath,
         releaseId: dbRelease.id,
@@ -478,12 +480,12 @@ export const importRouter = router({
         duration: outputMetadata.length,
         favorite,
       })
-      const dbTrackArtists = ctx.db.trackArtists.insertManyByTrackId(
+      const dbTrackArtists = ctx.sys().db.trackArtists.insertManyByTrackId(
         dbTrack.id,
         trackArtists.map((a) => a.id)
       )
 
-      deleteTrackDownload(ctx.db, input.service, input.id)
+      deleteTrackDownload(ctx.sys().db, input.service, input.id)
 
       return {
         release: dbRelease,

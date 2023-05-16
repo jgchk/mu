@@ -9,15 +9,16 @@ export const playbackRouter = router({
     .input(z.object({ id: z.number() }))
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
-      const track = ctx.db.tracks.get(input.id)
-      const artists = ctx.db.artists
-        .getByTrackId(track.id)
+      const track = ctx.sys().db.tracks.get(input.id)
+      const artists = ctx
+        .sys()
+        .db.artists.getByTrackId(track.id)
         .map((a) => a.name)
         .join(', ')
 
       const release = ifNotNull(track.releaseId, (releaseId) => {
-        const release = ctx.db.releases.get(releaseId)
-        const artists = ctx.db.artists.getByReleaseId(releaseId)
+        const release = ctx.sys().db.releases.get(releaseId)
+        const artists = ctx.sys().db.artists.getByReleaseId(releaseId)
         return {
           ...release,
           artists,
@@ -47,15 +48,16 @@ export const playbackRouter = router({
     )
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
-      const track = ctx.db.tracks.get(input.id)
-      const artists = ctx.db.artists
-        .getByTrackId(track.id)
+      const track = ctx.sys().db.tracks.get(input.id)
+      const artists = ctx
+        .sys()
+        .db.artists.getByTrackId(track.id)
         .map((a) => a.name)
         .join(', ')
 
       const release = ifNotNull(track.releaseId, (releaseId) => {
-        const release = ctx.db.releases.get(releaseId)
-        const artists = ctx.db.artists.getByReleaseId(releaseId)
+        const release = ctx.sys().db.releases.get(releaseId)
+        const artists = ctx.sys().db.artists.getByReleaseId(releaseId)
         return {
           ...release,
           artists,

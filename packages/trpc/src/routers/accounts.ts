@@ -11,7 +11,7 @@ export const accountsRouter = router({
   register: publicProcedure
     .input(z.object({ username: z.string().min(1), password: z.string().min(1) }))
     .mutation(async ({ ctx, input: { username, password } }) => {
-      const noAccountsExist = ctx.db.accounts.isEmpty()
+      const noAccountsExist = ctx.sys().db.accounts.isEmpty()
       if (!noAccountsExist) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -20,9 +20,9 @@ export const accountsRouter = router({
       }
 
       const passwordHash = await hashPassword(password)
-      const account = ctx.db.accounts.insert({ username, passwordHash })
+      const account = ctx.sys().db.accounts.insert({ username, passwordHash })
 
-      const { token, maxAge } = createSession(ctx.db, account.id)
+      const { token, maxAge } = createSession(ctx.sys().db, account.id)
 
       return { account: formatAccount(account), token, maxAge }
     }),
@@ -30,12 +30,12 @@ export const accountsRouter = router({
   login: publicProcedure
     .input(z.object({ username: z.string().min(1), password: z.string().min(1) }))
     .mutation(async ({ ctx, input: { username, password } }) => {
-      const account = await getAccountFromCredentials(ctx.db, username, password)
+      const account = await getAccountFromCredentials(ctx.sys().db, username, password)
       if (!account) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid username or password' })
       }
 
-      const { token, maxAge } = createSession(ctx.db, account.id)
+      const { token, maxAge } = createSession(ctx.sys().db, account.id)
 
       return { token, maxAge }
     }),
@@ -43,18 +43,18 @@ export const accountsRouter = router({
   getSession: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(({ ctx, input: { token } }) => {
-      const session = ctx.db.sessions.findByToken(token)
+      const session = ctx.sys().db.sessions.findByToken(token)
       if (session === undefined) {
         return null
       }
       if (session.expiresAt < new Date()) {
-        ctx.db.sessions.delete(session.token)
+        ctx.sys().db.sessions.delete(session.token)
         return null
       }
       return session
     }),
 
-  isEmpty: publicProcedure.query(({ ctx }) => ctx.db.accounts.isEmpty()),
+  isEmpty: publicProcedure.query(({ ctx }) => ctx.sys().db.accounts.isEmpty()),
 })
 
 export const hashPassword = (password: string) => hash_(password, 12)

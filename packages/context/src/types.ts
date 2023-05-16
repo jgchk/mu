@@ -8,7 +8,10 @@ import type { Spotify } from 'spotify'
 
 export type Context = {
   token?: string
+  sys: () => SystemContext
+}
 
+export type SystemContext = {
   db: Database
   dl: Downloader
   img: ImageManager

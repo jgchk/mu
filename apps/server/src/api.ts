@@ -5,7 +5,7 @@ import ws from '@fastify/websocket'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
-import type { Context } from 'context'
+import type { SystemContext } from 'context'
 import type { Session } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
@@ -36,7 +36,7 @@ declare module 'fastify' {
   }
 }
 
-export const makeApiServer = async (ctx: Context) => {
+export const makeApiServer = async (ctx: SystemContext) => {
   const fastify = Fastify({
     logger: false,
     maxParamLength: 2084,
@@ -71,7 +71,7 @@ export const makeApiServer = async (ctx: Context) => {
     useWSS: true,
     trpcOptions: {
       router: appRouter,
-      createContext: ({ req }) => ({ ...ctx, token: req.cookies?.['session_token'] }),
+      createContext: ({ req }) => ({ sys: () => ctx, token: req.cookies?.['session_token'] }),
       onError: ({ error }) => {
         log.error(error)
       },
