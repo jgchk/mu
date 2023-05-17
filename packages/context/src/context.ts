@@ -19,7 +19,6 @@ export const makeContext = async (): Promise<() => SystemContext> => {
 
   const set: Setter = (update) => {
     ctx = { ...ctx, ...update }
-    console.log('ayoooo', ctx.slsk.status)
   }
 
   const get: Getter = () => ctx
