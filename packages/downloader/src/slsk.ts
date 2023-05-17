@@ -85,7 +85,11 @@ export class SoulseekDownloadManager {
         downloadedBytes = (await fs.promises.stat(filePath)).size
       }
 
-      const slskDownload = await slsk.download(dbTrack.username, dbTrack.file, downloadedBytes)
+      const slskDownload = await slsk.client.download(
+        dbTrack.username,
+        dbTrack.file,
+        downloadedBytes
+      )
 
       const fsPipe = fs.createWriteStream(filePath, { flags: 'a' })
       this.openFiles.set(dbId, fsPipe)

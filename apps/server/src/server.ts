@@ -1,5 +1,5 @@
 import Bree from 'bree'
-import type { Context } from 'context'
+import type { SystemContext } from 'context'
 import { makeContext } from 'context'
 import { env } from 'env'
 import { log } from 'log'
@@ -14,7 +14,7 @@ const main = async () => {
   const [bree, apiServer] = await Promise.all([
     startBree(),
     makeApiServer(ctx),
-    resumeDownloads(ctx),
+    resumeDownloads(ctx()),
   ])
 
   apiServer.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }, (err, address) => {
@@ -33,7 +33,7 @@ const main = async () => {
       shuttingDown = true
       log.info('Shutting down...')
 
-      void Promise.all([ctx.destroy(), bree.stop(), apiServer.close()])
+      void Promise.all([ctx().destroy(), bree.stop(), apiServer.close()])
     })
   }
 }
@@ -58,7 +58,7 @@ const startBree = async () => {
   return bree
 }
 
-const resumeDownloads = (ctx: Context) =>
+const resumeDownloads = (ctx: SystemContext) =>
   Promise.all([
     ...ctx.db.soundcloudPlaylistDownloads
       .getAll()

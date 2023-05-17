@@ -35,6 +35,7 @@ export const searchRouter = router({
         })),
       }
     }),
+
   spotify: protectedProcedure
     .input(z.object({ query: z.string() }))
     .use(isSpotifyWebApiAvailable)
@@ -45,12 +46,13 @@ export const searchRouter = router({
         albums: results.albums.items,
       }
     }),
+
   soulseekSubscription: protectedProcedure
     .input(z.object({ query: z.string() }))
     .use(isSoulseekAvailable)
     .subscription(({ input: { query }, ctx }) => {
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
-        void ctx.slsk.search(query, { onResult: (result) => emit.next(result) })
+        void ctx.slsk.client.search(query, { onResult: (result) => emit.next(result) })
       })
     }),
 })

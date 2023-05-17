@@ -75,16 +75,20 @@ export const downloadsRouter = router({
         switch (input.kind) {
           case 'playlist': {
             const dbPlaylist =
-              ctx.db.soundcloudPlaylistDownloads.getByPlaylistId(input.id) ??
-              ctx.db.soundcloudPlaylistDownloads.insert({ playlistId: input.id })
-            void ctx.dl.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
+              ctx.sys().db.soundcloudPlaylistDownloads.getByPlaylistId(input.id) ??
+              ctx.sys().db.soundcloudPlaylistDownloads.insert({ playlistId: input.id })
+            void ctx
+              .sys()
+              .dl.download({ service: 'soundcloud', type: 'playlist', dbId: dbPlaylist.id })
             return { id: dbPlaylist.id }
           }
           case 'track': {
             const dbTrack =
-              ctx.db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(input.id, null) ??
-              ctx.db.soundcloudTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.dl.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
+              ctx
+                .sys()
+                .db.soundcloudTrackDownloads.getByTrackIdAndPlaylistDownloadId(input.id, null) ??
+              ctx.sys().db.soundcloudTrackDownloads.insert({ trackId: input.id, status: 'pending' })
+            void ctx.sys().dl.download({ service: 'soundcloud', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -93,16 +97,16 @@ export const downloadsRouter = router({
         switch (input.kind) {
           case 'album': {
             const dbAlbum =
-              ctx.db.spotifyAlbumDownloads.getByAlbumId(input.id) ??
-              ctx.db.spotifyAlbumDownloads.insert({ albumId: input.id })
-            void ctx.dl.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
+              ctx.sys().db.spotifyAlbumDownloads.getByAlbumId(input.id) ??
+              ctx.sys().db.spotifyAlbumDownloads.insert({ albumId: input.id })
+            void ctx.sys().dl.download({ service: 'spotify', type: 'album', dbId: dbAlbum.id })
             return { id: dbAlbum.id }
           }
           case 'track': {
             const dbTrack =
-              ctx.db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(input.id, null) ??
-              ctx.db.spotifyTrackDownloads.insert({ trackId: input.id, status: 'pending' })
-            void ctx.dl.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
+              ctx.sys().db.spotifyTrackDownloads.getByTrackIdAndAlbumDownloadId(input.id, null) ??
+              ctx.sys().db.spotifyTrackDownloads.insert({ trackId: input.id, status: 'pending' })
+            void ctx.sys().dl.download({ service: 'spotify', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
         }
@@ -111,13 +115,15 @@ export const downloadsRouter = router({
         switch (input.kind) {
           case 'track': {
             const dbTrack =
-              ctx.db.soulseekTrackDownloads.getByUsernameAndFile(input.username, input.file) ??
-              ctx.db.soulseekTrackDownloads.insert({
+              ctx
+                .sys()
+                .db.soulseekTrackDownloads.getByUsernameAndFile(input.username, input.file) ??
+              ctx.sys().db.soulseekTrackDownloads.insert({
                 username: input.username,
                 file: input.file,
                 status: 'pending',
               })
-            void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+            void ctx.sys().dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             return { id: dbTrack.id }
           }
           case 'tracks': {
@@ -132,18 +138,22 @@ export const downloadsRouter = router({
               .reverse()
               .join('/')
             const dbRelease =
-              ctx.db.soulseekReleaseDownloads.getByUsernameAndDir(
-                input.tracks[0].username,
-                dirname
-              ) ??
-              ctx.db.soulseekReleaseDownloads.insert({
+              ctx
+                .sys()
+                .db.soulseekReleaseDownloads.getByUsernameAndDir(
+                  input.tracks[0].username,
+                  dirname
+                ) ??
+              ctx.sys().db.soulseekReleaseDownloads.insert({
                 username: input.tracks[0].username,
                 dir: dirname,
               })
             const dbTracks = input.tracks.map(
               (track) =>
-                ctx.db.soulseekTrackDownloads.getByUsernameAndFile(track.username, track.file) ??
-                ctx.db.soulseekTrackDownloads.insert({
+                ctx
+                  .sys()
+                  .db.soulseekTrackDownloads.getByUsernameAndFile(track.username, track.file) ??
+                ctx.sys().db.soulseekTrackDownloads.insert({
                   username: track.username,
                   file: track.file,
                   releaseDownloadId: dbRelease.id,
@@ -151,7 +161,7 @@ export const downloadsRouter = router({
                 })
             )
             for (const dbTrack of dbTracks) {
-              void ctx.dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
+              void ctx.sys().dl.download({ service: 'soulseek', type: 'track', dbId: dbTrack.id })
             }
             return dbTracks.map((dbTrack) => ({ id: dbTrack.id }))
           }
@@ -163,110 +173,133 @@ export const downloadsRouter = router({
   retryTrackDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(({ input: { service, id }, ctx }) => {
-      void ctx.dl.download({ service, type: 'track', dbId: id })
+      void ctx.sys().dl.download({ service, type: 'track', dbId: id })
     }),
 
   deleteTrackDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      const track = getTrackDownload(ctx.db, input.service, input.id)
+      const track = getTrackDownload(ctx.sys().db, input.service, input.id)
       if (track.path !== null) {
         await fs.promises.rm(path.resolve(track.path))
       }
-      deleteTrackDownload(ctx.db, input.service, input.id)
+      deleteTrackDownload(ctx.sys().db, input.service, input.id)
       return { success: true }
     }),
 
   deleteGroupDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      const group = getGroupDownload(ctx.db, input.service, input.id)
-      const tracks = getGroupTrackDownloads(ctx.db, input.service, group.id)
+      const group = getGroupDownload(ctx.sys().db, input.service, input.id)
+      const tracks = getGroupTrackDownloads(ctx.sys().db, input.service, group.id)
 
       await Promise.all(
         tracks.map(async (track) => {
           if (track.path !== null) {
             await fs.promises.rm(path.resolve(track.path))
           }
-          deleteTrackDownload(ctx.db, input.service, track.id)
+          deleteTrackDownload(ctx.sys().db, input.service, track.id)
         })
       )
 
-      deleteGroupDownload(ctx.db, input.service, group.id)
+      deleteGroupDownload(ctx.sys().db, input.service, group.id)
       return { success: true }
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const [scPlaylists, scTracks, spAlbums, spTracks, slskReleases, slskTracks] = await Promise.all(
       [
-        ctx.db.soundcloudPlaylistDownloads.getAll().map(
-          (playlist) =>
-            ({
-              service: 'soundcloud',
-              id: playlist.id,
-              name: playlist.playlist?.title,
-              createdAt: playlist.createdAt,
-            } as const)
-        ),
-        ctx.db.soundcloudTrackDownloads.getAll().map(
-          (track) =>
-            ({
-              service: 'soundcloud',
-              id: track.id,
-              parentId: track.playlistDownloadId,
-              status: track.status,
-              progress: track.progress,
-              error: track.error,
-              name: track.track?.title,
-              createdAt: track.createdAt,
-            } as const)
-        ),
-        ctx.db.spotifyAlbumDownloads.getAll().map(
-          (album) =>
-            ({
-              service: 'spotify',
-              id: album.id,
-              name: album.album?.name,
-              createdAt: album.createdAt,
-            } as const)
-        ),
-        ctx.db.spotifyTrackDownloads.getAll().map(
-          (track) =>
-            ({
-              service: 'spotify',
-              id: track.id,
-              parentId: track.albumDownloadId,
-              status: track.status,
-              progress: track.progress,
-              error: track.error,
-              name: track.track?.name,
-              createdAt: track.createdAt,
-            } as const)
-        ),
-        ctx.db.soulseekReleaseDownloads.getAll().map(
-          (release) =>
-            ({
-              service: 'soulseek',
-              id: release.id,
-              name: release.dir,
-              createdAt: release.createdAt,
-            } as const)
-        ),
-        ctx.db.soulseekTrackDownloads.getAll().map(
-          (track) =>
-            ({
-              service: 'soulseek',
-              id: track.id,
-              parentId: track.releaseDownloadId,
-              status: track.status,
-              progress: track.progress,
-              error: track.error,
-              filename: track.file,
-              dirname: track.file.replaceAll('\\', '/').split('/').slice(0, -1).reverse().join('/'),
-              name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
-              createdAt: track.createdAt,
-            } as const)
-        ),
+        ctx
+          .sys()
+          .db.soundcloudPlaylistDownloads.getAll()
+          .map(
+            (playlist) =>
+              ({
+                service: 'soundcloud',
+                id: playlist.id,
+                name: playlist.playlist?.title,
+                createdAt: playlist.createdAt,
+              } as const)
+          ),
+        ctx
+          .sys()
+          .db.soundcloudTrackDownloads.getAll()
+          .map(
+            (track) =>
+              ({
+                service: 'soundcloud',
+                id: track.id,
+                parentId: track.playlistDownloadId,
+                status: track.status,
+                progress: track.progress,
+                error: track.error,
+                name: track.track?.title,
+                createdAt: track.createdAt,
+              } as const)
+          ),
+        ctx
+          .sys()
+          .db.spotifyAlbumDownloads.getAll()
+          .map(
+            (album) =>
+              ({
+                service: 'spotify',
+                id: album.id,
+                name: album.album?.name,
+                createdAt: album.createdAt,
+              } as const)
+          ),
+        ctx
+          .sys()
+          .db.spotifyTrackDownloads.getAll()
+          .map(
+            (track) =>
+              ({
+                service: 'spotify',
+                id: track.id,
+                parentId: track.albumDownloadId,
+                status: track.status,
+                progress: track.progress,
+                error: track.error,
+                name: track.track?.name,
+                createdAt: track.createdAt,
+              } as const)
+          ),
+        ctx
+          .sys()
+          .db.soulseekReleaseDownloads.getAll()
+          .map(
+            (release) =>
+              ({
+                service: 'soulseek',
+                id: release.id,
+                name: release.dir,
+                createdAt: release.createdAt,
+              } as const)
+          ),
+        ctx
+          .sys()
+          .db.soulseekTrackDownloads.getAll()
+          .map(
+            (track) =>
+              ({
+                service: 'soulseek',
+                id: track.id,
+                parentId: track.releaseDownloadId,
+                status: track.status,
+                progress: track.progress,
+                error: track.error,
+                filename: track.file,
+                dirname: track.file
+                  .replaceAll('\\', '/')
+                  .split('/')
+                  .slice(0, -1)
+                  .reverse()
+                  .join('/'),
+                name: track.file.replaceAll('\\', '/').split('/').slice(-1)[0],
+                createdAt: track.createdAt,
+              } as const)
+          ),
       ]
     )
 

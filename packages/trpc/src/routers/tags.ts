@@ -15,14 +15,14 @@ export const tagsRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
-      const loop = ctx.db.tags.checkLoop(input)
+      const loop = ctx.sys().db.tags.checkLoop(input)
       if (loop) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: `Loop detected: ${loop}`,
         })
       }
-      return ctx.db.tags.insert(input)
+      return ctx.sys().db.tags.insert(input)
     }),
   edit: protectedProcedure
     .input(
@@ -38,36 +38,45 @@ export const tagsRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
-      const loop = ctx.db.tags.checkLoop({ id: input.id, ...input.data })
+      const loop = ctx.sys().db.tags.checkLoop({ id: input.id, ...input.data })
       if (loop) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: `Loop detected: ${loop}`,
         })
       }
-      return ctx.db.tags.update(input.id, input.data)
+      return ctx.sys().db.tags.update(input.id, input.data)
     }),
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ ctx, input }) => {
-    ctx.db.tags.delete(input.id)
+    ctx.sys().db.tags.delete(input.id)
     return true
   }),
   get: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ ctx, input }) => ctx.db.tags.get(input.id)),
+    .query(({ ctx, input }) => ctx.sys().db.tags.get(input.id)),
   getAll: protectedProcedure
     .input(z.object({ taggable: z.boolean().optional() }))
-    .query(({ input, ctx }) => ctx.db.tags.getAll(input)),
+    .query(({ input, ctx }) => ctx.sys().db.tags.getAll(input)),
   getAllTree: protectedProcedure.query(({ ctx }) =>
-    ctx.db.tags.getAll().map((tag) => ({
-      ...tag,
-      parents: ctx.db.tags.getParents(tag.id).map((t) => t.id),
-      children: ctx.db.tags.getChildren(tag.id).map((t) => t.id),
-    }))
+    ctx
+      .sys()
+      .db.tags.getAll()
+      .map((tag) => ({
+        ...tag,
+        parents: ctx
+          .sys()
+          .db.tags.getParents(tag.id)
+          .map((t) => t.id),
+        children: ctx
+          .sys()
+          .db.tags.getChildren(tag.id)
+          .map((t) => t.id),
+      }))
   ),
 
   getByRelease: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
-    .query(({ ctx, input }) => ctx.db.tags.getByRelease(input.releaseId)),
+    .query(({ ctx, input }) => ctx.sys().db.tags.getByRelease(input.releaseId)),
   tagRelease: protectedProcedure
     .input(
       z.object({
@@ -78,19 +87,19 @@ export const tagsRouter = router({
     )
     .mutation(({ ctx, input }) => {
       if (input.tagged) {
-        const existingTag = ctx.db.releaseTags.find(input.releaseId, input.tagId)
+        const existingTag = ctx.sys().db.releaseTags.find(input.releaseId, input.tagId)
         if (!existingTag) {
-          ctx.db.releaseTags.addTag(input.releaseId, input.tagId)
+          ctx.sys().db.releaseTags.addTag(input.releaseId, input.tagId)
         }
       } else {
-        ctx.db.releaseTags.delete(input.releaseId, input.tagId)
+        ctx.sys().db.releaseTags.delete(input.releaseId, input.tagId)
       }
-      return ctx.db.tags.getByRelease(input.releaseId)
+      return ctx.sys().db.tags.getByRelease(input.releaseId)
     }),
 
   getByTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
-    .query(({ ctx, input }) => ctx.db.tags.getByTrack(input.trackId)),
+    .query(({ ctx, input }) => ctx.sys().db.tags.getByTrack(input.trackId)),
   tagTrack: protectedProcedure
     .input(
       z.object({
@@ -101,13 +110,13 @@ export const tagsRouter = router({
     )
     .mutation(({ ctx, input }) => {
       if (input.tagged) {
-        const existingTag = ctx.db.trackTags.find(input.trackId, input.tagId)
+        const existingTag = ctx.sys().db.trackTags.find(input.trackId, input.tagId)
         if (!existingTag) {
-          ctx.db.trackTags.addTag(input.trackId, input.tagId)
+          ctx.sys().db.trackTags.addTag(input.trackId, input.tagId)
         }
       } else {
-        ctx.db.trackTags.delete(input.trackId, input.tagId)
+        ctx.sys().db.trackTags.delete(input.trackId, input.tagId)
       }
-      return ctx.db.tags.getByTrack(input.trackId)
+      return ctx.sys().db.tags.getByTrack(input.trackId)
     }),
 })

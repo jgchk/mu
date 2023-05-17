@@ -5,7 +5,8 @@ import ws from '@fastify/websocket'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
-import type { Context } from 'context'
+import type { SystemContext } from 'context'
+import Cookie from 'cookie'
 import type { Session } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
@@ -36,7 +37,7 @@ declare module 'fastify' {
   }
 }
 
-export const makeApiServer = async (ctx: Context) => {
+export const makeApiServer = async (ctx: () => SystemContext) => {
   const fastify = Fastify({
     logger: false,
     maxParamLength: 2084,
@@ -54,10 +55,10 @@ export const makeApiServer = async (ctx: Context) => {
   fastify.addHook('preHandler', (req, _, done) => {
     const sessionToken = req.cookies['session_token']
     if (sessionToken) {
-      const session = ctx.db.sessions.findByToken(sessionToken)
+      const session = ctx().db.sessions.findByToken(sessionToken)
       if (session) {
         if (session.expiresAt < new Date()) {
-          ctx.db.sessions.delete(sessionToken)
+          ctx().db.sessions.delete(sessionToken)
         } else {
           req.session = session
         }
@@ -71,7 +72,17 @@ export const makeApiServer = async (ctx: Context) => {
     useWSS: true,
     trpcOptions: {
       router: appRouter,
-      createContext: ({ req }) => ({ ...ctx, token: req.cookies?.['session_token'] }),
+      createContext: ({ req }) => {
+        let token = req.cookies?.['session_token']
+
+        if (token === undefined && req.headers.cookie) {
+          // we get passed a raw request for webocket connections. attempt to extract the value from there
+          const value = Cookie.parse(req.headers.cookie)
+          token = value['session_token']
+        }
+
+        return { sys: ctx, token }
+      },
       onError: ({ error }) => {
         log.error(error)
       },
@@ -91,7 +102,7 @@ export const makeApiServer = async (ctx: Context) => {
           return res.status(401).send('Unauthorized')
         }
 
-        const track = ctx.db.tracks.get(req.params.id)
+        const track = ctx().db.tracks.get(req.params.id)
         const stream = fs.createReadStream(track.path)
         return res.send(stream)
       },
@@ -116,7 +127,7 @@ export const makeApiServer = async (ctx: Context) => {
           return res.status(404).send('Not found')
         }
 
-        const fileDownloads = ctx.db.soulseekTrackDownloads.getByReleaseDownloadId(id)
+        const fileDownloads = ctx().db.soulseekTrackDownloads.getByReleaseDownloadId(id)
         const completeDownloads = fileDownloads.filter(isDownloadComplete)
 
         if (completeDownloads.length !== fileDownloads.length) {
@@ -179,11 +190,11 @@ export const makeApiServer = async (ctx: Context) => {
 
         let fileDownload
         if (service === 'soundcloud') {
-          fileDownload = ctx.db.soundcloudTrackDownloads.get(id)
+          fileDownload = ctx().db.soundcloudTrackDownloads.get(id)
         } else if (service === 'spotify') {
-          fileDownload = ctx.db.spotifyTrackDownloads.get(id)
+          fileDownload = ctx().db.spotifyTrackDownloads.get(id)
         } else if (service === 'soulseek') {
-          fileDownload = ctx.db.soulseekTrackDownloads.get(id)
+          fileDownload = ctx().db.soulseekTrackDownloads.get(id)
         } else {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return res.status(400).send(`Invalid service: ${service}`)
@@ -269,7 +280,7 @@ export const makeApiServer = async (ctx: Context) => {
         const { id } = req.params
         const { width, height } = req.query
 
-        const track = ctx.db.tracks.get(id)
+        const track = ctx().db.tracks.get(id)
         if (track.imageId === null) {
           throw new Error('Track does not have cover art')
         }
@@ -297,8 +308,8 @@ export const makeApiServer = async (ctx: Context) => {
         const { id } = req.params
         const { width, height } = req.query
 
-        const release = ctx.db.releases.get(id)
-        const tracks = ctx.db.tracks.getByReleaseId(release.id)
+        const release = ctx().db.releases.get(id)
+        const tracks = ctx().db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {
           if (track.imageId === null) continue

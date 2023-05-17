@@ -13,7 +13,7 @@ import { protectedProcedure, router } from '../trpc'
 
 export const systemRouter = router({
   status: protectedProcedure.query(({ ctx }) => formatStatus(ctx)),
-  config: protectedProcedure.query(({ ctx }) => ctx.db.config.get()),
+  config: protectedProcedure.query(({ ctx }) => ctx.sys().db.config.get()),
   updateConfig: protectedProcedure
     .input(
       z.object({
@@ -33,7 +33,7 @@ export const systemRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const updated = ctx.db.config.update(input)
+      const updated = ctx.sys().db.config.update(input)
 
       if (
         input.lastFmKey !== undefined ||
@@ -41,11 +41,11 @@ export const systemRouter = router({
         input.lastFmUsername !== undefined ||
         input.lastFmPassword !== undefined
       ) {
-        await ctx.startLastFm()
+        await ctx.sys().startLastFm()
       }
 
       if (input.soulseekUsername !== undefined || input.soulseekPassword !== undefined) {
-        await ctx.startSoulseek()
+        await ctx.sys().startSoulseek()
       }
 
       if (
@@ -55,59 +55,62 @@ export const systemRouter = router({
         input.spotifyPassword !== undefined ||
         input.spotifyDcCookie !== undefined
       ) {
-        await ctx.startSpotify()
+        await ctx.sys().startSpotify()
       }
 
       if (input.soundcloudAuthToken !== undefined) {
-        await ctx.startSoundcloud()
+        await ctx.sys().startSoundcloud()
       }
 
       if (input.downloaderConcurrency !== undefined) {
-        ctx.dl.setConcurrency(input.downloaderConcurrency)
+        ctx.sys().dl.setConcurrency(input.downloaderConcurrency)
       }
 
       return { config: updated, status: formatStatus(ctx) }
     }),
   startSoulseek: protectedProcedure.mutation(async ({ ctx }) => {
-    const status = await ctx.startSoulseek()
+    const status = await ctx.sys().startSoulseek()
     return formatSlskStatus(status)
   }),
   stopSoulseek: protectedProcedure.mutation(({ ctx }) => {
-    const status = ctx.stopSoulseek()
+    const status = ctx.sys().stopSoulseek()
     return formatSlskStatus(status)
   }),
   startLastFm: protectedProcedure.mutation(async ({ ctx }) => {
-    const status = await ctx.startLastFm()
+    const status = await ctx.sys().startLastFm()
     return formatLastFmStatus(status)
   }),
   stopLastFm: protectedProcedure.mutation(({ ctx }) => {
-    const status = ctx.stopLastFm()
+    const status = ctx.sys().stopLastFm()
     return formatLastFmStatus(status)
   }),
   startSpotify: protectedProcedure.mutation(async ({ ctx }) => {
-    const status = await ctx.startSpotify()
+    const status = await ctx.sys().startSpotify()
     return formatSpotifyStatus(status)
   }),
   stopSpotify: protectedProcedure.mutation(({ ctx }) => {
-    const status = ctx.stopSpotify()
+    const status = ctx.sys().stopSpotify()
     return formatSpotifyStatus(status)
   }),
   startSoundcloud: protectedProcedure.mutation(async ({ ctx }) => {
-    const status = await ctx.startSoundcloud()
+    const status = await ctx.sys().startSoundcloud()
     return formatSoundcloudStatus(status)
   }),
   stopSoundcloud: protectedProcedure.mutation(({ ctx }) => {
-    const status = ctx.stopSoundcloud()
+    const status = ctx.sys().stopSoundcloud()
     return formatSoundcloudStatus(status)
   }),
 })
 
-const formatStatus = (context: Context) => ({
-  lastFm: formatLastFmStatus(context.lfm),
-  soulseek: formatSlskStatus(context.slsk),
-  soundcloud: formatSoundcloudStatus(context.sc),
-  spotify: formatSpotifyStatus(context.sp),
-})
+const formatStatus = (context: Context) => {
+  const sys = context.sys()
+  return {
+    lastFm: formatLastFmStatus(sys.lfm),
+    soulseek: formatSlskStatus(sys.slsk),
+    soundcloud: formatSoundcloudStatus(sys.sc),
+    spotify: formatSpotifyStatus(sys.sp),
+  }
+}
 
 const formatLastFmStatus = (status: ContextLastFm) =>
   status.status === 'stopped'

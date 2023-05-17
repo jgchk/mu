@@ -9,9 +9,9 @@ export const tracksRouter = router({
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 
-    const tracks = ctx.db.tracks.getAll({
+    const tracks = ctx.sys().db.tracks.getAll({
       favorite: input.favorite,
-      tags: ifDefined(input.tags, injectDescendants(ctx.db)),
+      tags: ifDefined(input.tags, injectDescendants(ctx.sys().db)),
       sort: input.sort,
       skip,
       limit: limit + 1,
@@ -25,8 +25,8 @@ export const tracksRouter = router({
 
     const tracksWithArtistsAndRelease = tracks.map((track) => ({
       ...track,
-      artists: ctx.db.artists.getByTrackId(track.id),
-      release: ifNotNull(track.releaseId, (releaseId) => ctx.db.releases.get(releaseId)),
+      artists: ctx.sys().db.artists.getByTrackId(track.id),
+      release: ifNotNull(track.releaseId, (releaseId) => ctx.sys().db.releases.get(releaseId)),
     }))
 
     return {
@@ -38,61 +38,63 @@ export const tracksRouter = router({
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => ({
-      ...ctx.db.tracks.get(id),
-      artists: ctx.db.artists.getByTrackId(id),
+      ...ctx.sys().db.tracks.get(id),
+      artists: ctx.sys().db.artists.getByTrackId(id),
     })),
 
   getMany: protectedProcedure
     .input(z.object({ ids: z.array(z.number()) }))
     .query(({ input: { ids }, ctx }) => {
-      const tracks = ctx.db.tracks.getMany(ids)
+      const tracks = ctx.sys().db.tracks.getMany(ids)
       return tracks.map((track) => ({
         ...track,
-        artists: ctx.db.artists.getByTrackId(track.id),
+        artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
 
   getByReleaseId: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
-    .query(({ input: { releaseId }, ctx }) => ctx.db.tracks.getByReleaseId(releaseId)),
+    .query(({ input: { releaseId }, ctx }) => ctx.sys().db.tracks.getByReleaseId(releaseId)),
 
   getByReleaseIdWithArtists: protectedProcedure
     .input(z.object({ releaseId: z.number() }))
     .query(({ input: { releaseId }, ctx }) => {
-      const tracks = ctx.db.tracks.getByReleaseId(releaseId)
+      const tracks = ctx.sys().db.tracks.getByReleaseId(releaseId)
       return tracks.map((track) => ({
         ...track,
-        artists: ctx.db.artists.getByTrackId(track.id),
+        artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
 
   getByTag: protectedProcedure
     .input(z.object({ tagId: z.number(), filter: TracksFilter.optional() }))
     .query(({ input: { tagId, filter }, ctx }) => {
-      const descendants = ctx.db.tags.getDescendants(tagId)
+      const descendants = ctx.sys().db.tags.getDescendants(tagId)
       const ids = [tagId, ...descendants.map((t) => t.id)]
-      const tracks = ctx.db.tracks.getByTagIds(ids, filter)
+      const tracks = ctx.sys().db.tracks.getByTagIds(ids, filter)
       return tracks.map((track) => ({
         ...track,
-        artists: ctx.db.artists.getByTrackId(track.id),
+        artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
 
   favorite: protectedProcedure
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .mutation(async ({ input: { id, favorite }, ctx }) => {
-      const dbTrack = ctx.db.tracks.update(id, { favorite })
+      const dbTrack = ctx.sys().db.tracks.update(id, { favorite })
 
-      const artists = ctx.db.artists
-        .getByTrackId(dbTrack.id)
+      const artists = ctx
+        .sys()
+        .db.artists.getByTrackId(dbTrack.id)
         .map((artist) => artist.name)
         .join(', ')
 
-      if (ctx.lfm.status === 'logged-in') {
+      const lfm = ctx.sys().lfm
+      if (lfm.status === 'logged-in') {
         if (favorite) {
-          await ctx.lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+          await lfm.loveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
         } else {
-          await ctx.lfm.unloveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
+          await lfm.unloveTrack({ track: dbTrack.title ?? '[untitled]', artist: artists })
         }
       }
 

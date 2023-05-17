@@ -13,7 +13,7 @@ export const isLoggedIn = t.middleware(({ next, ctx }) => {
     })
   }
 
-  const session = ctx.db.sessions.findByToken(token)
+  const session = ctx.sys().db.sessions.findByToken(token)
 
   if (session === undefined) {
     throw new TRPCError({
@@ -26,7 +26,7 @@ export const isLoggedIn = t.middleware(({ next, ctx }) => {
 })
 
 export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
-  const lfm = ctx.lfm
+  const lfm = ctx.sys().lfm
 
   if (lfm.status === 'stopped') {
     throw new TRPCError({
@@ -66,7 +66,7 @@ export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {
 })
 
 export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
-  const slsk = ctx.slsk
+  const slsk = ctx.sys().slsk
 
   if (slsk.status === 'stopped') {
     throw new TRPCError({
@@ -90,7 +90,7 @@ export const isSoulseekAvailable = t.middleware(({ next, ctx }) => {
 })
 
 export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
-  const sp = ctx.sp
+  const sp = ctx.sys().sp
 
   if (sp.status === 'stopped') {
     throw new TRPCError({
@@ -132,7 +132,7 @@ export const isSpotifyWebApiAvailable = t.middleware(({ next, ctx }) => {
 })
 
 export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
-  const sc = ctx.sc
+  const sc = ctx.sys().sc
 
   if (sc.status === 'stopped') {
     throw new TRPCError({
@@ -156,7 +156,7 @@ export const isSoundcloudAvailable = t.middleware(({ next, ctx }) => {
 })
 
 export const isSpotifyFriendActivityAvailable = t.middleware(({ next, ctx }) => {
-  const sp = ctx.sp
+  const sp = ctx.sys().sp
 
   if (sp.status === 'stopped') {
     throw new TRPCError({

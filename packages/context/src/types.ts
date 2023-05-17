@@ -8,7 +8,10 @@ import type { Spotify } from 'spotify'
 
 export type Context = {
   token?: string
+  sys: () => SystemContext
+}
 
+export type SystemContext = {
   db: Database
   dl: Downloader
   img: ImageManager
@@ -45,8 +48,8 @@ export type ContextLastFm =
 export type ContextSlsk =
   | { status: 'stopped' }
   | { status: 'errored'; error: unknown }
-  | ({ status: 'logging-in' } & SlskClient)
-  | ({ status: 'logged-in' } & SlskClient)
+  | { status: 'logging-in'; client: SlskClient }
+  | { status: 'logged-in'; client: SlskClient }
 
 export type ContextSpotify =
   | { status: 'stopped'; features: ContextSpotifyFeatures; errors: ContextSpotifyErrors }
