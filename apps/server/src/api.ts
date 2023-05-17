@@ -37,18 +37,24 @@ declare module 'fastify' {
   }
 }
 
+const bodyLimit = 1024 * 1024 * 1024
+
 export const makeApiServer = async (ctx: () => SystemContext) => {
   const fastify = Fastify({
     logger: false,
     maxParamLength: 2084,
-    bodyLimit: 1024 * 1024 * 1024,
+    bodyLimit,
   }).withTypeProvider<ZodTypeProvider>()
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
   await fastify.register(ws)
   await fastify.register(cors)
-  await fastify.register(multipart)
+  await fastify.register(multipart, {
+    limits: {
+      fileSize: bodyLimit,
+    },
+  })
   await fastify.register(cookie)
 
   fastify.decorateRequest('session', undefined)
