@@ -6,6 +6,7 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
 import type { SystemContext } from 'context'
+import Cookie from 'cookie'
 import type { Session } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
@@ -71,7 +72,17 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
     useWSS: true,
     trpcOptions: {
       router: appRouter,
-      createContext: ({ req }) => ({ sys: ctx, token: req.cookies?.['session_token'] }),
+      createContext: ({ req }) => {
+        let token = req.cookies?.['session_token']
+
+        if (token === undefined && req.headers.cookie) {
+          // we get passed a raw request for webocket connections. attempt to extract the value from there
+          const value = Cookie.parse(req.headers.cookie)
+          token = value['session_token']
+        }
+
+        return { sys: ctx, token }
+      },
       onError: ({ error }) => {
         log.error(error)
       },
