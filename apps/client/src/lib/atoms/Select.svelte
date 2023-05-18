@@ -35,7 +35,9 @@
 
   let inputRef: HTMLInputElement | undefined
 
-  $: displayFilter = value?.label ?? ''
+  $: if (!open) {
+    displayFilter = value?.label ?? ''
+  }
 
   $: filteredOptions = virtual
     ? options
@@ -67,6 +69,7 @@
       option.onSelect()
     } else {
       value = option
+      filter = ''
       displayFilter = option.label
       dispatch('change', { value })
     }
@@ -115,10 +118,14 @@
       focusedIndex = (focusedIndex - 1 + lastIndex + 1) % (lastIndex + 1)
     } else if (event.key === 'Escape') {
       event.preventDefault()
-      open = false
-      filter = ''
-      displayFilter = value?.label ?? ''
+      handleCancel()
     }
+  }
+
+  const handleCancel = () => {
+    open = false
+    filter = ''
+    displayFilter = value?.label ?? ''
   }
 
   const [popperElement, popperTooltip] = createPopperAction()
@@ -131,7 +138,7 @@
   use:clickOutside={(e) => {
     if (open) {
       e.stopPropagation()
-      open = false
+      handleCancel()
     }
   }}
 >
