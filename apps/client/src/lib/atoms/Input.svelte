@@ -17,6 +17,7 @@
   export let step: number | string | undefined = undefined
   export let minlength: number | undefined = undefined
   export let maxlength: number | undefined = undefined
+  export let autocomplete: string | undefined = 'off'
   let class_: string | undefined = undefined
   export { class_ as class }
   export let layer: 700 | 800 = 800
@@ -64,6 +65,7 @@
   {step}
   {minlength}
   {maxlength}
+  {autocomplete}
   data-invalid={errors}
   class={tw(
     'rounded px-2 py-1 text-white transition-all',
