@@ -182,6 +182,7 @@
       )}
       placeholder={value.length === 0 ? placeholder : undefined}
       type="text"
+      autocomplete="off"
       bind:value={filter}
       on:keydown={handleKeyDown}
       on:click={() => (open = true)}

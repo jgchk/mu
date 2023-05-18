@@ -143,6 +143,7 @@
       {placeholder}
       type="text"
       value={displayFilter}
+      autocomplete="off"
       on:input={(event) => {
         displayFilter = event.currentTarget.value
         filter = event.currentTarget.value
