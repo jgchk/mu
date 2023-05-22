@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   import { cn, tw } from '$lib/utils/classes'
 
   export let src: string | undefined = undefined
@@ -13,7 +15,18 @@
 
   $: if (img?.complete) {
     loaded = true
+
+    // There is no way to detect if an image failed to load :(
+    // The best we can do is below where we check if an image is 0x0
+    // Have to be careful since successfully loading a 0x0 image will
+    // trigger a false alarm too. Should be fine though since no
+    // cover art should really be 0x0
+    if (img?.naturalWidth === 0 && img?.naturalHeight === 0 && img?.complete) {
+      dispatch('error')
+    }
   }
+
+  const dispatch = createEventDispatcher<{ error: undefined }>()
 </script>
 
 <div class={cn('relative w-full pt-[100%] shadow', rounding)}>
@@ -27,6 +40,7 @@
       {src}
       {alt}
       on:load={() => (loaded = true)}
+      on:error
       bind:this={img}
     />
     <div
