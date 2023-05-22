@@ -1,6 +1,7 @@
 import { pipe } from 'utils'
 
 import {
+  AllDownloadsMixin,
   ConfigMixin,
   ImagesMixin,
   SessionsMixin,
@@ -30,29 +31,30 @@ export const Database = (url: string) => {
   const base = new DatabaseBase(url)
   return pipe(
     base,
+    AccountsMixin,
+    ArtistsMixin,
     ConfigMixin,
     ImagesMixin,
-    ArtistsMixin,
-    ReleaseArtistsMixin,
-    ReleasesMixin,
-    TrackArtistsMixin,
-    TracksMixin,
     PlaylistsMixin,
     PlaylistTracksMixin,
+    ReleaseArtistsMixin,
+    ReleasesMixin,
+    ReleaseTagsMixin,
+    SessionsMixin,
+    TagsMixin,
+    TrackArtistsMixin,
+    TracksMixin,
+    TrackTagsMixin,
     (s) =>
       pipe(
         s,
+        SoulseekReleaseDownloadsMixin,
+        SoulseekTrackDownloadsMixin,
         SoundcloudPlaylistDownloadsMixin,
         SoundcloudTrackDownloadsMixin,
         SpotifyAlbumDownloadsMixin,
         SpotifyTrackDownloadsMixin,
-        SoulseekReleaseDownloadsMixin,
-        SoulseekTrackDownloadsMixin,
-        TagsMixin,
-        ReleaseTagsMixin,
-        TrackTagsMixin,
-        AccountsMixin,
-        SessionsMixin
+        AllDownloadsMixin
       )
   )
 }
