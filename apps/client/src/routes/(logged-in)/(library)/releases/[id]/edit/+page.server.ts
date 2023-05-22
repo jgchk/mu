@@ -44,14 +44,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   const release = await fetchReleaseWithArtistsQuery(trpc, id)
   const tracks = await fetchReleaseTracksQuery(trpc, { id })
 
-  let art: string | undefined = undefined
-  if (release.imageId !== null && release.imageId !== undefined) {
-    const artBuffer = await fetch(makeImageUrl(release.imageId))
-      .then((res) => res.blob())
-      .then((blob) => blob.arrayBuffer())
-    art = Buffer.from(artBuffer).toString('base64')
-  }
-
   const form = await superValidate(
     {
       id,
