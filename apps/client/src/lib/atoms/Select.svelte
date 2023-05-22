@@ -184,7 +184,7 @@
 
   {#if open}
     <div
-      class="relative z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
+      class="relative z-10 max-h-[calc(100vh/3)] w-full overflow-auto rounded bg-gray-700 shadow"
       transition:slide|local={{ axis: 'y' }}
       tabindex="-1"
       on:keydown={handleKeyDown}
