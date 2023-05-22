@@ -39,11 +39,10 @@
     displayFilter = value?.label ?? ''
   }
 
-  $: filteredOptions = virtual
-    ? options
-    : options.filter(
-        (option) => !value || option.label.toLowerCase().includes(filter.toLowerCase())
-      )
+  $: filteredOptions =
+    virtual || filter.length === 0
+      ? options
+      : options.filter((option) => option.label.toLowerCase().includes(filter.toLowerCase()))
 
   $: lastIndex = hasMore ? filteredOptions.length : filteredOptions.length - 1
 
