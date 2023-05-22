@@ -10,8 +10,9 @@ import type { OverlayOptions } from 'sharp'
 import sharp from 'sharp'
 import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
-import { capitalize, ifDefined, tryOr } from 'utils'
-import { fileExists, streamToBuffer } from 'utils/node'
+import type { DistributiveOmit } from 'utils'
+import { capitalize, ifDefined } from 'utils'
+import { streamToBuffer } from 'utils/node'
 import { z } from 'zod'
 
 const handleResizeStream = async (
@@ -64,7 +65,7 @@ export const ResizeOptions = z.object({
   size: z.coerce.number().optional(),
 })
 
-export type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
+export type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
 }
 export const isDownloadComplete = <T extends { path: string | null }>(
@@ -148,41 +149,34 @@ export const getCoverArtImage = async (imageManager: ImageManager, filePath: str
   }
 
   // check for art in the same directory
-  const coverArtFile = await getCoverArtFile(filePath)
+  const dirPath = path.dirname(filePath)
+  const coverArtFile = await getCoverArtFile(dirPath)
   return ifDefined(coverArtFile, (imageFilePath) => imageManager.getImageFromFile(imageFilePath))
 }
 
-export const getCoverArtFile = async (filePath: string) => {
-  // check for art in the same directory
-  const dirPath = path.dirname(filePath)
+export const getCoverArtFile = async (dirPath: string): Promise<string | undefined> => {
+  const filesInDir = await fs.promises.readdir(dirPath)
+  for (const file of filesInDir) {
+    if (isCoverArtFile(file)) {
+      return path.join(dirPath, file)
+    }
+  }
+}
 
+export const isCoverArtFile = (filePath: string): boolean => {
   const fileNames = ['cover', 'folder', 'album', 'front']
   const fileExtensions = ['jpg', 'jpeg', 'png', 'gif']
 
-  const filePaths = fileNames.flatMap((fileName) => {
-    const capitalizedFileName = capitalize(fileName)
-    return [
-      ...fileExtensions.map((fileExtension) => path.join(dirPath, `${fileName}.${fileExtension}`)),
-      ...fileExtensions.map((fileExtension) =>
-        path.join(dirPath, `${capitalizedFileName}.${fileExtension}`)
-      ),
-    ]
-  })
+  for (const fileName of fileNames) {
+    for (const fileExtension of fileExtensions) {
+      if (filePath.endsWith(`${fileName}.${fileExtension}`)) {
+        return true
+      }
+      if (filePath.endsWith(`${capitalize(fileName)}.${fileExtension}`)) {
+        return true
+      }
+    }
+  }
 
-  const imageFilePath = await tryOr(
-    () =>
-      Promise.any(
-        filePaths.map(async (filePath) => {
-          const exists = await fileExists(filePath)
-          if (!exists) {
-            throw new Error('No album art found')
-          }
-
-          return filePath
-        })
-      ),
-    undefined
-  )
-
-  return imageFilePath
+  return false
 }

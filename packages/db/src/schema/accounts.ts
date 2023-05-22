@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../utils'
 import { hasUpdate, makeUpdate, withCreatedAt } from '../utils'
@@ -32,37 +32,36 @@ export type AccountsMixin = {
   }
 }
 
-export const AccountsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<AccountsMixin> & TBase =>
-  class extends Base implements AccountsMixin {
-    accounts: AccountsMixin['accounts'] = {
-      insert: (account) => {
-        return this.db.insert(accounts).values(withCreatedAt(account)).returning().get()
-      },
+export const AccountsMixin = <T extends DatabaseBase>(base: T): T & AccountsMixin => {
+  const accountsMixin: AccountsMixin['accounts'] = {
+    insert: (account) => {
+      return base.db.insert(accounts).values(withCreatedAt(account)).returning().get()
+    },
 
-      get: (id) => {
-        return this.db.select().from(accounts).where(eq(accounts.id, id)).get()
-      },
+    get: (id) => {
+      return base.db.select().from(accounts).where(eq(accounts.id, id)).get()
+    },
 
-      findByUsername: (username) => {
-        return this.db
-          .select()
-          .from(accounts)
-          .where(eq(accounts.username, username))
-          .limit(1)
-          .all()
-          .at(0)
-      },
+    findByUsername: (username) => {
+      return base.db
+        .select()
+        .from(accounts)
+        .where(eq(accounts.username, username))
+        .limit(1)
+        .all()
+        .at(0)
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.accounts.get(id)
-        return this.db.update(accounts).set(update).where(eq(accounts.id, id)).returning().get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return accountsMixin.get(id)
+      return base.db.update(accounts).set(update).where(eq(accounts.id, id)).returning().get()
+    },
 
-      isEmpty: () => {
-        return this.db.select().from(accounts).limit(1).all().length === 0
-      },
-    }
+    isEmpty: () => {
+      return base.db.select().from(accounts).limit(1).all().length === 0
+    },
   }
+
+  return withProps(base, { accounts: accountsMixin })
+}

@@ -39,11 +39,10 @@
     displayFilter = value?.label ?? ''
   }
 
-  $: filteredOptions = virtual
-    ? options
-    : options.filter(
-        (option) => !value || option.label.toLowerCase().includes(filter.toLowerCase())
-      )
+  $: filteredOptions =
+    virtual || filter.length === 0
+      ? options
+      : options.filter((option) => option.label.toLowerCase().includes(filter.toLowerCase()))
 
   $: lastIndex = hasMore ? filteredOptions.length : filteredOptions.length - 1
 
@@ -184,7 +183,7 @@
 
   {#if open}
     <div
-      class="relative z-10 w-full overflow-hidden rounded bg-gray-700 shadow"
+      class="relative z-10 max-h-[calc(100vh/3)] w-full overflow-auto rounded bg-gray-700 shadow"
       transition:slide|local={{ axis: 'y' }}
       tabindex="-1"
       on:keydown={handleKeyDown}

@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { and, eq, inArray } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { DatabaseBase } from './base'
 import { releases } from './releases'
@@ -44,48 +44,47 @@ export type ReleaseTagsMixin = {
   }
 }
 
-export const ReleaseTagsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<ReleaseTagsMixin> & TBase =>
-  class extends Base implements ReleaseTagsMixin {
-    releaseTags: ReleaseTagsMixin['releaseTags'] = {
-      insert: (releaseTag) => {
-        return this.db.insert(releaseTags).values(releaseTag).returning().get()
-      },
-      insertMany: (releaseTags_) => {
-        if (releaseTags_.length === 0) return []
-        return this.db.insert(releaseTags).values(releaseTags_).returning().all()
-      },
-      insertManyByReleaseId: (releaseId, tagIds) => {
-        return this.releaseTags.insertMany(tagIds.map((tagId) => ({ releaseId, tagId })))
-      },
-      updateByReleaseId: (releaseId, tagIds) => {
-        this.releaseTags.deleteByReleaseId(releaseId)
-        return this.releaseTags.insertManyByReleaseId(releaseId, tagIds)
-      },
-      addTag: (releaseId, tagId) => {
-        return this.releaseTags.insert({ releaseId, tagId })
-      },
-      getByTags: (tagIds) => {
-        return this.db.select().from(releaseTags).where(inArray(releaseTags.tagId, tagIds)).all()
-      },
-      find: (releaseId, tagId) => {
-        return this.db
-          .select()
-          .from(releaseTags)
-          .where(and(eq(releaseTags.releaseId, releaseId), eq(releaseTags.tagId, tagId)))
-          .limit(1)
-          .all()
-          .at(0)
-      },
-      delete: (releaseId, tagId) => {
-        return this.db
-          .delete(releaseTags)
-          .where(and(eq(releaseTags.releaseId, releaseId), eq(releaseTags.tagId, tagId)))
-          .run()
-      },
-      deleteByReleaseId: (releaseId) => {
-        return this.db.delete(releaseTags).where(eq(releaseTags.releaseId, releaseId)).run()
-      },
-    }
+export const ReleaseTagsMixin = <T extends DatabaseBase>(base: T): T & ReleaseTagsMixin => {
+  const releaseTagsMixin: ReleaseTagsMixin['releaseTags'] = {
+    insert: (releaseTag) => {
+      return base.db.insert(releaseTags).values(releaseTag).returning().get()
+    },
+    insertMany: (releaseTags_) => {
+      if (releaseTags_.length === 0) return []
+      return base.db.insert(releaseTags).values(releaseTags_).returning().all()
+    },
+    insertManyByReleaseId: (releaseId, tagIds) => {
+      return releaseTagsMixin.insertMany(tagIds.map((tagId) => ({ releaseId, tagId })))
+    },
+    updateByReleaseId: (releaseId, tagIds) => {
+      releaseTagsMixin.deleteByReleaseId(releaseId)
+      return releaseTagsMixin.insertManyByReleaseId(releaseId, tagIds)
+    },
+    addTag: (releaseId, tagId) => {
+      return releaseTagsMixin.insert({ releaseId, tagId })
+    },
+    getByTags: (tagIds) => {
+      return base.db.select().from(releaseTags).where(inArray(releaseTags.tagId, tagIds)).all()
+    },
+    find: (releaseId, tagId) => {
+      return base.db
+        .select()
+        .from(releaseTags)
+        .where(and(eq(releaseTags.releaseId, releaseId), eq(releaseTags.tagId, tagId)))
+        .limit(1)
+        .all()
+        .at(0)
+    },
+    delete: (releaseId, tagId) => {
+      return base.db
+        .delete(releaseTags)
+        .where(and(eq(releaseTags.releaseId, releaseId), eq(releaseTags.tagId, tagId)))
+        .run()
+    },
+    deleteByReleaseId: (releaseId) => {
+      return base.db.delete(releaseTags).where(eq(releaseTags.releaseId, releaseId)).run()
+    },
   }
+
+  return withProps(base, { releaseTags: releaseTagsMixin })
+}

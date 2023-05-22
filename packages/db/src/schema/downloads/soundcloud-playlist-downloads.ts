@@ -2,7 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { blob, integer, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { Playlist as SoundcloudPlaylist } from 'soundcloud'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
@@ -47,13 +47,13 @@ export type SoundcloudPlaylistDownloadsMixin = {
   }
 }
 
-export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<SoundcloudPlaylistDownloadsMixin> & TBase =>
-  class extends Base implements SoundcloudPlaylistDownloadsMixin {
-    soundcloudPlaylistDownloads: SoundcloudPlaylistDownloadsMixin['soundcloudPlaylistDownloads'] = {
+export const SoundcloudPlaylistDownloadsMixin = <T extends DatabaseBase>(
+  base: T
+): T & SoundcloudPlaylistDownloadsMixin => {
+  const soundcloudPlaylistDownloadsMixin: SoundcloudPlaylistDownloadsMixin['soundcloudPlaylistDownloads'] =
+    {
       insert: (soundcloudPlaylistDownload) => {
-        return this.db
+        return base.db
           .insert(soundcloudPlaylistDownloads)
           .values(withCreatedAt(soundcloudPlaylistDownload))
           .returning()
@@ -62,8 +62,8 @@ export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<Datab
 
       update: (id, data) => {
         const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.soundcloudPlaylistDownloads.get(id)
-        return this.db
+        if (!hasUpdate(update)) return soundcloudPlaylistDownloadsMixin.get(id)
+        return base.db
           .update(soundcloudPlaylistDownloads)
           .set(update)
           .where(eq(soundcloudPlaylistDownloads.id, id))
@@ -72,7 +72,7 @@ export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<Datab
       },
 
       get: (id) => {
-        return this.db
+        return base.db
           .select()
           .from(soundcloudPlaylistDownloads)
           .where(eq(soundcloudPlaylistDownloads.id, id))
@@ -80,7 +80,7 @@ export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<Datab
       },
 
       getByPlaylistId: (playlistId) => {
-        return this.db
+        return base.db
           .select()
           .from(soundcloudPlaylistDownloads)
           .where(eq(soundcloudPlaylistDownloads.playlistId, playlistId))
@@ -90,14 +90,16 @@ export const SoundcloudPlaylistDownloadsMixin = <TBase extends Constructor<Datab
       },
 
       getAll: () => {
-        return this.db.select().from(soundcloudPlaylistDownloads).all()
+        return base.db.select().from(soundcloudPlaylistDownloads).all()
       },
 
       delete: (id) => {
-        return this.db
+        return base.db
           .delete(soundcloudPlaylistDownloads)
           .where(eq(soundcloudPlaylistDownloads.id, id))
           .run()
       },
     }
-  }
+
+  return withProps(base, { soundcloudPlaylistDownloads: soundcloudPlaylistDownloadsMixin })
+}

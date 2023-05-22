@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import { artists } from './artists'
 import type { DatabaseBase } from './base'
@@ -41,37 +41,36 @@ export type TrackArtistsMixin = {
   }
 }
 
-export const TrackArtistsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<TrackArtistsMixin> & TBase =>
-  class extends Base implements TrackArtistsMixin {
-    trackArtists: TrackArtistsMixin['trackArtists'] = {
-      insertMany: (trackArtists_) => {
-        if (trackArtists_.length === 0) return []
-        return this.db.insert(trackArtists).values(trackArtists_).returning().all()
-      },
+export const TrackArtistsMixin = <T extends DatabaseBase>(base: T): T & TrackArtistsMixin => {
+  const trackArtistsMixin: TrackArtistsMixin['trackArtists'] = {
+    insertMany: (trackArtists_) => {
+      if (trackArtists_.length === 0) return []
+      return base.db.insert(trackArtists).values(trackArtists_).returning().all()
+    },
 
-      insertManyByTrackId: (trackId, artistIds) => {
-        return this.trackArtists.insertMany(
-          artistIds.map((artistId, order) => ({
-            trackId,
-            artistId,
-            order,
-          }))
-        )
-      },
+    insertManyByTrackId: (trackId, artistIds) => {
+      return trackArtistsMixin.insertMany(
+        artistIds.map((artistId, order) => ({
+          trackId,
+          artistId,
+          order,
+        }))
+      )
+    },
 
-      updateByTrackId: (trackId, artistIds) => {
-        this.trackArtists.deleteByTrackId(trackId)
-        return this.trackArtists.insertManyByTrackId(trackId, artistIds)
-      },
+    updateByTrackId: (trackId, artistIds) => {
+      trackArtistsMixin.deleteByTrackId(trackId)
+      return trackArtistsMixin.insertManyByTrackId(trackId, artistIds)
+    },
 
-      getByTrackId: (trackId) => {
-        return this.db.select().from(trackArtists).where(eq(trackArtists.trackId, trackId)).all()
-      },
+    getByTrackId: (trackId) => {
+      return base.db.select().from(trackArtists).where(eq(trackArtists.trackId, trackId)).all()
+    },
 
-      deleteByTrackId: (trackId) => {
-        return this.db.delete(trackArtists).where(eq(trackArtists.trackId, trackId)).run()
-      },
-    }
+    deleteByTrackId: (trackId) => {
+      return base.db.delete(trackArtists).where(eq(trackArtists.trackId, trackId)).run()
+    },
   }
+
+  return withProps(base, { trackArtists: trackArtistsMixin })
+}

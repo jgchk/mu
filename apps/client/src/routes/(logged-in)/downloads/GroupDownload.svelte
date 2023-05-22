@@ -45,31 +45,31 @@
 </script>
 
 <div class="max-w-4xl rounded bg-gray-900 p-4 text-gray-200">
-  <div class="grid items-center gap-x-4" style:grid-template-columns="auto 1fr auto">
-    <div class="contents">
-      <div class="mb-2 truncate text-lg">{group.name ?? 'Loading...'}</div>
-      <div />
-      <div class="mb-2 flex items-center">
-        {#if status.type === 'complete'}
-          <LinkButton kind="outline" href="/downloads/{group.service}/group/{group.id}/import">
-            Import
-          </LinkButton>
-        {:else if status.type === 'downloading'}
-          {status.progress}%
-        {/if}
-        <IconButton
-          tooltip="Delete"
-          on:click={handleDeleteGroupDownload}
-          loading={$deleteGroupDownloadMutation.isLoading}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </div>
-    </div>
-    {#each group.tracks as track (track.id)}
-      <GroupDownloadTrack {track} />
-    {/each}
+  <div class="mb-2 flex items-center gap-4">
+    <div class="flex-1 truncate text-lg">{group.name ?? 'Loading...'}</div>
+
+    <IconButton
+      tooltip="Delete"
+      kind="text"
+      on:click={handleDeleteGroupDownload}
+      loading={$deleteGroupDownloadMutation.isLoading}
+    >
+      <DeleteIcon />
+    </IconButton>
+
+    {#if status.type === 'complete'}
+      <LinkButton kind="outline" href="/downloads/{group.service}/group/{group.id}/import">
+        Import
+      </LinkButton>
+    {:else if status.type === 'downloading'}
+      {status.progress}%
+    {/if}
   </div>
+
+  {#each group.tracks as track (track.id)}
+    <GroupDownloadTrack {track} />
+  {/each}
+
   <div class="mt-3 flex items-center gap-4 text-sm">
     <div class="rounded bg-gray-500 bg-opacity-40 px-1.5 py-0.5 capitalize">{group.service}</div>
     <div

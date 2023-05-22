@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { and, eq } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
@@ -44,62 +44,63 @@ export type SoulseekReleaseDownloadsMixin = {
   }
 }
 
-export const SoulseekReleaseDownloadsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<SoulseekReleaseDownloadsMixin> & TBase =>
-  class extends Base implements SoulseekReleaseDownloadsMixin {
-    soulseekReleaseDownloads: SoulseekReleaseDownloadsMixin['soulseekReleaseDownloads'] = {
-      insert: (soulseekReleaseDownload) => {
-        return this.db
-          .insert(soulseekReleaseDownloads)
-          .values(withCreatedAt(soulseekReleaseDownload))
-          .returning()
-          .get()
-      },
+export const SoulseekReleaseDownloadsMixin = <T extends DatabaseBase>(
+  base: T
+): T & SoulseekReleaseDownloadsMixin => {
+  const soulseekReleaseDownloadsMixin: SoulseekReleaseDownloadsMixin['soulseekReleaseDownloads'] = {
+    insert: (soulseekReleaseDownload) => {
+      return base.db
+        .insert(soulseekReleaseDownloads)
+        .values(withCreatedAt(soulseekReleaseDownload))
+        .returning()
+        .get()
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.soulseekReleaseDownloads.get(id)
-        return this.db
-          .update(soulseekReleaseDownloads)
-          .set(update)
-          .where(eq(soulseekReleaseDownloads.id, id))
-          .returning()
-          .get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return soulseekReleaseDownloadsMixin.get(id)
+      return base.db
+        .update(soulseekReleaseDownloads)
+        .set(update)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .returning()
+        .get()
+    },
 
-      get: (id) => {
-        return this.db
-          .select()
-          .from(soulseekReleaseDownloads)
-          .where(eq(soulseekReleaseDownloads.id, id))
-          .get()
-      },
+    get: (id) => {
+      return base.db
+        .select()
+        .from(soulseekReleaseDownloads)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .get()
+    },
 
-      getByUsernameAndDir: (username, dir) => {
-        return this.db
-          .select()
-          .from(soulseekReleaseDownloads)
-          .where(
-            and(
-              eq(soulseekReleaseDownloads.username, username),
-              eq(soulseekReleaseDownloads.dir, dir)
-            )
+    getByUsernameAndDir: (username, dir) => {
+      return base.db
+        .select()
+        .from(soulseekReleaseDownloads)
+        .where(
+          and(
+            eq(soulseekReleaseDownloads.username, username),
+            eq(soulseekReleaseDownloads.dir, dir)
           )
-          .limit(1)
-          .all()
-          .at(0)
-      },
+        )
+        .limit(1)
+        .all()
+        .at(0)
+    },
 
-      getAll: () => {
-        return this.db.select().from(soulseekReleaseDownloads).all()
-      },
+    getAll: () => {
+      return base.db.select().from(soulseekReleaseDownloads).all()
+    },
 
-      delete: (id) => {
-        return this.db
-          .delete(soulseekReleaseDownloads)
-          .where(eq(soulseekReleaseDownloads.id, id))
-          .run()
-      },
-    }
+    delete: (id) => {
+      return base.db
+        .delete(soulseekReleaseDownloads)
+        .where(eq(soulseekReleaseDownloads.id, id))
+        .run()
+    },
   }
+
+  return withProps(base, { soulseekReleaseDownloads: soulseekReleaseDownloadsMixin })
+}

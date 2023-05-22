@@ -16,9 +16,11 @@ import fs from 'fs'
 import { log } from 'log'
 import mime from 'mime-types'
 import { readTrackCoverArt } from 'music-metadata'
-import path from 'path'
+import type { Readable } from 'stream'
 import type { AppRouter } from 'trpc'
 import { appRouter } from 'trpc'
+import { ifDefined, isAudio } from 'utils'
+import { bufferToStream } from 'utils/node'
 import { z } from 'zod'
 
 import {
@@ -26,6 +28,7 @@ import {
   ResizeOptions,
   handleCreateCollage,
   handleResizeImage,
+  isCoverArtFile,
   isDownloadComplete,
 } from './utils'
 
@@ -129,16 +132,8 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
 
         const { service, id } = req.params
 
-        if (service !== 'soulseek') {
-          return res.status(404).send('Not found')
-        }
-
-        const fileDownloads = ctx().db.soulseekTrackDownloads.getByReleaseDownloadId(id)
+        const fileDownloads = ctx().db.downloads.getGroupTrackDownloads(service, id)
         const completeDownloads = fileDownloads.filter(isDownloadComplete)
-
-        if (completeDownloads.length !== fileDownloads.length) {
-          return res.status(400).send('Downloads not complete')
-        }
 
         const downloads = await Promise.all(
           completeDownloads.map(async (dbDownload) => {
@@ -154,18 +149,32 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
           download.fileType?.mime.startsWith('image/')
         )
 
-        const albumCover = imageDownloads.find((download) => {
-          const filename = path
-            .parse(download.dbDownload.file.replaceAll('\\', '/'))
-            .name.toLowerCase()
-          return filename === 'front' || filename === 'cover' || filename === 'folder'
-        })
+        let stream: Readable | undefined = undefined
 
-        if (!albumCover) {
-          return res.status(404).send('No album cover found')
+        const coverArtFile = imageDownloads.find(
+          (download) => 'file' in download.dbDownload && isCoverArtFile(download.dbDownload.file)
+        )
+
+        if (coverArtFile) {
+          stream = fs.createReadStream(coverArtFile.dbDownload.path)
+        } else {
+          const audioDownloads = downloads.filter(
+            (download) => ifDefined(download.fileType?.mime, isAudio) ?? false
+          )
+
+          for (const audioDownload of audioDownloads) {
+            const coverArt = await readTrackCoverArt(audioDownload.dbDownload.path)
+            if (coverArt) {
+              stream = bufferToStream(coverArt)
+              break
+            }
+          }
         }
 
-        const stream = fs.createReadStream(albumCover.dbDownload.path)
+        if (!stream) {
+          return res.status(404).send('No album cover art found')
+        }
+
         const streamWithFileType = await fileTypeStream(stream)
 
         if (streamWithFileType.fileType) {
@@ -194,17 +203,7 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
 
         const { service, id } = req.params
 
-        let fileDownload
-        if (service === 'soundcloud') {
-          fileDownload = ctx().db.soundcloudTrackDownloads.get(id)
-        } else if (service === 'spotify') {
-          fileDownload = ctx().db.spotifyTrackDownloads.get(id)
-        } else if (service === 'soulseek') {
-          fileDownload = ctx().db.soulseekTrackDownloads.get(id)
-        } else {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return res.status(400).send(`Invalid service: ${service}`)
-        }
+        const fileDownload = ctx().db.downloads.getTrackDownload(service, id)
 
         if (!isDownloadComplete(fileDownload)) {
           return res.status(400).send('Download not complete')

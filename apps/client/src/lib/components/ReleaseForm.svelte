@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import type { DndEvent } from 'svelte-dnd-action'
   import { flip } from 'svelte/animate'
   import { superForm } from 'sveltekit-superforms/client'
-  import { base64ToBlob } from 'utils/browser'
 
   import { dnd } from '$lib/actions/dnd'
   import Button from '$lib/atoms/Button.svelte'
@@ -20,7 +19,7 @@
   import CoverArt from './CoverArt.svelte'
 
   export let formData: PageServerData['form']
-  export let artData: PageServerData['art']
+  export let artUrl: string | undefined
 
   const dispatch = createEventDispatcher<{
     success: { data: StoreType<typeof form> }
@@ -33,7 +32,7 @@
     dataType: 'json',
     onSubmit: (event) => {
       if (albumArt) {
-        event.data.append('albumArt', albumArt)
+        event.formData.append('albumArt', albumArt)
       }
     },
     onResult: ({ result }) => {
@@ -51,14 +50,7 @@
     },
   })
 
-  let albumArt: Blob | undefined = undefined
-  onMount(() => {
-    if (artData) {
-      albumArt = base64ToBlob(artData)
-    } else {
-      albumArt = undefined
-    }
-  })
+  let albumArt: Blob | null | undefined = artUrl === undefined ? null : undefined
 
   const removeIfUnused = (artist: StoreType<typeof form>['album']['artists'][number]) => {
     if (artist?.action !== 'create') return
@@ -100,14 +92,24 @@
           <button
             type="button"
             class="relative h-full w-full shadow"
-            on:click={() => (albumArt = undefined)}
+            on:click={() => (albumArt = null)}
           >
             <CoverArt src={URL.createObjectURL(albumArt)} alt="Album Art">
               <DeleteIcon />
             </CoverArt>
           </button>
-        {:else}
+        {:else if albumArt === null || artUrl === undefined}
           <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
+        {:else}
+          <button
+            type="button"
+            class="relative h-full w-full shadow"
+            on:click={() => (albumArt = null)}
+          >
+            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = null)}>
+              <DeleteIcon />
+            </CoverArt>
+          </button>
         {/if}
       </div>
 

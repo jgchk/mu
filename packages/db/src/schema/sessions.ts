@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt } from '../utils'
 import { withCreatedAt } from '../utils'
@@ -27,21 +27,20 @@ export type SessionsMixin = {
   }
 }
 
-export const SessionsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<SessionsMixin> & TBase =>
-  class extends Base implements SessionsMixin {
-    sessions: SessionsMixin['sessions'] = {
-      insert: (session) => {
-        return this.db.insert(sessions).values(withCreatedAt(session)).returning().get()
-      },
+export const SessionsMixin = <T extends DatabaseBase>(base: T): T & SessionsMixin => {
+  const sessionsMixin: SessionsMixin['sessions'] = {
+    insert: (session) => {
+      return base.db.insert(sessions).values(withCreatedAt(session)).returning().get()
+    },
 
-      findByToken: (token) => {
-        return this.db.select().from(sessions).where(eq(sessions.token, token)).limit(1).all().at(0)
-      },
+    findByToken: (token) => {
+      return base.db.select().from(sessions).where(eq(sessions.token, token)).limit(1).all().at(0)
+    },
 
-      delete: (token) => {
-        return this.db.delete(sessions).where(eq(sessions.token, token)).run()
-      },
-    }
+    delete: (token) => {
+      return base.db.delete(sessions).where(eq(sessions.token, token)).run()
+    },
   }
+
+  return withProps(base, { sessions: sessionsMixin })
+}
