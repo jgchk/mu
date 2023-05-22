@@ -14,12 +14,11 @@ export const mapValuesRecursive = (obj: unknown, fn: (value: unknown) => unknown
   return fn(obj)
 }
 
-export const withProps = <T, P extends Record<string, unknown>>(something: T, props: P): T & P => {
-  for (const [key, value] of Object.entries(props)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    something[key] = value
-  }
+export const withProps = <T extends object, P extends Record<string, unknown>>(
+  something: T,
+  props: P
+): T & P => {
+  Object.assign(something, props)
   return something as T & P
 }
 

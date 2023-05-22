@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import { artists } from './artists'
 import type { DatabaseBase } from './base'
@@ -41,41 +41,40 @@ export type ReleaseArtistsMixin = {
   }
 }
 
-export const ReleaseArtistsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<ReleaseArtistsMixin> & TBase =>
-  class extends Base implements ReleaseArtistsMixin {
-    releaseArtists: ReleaseArtistsMixin['releaseArtists'] = {
-      insertMany: (releaseArtists_) => {
-        if (releaseArtists_.length === 0) return []
-        return this.db.insert(releaseArtists).values(releaseArtists_).returning().all()
-      },
+export const ReleaseArtistsMixin = <T extends DatabaseBase>(base: T): T & ReleaseArtistsMixin => {
+  const releaseArtistsMixin: ReleaseArtistsMixin['releaseArtists'] = {
+    insertMany: (releaseArtists_) => {
+      if (releaseArtists_.length === 0) return []
+      return base.db.insert(releaseArtists).values(releaseArtists_).returning().all()
+    },
 
-      insertManyByReleaseId: (releaseId, artistIds) => {
-        return this.releaseArtists.insertMany(
-          artistIds.map((artistId, order) => ({
-            releaseId,
-            artistId,
-            order,
-          }))
-        )
-      },
+    insertManyByReleaseId: (releaseId, artistIds) => {
+      return releaseArtistsMixin.insertMany(
+        artistIds.map((artistId, order) => ({
+          releaseId,
+          artistId,
+          order,
+        }))
+      )
+    },
 
-      updateByReleaseId: (releaseId, artistIds) => {
-        this.releaseArtists.deleteByReleaseId(releaseId)
-        return this.releaseArtists.insertManyByReleaseId(releaseId, artistIds)
-      },
+    updateByReleaseId: (releaseId, artistIds) => {
+      releaseArtistsMixin.deleteByReleaseId(releaseId)
+      return releaseArtistsMixin.insertManyByReleaseId(releaseId, artistIds)
+    },
 
-      getByReleaseId: (releaseId) => {
-        return this.db
-          .select()
-          .from(releaseArtists)
-          .where(eq(releaseArtists.releaseId, releaseId))
-          .all()
-      },
+    getByReleaseId: (releaseId) => {
+      return base.db
+        .select()
+        .from(releaseArtists)
+        .where(eq(releaseArtists.releaseId, releaseId))
+        .all()
+    },
 
-      deleteByReleaseId: (releaseId) => {
-        return this.db.delete(releaseArtists).where(eq(releaseArtists.releaseId, releaseId)).run()
-      },
-    }
+    deleteByReleaseId: (releaseId) => {
+      return base.db.delete(releaseArtists).where(eq(releaseArtists.releaseId, releaseId)).run()
+    },
   }
+
+  return withProps(base, { releaseArtists: releaseArtistsMixin })
+}

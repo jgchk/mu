@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { UpdateData } from '../utils'
 import { hasUpdate, makeUpdate } from '../utils'
@@ -50,68 +50,67 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
     .prepare(),
 })
 
-export const ArtistsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<ArtistsMixin> & TBase =>
-  class extends Base implements ArtistsMixin {
-    artists: ArtistsMixin['artists'] = {
-      preparedQueries: prepareQueries(this.db),
+export const ArtistsMixin = <T extends DatabaseBase>(base: T): T & ArtistsMixin => {
+  const artistsMixin: ArtistsMixin['artists'] = {
+    preparedQueries: prepareQueries(base.db),
 
-      insert: (artist) => {
-        return this.db.insert(artists).values(artist).returning().get()
-      },
+    insert: (artist) => {
+      return base.db.insert(artists).values(artist).returning().get()
+    },
 
-      getAll: () => {
-        return this.db.select().from(artists).all()
-      },
+    getAll: () => {
+      return base.db.select().from(artists).all()
+    },
 
-      get: (id) => {
-        return this.db.select().from(artists).where(eq(artists.id, id)).get()
-      },
+    get: (id) => {
+      return base.db.select().from(artists).where(eq(artists.id, id)).get()
+    },
 
-      getByName: (name) => {
-        return this.db.select().from(artists).where(eq(artists.name, name)).all()
-      },
+    getByName: (name) => {
+      return base.db.select().from(artists).where(eq(artists.name, name)).all()
+    },
 
-      getByNameCaseInsensitive: (name) => {
-        return this.artists.preparedQueries.getArtistsByNameCaseInsensitive.all({ name })
-      },
+    getByNameCaseInsensitive: (name) => {
+      return artistsMixin.preparedQueries.getArtistsByNameCaseInsensitive.all({ name })
+    },
 
-      getBySimilarName: (name) => {
-        return this.artists.preparedQueries.getArtistsBySimilarName.all({
-          name: `%${name.toLowerCase()}%`,
-        })
-      },
+    getBySimilarName: (name) => {
+      return artistsMixin.preparedQueries.getArtistsBySimilarName.all({
+        name: `%${name.toLowerCase()}%`,
+      })
+    },
 
-      getByReleaseId: (releaseId) => {
-        return this.db
-          .select()
-          .from(releaseArtists)
-          .where(eq(releaseArtists.releaseId, releaseId))
-          .innerJoin(artists, eq(releaseArtists.artistId, artists.id))
-          .orderBy(releaseArtists.order)
-          .all()
-          .map((result) => ({ ...result.artists, order: result.release_artists.order }))
-      },
+    getByReleaseId: (releaseId) => {
+      return base.db
+        .select()
+        .from(releaseArtists)
+        .where(eq(releaseArtists.releaseId, releaseId))
+        .innerJoin(artists, eq(releaseArtists.artistId, artists.id))
+        .orderBy(releaseArtists.order)
+        .all()
+        .map((result) => ({ ...result.artists, order: result.release_artists.order }))
+    },
 
-      getByTrackId: (trackId) => {
-        return this.db
-          .select()
-          .from(trackArtists)
-          .where(eq(trackArtists.trackId, trackId))
-          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-          .orderBy(trackArtists.order)
-          .all()
-          .map((row) => ({
-            ...row.artists,
-            order: row.track_artists.order,
-          }))
-      },
+    getByTrackId: (trackId) => {
+      return base.db
+        .select()
+        .from(trackArtists)
+        .where(eq(trackArtists.trackId, trackId))
+        .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+        .orderBy(trackArtists.order)
+        .all()
+        .map((row) => ({
+          ...row.artists,
+          order: row.track_artists.order,
+        }))
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.artists.get(id)
-        return this.db.update(artists).set(update).where(eq(artists.id, id)).returning().get()
-      },
-    }
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return artistsMixin.get(id)
+      return base.db.update(artists).set(update).where(eq(artists.id, id)).returning().get()
+    },
   }
+
+  return withProps(base, { artists: artistsMixin })
+}

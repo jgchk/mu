@@ -4,8 +4,7 @@ import type { InferModel, SQL } from 'drizzle-orm'
 import { and, asc, desc, eq, inArray, not, or, placeholder, sql } from 'drizzle-orm'
 import type { SQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
-import { ifDefined } from 'utils'
+import { ifDefined, withProps } from 'utils'
 
 import type { UpdateData } from '../utils'
 import { hasUpdate, makeUpdate } from '../utils'
@@ -114,192 +113,191 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
     .prepare(),
 })
 
-export const TracksMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<TracksMixin> & TBase =>
-  class extends Base implements TracksMixin {
-    tracks: TracksMixin['tracks'] = {
-      insert: (track) => {
-        return convertTrack(
-          this.db.insert(tracks).values(convertInsertTrack(track)).returning().get()
-        )
-      },
+export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin => {
+  const tracksMixin: TracksMixin['tracks'] = {
+    insert: (track) => {
+      return convertTrack(
+        base.db.insert(tracks).values(convertInsertTrack(track)).returning().get()
+      )
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate({
-          ...data,
-          favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
+    update: (id, data) => {
+      const update = makeUpdate({
+        ...data,
+        favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
+      })
+      if (!hasUpdate(update)) return tracksMixin.get(id)
+      return convertTrack(
+        base.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
+      )
+    },
+
+    getByArtist: (artistId, filter) => {
+      let query = base.db
+        .select({
+          tracks: {
+            ...tracks,
+            id: sql`distinct(${tracks.id})`,
+          },
         })
-        if (!hasUpdate(update)) return this.tracks.get(id)
-        return convertTrack(
-          this.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
-        )
-      },
+        .from(tracks)
+        .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
+        .orderBy(tracks.title)
 
-      getByArtist: (artistId, filter) => {
-        let query = this.db
-          .select({
-            tracks: {
-              ...tracks,
-              id: sql`distinct(${tracks.id})`,
-            },
-          })
-          .from(tracks)
-          .innerJoin(trackArtists, eq(tracks.id, trackArtists.trackId))
-          .orderBy(tracks.title)
+      query = tracksMixin.withFilter(query, filter, [eq(trackArtists.artistId, artistId)])
 
-        query = this.tracks.withFilter(query, filter, [eq(trackArtists.artistId, artistId)])
+      return query.all().map((row) => convertTrack(row.tracks))
+    },
 
-        return query.all().map((row) => convertTrack(row.tracks))
-      },
+    getByArtistAndTitleCaseInsensitive: (artistId, title) => {
+      return tracksMixin.preparedQueries.getByArtistAndTitleCaseInsensitive
+        .all({
+          artistId,
+          title: title.toLowerCase(),
+        })
+        .map(convertTrack)
+    },
 
-      getByArtistAndTitleCaseInsensitive: (artistId, title) => {
-        return this.tracks.preparedQueries.getByArtistAndTitleCaseInsensitive
-          .all({
-            artistId,
-            title: title.toLowerCase(),
-          })
-          .map(convertTrack)
-      },
+    getByPath: (path) => {
+      const results = base.db.select().from(tracks).where(eq(tracks.path, path)).limit(1).all()
+      if (results.length === 0) {
+        return undefined
+      } else {
+        return convertTrack(results[0])
+      }
+    },
 
-      getByPath: (path) => {
-        const results = this.db.select().from(tracks).where(eq(tracks.path, path)).limit(1).all()
-        if (results.length === 0) {
-          return undefined
-        } else {
-          return convertTrack(results[0])
+    getAll: (filter) => {
+      let query = base.db.select({ tracks }).from(tracks).orderBy(tracks.title)
+      query = tracksMixin.withFilter(query, filter)
+      return query.all().map((row) => convertTrack(row.tracks))
+    },
+
+    getByReleaseId: (releaseId, filter) => {
+      let query = base.db.select({ tracks }).from(tracks).orderBy(tracks.order)
+
+      query = tracksMixin.withFilter(query, filter, [eq(tracks.releaseId, releaseId)])
+
+      return query.all().map((row) => convertTrack(row.tracks))
+    },
+
+    getByPlaylistId: (playlistId, filter) => {
+      let query = base.db
+        .select({ tracks: tracks, playlistTrackId: playlistTracks.id })
+        .from(tracks)
+        .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
+        .orderBy(playlistTracks.order)
+
+      query = tracksMixin.withFilter(query, filter, [eq(playlistTracks.playlistId, playlistId)])
+
+      return query.all().map((row) => ({
+        ...convertTrack(row.tracks),
+        playlistTrackId: row.playlistTrackId,
+      }))
+    },
+
+    getByTagIds: (tagIds, filter) => {
+      let query = base.db
+        .select({ tracks })
+        .from(tracks)
+        .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
+        .orderBy(tracks.title)
+
+      query = tracksMixin.withFilter(query, filter, [inArray(trackTags.tagId, tagIds)])
+
+      return query.all().map((row) => convertTrack(row.tracks))
+    },
+
+    get: (id) => {
+      return convertTrack(base.db.select().from(tracks).where(eq(tracks.id, id)).get())
+    },
+
+    getMany: (ids) => {
+      if (ids.length === 0) return []
+      return base.db.select().from(tracks).where(inArray(tracks.id, ids)).all().map(convertTrack)
+    },
+
+    delete: (id) => {
+      return base.db.delete(tracks).where(eq(tracks.id, id)).run()
+    },
+
+    preparedQueries: prepareQueries(base.db),
+
+    withFilter: (query_, filter, where_ = []) => {
+      let query = query_
+
+      const where = where_
+
+      if (filter?.favorite !== undefined) {
+        where.push(eq(tracks.favorite, filter.favorite ? 1 : 0))
+      }
+
+      if (filter?.tags !== undefined) {
+        const tagsWhere = generateWhereClause(filter.tags)
+        if (tagsWhere) {
+          where.push(tagsWhere)
         }
-      },
+      }
 
-      getAll: (filter) => {
-        let query = this.db.select({ tracks }).from(tracks).orderBy(tracks.title)
-        query = this.tracks.withFilter(query, filter)
-        return query.all().map((row) => convertTrack(row.tracks))
-      },
+      if (where.length === 1) {
+        query = query.where(where[0])
+      } else if (where.length > 1) {
+        query = query.where(and(...where))
+      }
 
-      getByReleaseId: (releaseId, filter) => {
-        let query = this.db.select({ tracks }).from(tracks).orderBy(tracks.order)
+      if (filter?.sort) {
+        const dir = filter.sort.direction === 'asc' ? asc : desc
 
-        query = this.tracks.withFilter(query, filter, [eq(tracks.releaseId, releaseId)])
-
-        return query.all().map((row) => convertTrack(row.tracks))
-      },
-
-      getByPlaylistId: (playlistId, filter) => {
-        let query = this.db
-          .select({ tracks: tracks, playlistTrackId: playlistTracks.id })
-          .from(tracks)
-          .innerJoin(playlistTracks, eq(tracks.id, playlistTracks.trackId))
-          .orderBy(playlistTracks.order)
-
-        query = this.tracks.withFilter(query, filter, [eq(playlistTracks.playlistId, playlistId)])
-
-        return query.all().map((row) => ({
-          ...convertTrack(row.tracks),
-          playlistTrackId: row.playlistTrackId,
-        }))
-      },
-
-      getByTagIds: (tagIds, filter) => {
-        let query = this.db
-          .select({ tracks })
-          .from(tracks)
-          .innerJoin(trackTags, eq(tracks.id, trackTags.trackId))
-          .orderBy(tracks.title)
-
-        query = this.tracks.withFilter(query, filter, [inArray(trackTags.tagId, tagIds)])
-
-        return query.all().map((row) => convertTrack(row.tracks))
-      },
-
-      get: (id) => {
-        return convertTrack(this.db.select().from(tracks).where(eq(tracks.id, id)).get())
-      },
-
-      getMany: (ids) => {
-        if (ids.length === 0) return []
-        return this.db.select().from(tracks).where(inArray(tracks.id, ids)).all().map(convertTrack)
-      },
-
-      delete: (id) => {
-        return this.db.delete(tracks).where(eq(tracks.id, id)).run()
-      },
-
-      preparedQueries: prepareQueries(this.db),
-
-      withFilter: (query_, filter, where_ = []) => {
-        let query = query_
-
-        const where = where_
-
-        if (filter?.favorite !== undefined) {
-          where.push(eq(tracks.favorite, filter.favorite ? 1 : 0))
-        }
-
-        if (filter?.tags !== undefined) {
-          const tagsWhere = generateWhereClause(filter.tags)
-          if (tagsWhere) {
-            where.push(tagsWhere)
+        switch (filter.sort.column) {
+          case 'title': {
+            query = query.orderBy(dir(tracks.title))
+            break
+          }
+          case 'artists': {
+            query = query.orderBy(
+              dir(
+                base.db
+                  .select({ name: sql`group_concat(${artists.name}, ', ')` })
+                  .from(trackArtists)
+                  .where(eq(trackArtists.trackId, tracks.id))
+                  .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+                  .orderBy(trackArtists.order)
+                  .groupBy(trackArtists.trackId)
+              )
+            )
+            break
+          }
+          case 'release': {
+            query = query.orderBy(
+              dir(
+                base.db
+                  .select({ title: releases.title })
+                  .from(releases)
+                  .where(eq(tracks.releaseId, releases.id))
+              )
+            )
+            break
+          }
+          case 'duration': {
+            query = query.orderBy(dir(tracks.duration))
+            break
           }
         }
+      }
 
-        if (where.length === 1) {
-          query = query.where(where[0])
-        } else if (where.length > 1) {
-          query = query.where(and(...where))
-        }
+      if (filter?.skip !== undefined) {
+        query = query.offset(filter.skip)
+      }
+      if (filter?.limit !== undefined) {
+        query = query.limit(filter.limit)
+      }
 
-        if (filter?.sort) {
-          const dir = filter.sort.direction === 'asc' ? asc : desc
-
-          switch (filter.sort.column) {
-            case 'title': {
-              query = query.orderBy(dir(tracks.title))
-              break
-            }
-            case 'artists': {
-              query = query.orderBy(
-                dir(
-                  this.db
-                    .select({ name: sql`group_concat(${artists.name}, ', ')` })
-                    .from(trackArtists)
-                    .where(eq(trackArtists.trackId, tracks.id))
-                    .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-                    .orderBy(trackArtists.order)
-                    .groupBy(trackArtists.trackId)
-                )
-              )
-              break
-            }
-            case 'release': {
-              query = query.orderBy(
-                dir(
-                  this.db
-                    .select({ title: releases.title })
-                    .from(releases)
-                    .where(eq(tracks.releaseId, releases.id))
-                )
-              )
-              break
-            }
-            case 'duration': {
-              query = query.orderBy(dir(tracks.duration))
-              break
-            }
-          }
-        }
-
-        if (filter?.skip !== undefined) {
-          query = query.offset(filter.skip)
-        }
-        if (filter?.limit !== undefined) {
-          query = query.limit(filter.limit)
-        }
-
-        return query
-      },
-    }
+      return query
+    },
   }
+
+  return withProps(base, { tracks: tracksMixin })
+}
 
 const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
   switch (node.kind) {

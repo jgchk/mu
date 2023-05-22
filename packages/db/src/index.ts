@@ -26,34 +26,35 @@ import { TracksMixin } from './schema/tracks'
 
 export * from './schema'
 
-const DatabaseClass = pipe(
-  DatabaseBase,
-  ConfigMixin,
-  ImagesMixin,
-  ArtistsMixin,
-  ReleaseArtistsMixin,
-  ReleasesMixin,
-  TrackArtistsMixin,
-  TracksMixin,
-  PlaylistsMixin,
-  PlaylistTracksMixin,
-  (s) =>
-    pipe(
-      s,
-      SoundcloudPlaylistDownloadsMixin,
-      SoundcloudTrackDownloadsMixin,
-      SpotifyAlbumDownloadsMixin,
-      SpotifyTrackDownloadsMixin,
-      SoulseekReleaseDownloadsMixin,
-      SoulseekTrackDownloadsMixin,
-      TagsMixin,
-      ReleaseTagsMixin,
-      TrackTagsMixin,
-      AccountsMixin,
-      SessionsMixin
-    )
-)
-
-export const Database = (url: string) => new DatabaseClass(url)
+export const Database = (url: string) => {
+  const base = new DatabaseBase(url)
+  return pipe(
+    base,
+    ConfigMixin,
+    ImagesMixin,
+    ArtistsMixin,
+    ReleaseArtistsMixin,
+    ReleasesMixin,
+    TrackArtistsMixin,
+    TracksMixin,
+    PlaylistsMixin,
+    PlaylistTracksMixin,
+    (s) =>
+      pipe(
+        s,
+        SoundcloudPlaylistDownloadsMixin,
+        SoundcloudTrackDownloadsMixin,
+        SpotifyAlbumDownloadsMixin,
+        SpotifyTrackDownloadsMixin,
+        SoulseekReleaseDownloadsMixin,
+        SoulseekTrackDownloadsMixin,
+        TagsMixin,
+        ReleaseTagsMixin,
+        TrackTagsMixin,
+        AccountsMixin,
+        SessionsMixin
+      )
+  )
+}
 
 export type Database = ReturnType<typeof Database>

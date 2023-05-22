@@ -1,7 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq, isNotNull, isNull } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../utils'
 import { hasUpdate, makeUpdate, withCreatedAt } from '../utils'
@@ -29,37 +29,36 @@ export type PlaylistsMixin = {
   }
 }
 
-export const PlaylistsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<PlaylistsMixin> & TBase =>
-  class extends Base implements PlaylistsMixin {
-    playlists: PlaylistsMixin['playlists'] = {
-      insert: (playlist) => {
-        return this.db.insert(playlists).values(withCreatedAt(playlist)).returning().get()
-      },
+export const PlaylistsMixin = <T extends DatabaseBase>(base: T): T & PlaylistsMixin => {
+  const playlistsMixin: PlaylistsMixin['playlists'] = {
+    insert: (playlist) => {
+      return base.db.insert(playlists).values(withCreatedAt(playlist)).returning().get()
+    },
 
-      get: (id) => {
-        return this.db.select().from(playlists).where(eq(playlists.id, id)).get()
-      },
+    get: (id) => {
+      return base.db.select().from(playlists).where(eq(playlists.id, id)).get()
+    },
 
-      getAll: (filter) => {
-        let query = this.db.select().from(playlists).orderBy(playlists.name)
+    getAll: (filter) => {
+      let query = base.db.select().from(playlists).orderBy(playlists.name)
 
-        if (filter?.auto !== undefined) {
-          query = query.where(filter.auto ? isNotNull(playlists.filter) : isNull(playlists.filter))
-        }
+      if (filter?.auto !== undefined) {
+        query = query.where(filter.auto ? isNotNull(playlists.filter) : isNull(playlists.filter))
+      }
 
-        return query.all()
-      },
+      return query.all()
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.playlists.get(id)
-        return this.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return playlistsMixin.get(id)
+      return base.db.update(playlists).set(update).where(eq(playlists.id, id)).returning().get()
+    },
 
-      delete: (id) => {
-        return this.db.delete(playlists).where(eq(playlists.id, id)).run()
-      },
-    }
+    delete: (id) => {
+      return base.db.delete(playlists).where(eq(playlists.id, id)).run()
+    },
   }
+
+  return withProps(base, { playlists: playlistsMixin })
+}

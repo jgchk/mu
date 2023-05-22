@@ -2,8 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { and, eq, isNull } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { FullTrack as SoundcloudFullTrack } from 'soundcloud'
-import type { Constructor } from 'utils'
-import { ifDefined } from 'utils'
+import { ifDefined, withProps } from 'utils'
 
 import type { DownloadStatus } from '.'
 import type { AutoCreatedAt, UpdateData } from '../../utils'
@@ -58,83 +57,84 @@ export type SoundcloudTrackDownloadsMixin = {
   }
 }
 
-export const SoundcloudTrackDownloadsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<SoundcloudTrackDownloadsMixin> & TBase =>
-  class extends Base implements SoundcloudTrackDownloadsMixin {
-    soundcloudTrackDownloads: SoundcloudTrackDownloadsMixin['soundcloudTrackDownloads'] = {
-      insert: (soundcloudTrackDownload) => {
-        return this.db
-          .insert(soundcloudTrackDownloads)
-          .values(withCreatedAt(soundcloudTrackDownload))
-          .returning()
-          .get()
-      },
+export const SoundcloudTrackDownloadsMixin = <T extends DatabaseBase>(
+  base: T
+): T & SoundcloudTrackDownloadsMixin => {
+  const soundcloudTrackDownloadsMixin: SoundcloudTrackDownloadsMixin['soundcloudTrackDownloads'] = {
+    insert: (soundcloudTrackDownload) => {
+      return base.db
+        .insert(soundcloudTrackDownloads)
+        .values(withCreatedAt(soundcloudTrackDownload))
+        .returning()
+        .get()
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate({
-          ...data,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          error: ifDefined(data.error, (error) =>
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-          ),
-        })
-        if (!hasUpdate(update)) return this.soundcloudTrackDownloads.get(id)
-        return this.db
-          .update(soundcloudTrackDownloads)
-          .set(update)
-          .where(eq(soundcloudTrackDownloads.id, id))
-          .returning()
-          .get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate({
+        ...data,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        error: ifDefined(data.error, (error) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+        ),
+      })
+      if (!hasUpdate(update)) return soundcloudTrackDownloadsMixin.get(id)
+      return base.db
+        .update(soundcloudTrackDownloads)
+        .set(update)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .returning()
+        .get()
+    },
 
-      get: (id) => {
-        return this.db
-          .select()
-          .from(soundcloudTrackDownloads)
-          .where(eq(soundcloudTrackDownloads.id, id))
-          .get()
-      },
+    get: (id) => {
+      return base.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .get()
+    },
 
-      getByPlaylistDownloadId: (playlistDownloadId) => {
-        return this.db
-          .select()
-          .from(soundcloudTrackDownloads)
-          .where(
+    getByPlaylistDownloadId: (playlistDownloadId) => {
+      return base.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(
+          playlistDownloadId === null
+            ? isNull(soundcloudTrackDownloads.playlistDownloadId)
+            : eq(soundcloudTrackDownloads.playlistDownloadId, playlistDownloadId)
+        )
+        .all()
+    },
+
+    getByTrackIdAndPlaylistDownloadId: (trackId, playlistDownloadId) => {
+      return base.db
+        .select()
+        .from(soundcloudTrackDownloads)
+        .where(
+          and(
+            eq(soundcloudTrackDownloads.trackId, trackId),
             playlistDownloadId === null
               ? isNull(soundcloudTrackDownloads.playlistDownloadId)
               : eq(soundcloudTrackDownloads.playlistDownloadId, playlistDownloadId)
           )
-          .all()
-      },
+        )
+        .limit(1)
+        .all()
+        .at(0)
+    },
 
-      getByTrackIdAndPlaylistDownloadId: (trackId, playlistDownloadId) => {
-        return this.db
-          .select()
-          .from(soundcloudTrackDownloads)
-          .where(
-            and(
-              eq(soundcloudTrackDownloads.trackId, trackId),
-              playlistDownloadId === null
-                ? isNull(soundcloudTrackDownloads.playlistDownloadId)
-                : eq(soundcloudTrackDownloads.playlistDownloadId, playlistDownloadId)
-            )
-          )
-          .limit(1)
-          .all()
-          .at(0)
-      },
+    getAll: () => {
+      return base.db.select().from(soundcloudTrackDownloads).all()
+    },
 
-      getAll: () => {
-        return this.db.select().from(soundcloudTrackDownloads).all()
-      },
-
-      delete: (id) => {
-        return this.db
-          .delete(soundcloudTrackDownloads)
-          .where(eq(soundcloudTrackDownloads.id, id))
-          .run()
-      },
-    }
+    delete: (id) => {
+      return base.db
+        .delete(soundcloudTrackDownloads)
+        .where(eq(soundcloudTrackDownloads.id, id))
+        .run()
+    },
   }
+
+  return withProps(base, { soundcloudTrackDownloads: soundcloudTrackDownloadsMixin })
+}

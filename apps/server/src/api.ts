@@ -26,6 +26,7 @@ import {
   ResizeOptions,
   handleCreateCollage,
   handleResizeImage,
+  isCoverArtFile,
   isDownloadComplete,
 } from './utils'
 
@@ -129,16 +130,8 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
 
         const { service, id } = req.params
 
-        if (service !== 'soulseek') {
-          return res.status(404).send('Not found')
-        }
-
         const fileDownloads = ctx().db.soulseekTrackDownloads.getByReleaseDownloadId(id)
         const completeDownloads = fileDownloads.filter(isDownloadComplete)
-
-        if (completeDownloads.length !== fileDownloads.length) {
-          return res.status(400).send('Downloads not complete')
-        }
 
         const downloads = await Promise.all(
           completeDownloads.map(async (dbDownload) => {
@@ -154,12 +147,9 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
           download.fileType?.mime.startsWith('image/')
         )
 
-        const albumCover = imageDownloads.find((download) => {
-          const filename = path
-            .parse(download.dbDownload.file.replaceAll('\\', '/'))
-            .name.toLowerCase()
-          return filename === 'front' || filename === 'cover' || filename === 'folder'
-        })
+        const albumCover = imageDownloads.find((download) =>
+          isCoverArtFile(download.dbDownload.file)
+        )
 
         if (!albumCover) {
           return res.status(404).send('No album cover found')

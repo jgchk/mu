@@ -2,7 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
 import { blob, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { FullAlbum as SpotifyFullAlbum } from 'spotify'
-import type { Constructor } from 'utils'
+import { withProps } from 'utils'
 
 import type { AutoCreatedAt, UpdateData } from '../../utils'
 import { hasUpdate, makeUpdate, withCreatedAt } from '../../utils'
@@ -40,54 +40,55 @@ export type SpotifyAlbumDownloadsMixin = {
   }
 }
 
-export const SpotifyAlbumDownloadsMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<SpotifyAlbumDownloadsMixin> & TBase =>
-  class extends Base implements SpotifyAlbumDownloadsMixin {
-    spotifyAlbumDownloads: SpotifyAlbumDownloadsMixin['spotifyAlbumDownloads'] = {
-      insert: (spotifyAlbumDownload) => {
-        return this.db
-          .insert(spotifyAlbumDownloads)
-          .values(withCreatedAt(spotifyAlbumDownload))
-          .returning()
-          .get()
-      },
+export const SpotifyAlbumDownloadsMixin = <T extends DatabaseBase>(
+  base: T
+): T & SpotifyAlbumDownloadsMixin => {
+  const spotifyAlbumDownloadsMixin: SpotifyAlbumDownloadsMixin['spotifyAlbumDownloads'] = {
+    insert: (spotifyAlbumDownload) => {
+      return base.db
+        .insert(spotifyAlbumDownloads)
+        .values(withCreatedAt(spotifyAlbumDownload))
+        .returning()
+        .get()
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.spotifyAlbumDownloads.get(id)
-        return this.db
-          .update(spotifyAlbumDownloads)
-          .set(update)
-          .where(eq(spotifyAlbumDownloads.id, id))
-          .returning()
-          .get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return spotifyAlbumDownloadsMixin.get(id)
+      return base.db
+        .update(spotifyAlbumDownloads)
+        .set(update)
+        .where(eq(spotifyAlbumDownloads.id, id))
+        .returning()
+        .get()
+    },
 
-      get: (id) => {
-        return this.db
-          .select()
-          .from(spotifyAlbumDownloads)
-          .where(eq(spotifyAlbumDownloads.id, id))
-          .get()
-      },
+    get: (id) => {
+      return base.db
+        .select()
+        .from(spotifyAlbumDownloads)
+        .where(eq(spotifyAlbumDownloads.id, id))
+        .get()
+    },
 
-      getByAlbumId: (albumId) => {
-        return this.db
-          .select()
-          .from(spotifyAlbumDownloads)
-          .where(eq(spotifyAlbumDownloads.albumId, albumId))
-          .limit(1)
-          .all()
-          .at(0)
-      },
+    getByAlbumId: (albumId) => {
+      return base.db
+        .select()
+        .from(spotifyAlbumDownloads)
+        .where(eq(spotifyAlbumDownloads.albumId, albumId))
+        .limit(1)
+        .all()
+        .at(0)
+    },
 
-      getAll: () => {
-        return this.db.select().from(spotifyAlbumDownloads).all()
-      },
+    getAll: () => {
+      return base.db.select().from(spotifyAlbumDownloads).all()
+    },
 
-      delete: (id) => {
-        return this.db.delete(spotifyAlbumDownloads).where(eq(spotifyAlbumDownloads.id, id)).run()
-      },
-    }
+    delete: (id) => {
+      return base.db.delete(spotifyAlbumDownloads).where(eq(spotifyAlbumDownloads.id, id)).run()
+    },
   }
+
+  return withProps(base, { spotifyAlbumDownloads: spotifyAlbumDownloadsMixin })
+}

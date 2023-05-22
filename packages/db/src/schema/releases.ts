@@ -1,8 +1,7 @@
 import type { InferModel } from 'drizzle-orm'
 import { eq, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
-import type { Constructor } from 'utils'
-import { equalsWithoutOrder } from 'utils'
+import { equalsWithoutOrder, withProps } from 'utils'
 
 import type { UpdateData } from '../utils'
 import { hasUpdate, makeUpdate } from '../utils'
@@ -42,62 +41,61 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
     .prepare(),
 })
 
-export const ReleasesMixin = <TBase extends Constructor<DatabaseBase>>(
-  Base: TBase
-): Constructor<ReleasesMixin> & TBase =>
-  class extends Base implements ReleasesMixin {
-    releases: ReleasesMixin['releases'] = {
-      preparedQueries: prepareQueries(this.db),
+export const ReleasesMixin = <T extends DatabaseBase>(base: T): T & ReleasesMixin => {
+  const releasesMixin: ReleasesMixin['releases'] = {
+    preparedQueries: prepareQueries(base.db),
 
-      insert: (release) => {
-        return this.db.insert(releases).values(release).returning().get()
-      },
+    insert: (release) => {
+      return base.db.insert(releases).values(release).returning().get()
+    },
 
-      update: (id, data) => {
-        const update = makeUpdate(data)
-        if (!hasUpdate(update)) return this.releases.get(id)
-        return this.db.update(releases).set(update).where(eq(releases.id, id)).returning().get()
-      },
+    update: (id, data) => {
+      const update = makeUpdate(data)
+      if (!hasUpdate(update)) return releasesMixin.get(id)
+      return base.db.update(releases).set(update).where(eq(releases.id, id)).returning().get()
+    },
 
-      getAll: () => {
-        return this.db.select().from(releases).all()
-      },
+    getAll: () => {
+      return base.db.select().from(releases).all()
+    },
 
-      get: (id) => {
-        return this.db.select().from(releases).where(eq(releases.id, id)).get()
-      },
+    get: (id) => {
+      return base.db.select().from(releases).where(eq(releases.id, id)).get()
+    },
 
-      getByArtist: (artistId) => {
-        return this.db
+    getByArtist: (artistId) => {
+      return base.db
+        .select()
+        .from(releases)
+        .innerJoin(releaseArtists, eq(releases.id, releaseArtists.releaseId))
+        .where(eq(releaseArtists.artistId, artistId))
+        .orderBy(releases.title)
+        .all()
+        .map((row) => row.releases)
+    },
+
+    findByTitleCaseInsensitiveAndArtists: (title, artists) => {
+      const titleMatches = releasesMixin.preparedQueries.getReleasesByTitleCaseInsensitive.all({
+        title,
+      })
+
+      const match = titleMatches.find((release) => {
+        const artistIds = base.db
           .select()
-          .from(releases)
-          .innerJoin(releaseArtists, eq(releases.id, releaseArtists.releaseId))
-          .where(eq(releaseArtists.artistId, artistId))
-          .orderBy(releases.title)
+          .from(releaseArtists)
+          .where(eq(releaseArtists.releaseId, release.id))
           .all()
-          .map((row) => row.releases)
-      },
+          .map((a) => a.artistId)
+        return equalsWithoutOrder(artistIds, artists)
+      })
 
-      findByTitleCaseInsensitiveAndArtists: (title, artists) => {
-        const titleMatches = this.releases.preparedQueries.getReleasesByTitleCaseInsensitive.all({
-          title,
-        })
+      return match
+    },
 
-        const match = titleMatches.find((release) => {
-          const artistIds = this.db
-            .select()
-            .from(releaseArtists)
-            .where(eq(releaseArtists.releaseId, release.id))
-            .all()
-            .map((a) => a.artistId)
-          return equalsWithoutOrder(artistIds, artists)
-        })
-
-        return match
-      },
-
-      delete: (id) => {
-        return this.db.delete(releases).where(eq(releases.id, id)).run()
-      },
-    }
+    delete: (id) => {
+      return base.db.delete(releases).where(eq(releases.id, id)).run()
+    },
   }
+
+  return withProps(base, { releases: releasesMixin })
+}
