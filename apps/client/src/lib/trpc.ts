@@ -17,6 +17,7 @@ import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 import { withUrlUpdate } from 'utils/browser'
 
+import { getHost } from './host'
 import { notLoggedInError } from './strings'
 
 export const {
@@ -87,15 +88,7 @@ export const createClient = (fetchFn: typeof fetch) => {
   if (browser) {
     url = '/api/trpc'
   } else {
-    const serverHost = process.env.SERVER_HOST
-    const serverPort = process.env.SERVER_PORT
-    if (!serverHost) {
-      throw new Error('SERVER_HOST not set')
-    }
-    if (!serverPort) {
-      throw new Error('SERVER_PORT not set')
-    }
-    url = `http://${serverHost}:${serverPort}/api/trpc`
+    url = `${getHost()}/api/trpc`
   }
 
   const httpBatchLinkOpts: HttpBatchLinkOptions = { url, fetch: fetchFn, maxURLLength: 2083 }

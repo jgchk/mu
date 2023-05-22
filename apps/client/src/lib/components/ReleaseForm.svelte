@@ -17,6 +17,7 @@
 
   import type { PageServerData } from '../../routes/(logged-in)/(library)/releases/[id]/edit/$types'
   import CoverArt from './CoverArt.svelte'
+  import type { AlbumArt } from './ReleaseForm'
 
   export let formData: PageServerData['form']
   export let artUrl: string | undefined
@@ -31,8 +32,10 @@
   const { form, enhance, errors, constraints, delayed } = superForm(formData, {
     dataType: 'json',
     onSubmit: (event) => {
-      if (albumArt) {
-        event.formData.append('albumArt', albumArt)
+      if (albumArt.kind === 'upload') {
+        event.formData.append('albumArt', albumArt.data)
+      } else {
+        event.formData.append('albumArt', JSON.stringify(albumArt))
       }
     },
     onResult: ({ result }) => {
@@ -50,7 +53,7 @@
     },
   })
 
-  let albumArt: Blob | null | undefined = artUrl === undefined ? null : undefined
+  let albumArt: AlbumArt = artUrl === undefined ? { kind: 'none' } : { kind: 'default' }
 
   const removeIfUnused = (artist: StoreType<typeof form>['album']['artists'][number]) => {
     if (artist?.action !== 'create') return
@@ -79,7 +82,10 @@
   }
 
   const handleFileDrop = (e: CustomEvent<File[]>) => {
-    albumArt = e.detail.at(0)
+    const data = e.detail.at(0)
+    if (data) {
+      albumArt = { kind: 'upload', data }
+    }
   }
 </script>
 
@@ -88,13 +94,13 @@
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="flex gap-4">
       <div class="h-64 w-64">
-        {#if albumArt}
+        {#if albumArt.kind === 'upload'}
           <button
             type="button"
             class="relative h-full w-full shadow"
-            on:click={() => (albumArt = null)}
+            on:click={() => (albumArt = { kind: 'none' })}
           >
-            <CoverArt src={URL.createObjectURL(albumArt)} alt="Album Art">
+            <CoverArt src={URL.createObjectURL(albumArt.data)} alt="Album Art">
               <DeleteIcon />
             </CoverArt>
           </button>
@@ -104,9 +110,9 @@
           <button
             type="button"
             class="relative h-full w-full shadow"
-            on:click={() => (albumArt = null)}
+            on:click={() => (albumArt = { kind: 'none' })}
           >
-            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = null)}>
+            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = { kind: 'none' })}>
               <DeleteIcon />
             </CoverArt>
           </button>
