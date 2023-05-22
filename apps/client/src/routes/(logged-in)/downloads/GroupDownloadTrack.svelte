@@ -34,19 +34,19 @@
   <div class="flex items-center gap-1">
     <IconButton
       kind="text"
-      tooltip="Retry"
-      on:click={handleRetryTrackDownload}
-      loading={$retryTrackDownloadMutation.isLoading}
-    >
-      <RefreshIcon />
-    </IconButton>
-    <IconButton
-      kind="text"
       tooltip="Delete"
       on:click={handleDeleteTrackDownload}
       loading={$deleteTrackDownloadMutation.isLoading}
     >
       <DeleteIcon />
+    </IconButton>
+    <IconButton
+      kind="text"
+      tooltip="Retry"
+      on:click={handleRetryTrackDownload}
+      loading={$retryTrackDownloadMutation.isLoading}
+    >
+      <RefreshIcon />
     </IconButton>
   </div>
 
