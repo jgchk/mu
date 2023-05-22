@@ -10,6 +10,7 @@ import type { OverlayOptions } from 'sharp'
 import sharp from 'sharp'
 import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
+import type { DistributiveOmit } from 'utils'
 import { capitalize, ifDefined } from 'utils'
 import { streamToBuffer } from 'utils/node'
 import { z } from 'zod'
@@ -64,7 +65,7 @@ export const ResizeOptions = z.object({
   size: z.coerce.number().optional(),
 })
 
-export type Complete<T extends { path: string | null }> = Omit<T, 'path'> & {
+export type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
 }
 export const isDownloadComplete = <T extends { path: string | null }>(

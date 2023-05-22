@@ -55,7 +55,7 @@ export const load: PageServerLoad = async (event) => {
     schema
   )
 
-  return { form, art: data.album.art }
+  return { form }
 }
 
 export const actions: Actions = {
@@ -78,6 +78,11 @@ export const actions: Actions = {
         const buffer = await albumArtRaw.arrayBuffer()
         albumArt = Buffer.from(buffer).toString('base64')
       }
+    } else if (albumArtRaw === undefined) {
+      const buffer = await fetch(
+        `/api/downloads/group/${form.data.service}/${form.data.id}/cover-art`
+      ).then((res) => res.arrayBuffer())
+      albumArt = Buffer.from(buffer).toString('base64')
     } else {
       albumArt = undefined
     }

@@ -14,7 +14,7 @@
 
 <ReleaseForm
   formData={data.form}
-  artData={data.art}
+  artUrl={data.artUrl}
   on:success={({ detail: { data } }) =>
     toast.success(LinkToast, {
       props: {

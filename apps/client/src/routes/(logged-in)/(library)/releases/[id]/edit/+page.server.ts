@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
-import { isDefined } from 'utils'
+import { ifDefined, isDefined } from 'utils'
 import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
@@ -69,7 +69,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     schema
   )
 
-  return { form, art }
+  return { form, artUrl: ifDefined(release.imageId ?? undefined, makeImageUrl) }
 }
 
 export const actions: Actions = {

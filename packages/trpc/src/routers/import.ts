@@ -3,12 +3,7 @@ import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
-import {
-  readTrackCoverArt,
-  readTrackMetadata,
-  writeTrackCoverArt,
-  writeTrackMetadata,
-} from 'music-metadata'
+import { readTrackMetadata, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
 import { ifDefined, isAudio, numDigits } from 'utils'
@@ -74,15 +69,6 @@ export const importRouter = router({
       const albumTitle =
         tracks.find((track) => track.metadata && track.metadata.album)?.metadata?.album ?? null
 
-      let albumArt: Buffer | undefined
-      for (const track of tracks) {
-        const coverArt = await readTrackCoverArt(track.path)
-        if (coverArt !== undefined) {
-          albumArt = coverArt
-          break
-        }
-      }
-
       const createArtists: Map<number, string> = new Map()
       const artistMap: Map<string, { action: 'create' | 'connect'; id: number }> = new Map()
 
@@ -113,7 +99,6 @@ export const importRouter = router({
         album: {
           title: albumTitle ?? undefined,
           artists: albumArtists.map(getArtist),
-          art: albumArt?.toString('base64'),
         },
         tracks: tracks
           .sort((a, b) => (a.metadata.track ?? Infinity) - (b.metadata.track ?? Infinity))
@@ -341,14 +326,11 @@ export const importRouter = router({
         }
       }
 
-      const coverArt = await readTrackCoverArt(dbDownload.path)
-
       return {
         id: dbDownload.id,
         createArtists,
         title: metadata.title ?? undefined,
         artists: metadata.artists.map(getArtist),
-        art: coverArt?.toString('base64'),
       }
     }),
 
