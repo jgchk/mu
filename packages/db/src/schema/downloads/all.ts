@@ -25,7 +25,7 @@ export type AllDownloadsMixin = {
     getGroupTrackDownloads: (
       service: DownloadService,
       id: number
-    ) => SoulseekTrackDownload[] | SoundcloudTrackDownload[] | SpotifyTrackDownload[]
+    ) => (SoulseekTrackDownload | SoundcloudTrackDownload | SpotifyTrackDownload)[]
     getTrackDownload: (
       service: DownloadService,
       id: number

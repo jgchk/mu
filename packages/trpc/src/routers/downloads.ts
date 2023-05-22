@@ -5,13 +5,6 @@ import { compareDates, sum } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import {
-  deleteGroupDownload,
-  deleteTrackDownload,
-  getGroupDownload,
-  getGroupTrackDownloads,
-  getTrackDownload,
-} from '../utils'
 
 const SoundcloudDownloadRequest = z.object({
   service: z.literal('soundcloud'),
@@ -179,30 +172,30 @@ export const downloadsRouter = router({
   deleteTrackDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      const track = getTrackDownload(ctx.sys().db, input.service, input.id)
+      const track = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
       if (track.path !== null) {
         await fs.promises.rm(path.resolve(track.path))
       }
-      deleteTrackDownload(ctx.sys().db, input.service, input.id)
+      ctx.sys().db.downloads.deleteTrackDownload(input.service, input.id)
       return { success: true }
     }),
 
   deleteGroupDownload: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      const group = getGroupDownload(ctx.sys().db, input.service, input.id)
-      const tracks = getGroupTrackDownloads(ctx.sys().db, input.service, group.id)
+      const group = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+      const tracks = ctx.sys().db.downloads.getGroupTrackDownloads(input.service, group.id)
 
       await Promise.all(
         tracks.map(async (track) => {
           if (track.path !== null) {
             await fs.promises.rm(path.resolve(track.path))
           }
-          deleteTrackDownload(ctx.sys().db, input.service, track.id)
+          ctx.sys().db.downloads.deleteTrackDownload(input.service, track.id)
         })
       )
 
-      deleteGroupDownload(ctx.sys().db, input.service, group.id)
+      ctx.sys().db.downloads.deleteGroupDownload(input.service, group.id)
       return { success: true }
     }),
 

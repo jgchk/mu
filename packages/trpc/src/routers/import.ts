@@ -16,13 +16,6 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import {
-  deleteGroupDownload,
-  deleteTrackDownload,
-  getGroupDownload,
-  getGroupTrackDownloads,
-  getTrackDownload,
-} from '../utils'
 
 type Complete<T extends { path: string | null }> = DistributiveOmit<T, 'path'> & {
   path: NonNullable<T['path']>
@@ -37,9 +30,10 @@ export const importRouter = router({
   groupDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
-      const releaseDownload = getGroupDownload(ctx.sys().db, input.service, input.id)
-      const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
-        getGroupTrackDownloads(ctx.sys().db, input.service, releaseDownload.id)
+      const releaseDownload = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+      const trackDownloads = ctx
+        .sys()
+        .db.downloads.getGroupTrackDownloads(input.service, releaseDownload.id)
       const completeDownloads = trackDownloads.filter(isDownloadComplete)
 
       if (completeDownloads.length !== trackDownloads.length) {
@@ -152,9 +146,10 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const releaseDownload = getGroupDownload(ctx.sys().db, input.service, input.id)
-      const trackDownloads: ReturnType<typeof getGroupTrackDownloads>[number][] =
-        getGroupTrackDownloads(ctx.sys().db, input.service, releaseDownload.id)
+      const releaseDownload = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+      const trackDownloads = ctx
+        .sys()
+        .db.downloads.getGroupTrackDownloads(input.service, releaseDownload.id)
 
       const completeDownloads = trackDownloads.filter(isDownloadComplete)
       if (completeDownloads.length !== trackDownloads.length) {
@@ -285,14 +280,14 @@ export const importRouter = router({
             artists.map((a) => a.id)
           )
 
-          deleteTrackDownload(ctx.sys().db, input.service, download.dbDownload.id)
+          ctx.sys().db.downloads.deleteTrackDownload(input.service, download.dbDownload.id)
 
           return { track: dbTrack, artists: dbTrackArtists }
         })
       )
 
       if (trackDownloads.length === downloads.length) {
-        deleteGroupDownload(ctx.sys().db, input.service, releaseDownload.id)
+        ctx.sys().db.downloads.deleteGroupDownload(input.service, releaseDownload.id)
       }
 
       return {
@@ -304,7 +299,7 @@ export const importRouter = router({
   trackDownloadData: protectedProcedure
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
-      const dbDownload = getTrackDownload(ctx.sys().db, input.service, input.id)
+      const dbDownload = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -375,7 +370,7 @@ export const importRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const dbDownload = getTrackDownload(ctx.sys().db, input.service, input.id)
+      const dbDownload = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -485,7 +480,7 @@ export const importRouter = router({
         trackArtists.map((a) => a.id)
       )
 
-      deleteTrackDownload(ctx.sys().db, input.service, input.id)
+      ctx.sys().db.downloads.deleteTrackDownload(input.service, input.id)
 
       return {
         release: dbRelease,
