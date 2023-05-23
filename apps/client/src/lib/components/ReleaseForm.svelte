@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { SOURCES, TRIGGERS } from 'svelte-dnd-action'
   import type { DndEvent } from 'svelte-dnd-action'
   import { flip } from 'svelte/animate'
   import { superForm } from 'sveltekit-superforms/client'
@@ -11,8 +12,10 @@
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import SelectorIcon from '$lib/icons/SelectorIcon.svelte'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
+  import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
 
   import type { PageServerData } from '../../routes/(logged-in)/(library)/releases/[id]/edit/$types'
@@ -73,12 +76,45 @@
     }
   }
 
-  const handleReorderTracks = (
+  let dragDisabled = true
+  const handleConsider = (
     e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
       target: EventTarget & HTMLDivElement
     }
   ) => {
-    $form.tracks = e.detail.items
+    const {
+      items: newItems,
+      info: { source, trigger },
+    } = e.detail
+    $form.tracks = newItems
+    // Ensure dragging is stopped on drag finish via keyboard
+    if (source === SOURCES.KEYBOARD && trigger === TRIGGERS.DRAG_STOPPED) {
+      dragDisabled = true
+    }
+  }
+  const handleFinalize = (
+    e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
+      target: EventTarget & HTMLDivElement
+    }
+  ) => {
+    const {
+      items: newItems,
+      info: { source },
+    } = e.detail
+    $form.tracks = newItems
+    // Ensure dragging is stopped on drag finish via pointer (mouse, touch)
+    if (source === SOURCES.POINTER) {
+      dragDisabled = true
+    }
+  }
+  const startDrag = (e: Event) => {
+    e.preventDefault()
+    dragDisabled = false
+  }
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.key === 'Enter' || e.key === ' ') && dragDisabled) {
+      dragDisabled = false
+    }
   }
 
   const handleFileDrop = (e: CustomEvent<File[]>) => {
@@ -183,16 +219,30 @@
     <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
     <div
       class="space-y-2"
-      use:dnd={{ items: $form.tracks }}
-      on:consider={handleReorderTracks}
-      on:finalize={handleReorderTracks}
+      use:dnd={{ items: $form.tracks, dragDisabled }}
+      on:consider={handleConsider}
+      on:finalize={handleFinalize}
     >
       {#each $form.tracks as track, i (track.id)}
         <div
-          class="flex items-center rounded bg-gray-900 p-4 pl-0"
+          class="group/track flex items-center rounded bg-gray-900 p-4 pl-0"
           animate:flip={{ duration: dnd.defaults.flipDurationMs }}
         >
-          <div class="center w-12 text-gray-500">{i + 1}</div>
+          <button
+            type="button"
+            class={cn(
+              'center mx-2 w-8 rounded py-1 text-gray-500 transition hover:bg-gray-800 hover:text-white',
+              dragDisabled ? 'cursor-grab' : 'cursor-grabbing'
+            )}
+            tabindex={dragDisabled ? 0 : -1}
+            aria-label="drag-handle"
+            on:mousedown={startDrag}
+            on:touchstart={startDrag}
+            on:keydown={handleKeyDown}
+          >
+            <span class="group-hover/track:hidden">{i + 1}</span>
+            <SelectorIcon class="hidden h-6 group-hover/track:block" />
+          </button>
           <div class="flex-1 space-y-1">
             <Input
               bind:value={track.title}
