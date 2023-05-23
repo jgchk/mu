@@ -104,7 +104,7 @@
               <DeleteIcon />
             </CoverArt>
           </button>
-        {:else if albumArt === null || artUrl === undefined}
+        {:else if albumArt.kind === 'none' || artUrl === undefined}
           <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
         {:else}
           <button

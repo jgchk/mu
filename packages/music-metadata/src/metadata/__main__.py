@@ -69,6 +69,11 @@ if __name__ == "__main__":
     )
     parser_write_cover.add_argument("file", help="The file to write cover art to")
 
+    parser_delete_cover = subparsers.add_parser(
+        "delete-cover", help="Delete cover art from a file"
+    )
+    parser_delete_cover.add_argument("file", help="The file to delete cover art from")
+
     args = parser.parse_args()
     if args.operation == "read":
         file_path = args.file
@@ -125,6 +130,11 @@ if __name__ == "__main__":
         cover = Image(data=cover_data, desc="album cover", type=ImageType.front)
         file = MediaFile(file_path)
         file.images = [cover]
+        file.save()
+    elif args.operation == "delete-cover":
+        file_path = args.file
+        file = MediaFile(file_path)
+        file.images = []
         file.save()
     else:
         print("Unhandled operation: %s" % args.operation)

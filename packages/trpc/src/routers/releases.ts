@@ -2,7 +2,7 @@ import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
-import { writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
+import { deleteTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { numDigits, uniq } from 'utils'
 import { ensureDir } from 'utils/node'
@@ -93,7 +93,7 @@ export const releasesRouter = router({
         album: z.object({
           title: z.string().min(1).optional(),
           artists: z.object({ action: z.enum(['create', 'connect']), id: z.number() }).array(),
-          art: z.string().optional(),
+          art: z.string().nullish(),
         }),
         tracks: z
           .object({
@@ -135,13 +135,17 @@ export const releasesRouter = router({
 
       const existingDbTracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
 
-      let image: { data: Buffer; id: number } | undefined = undefined
-      const albumArt = input.album.art ? Buffer.from(input.album.art, 'base64') : null
-      if (albumArt) {
+      let image: { data: Buffer; id: number } | null | undefined = undefined
+      if (input.album.art) {
+        const data = Buffer.from(input.album.art, 'base64')
         image = {
-          data: albumArt,
-          id: (await ctx.sys().img.getImage(albumArt)).id,
+          data,
+          id: (await ctx.sys().img.getImage(data)).id,
         }
+      } else if (input.album.art === null) {
+        image = null
+      } else {
+        image = undefined
       }
 
       if (input.tracks) {
@@ -206,6 +210,13 @@ export const releasesRouter = router({
                 // OGG Files sometimes fail the first time then work the second time
                 await writeTrackCoverArt(newPath, image.data)
               }
+            } else if (image === null) {
+              try {
+                await deleteTrackCoverArt(newPath)
+              } catch {
+                // OGG Files sometimes fail the first time then work the second time
+                await deleteTrackCoverArt(newPath)
+              }
             }
 
             ctx.sys().db.tracks.update(existingDbTrack.id, {
@@ -213,14 +224,14 @@ export const releasesRouter = router({
               path: newPath,
               releaseId: dbRelease.id,
               order: i,
-              imageId: image?.id ?? null,
+              imageId: image ? image.id : image === null ? null : undefined,
             })
             ctx.sys().db.trackArtists.updateByTrackId(
               existingDbTrack.id,
               artists.map((a) => a.id)
             )
 
-            if (oldImageId !== null) {
+            if (oldImageId !== null && image !== undefined) {
               await ctx.sys().img.cleanupImage(oldImageId)
             }
           })
