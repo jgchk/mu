@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { flip } from 'svelte/animate'
   import { fade } from 'svelte/transition'
   import { ifDefined } from 'utils'
 
@@ -40,6 +41,13 @@
   $: filteredTags = ifDefined($tagsQuery.data, (tags) =>
     tags.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
   )
+
+  $: selectedFilteredTags = ifDefined(filteredTags, (tags) =>
+    tags.filter((p) => selectedTagIdsSet.has(p.id))
+  )
+  $: unselectedFilteredTags = ifDefined(filteredTags, (tags) =>
+    tags.filter((p) => !selectedTagIdsSet.has(p.id))
+  )
 </script>
 
 <div
@@ -76,15 +84,30 @@
   <div class="max-h-[calc(100vh/3)] overflow-auto p-2" tabindex="-1">
     {#if filteredTags}
       {#if filteredTags.length}
-        {#each filteredTags as tag (tag.id)}
-          {@const selected = selectedTagIdsSet.has(tag.id)}
+        {#each selectedFilteredTags ?? [] as tag (tag.id)}
           <Button
             kind="text"
             class="w-full text-white"
             layer={700}
             align="left"
-            on:click={() => handleTag(tag.id, !selected)}
-            icon={selected ? CheckIcon : undefined}
+            on:click={() => handleTag(tag.id, false)}
+            icon={CheckIcon}
+          >
+            {tag.name}
+          </Button>
+        {/each}
+
+        {#if selectedFilteredTags?.length && unselectedFilteredTags?.length}
+          <div class="my-1 h-px w-full bg-gray-600" />
+        {/if}
+
+        {#each unselectedFilteredTags ?? [] as tag (tag.id)}
+          <Button
+            kind="text"
+            class="w-full text-white"
+            layer={700}
+            align="left"
+            on:click={() => handleTag(tag.id, true)}
           >
             {tag.name}
           </Button>
