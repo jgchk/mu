@@ -59,7 +59,7 @@ export const ArtistsMixin = <T extends DatabaseBase>(base: T): T & ArtistsMixin 
     },
 
     getAll: () => {
-      return base.db.select().from(artists).all()
+      return base.db.select().from(artists).orderBy(artists.name).all()
     },
 
     get: (id) => {

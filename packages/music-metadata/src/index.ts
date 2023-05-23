@@ -61,6 +61,12 @@ export const writeTrackCoverArt = async (filePath: string, coverArt: Buffer) => 
   })
 }
 
+export const deleteTrackCoverArt = async (filePath: string) => {
+  await execa('python3', ['-m', 'metadata', 'delete-cover', path.resolve(filePath)], {
+    cwd: __dirname,
+  })
+}
+
 export const readTrackCoverArt = async (filePath: string): Promise<Buffer | undefined> => {
   const { stdout } = await execa(
     'python3',

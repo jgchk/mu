@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { SOURCES, TRIGGERS } from 'svelte-dnd-action'
   import type { DndEvent } from 'svelte-dnd-action'
   import { flip } from 'svelte/animate'
   import { superForm } from 'sveltekit-superforms/client'
@@ -11,12 +12,15 @@
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import SelectorIcon from '$lib/icons/SelectorIcon.svelte'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
+  import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
 
   import type { PageServerData } from '../../routes/(logged-in)/(library)/releases/[id]/edit/$types'
   import CoverArt from './CoverArt.svelte'
+  import type { AlbumArt } from './ReleaseForm'
 
   export let formData: PageServerData['form']
   export let artUrl: string | undefined
@@ -31,8 +35,10 @@
   const { form, enhance, errors, constraints, delayed } = superForm(formData, {
     dataType: 'json',
     onSubmit: (event) => {
-      if (albumArt) {
-        event.formData.append('albumArt', albumArt)
+      if (albumArt.kind === 'upload') {
+        event.formData.append('albumArt', albumArt.data)
+      } else {
+        event.formData.append('albumArt', JSON.stringify(albumArt))
       }
     },
     onResult: ({ result }) => {
@@ -50,7 +56,7 @@
     },
   })
 
-  let albumArt: Blob | null | undefined = artUrl === undefined ? null : undefined
+  let albumArt: AlbumArt = artUrl === undefined ? { kind: 'none' } : { kind: 'default' }
 
   const removeIfUnused = (artist: StoreType<typeof form>['album']['artists'][number]) => {
     if (artist?.action !== 'create') return
@@ -70,16 +76,52 @@
     }
   }
 
-  const handleReorderTracks = (
+  let dragDisabled = true
+  const handleConsider = (
     e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
       target: EventTarget & HTMLDivElement
     }
   ) => {
-    $form.tracks = e.detail.items
+    const {
+      items: newItems,
+      info: { source, trigger },
+    } = e.detail
+    $form.tracks = newItems
+    // Ensure dragging is stopped on drag finish via keyboard
+    if (source === SOURCES.KEYBOARD && trigger === TRIGGERS.DRAG_STOPPED) {
+      dragDisabled = true
+    }
+  }
+  const handleFinalize = (
+    e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
+      target: EventTarget & HTMLDivElement
+    }
+  ) => {
+    const {
+      items: newItems,
+      info: { source },
+    } = e.detail
+    $form.tracks = newItems
+    // Ensure dragging is stopped on drag finish via pointer (mouse, touch)
+    if (source === SOURCES.POINTER) {
+      dragDisabled = true
+    }
+  }
+  const startDrag = (e: Event) => {
+    e.preventDefault()
+    dragDisabled = false
+  }
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.key === 'Enter' || e.key === ' ') && dragDisabled) {
+      dragDisabled = false
+    }
   }
 
   const handleFileDrop = (e: CustomEvent<File[]>) => {
-    albumArt = e.detail.at(0)
+    const data = e.detail.at(0)
+    if (data) {
+      albumArt = { kind: 'upload', data }
+    }
   }
 </script>
 
@@ -88,25 +130,25 @@
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="flex gap-4">
       <div class="h-64 w-64">
-        {#if albumArt}
+        {#if albumArt.kind === 'upload'}
           <button
             type="button"
             class="relative h-full w-full shadow"
-            on:click={() => (albumArt = null)}
+            on:click={() => (albumArt = { kind: 'none' })}
           >
-            <CoverArt src={URL.createObjectURL(albumArt)} alt="Album Art">
+            <CoverArt src={URL.createObjectURL(albumArt.data)} alt="Album Art">
               <DeleteIcon />
             </CoverArt>
           </button>
-        {:else if albumArt === null || artUrl === undefined}
+        {:else if albumArt.kind === 'none' || artUrl === undefined}
           <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
         {:else}
           <button
             type="button"
             class="relative h-full w-full shadow"
-            on:click={() => (albumArt = null)}
+            on:click={() => (albumArt = { kind: 'none' })}
           >
-            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = null)}>
+            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = { kind: 'none' })}>
               <DeleteIcon />
             </CoverArt>
           </button>
@@ -177,16 +219,30 @@
     <h2 class="mb-2 mt-8 text-2xl font-bold">Tracks</h2>
     <div
       class="space-y-2"
-      use:dnd={{ items: $form.tracks }}
-      on:consider={handleReorderTracks}
-      on:finalize={handleReorderTracks}
+      use:dnd={{ items: $form.tracks, dragDisabled }}
+      on:consider={handleConsider}
+      on:finalize={handleFinalize}
     >
       {#each $form.tracks as track, i (track.id)}
         <div
-          class="flex items-center rounded bg-gray-900 p-4 pl-0"
+          class="group/track flex items-center rounded bg-gray-900 p-4 pl-0"
           animate:flip={{ duration: dnd.defaults.flipDurationMs }}
         >
-          <div class="center w-12 text-gray-500">{i + 1}</div>
+          <button
+            type="button"
+            class={cn(
+              'center mx-2 w-8 rounded py-1 text-gray-500 transition hover:bg-gray-800 hover:text-white',
+              dragDisabled ? 'cursor-grab' : 'cursor-grabbing'
+            )}
+            tabindex={dragDisabled ? 0 : -1}
+            aria-label="drag-handle"
+            on:mousedown={startDrag}
+            on:touchstart={startDrag}
+            on:keydown={handleKeyDown}
+          >
+            <span class="group-hover/track:hidden">{i + 1}</span>
+            <SelectorIcon class="hidden h-6 group-hover/track:block" />
+          </button>
           <div class="flex-1 space-y-1">
             <Input
               bind:value={track.title}

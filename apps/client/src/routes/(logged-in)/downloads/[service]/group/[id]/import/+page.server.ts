@@ -1,9 +1,11 @@
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { isDefined } from 'utils'
-import { isFile } from 'utils/browser'
+import { fetcher, isFile } from 'utils/browser'
 import { z } from 'zod'
 
+import { albumArtSchema } from '$lib/components/ReleaseForm'
+import { getHost } from '$lib/host'
 import { fetchGroupDownloadDataQuery, mutateGroupDownloadManual } from '$lib/services/import'
 import { createClient } from '$lib/trpc'
 import { paramNumber, paramService } from '$lib/utils/params'
@@ -70,21 +72,30 @@ export const actions: Actions = {
     }
 
     const albumArtRaw = formData.get('albumArt')
-    let albumArt
-    if (albumArtRaw) {
-      if (!isFile(albumArtRaw)) {
-        return fail(400, { form, reason: 'Album art must be a File' })
-      } else {
-        const buffer = await albumArtRaw.arrayBuffer()
-        albumArt = Buffer.from(buffer).toString('base64')
-      }
-    } else if (albumArtRaw === undefined) {
-      const buffer = await fetch(
-        `/api/downloads/group/${form.data.service}/${form.data.id}/cover-art`
-      ).then((res) => res.arrayBuffer())
+    let albumArt: string | undefined = undefined
+    if (isFile(albumArtRaw)) {
+      const buffer = await albumArtRaw.arrayBuffer()
       albumArt = Buffer.from(buffer).toString('base64')
-    } else {
+    } else if (albumArtRaw === null) {
       albumArt = undefined
+    } else {
+      const albumArtData = albumArtSchema.parse(JSON.parse(albumArtRaw))
+      switch (albumArtData.kind) {
+        case 'default': {
+          const buffer = await fetcher(fetch)(
+            `${getHost()}/api/downloads/group/${form.data.service}/${form.data.id}/cover-art`
+          ).then((res) => res.arrayBuffer())
+          albumArt = Buffer.from(buffer).toString('base64')
+          break
+        }
+        case 'none': {
+          albumArt = undefined
+          break
+        }
+        case 'upload': {
+          throw error(400, 'Uploads should be submitted as raw files')
+        }
+      }
     }
 
     const trpc = createClient(fetch)

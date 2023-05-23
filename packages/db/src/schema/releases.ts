@@ -56,7 +56,7 @@ export const ReleasesMixin = <T extends DatabaseBase>(base: T): T & ReleasesMixi
     },
 
     getAll: () => {
-      return base.db.select().from(releases).all()
+      return base.db.select().from(releases).orderBy(releases.title).all()
     },
 
     get: (id) => {

@@ -1,9 +1,10 @@
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms/server'
 import { ifDefined, isDefined } from 'utils'
 import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
+import { albumArtSchema } from '$lib/components/ReleaseForm'
 import { makeImageUrl } from '$lib/cover-art'
 import {
   fetchReleaseTracksQuery,
@@ -74,16 +75,27 @@ export const actions: Actions = {
     }
 
     const albumArtRaw = formData.get('albumArt')
-    let albumArt
-    if (albumArtRaw) {
-      if (!isFile(albumArtRaw)) {
-        return fail(400, { form, reason: 'Album art must be a File' })
-      } else {
-        const buffer = await albumArtRaw.arrayBuffer()
-        albumArt = Buffer.from(buffer).toString('base64')
-      }
+    let albumArt: string | null | undefined = undefined
+    if (isFile(albumArtRaw)) {
+      const buffer = await albumArtRaw.arrayBuffer()
+      albumArt = Buffer.from(buffer).toString('base64')
+    } else if (albumArtRaw === null) {
+      albumArt = null
     } else {
-      albumArt = undefined
+      const albumArtData = albumArtSchema.parse(JSON.parse(albumArtRaw))
+      switch (albumArtData.kind) {
+        case 'default': {
+          albumArt = undefined
+          break
+        }
+        case 'none': {
+          albumArt = null
+          break
+        }
+        case 'upload': {
+          throw error(400, 'Uploads should be submitted as raw files')
+        }
+      }
     }
 
     const trpc = createClient(fetch)
