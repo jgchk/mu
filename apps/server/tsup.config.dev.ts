@@ -14,6 +14,7 @@ export default defineConfig({
     '../../packages/last-fm',
     '../../packages/log',
     '../../packages/music-metadata',
+    '../../packages/musicbrainz',
     '../../packages/soundcloud',
     '../../packages/spotify',
     '../../packages/trpc',

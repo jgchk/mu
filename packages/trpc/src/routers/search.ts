@@ -1,4 +1,6 @@
 import { observable } from '@trpc/server/observable'
+import { HTTPError } from 'got'
+import { getCoverArt, searchRelease } from 'musicbrainz'
 import type { Messages } from 'soulseek-ts'
 import { Soundcloud } from 'soundcloud'
 import { ifNotNull } from 'utils'
@@ -54,5 +56,23 @@ export const searchRouter = router({
       return observable<Messages.From.Peer.FileSearchResponse>((emit) => {
         void ctx.slsk.client.search(query, { onResult: (result) => emit.next(result) })
       })
+    }),
+
+  coverArt: protectedProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ input: { query } }) => {
+      const mbResults = await searchRelease(query)
+      return Promise.all(
+        mbResults.map(async (res) => {
+          const images = await getCoverArt(res.id).catch((err) => {
+            if (err instanceof HTTPError && err.response.statusCode === 404) {
+              return []
+            }
+            console.error(err)
+            throw err
+          })
+          return { ...res, images }
+        })
+      )
     }),
 })

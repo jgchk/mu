@@ -32,7 +32,7 @@
 
   <div
     class={tw(
-      'relative w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 shadow-lg',
+      'relative flex max-h-full w-full max-w-md flex-col rounded-lg border border-gray-700 bg-gray-800 shadow-lg',
       class_
     )}
     transition:scale={{ start: 0.95, duration: 125 }}
@@ -41,7 +41,7 @@
     {#if title !== undefined}
       <h2 class="p-4 pb-0 text-lg font-semibold">{title}</h2>
     {/if}
-    <div class="p-4">
+    <div class="flex-1 overflow-auto p-4">
       <slot />
     </div>
     {#if $$slots.buttons}

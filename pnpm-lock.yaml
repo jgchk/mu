@@ -447,6 +447,18 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config-custom
 
+  packages/musicbrainz:
+    dependencies:
+      got:
+        specifier: ^12.6.0
+        version: 12.6.0
+      utils:
+        specifier: workspace:*
+        version: link:../utils
+      zod:
+        specifier: ^3.21.4
+        version: 3.21.4
+
   packages/soundcloud:
     dependencies:
       execa:
@@ -552,6 +564,9 @@ importers:
       music-metadata:
         specifier: workspace:*
         version: link:../music-metadata
+      musicbrainz:
+        specifier: workspace:*
+        version: link:../musicbrainz
       soulseek-ts:
         specifier: ^2.1.2
         version: 2.1.2

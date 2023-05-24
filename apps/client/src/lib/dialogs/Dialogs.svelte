@@ -1,5 +1,6 @@
 <script lang="ts">
   import AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
+  import CoverArtDialog from '$lib/components/CoverArtDialog.svelte'
   import DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
   import DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
@@ -53,5 +54,11 @@
     <DeleteTagDialog tag={dialog.tag} on:close={() => dialogs.close('delete-tag')} />
   {:else if dialog._tag === 'edit-tags-filter'}
     <EditTagsFilterDialog {...dialog} on:close={() => dialogs.close('edit-tags-filter')} />
+  {:else if (dialog._tag = 'search-cover-art')}
+    <CoverArtDialog
+      {...dialog}
+      on:close={() => dialogs.close('search-cover-art')}
+      on:submit={(e) => dialog.onSelect?.(e.detail)}
+    />
   {/if}
 {/if}

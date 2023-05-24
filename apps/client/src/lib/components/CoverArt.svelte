@@ -9,6 +9,7 @@
   export let iconClass: string | undefined = undefined
   export let placeholderClass: string | undefined = undefined
   export let hoverable = true
+  export let selected = false
 
   let loaded = false
   let img: HTMLImageElement | undefined
@@ -64,11 +65,12 @@
     <slot name="insert" />
   {/if}
   <div
-    class={cn(
+    class={tw(
       'center group absolute left-0 top-0 h-full w-full border border-white border-opacity-20 transition active:bg-opacity-80',
       hoverable &&
         'hover:border-primary-500 hover:border-opacity-100 hover:bg-gray-900 hover:bg-opacity-60',
-      rounding
+      rounding,
+      selected && 'border-primary-500 border-2 border-opacity-100'
     )}
   >
     {#if $$slots.default && hoverable}

@@ -25,7 +25,7 @@
       {#if data.art === undefined && imageId !== null}
         <button
           type="button"
-          class="relative h-full w-full shadow"
+          class="relative h-full w-full"
           on:click={() => {
             if (data) {
               data.art = null
@@ -39,7 +39,7 @@
       {:else if data.art}
         <button
           type="button"
-          class="relative h-full w-full shadow"
+          class="relative h-full w-full"
           on:click={() => {
             if (data) {
               data.art = undefined
