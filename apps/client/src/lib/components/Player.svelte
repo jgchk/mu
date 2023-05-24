@@ -45,6 +45,12 @@
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
   $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
 
+  $: nextTrackId = $nowPlaying.nextTracks.at(0)
+  $: if (nextTrackId !== undefined) {
+    const nextTrackAudio = new Audio(`/api/tracks/${nextTrackId}/stream`)
+    nextTrackAudio.preload = 'auto'
+  }
+
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 

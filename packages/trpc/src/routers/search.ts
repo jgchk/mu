@@ -68,7 +68,6 @@ export const searchRouter = router({
             if (err instanceof HTTPError && err.response.statusCode === 404) {
               return []
             }
-            console.error(err)
             throw err
           })
           return { ...res, images }
