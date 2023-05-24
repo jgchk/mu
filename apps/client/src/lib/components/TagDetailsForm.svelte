@@ -22,6 +22,7 @@
       <Label for="tag-edit-name">Name</Label>
       <Input id="tag-edit-name" class="w-full" bind:value={data.name} autofocus required />
     </InputGroup>
+
     <InputGroup>
       <Label for="tag-edit-description">Description</Label>
       <TextArea
@@ -32,6 +33,7 @@
         placeholder="Optional"
       />
     </InputGroup>
+
     <InputGroup>
       <Label for="tag-edit-parents">Parents</Label>
       <TagMultiselect
@@ -41,6 +43,7 @@
         placeholder="Optional"
       />
     </InputGroup>
+
     <InputGroup>
       <Label for="tag-edit-children">Children</Label>
       <TagMultiselect
@@ -50,6 +53,7 @@
         placeholder="Optional"
       />
     </InputGroup>
+
     <InputGroup layout="horizontal">
       <Checkbox id="tag-edit-taggable" bind:checked={data.taggable} />
       <Label for="tag-edit-taggable">Taggable</Label>
