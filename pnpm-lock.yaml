@@ -213,6 +213,9 @@ importers:
       music-metadata:
         specifier: workspace:*
         version: link:../../packages/music-metadata
+      musicbrainz:
+        specifier: workspace:*
+        version: link:../../packages/musicbrainz
       nanoid:
         specifier: ^4.0.2
         version: 4.0.2
