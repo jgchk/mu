@@ -18,7 +18,6 @@
   let element: HTMLDivElement | undefined
 
   // Internal State
-  let elementX: number | undefined
   let currentThumb: HTMLDivElement | undefined
   let holding = false
 
@@ -34,8 +33,8 @@
     e.stopPropagation()
   })
 
-  function resizeWindow() {
-    elementX = element?.getBoundingClientRect().left
+  function getElementX() {
+    return element?.getBoundingClientRect().left
   }
 
   // Allows both bind:value and on:change for parent value retrieval
@@ -83,6 +82,7 @@
   }
 
   function calculateNewValue(clientX: number) {
+    const elementX = getElementX()
     // Find distance between cursor and element's left cord (20px / 2 = 10px) - Center of thumb
     let delta = clientX - (elementX ?? 0)
 
@@ -111,9 +111,6 @@
 
     calculateNewValue(clientX)
   }
-
-  // React to left position of element relative to window
-  $: if (element) elementX = element.getBoundingClientRect().left
 
   // Set a class based on if dragging
   $: holding = Boolean(currentThumb)
@@ -145,7 +142,6 @@
   on:touchend={onDragEnd}
   on:mousemove={updateValueOnEvent}
   on:mouseup={onDragEnd}
-  on:resize={resizeWindow}
 />
 <div class="relative w-full">
   <div
