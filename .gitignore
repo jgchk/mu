@@ -37,6 +37,7 @@ db.sqlite
 /music
 /images
 /downloads
+/transcodes
 /docker-data
 
 # local scripts

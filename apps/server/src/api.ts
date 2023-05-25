@@ -8,6 +8,7 @@ import { handler as svelteKitHandler } from 'client'
 import type { SystemContext } from 'context'
 import Cookie from 'cookie'
 import type { Session } from 'db'
+import { env } from 'env'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod'
@@ -16,16 +17,18 @@ import fs from 'fs'
 import { log } from 'log'
 import mime from 'mime-types'
 import { readTrackCoverArt } from 'music-metadata'
+import path from 'path'
 import type { Readable } from 'stream'
 import type { AppRouter } from 'trpc'
 import { appRouter } from 'trpc'
 import { ifDefined, isAudio } from 'utils'
-import { bufferToStream } from 'utils/node'
+import { bufferToStream, fileExists } from 'utils/node'
 import { z } from 'zod'
 
 import {
   CollageOptions,
   ResizeOptions,
+  createDashSegments,
   handleCreateCollage,
   handleResizeImage,
   isCoverArtFile,
@@ -33,6 +36,7 @@ import {
 } from './utils'
 
 const IMAGE_CACHE_HEADER = 'public, max-age=31536000, immutable'
+const AUDIO_CACHE_HEADER = 'public, max-age=3600, immutable'
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -113,6 +117,38 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
 
         const track = ctx().db.tracks.get(req.params.id)
         const stream = fs.createReadStream(track.path)
+        void res.header('Cache-Control', AUDIO_CACHE_HEADER)
+        return res.send(stream)
+      },
+    })
+    .route({
+      method: 'GET',
+      url: '/api/tracks/:id/stream/dash',
+      schema: {
+        params: z.object({ id: z.coerce.number() }),
+      },
+      handler: async (req, res) => {
+        const track = ctx().db.tracks.get(req.params.id)
+        if (!(await fileExists(track.path))) {
+          return res.status(404).send('Not found')
+        }
+        const manifest = await createDashSegments(track.id, track.path, env.TRANSCODES_DIR)
+        const stream = fs.createReadStream(manifest)
+        void res.header('Content-Type', 'application/dash+xml')
+        void res.header('Cache-Control', AUDIO_CACHE_HEADER)
+        return res.send(stream)
+      },
+    })
+    .route({
+      method: 'GET',
+      url: '/api/tracks/:id/stream/:file',
+      schema: {
+        params: z.object({ id: z.coerce.number(), file: z.string() }),
+      },
+      handler: async (req, res) => {
+        const filePath = path.join(env.TRANSCODES_DIR, req.params.id.toString(), req.params.file)
+        const stream = fs.createReadStream(filePath)
+        void res.header('Cache-Control', AUDIO_CACHE_HEADER)
         return res.send(stream)
       },
     })

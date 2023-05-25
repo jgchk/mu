@@ -4,6 +4,7 @@
   import type { DndEvent } from 'svelte-dnd-action'
   import { flip } from 'svelte/animate'
   import { superForm } from 'sveltekit-superforms/client'
+  import { isDefined } from 'utils'
 
   import { dnd } from '$lib/actions/dnd'
   import Button from '$lib/atoms/Button.svelte'
@@ -11,10 +12,14 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import ArtistSelect from '$lib/components/ArtistSelect.svelte'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
+  import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import SelectorIcon from '$lib/icons/SelectorIcon.svelte'
+  import { fetchArtistQuery } from '$lib/services/artists'
   import { formErrors } from '$lib/strings'
   import { getContextToast } from '$lib/toast/toast'
+  import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
   import type { StoreType } from '$lib/utils/svelte'
 
@@ -123,36 +128,64 @@
       albumArt = { kind: 'upload', data }
     }
   }
+
+  const dialogs = getContextDialogs()
+  const trpc = getContextClient()
+  const handleSearchCoverArt = async () => {
+    const queryParts = []
+    if ($form.album.artists.length > 0) {
+      const artistNames = await Promise.all(
+        $form.album.artists
+          .filter(isDefined)
+          .map((artist) =>
+            artist.action === 'create'
+              ? $form.createArtists.get(artist.id)
+              : fetchArtistQuery(trpc, artist.id).then((artist) => artist.name)
+          )
+      )
+      const joinedArtistNames = artistNames.filter(isDefined).join(', ')
+      queryParts.push(joinedArtistNames)
+    }
+    if ($form.album.title?.length) {
+      queryParts.push($form.album.title)
+    }
+    const query = queryParts.join(' - ')
+    dialogs.open('search-cover-art', {
+      query,
+      defaultArtUrl: artUrl,
+      onSelect: (data) => {
+        albumArt = { kind: 'upload', data }
+      },
+    })
+  }
 </script>
 
 <div class="h-full overflow-auto">
   <form method="POST" use:enhance>
     <h2 class="mb-2 text-2xl font-bold">Release</h2>
     <div class="flex gap-4">
-      <div class="h-64 w-64">
-        {#if albumArt.kind === 'upload'}
-          <button
-            type="button"
-            class="relative h-full w-full shadow"
-            on:click={() => (albumArt = { kind: 'none' })}
-          >
-            <CoverArt src={URL.createObjectURL(albumArt.data)} alt="Album Art">
-              <DeleteIcon />
-            </CoverArt>
-          </button>
-        {:else if albumArt.kind === 'none' || artUrl === undefined}
-          <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
-        {:else}
-          <button
-            type="button"
-            class="relative h-full w-full shadow"
-            on:click={() => (albumArt = { kind: 'none' })}
-          >
-            <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = { kind: 'none' })}>
-              <DeleteIcon />
-            </CoverArt>
-          </button>
-        {/if}
+      <div class="flex flex-col items-center gap-1">
+        <div class="h-64 w-64">
+          {#if albumArt.kind === 'upload'}
+            <button type="button" class="relative h-full w-full" on:click={handleSearchCoverArt}>
+              <CoverArt src={URL.createObjectURL(albumArt.data)} alt="Album Art">
+                <SearchIcon />
+              </CoverArt>
+            </button>
+          {:else if albumArt.kind === 'none' || artUrl === undefined}
+            <FileDrop class="h-full w-full" on:drop={(e) => handleFileDrop(e)} />
+          {:else}
+            <button type="button" class="relative h-full w-full" on:click={handleSearchCoverArt}>
+              <CoverArt src={artUrl} alt="Album Art" on:error={() => (albumArt = { kind: 'none' })}>
+                <SearchIcon />
+              </CoverArt>
+            </button>
+          {/if}
+        </div>
+        <div class="flex gap-1">
+          <Button on:click={handleSearchCoverArt}>Search</Button>
+          <Button kind="outline" on:click={() => (albumArt = { kind: 'none' })}>Delete</Button>
+        </div>
       </div>
 
       <div class="space-y-1">

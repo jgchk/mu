@@ -47,6 +47,7 @@ const config: Options = {
     'last-fm',
     'log',
     'music-metadata',
+    'musicbrainz',
     'soundcloud',
     'spotify',
     'trpc',

@@ -5,6 +5,7 @@ import { writable } from 'svelte/store'
 import type { AreAllPropsOptional } from 'utils'
 
 import type AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
+import type CoverArtDialog from '$lib/components/CoverArtDialog.svelte'
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
 import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
@@ -31,6 +32,7 @@ export type AllDialogs = {
   'edit-tag': ComponentProps<EditTagDialog>
   'delete-tag': ComponentProps<DeleteTagDialog>
   'edit-tags-filter': ComponentProps<EditTagsFilterDialog>
+  'search-cover-art': ComponentProps<CoverArtDialog> & { onSelect?: (data: File) => void }
 }
 
 export type Dialogs = {

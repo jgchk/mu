@@ -61,6 +61,7 @@
   }>()
 
   const handleSelect = (option: InternalOption) => {
+    filter = ''
     if (isValueSelected(option.value)) {
       handleRemove(option)
     } else {

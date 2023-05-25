@@ -5,6 +5,9 @@ export const createArtistQuery = (trpc: TRPCClient, id: number) => trpc.artists.
 export const prefetchArtistQuery = (trpc: TRPCClient, id: number) =>
   trpc.artists.get.prefetchQuery({ id })
 
+export const fetchArtistQuery = (trpc: TRPCClient, id: number) =>
+  trpc.artists.get.fetchQuery({ id })
+
 export const createAllArtistsQuery = (trpc: TRPCClient) => trpc.artists.getAll.query()
 
 export const prefetchAllArtistsQuery = (trpc: TRPCClient) => trpc.artists.getAll.prefetchQuery()

@@ -14,3 +14,6 @@ export const createSearchSpotifyQuery = (trpc: TRPCClient, query: string) =>
 
 export const prefetchSearchSpotifyQuery = (trpc: TRPCClient, query: string) =>
   trpc.search.spotify.prefetchQuery({ query })
+
+export const createSearchCoverArtQuery = (trpc: TRPCClient, query: string) =>
+  trpc.search.coverArt.query({ query }, { enabled: query.length > 0, staleTime: 60 * 1000 })

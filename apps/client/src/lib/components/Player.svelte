@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { MediaPlayerClass, MediaPlayerFactory } from 'dashjs'
   import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher, raf } from 'svelte/internal'
   import { formatMilliseconds } from 'utils'
@@ -31,6 +32,10 @@
   import FavoriteButton from './FavoriteButton.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
+  onMount(() => {
+    import('dashjs')
+  })
+
   export let track: NonNullable<NowPlaying['track']>
 
   const trpc = getContextClient()
@@ -50,6 +55,35 @@
 
   let player: HTMLAudioElement | undefined
   let paused = false
+
+  let MediaPlayer: (() => MediaPlayerFactory) | undefined = undefined
+  onMount(() => import('dashjs').then((res) => (MediaPlayer = res.MediaPlayer)))
+
+  let dash: MediaPlayerClass | undefined = undefined
+  $: if (player && MediaPlayer) {
+    dash = MediaPlayer().create()
+    dash.initialize(player)
+    dash.setAutoPlay(true)
+  }
+  $: if (dash) {
+    dash.attachSource(`/api/tracks/${trackId}/stream/dash`)
+  }
+
+  let preloader: MediaPlayerClass | undefined = undefined
+  $: if (MediaPlayer) {
+    preloader = MediaPlayer().create()
+    preloader.initialize()
+    preloader.setAutoPlay(true)
+    preloader.updateSettings({
+      streaming: { cacheInitSegments: true },
+    })
+  }
+
+  $: nextTrackId = $nowPlaying.nextTracks.at(0)
+  $: if (preloader && nextTrackId !== undefined) {
+    preloader.attachSource(`/api/tracks/${nextTrackId}/stream/dash`)
+    preloader.preload()
+  }
 
   onDestroy(() => {
     player?.pause()
@@ -269,6 +303,5 @@
         $nowPlaying.track.duration = durationSec * 1000
       }
     }}
-    src="/api/tracks/{track.id}/stream"
   />
 {/if}
