@@ -12,7 +12,7 @@ import sharp from 'sharp'
 import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
 import type { DistributiveOmit } from 'utils'
-import { capitalize, ifDefined } from 'utils'
+import { capitalize, ifDefined, sleep } from 'utils'
 import { ensureDir, fileExists, streamToBuffer } from 'utils/node'
 import { z } from 'zod'
 
@@ -191,6 +191,7 @@ export async function createDashSegments(id: number, inputFile: string, outputDi
     return outputPath
   }
 
+  await sleep(10000)
   await execa('ffmpeg', [
     '-i',
     inputFile,
