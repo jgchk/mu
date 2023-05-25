@@ -258,6 +258,9 @@
   bind:volume={$volume}
   {trackId}
   playSignal={$nowPlaying.track?.__playSignal}
+  on:ended={() => {
+    nextTrack()
+  }}
   on:timeupdate={(e) => {
     if ($nowPlaying.track) {
       $nowPlaying.track.currentTime = e.detail

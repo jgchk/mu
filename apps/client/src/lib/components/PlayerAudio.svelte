@@ -44,7 +44,11 @@
     pause()
   }
 
-  const dispatch = createEventDispatcher<{ timeupdate: number; durationchange: number }>()
+  const dispatch = createEventDispatcher<{
+    timeupdate: number
+    durationchange: number
+    ended: undefined
+  }>()
 
   let audioAnimationFrame: number | void
   function handleTimeUpdate() {
@@ -77,6 +81,11 @@
     pause()
     dash?.destroy()
   })
+
+  $: if (dash) {
+    dash.on('playbackEnded', () => dispatch('ended'))
+    dash.on('playbackTimeUpdated', handleTimeUpdate)
+  }
 </script>
 
 <audio
@@ -85,8 +94,6 @@
   bind:this={player_}
   bind:paused
   bind:volume
-  on:ended
-  on:timeupdate={handleTimeUpdate}
   on:durationchange={(e) => {
     const durationSec = e.currentTarget.duration
     if (durationSec !== Infinity) {
