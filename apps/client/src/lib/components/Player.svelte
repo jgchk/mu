@@ -53,16 +53,16 @@
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
-  let player: HTMLAudioElement | undefined
+  let player_: HTMLAudioElement | undefined
   let paused = false
 
   let MediaPlayer: (() => MediaPlayerFactory) | undefined = undefined
   onMount(() => import('dashjs').then((res) => (MediaPlayer = res.MediaPlayer)))
 
   let dash: MediaPlayerClass | undefined = undefined
-  $: if (player && MediaPlayer) {
+  $: if (player_ && MediaPlayer) {
     dash = MediaPlayer().create()
-    dash.initialize(player)
+    dash.initialize(player_)
     dash.setAutoPlay(true)
   }
   $: if (dash) {
@@ -86,21 +86,22 @@
   }
 
   onDestroy(() => {
-    player?.pause()
+    dash?.pause()
+    dash?.destroy()
   })
 
   const togglePlaying = () => {
-    if (player?.paused) {
+    if (dash?.isPaused()) {
       play()
     } else {
       pause()
     }
   }
   const play = () => {
-    void player?.play()
+    dash?.play()
   }
   const pause = () => {
-    player?.pause()
+    dash?.pause()
   }
 
   let audioAnimationFrame: number | void
@@ -109,12 +110,12 @@
       cancelAnimationFrame(audioAnimationFrame)
     }
 
-    if (!player?.paused) {
+    if (!dash?.isPaused()) {
       audioAnimationFrame = raf(handleTimeUpdate)
     }
 
     if ($nowPlaying.track) {
-      $nowPlaying.track.currentTime = player?.currentTime
+      $nowPlaying.track.currentTime = dash?.time()
     }
   }
 
@@ -239,9 +240,7 @@
             max={(durationMs ?? 1000) / 1000}
             height="h-[3px]"
             on:change={(e) => {
-              if (player) {
-                player.currentTime = e.detail
-              }
+              dash?.seek(e.detail)
             }}
           />
         </div>
@@ -292,7 +291,7 @@
   <audio
     autoplay
     class="hidden"
-    bind:this={player}
+    bind:this={player_}
     bind:paused
     bind:volume={$volume}
     on:ended={nextTrack}
