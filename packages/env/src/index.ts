@@ -4,20 +4,17 @@ import { z } from 'zod'
 
 const ROOT_DIR = path.resolve(path.join(__dirname, '../../..'))
 
+const zPath = z.string().transform((val) => (path.isAbsolute(val) ? val : path.join(ROOT_DIR, val)))
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('production'),
   SERVER_HOST: z.string(),
   SERVER_PORT: z.coerce.number(),
-  DATABASE_URL: z
-    .string()
-    .transform((val) => (path.isAbsolute(val) ? val : path.join(ROOT_DIR, val))),
-  DOWNLOAD_DIR: z
-    .string()
-    .transform((val) => (path.isAbsolute(val) ? val : path.join(ROOT_DIR, val))),
-  MUSIC_DIR: z.string().transform((val) => (path.isAbsolute(val) ? val : path.join(ROOT_DIR, val))),
-  IMAGES_DIR: z
-    .string()
-    .transform((val) => (path.isAbsolute(val) ? val : path.join(ROOT_DIR, val))),
+  DATABASE_URL: zPath,
+  DOWNLOAD_DIR: zPath,
+  MUSIC_DIR: zPath,
+  IMAGES_DIR: zPath,
+  TRANSCODES_DIR: zPath,
   SOUNDCLOUD_AUTH_TOKEN: z.string().optional(),
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),

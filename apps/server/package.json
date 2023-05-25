@@ -25,6 +25,7 @@
     "db": "workspace:*",
     "downloader": "workspace:*",
     "env": "workspace:*",
+    "execa": "^7.1.1",
     "fastest-levenshtein": "^1.0.16",
     "fastify": "^4.17.0",
     "fastify-type-provider-zod": "^1.1.9",

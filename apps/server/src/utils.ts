@@ -1,4 +1,5 @@
 import { env } from 'env'
+import { execa } from 'execa'
 import { fileTypeStream } from 'file-type'
 import fs from 'fs'
 import type { ImageManager } from 'image-manager'
@@ -12,7 +13,7 @@ import type { Readable } from 'stream'
 import { PassThrough } from 'stream'
 import type { DistributiveOmit } from 'utils'
 import { capitalize, ifDefined } from 'utils'
-import { streamToBuffer } from 'utils/node'
+import { ensureDir, fileExists, streamToBuffer } from 'utils/node'
 import { z } from 'zod'
 
 const handleResizeStream = async (
@@ -179,4 +180,28 @@ export const isCoverArtFile = (filePath: string): boolean => {
   }
 
   return false
+}
+
+export async function createDashSegments(id: number, inputFile: string, outputDirectory: string) {
+  const outputPath = path.join(outputDirectory, id.toString(), 'manifest.mpd')
+
+  await ensureDir(path.dirname(outputPath))
+
+  if (await fileExists(outputPath)) {
+    return outputPath
+  }
+
+  await execa('ffmpeg', [
+    '-i',
+    inputFile,
+    '-map',
+    '0',
+    '-f',
+    'dash',
+    '-adaptation_sets',
+    'id=0,streams=v id=1,streams=a',
+    outputPath,
+  ])
+
+  return outputPath
 }
