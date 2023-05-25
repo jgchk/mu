@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
-  import { formatMilliseconds } from 'utils'
+  import { formatMilliseconds, ifDefined, ifNotNull } from 'utils'
 
   import { TooltipDefaults, tooltip } from '$lib/actions/tooltip'
   import CommaList from '$lib/atoms/CommaList.svelte'
@@ -95,12 +95,44 @@
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
   const toggleQueue = () => dispatch('toggleQueue')
 
+  $: navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
+  onDestroy(() => (navigator.mediaSession.playbackState = 'none'))
+
+  $: {
+    if ($nowPlayingTrack.data) {
+      const track = $nowPlayingTrack.data
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title ?? undefined,
+        artist: track.artists.map((a) => a.name).join(', '),
+        album: track.release?.title ?? undefined,
+        artwork:
+          ifNotNull(track.imageId, (imageId) =>
+            [96, 128, 192, 256, 384, 512].map((size) => ({
+              src: makeImageUrl(imageId, { size }),
+              sizes: `${size}x${size}`,
+              type: 'image/png',
+            }))
+          ) ?? [],
+      })
+    }
+  }
+
   navigator.mediaSession.setActionHandler('play', () => play())
   navigator.mediaSession.setActionHandler('pause', () => pause())
-  // navigator.mediaSession.setActionHandler('seekbackward', function () {})
-  // navigator.mediaSession.setActionHandler('seekforward', function () {})
   navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
+
+  function updatePosition() {
+    const duration = ifDefined($nowPlaying.track?.duration, (duration) => duration / 1000)
+    const position = $nowPlaying.track?.currentTime
+    if (duration !== undefined && position !== undefined) {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate: 1,
+        position,
+      })
+    }
+  }
 </script>
 
 <div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] md:pb-2">
@@ -265,11 +297,13 @@
     if ($nowPlaying.track) {
       $nowPlaying.track.currentTime = e.detail
     }
+    updatePosition()
   }}
   on:durationchange={(e) => {
     if ($nowPlaying.track) {
       $nowPlaying.track.duration = e.detail * 1000
     }
+    updatePosition()
   }}
 />
 
