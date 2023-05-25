@@ -37,10 +37,14 @@ export const tracksRouter = router({
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(({ input: { id }, ctx }) => ({
-      ...ctx.sys().db.tracks.get(id),
-      artists: ctx.sys().db.artists.getByTrackId(id),
-    })),
+    .query(({ input: { id }, ctx }) => {
+      const track = ctx.sys().db.tracks.get(id)
+      return {
+        ...track,
+        artists: ctx.sys().db.artists.getByTrackId(id),
+        release: ifNotNull(track.releaseId, (releaseId) => ctx.sys().db.releases.get(releaseId)),
+      }
+    }),
 
   getMany: protectedProcedure
     .input(z.object({ ids: z.array(z.number()) }))
