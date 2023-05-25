@@ -42,7 +42,7 @@ export const actions: Actions = {
     try {
       const result = await trpc.accounts.login.mutate(form.data)
 
-      cookies.set('session_token', result.token, { maxAge: result.maxAge })
+      cookies.set('session_token', result.token, { maxAge: result.maxAge, secure: false })
 
       throw redirect(302, '/')
     } catch (error) {
