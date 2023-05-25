@@ -1,7 +1,6 @@
 <script lang="ts">
-  import type { MediaPlayerClass, MediaPlayerFactory } from 'dashjs'
-  import { onDestroy, onMount } from 'svelte'
-  import { createEventDispatcher, raf } from 'svelte/internal'
+  import { onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte/internal'
   import { formatMilliseconds } from 'utils'
 
   import { TooltipDefaults, tooltip } from '$lib/actions/tooltip'
@@ -30,11 +29,11 @@
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
+  import PlayerAudio from './PlayerAudio.svelte'
+  import PlayerAudioPreloader from './PlayerAudioPreloader.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
-  onMount(() => {
-    import('dashjs')
-  })
+  onMount(() => import('dashjs'))
 
   export let track: NonNullable<NowPlaying['track']>
 
@@ -53,71 +52,27 @@
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
-  let player_: HTMLAudioElement | undefined
   let paused = false
-
-  let MediaPlayer: (() => MediaPlayerFactory) | undefined = undefined
-  onMount(() => import('dashjs').then((res) => (MediaPlayer = res.MediaPlayer)))
-
-  let dash: MediaPlayerClass | undefined = undefined
-  $: if (player_ && MediaPlayer) {
-    dash = MediaPlayer().create()
-    dash.initialize(player_)
-    dash.setAutoPlay(true)
-  }
-  $: if (dash) {
-    dash.attachSource(`/api/tracks/${trackId}/stream/dash`)
-  }
-
-  let preloader: MediaPlayerClass | undefined = undefined
-  $: if (MediaPlayer) {
-    preloader = MediaPlayer().create()
-    preloader.initialize()
-    preloader.setAutoPlay(true)
-    preloader.updateSettings({
-      streaming: { cacheInitSegments: true },
-    })
-  }
+  let loading = false
 
   $: nextTrackId = $nowPlaying.nextTracks.at(0)
-  $: if (preloader && nextTrackId !== undefined) {
-    preloader.attachSource(`/api/tracks/${nextTrackId}/stream/dash`)
-    preloader.preload()
-  }
 
-  onDestroy(() => {
-    dash?.pause()
-    dash?.destroy()
-  })
-
+  let player: PlayerAudio | undefined = undefined
   const togglePlaying = () => {
-    if (dash?.isPaused()) {
+    if (paused) {
       play()
     } else {
       pause()
     }
   }
+  /* eslint-disable */
   const play = () => {
-    dash?.play()
+    player?.play()
   }
   const pause = () => {
-    dash?.pause()
+    player?.pause()
   }
-
-  let audioAnimationFrame: number | void
-  function handleTimeUpdate() {
-    if (audioAnimationFrame !== void 0) {
-      cancelAnimationFrame(audioAnimationFrame)
-    }
-
-    if (!dash?.isPaused()) {
-      audioAnimationFrame = raf(handleTimeUpdate)
-    }
-
-    if ($nowPlaying.track) {
-      $nowPlaying.track.currentTime = dash?.time()
-    }
-  }
+  /* eslint-enable */
 
   const updateNowPlayingMutation = createUpdateNowPlayingMutation(trpc)
   const { mutate: updateNowPlaying } = $updateNowPlayingMutation
@@ -205,11 +160,20 @@
         </button>
         <button
           type="button"
-          class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
+          class={cn(
+            'flex h-10 w-10 items-center justify-center transition-transform duration-[50] ',
+            !loading &&
+              'hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none'
+          )}
           on:click={togglePlaying}
           use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
+          disabled={loading}
         >
-          {#if paused}
+          {#if loading}
+            <div class="h-8 w-8 rounded-full bg-white p-2 text-black">
+              <Loader class="stroke-[7px]" />
+            </div>
+          {:else if paused}
             <PlayIcon />
           {:else}
             <PauseIcon />
@@ -240,7 +204,7 @@
             max={(durationMs ?? 1000) / 1000}
             height="h-[3px]"
             on:change={(e) => {
-              dash?.seek(e.detail)
+              player?.seek(e.detail)
             }}
           />
         </div>
@@ -287,20 +251,25 @@
   </div>
 </div>
 
-{#if $nowPlaying.track}
-  <audio
-    autoplay
-    class="hidden"
-    bind:this={player_}
-    bind:paused
-    bind:volume={$volume}
-    on:ended={nextTrack}
-    on:timeupdate={handleTimeUpdate}
-    on:durationchange={(e) => {
-      const durationSec = e.currentTarget.duration
-      if ($nowPlaying.track && durationSec !== Infinity) {
-        $nowPlaying.track.duration = durationSec * 1000
-      }
-    }}
-  />
+<PlayerAudio
+  bind:this={player}
+  bind:paused
+  bind:loading
+  bind:volume={$volume}
+  {trackId}
+  playSignal={$nowPlaying.track?.__playSignal}
+  on:timeupdate={(e) => {
+    if ($nowPlaying.track) {
+      $nowPlaying.track.currentTime = e.detail
+    }
+  }}
+  on:durationchange={(e) => {
+    if ($nowPlaying.track) {
+      $nowPlaying.track.duration = e.detail * 1000
+    }
+  }}
+/>
+
+{#if nextTrackId !== undefined}
+  <PlayerAudioPreloader trackId={nextTrackId} />
 {/if}
