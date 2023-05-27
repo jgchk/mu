@@ -33,8 +33,6 @@
   import PlayerAudioPreloader from './PlayerAudioPreloader.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
-  onMount(() => import('dashjs'))
-
   export let track: NonNullable<NowPlaying['track']>
 
   const trpc = getContextClient()
@@ -53,7 +51,6 @@
   let previousVolume = 1
 
   let paused = false
-  let loading = false
 
   $: nextTrackId = $nowPlaying.nextTracks.at(0)
 
@@ -192,20 +189,11 @@
         </button>
         <button
           type="button"
-          class={cn(
-            'flex h-10 w-10 items-center justify-center transition-transform duration-[50] ',
-            !loading &&
-              'hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none'
-          )}
+          class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
           on:click={togglePlaying}
           use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
-          disabled={loading}
         >
-          {#if loading}
-            <div class="h-8 w-8 rounded-full bg-white p-2 text-black">
-              <Loader class="stroke-[7px]" />
-            </div>
-          {:else if paused}
+          {#if paused}
             <PlayIcon />
           {:else}
             <PauseIcon />
@@ -286,7 +274,6 @@
 <PlayerAudio
   bind:this={player}
   bind:paused
-  bind:loading
   bind:volume={$volume}
   {trackId}
   playSignal={$nowPlaying.track?.__playSignal}

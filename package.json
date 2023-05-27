@@ -13,7 +13,7 @@
     "format": "prettier --write . **/*.svelte && turbo run format",
     "test": "turbo run test",
     "ci": "pnpm turbo run build --filter client && turbo run ci",
-    "db:drop": "rm db.sqlite || true && rm -r downloads || true && rm -r images || true && rm -r transcodes || true",
+    "db:drop": "rm db.sqlite || true && rm -r downloads || true && rm -r images || true",
     "db:migrate": "cd packages/db && pnpm db:migrate",
     "db:remigrate": "cd packages/db && pnpm db:remigrate"
   },

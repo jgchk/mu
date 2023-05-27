@@ -23,7 +23,6 @@
     "@trpc/client": "^10.27.1",
     "bool-lang": "workspace:*",
     "context": "workspace:*",
-    "dashjs": "^4.7.0",
     "esm-env": "^1.0.0",
     "isomorphic-ws": "^5.0.0",
     "superjson": "^1.12.3",

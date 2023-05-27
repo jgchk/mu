@@ -1,47 +1,18 @@
 <script lang="ts">
-  import type { MediaPlayerClass, MediaPlayerFactory } from 'dashjs'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { raf } from 'svelte/internal'
-
-  import { createDashManifestQuery } from '$lib/services/playback'
-
-  console.log('rerender')
-
-  let MediaPlayer: (() => MediaPlayerFactory) | undefined = undefined
-  onMount(() => import('dashjs').then((res) => (MediaPlayer = res.MediaPlayer)))
 
   export let volume: number
   export let trackId: number
   export let paused = false
-  export let loading = false
   export let playSignal: symbol | undefined
 
-  let player_: HTMLAudioElement | undefined
-
-  let dash: MediaPlayerClass | undefined = undefined
-  $: if (player_ && MediaPlayer) {
-    dash = MediaPlayer().create()
-    dash.initialize(player_)
-    dash.setAutoPlay(true)
-  }
-
-  $: manifestQuery = createDashManifestQuery(trackId)
-  $: loading = $manifestQuery.isLoading
-  $: loaded = $manifestQuery.isSuccess
-  $: if (dash && loaded) {
-    dash.attachSource(`/api/tracks/${trackId}/stream/dash`)
-  }
+  let player: HTMLAudioElement | undefined
 
   $: {
     playSignal // play from beginning of song every time playSignal changes
     seek(0)
     play()
-  }
-
-  $: if (loaded) {
-    play()
-  } else {
-    pause()
   }
 
   const dispatch = createEventDispatcher<{
@@ -56,48 +27,47 @@
       cancelAnimationFrame(audioAnimationFrame)
     }
 
-    if (!dash?.isPaused()) {
+    if (!paused) {
       audioAnimationFrame = raf(handleTimeUpdate)
     }
 
-    if (dash) {
-      dispatch('timeupdate', dash.time())
+    if (player) {
+      dispatch('timeupdate', player.currentTime)
     }
   }
 
   export function play() {
-    dash?.play()
+    void player?.play()
   }
 
   export function pause() {
-    dash?.pause()
+    player?.pause()
   }
 
   export function seek(time: number) {
-    dash?.seek(time)
+    if (player) {
+      player.currentTime = time
+    }
   }
 
   onDestroy(() => {
     pause()
-    dash?.destroy()
   })
-
-  $: if (dash) {
-    dash.on('playbackEnded', () => dispatch('ended'))
-    dash.on('playbackTimeUpdated', handleTimeUpdate)
-  }
 </script>
 
 <audio
   autoplay
   class="hidden"
-  bind:this={player_}
+  bind:this={player}
   bind:paused
   bind:volume
+  on:ended={() => dispatch('ended')}
+  on:timeupdate={() => handleTimeUpdate()}
   on:durationchange={(e) => {
     const durationSec = e.currentTarget.duration
     if (durationSec !== Infinity) {
       dispatch('durationchange', durationSec)
     }
   }}
+  src="/api/tracks/{trackId}/stream"
 />
