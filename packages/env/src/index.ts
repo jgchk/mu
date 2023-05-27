@@ -14,7 +14,6 @@ const envSchema = z.object({
   DOWNLOAD_DIR: zPath,
   MUSIC_DIR: zPath,
   IMAGES_DIR: zPath,
-  TRANSCODES_DIR: zPath,
   SOUNDCLOUD_AUTH_TOKEN: z.string().optional(),
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
