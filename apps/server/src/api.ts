@@ -20,7 +20,7 @@ import type { Readable } from 'stream'
 import type { AppRouter } from 'trpc'
 import { appRouter } from 'trpc'
 import { ifDefined, isAudio } from 'utils'
-import { bufferToStream } from 'utils/node'
+import { bufferToStream, getFileSize } from 'utils/node'
 import { z } from 'zod'
 
 import {
@@ -107,14 +107,19 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
       schema: {
         params: z.object({ id: z.coerce.number() }),
       },
-      handler: (req, res) => {
+      handler: async (req, res) => {
         if (!req.session) {
           return res.status(401).send('Unauthorized')
         }
 
         const track = ctx().db.tracks.get(req.params.id)
         const stream = fs.createReadStream(track.path)
-        void res.header('Cache-Control', AUDIO_CACHE_HEADER)
+
+        void res
+          .header('Cache-Control', AUDIO_CACHE_HEADER)
+          .header('Content-Length', await getFileSize(track.path))
+          .header('Accept-Ranges', 'bytes')
+
         return res.send(stream)
       },
     })
