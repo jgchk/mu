@@ -38,7 +38,7 @@
     play()
   }
 
-  $: if ($manifestQuery.data) {
+  $: if (loaded) {
     play()
   } else {
     pause()
