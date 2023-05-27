@@ -69,6 +69,9 @@
   const pause = () => {
     player?.pause()
   }
+  const seek = (time: number) => {
+    player?.seek(time)
+  }
   /* eslint-enable */
 
   const updateNowPlayingMutation = createUpdateNowPlayingMutation(trpc)
@@ -118,14 +121,18 @@
   navigator.mediaSession.setActionHandler('pause', () => pause())
   navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
   navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
+  navigator.mediaSession.setActionHandler('seekto', (e) => {
+    if (e.seekTime !== undefined) {
+      seek(e.seekTime)
+    }
+  })
 
-  function updatePosition() {
-    const duration = ifDefined($nowPlaying.track?.duration, (duration) => duration / 1000)
+  $: updatePosition = () => {
+    const duration = ifDefined(durationMs, (duration) => duration / 1000)
     const position = $nowPlaying.track?.currentTime
     if (duration !== undefined && position !== undefined) {
       navigator.mediaSession.setPositionState({
         duration,
-        playbackRate: 1,
         position,
       })
     }
@@ -224,7 +231,7 @@
             max={(durationMs ?? 1000) / 1000}
             height="h-[3px]"
             on:change={(e) => {
-              player?.seek(e.detail)
+              seek(e.detail)
             }}
           />
         </div>
