@@ -30,7 +30,6 @@
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
   import PlayerAudio from './PlayerAudio.svelte'
-  import PlayerAudioPreloader from './PlayerAudioPreloader.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
@@ -51,8 +50,6 @@
   let previousVolume = 1
 
   let paused = false
-
-  $: nextTrackId = $nowPlaying.nextTracks.at(0)
 
   let player: PlayerAudio | undefined = undefined
   const togglePlaying = () => {
@@ -300,7 +297,3 @@
     updatePosition()
   }}
 />
-
-{#if nextTrackId !== undefined}
-  <PlayerAudioPreloader trackId={nextTrackId} />
-{/if}
