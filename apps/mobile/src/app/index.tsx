@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router'
+import { Link, Stack } from 'expo-router'
 import React from 'react'
 import { Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -16,6 +16,8 @@ const Index = () => {
         <View className="py-2">
           <Text className="font-semibold italic text-white">Press on a post</Text>
         </View>
+
+        <Link href="/login">Login</Link>
       </View>
     </SafeAreaView>
   )

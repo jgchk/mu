@@ -9,7 +9,7 @@ import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 /**
  * A set of typesafe hooks for consuming your API.
  */
-export const api = createTRPCReact<AppRouter>()
+export const trpc = createTRPCReact<AppRouter>()
 export type RouterInput = AppRouterInput
 export type RouterOutput = AppRouterOutput
 
@@ -29,11 +29,12 @@ const getBaseUrl = () => {
   const debuggerHost =
     Constants.manifest?.debuggerHost ?? Constants.manifest2?.extra?.expoGo?.debuggerHost
   const localhost = debuggerHost?.split(':')[0]
+  console.log({ localhost })
   if (!localhost) {
     // return "https://your-production-url.com";
     throw new Error('Failed to get localhost. Please point to your production server.')
   }
-  return `http://${localhost}:3000`
+  return `http://${localhost}:3001`
 }
 
 /**
@@ -43,7 +44,7 @@ const getBaseUrl = () => {
 export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [queryClient] = useState(() => new QueryClient())
   const [trpcClient] = useState(() =>
-    api.createClient({
+    trpc.createClient({
       transformer: superjson,
       links: [
         httpBatchLink({
@@ -54,8 +55,8 @@ export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 
   return (
-    <api.Provider client={trpcClient} queryClient={queryClient}>
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </api.Provider>
+    </trpc.Provider>
   )
 }

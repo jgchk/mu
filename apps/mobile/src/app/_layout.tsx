@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import React from 'react'
+import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { TRPCProvider } from '../lib/trpc'
@@ -11,14 +12,16 @@ const RootLayout = () => {
   return (
     <TRPCProvider>
       <SafeAreaProvider>
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#f472b6',
-            },
-          }}
-        />
-        <StatusBar />
+        <View className="flex-1">
+          <Stack
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#f472b6',
+              },
+            }}
+          />
+          <StatusBar />
+        </View>
       </SafeAreaProvider>
     </TRPCProvider>
   )
