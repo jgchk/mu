@@ -2,7 +2,7 @@
   "private": true,
   "name": "@acme/app-mobile",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.tsx",
   "scripts": {
     "dev": "expo start",
     "lint": "eslint --ext js,ts,tsx .",
@@ -15,14 +15,26 @@
     "eas-build-post-install": "pnpm run -w build:mobile"
   },
   "dependencies": {
+    "@tanstack/react-query": "^4.29.12",
+    "@trpc/client": "^10.27.1",
+    "@trpc/react-query": "^10.28.1",
     "expo": "^48.0.4",
+    "expo-constants": "~14.2.1",
     "expo-dev-client": "~2.2.1",
+    "expo-linking": "~4.0.1",
+    "expo-router": "^1.5.3",
     "expo-status-bar": "~1.4.4",
     "expo-updates": "~0.16.4",
+    "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-web": "~0.18.12"
+    "react-native-gesture-handler": "~2.9.0",
+    "react-native-safe-area-context": "4.5.0",
+    "react-native-screens": "~3.20.0",
+    "react-native-web": "~0.18.12",
+    "superjson": "^1.12.3",
+    "trpc": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
@@ -30,7 +42,8 @@
     "@types/react-dom": "~18.0.11",
     "@types/react-native": "~0.70.14",
     "babel-preset-expo": "~9.3.0",
-    "eslint-config-custom": "workspace:*"
+    "eslint-config-custom": "workspace:*",
+    "tailwindcss": "^3.3.2"
   },
   "eslintConfig": {
     "extends": "custom",
