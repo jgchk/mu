@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import Constants from 'expo-constants'
+import type { FC, PropsWithChildren } from 'react'
 import { useState } from 'react'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
@@ -41,7 +42,7 @@ const getBaseUrl = () => {
  * A wrapper for your app that provides the TRPC context.
  * Use only in _app.tsx
  */
-export const TRPCProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TRPCProvider: FC<PropsWithChildren> = ({ children }) => {
   const [queryClient] = useState(() => new QueryClient())
   const [trpcClient] = useState(() =>
     trpc.createClient({

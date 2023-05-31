@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from 'react'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { Button, SafeAreaView, Text, TextInput } from 'react-native'
 
 import { trpc } from '../../lib/trpc'
@@ -8,12 +8,10 @@ const Login = () => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
 
-  useEffect(() => console.log({ username, password }), [username, password])
-
   const { mutate } = trpc.accounts.login.useMutation()
   const handleLogin = useCallback(() => {
     mutate({ username, password }, { onSuccess: (data) => console.log(data) })
-  }, [username, password])
+  }, [mutate, username, password])
 
   return (
     <SafeAreaView>

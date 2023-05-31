@@ -23,7 +23,7 @@ export const createEditLink = (service?: string | string[]) =>
     return `${editUrl.pathname}${editUrl.search}`
   })
 
-export const useEditLink = (service: string, onShowConfig: () => void) => {
+export const listenForEditLink = (service: string, onShowConfig: () => void) => {
   const unsubscribe = page.subscribe((page) => {
     if (page.url.searchParams.has(service)) {
       onShowConfig()
