@@ -30,7 +30,6 @@ const getBaseUrl = () => {
   const debuggerHost =
     Constants.manifest?.debuggerHost ?? Constants.manifest2?.extra?.expoGo?.debuggerHost
   const localhost = debuggerHost?.split(':')[0]
-  console.log({ localhost })
   if (!localhost) {
     // return "https://your-production-url.com";
     throw new Error('Failed to get localhost. Please point to your production server.')

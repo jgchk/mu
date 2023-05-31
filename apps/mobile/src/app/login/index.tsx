@@ -1,39 +1,51 @@
-import type { FC, PropsWithChildren } from 'react'
-import React, { useCallback } from 'react'
-import { Button, SafeAreaView, Text, TextInput } from 'react-native'
+import { Tabs } from 'expo-router'
+import { useCallback, useState } from 'react'
+import { SafeAreaView, View } from 'react-native'
 
+import Button from '../../lib/atoms/Button'
+import Input from '../../lib/atoms/Input'
+import InputGroup from '../../lib/atoms/InputGroup'
+import Label from '../../lib/atoms/Label'
 import { trpc } from '../../lib/trpc'
 
 const Login = () => {
-  const [username, setUsername] = React.useState('')
-  const [password, setPassword] = React.useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
-  const { mutate } = trpc.accounts.login.useMutation()
+  const { mutate, isLoading } = trpc.accounts.login.useMutation()
   const handleLogin = useCallback(() => {
     mutate({ username, password }, { onSuccess: (data) => console.log(data) })
   }, [mutate, username, password])
 
   return (
     <SafeAreaView>
-      <Label>Username</Label>
-      <TextInput className="bg-gray-800 text-white" value={username} onChangeText={setUsername} />
+      <Tabs.Screen options={{ title: 'Login', headerShown: false }} />
 
-      <Label>Password</Label>
-      <TextInput
-        className="bg-gray-800 text-white"
-        value={password}
-        onChangeText={setPassword}
-        autoComplete="password"
-        secureTextEntry
-      />
+      <View className="flex h-full w-full justify-center bg-gray-800 p-4">
+        <InputGroup className="mb-2">
+          <Label>Username</Label>
+          <Input value={username} onChangeText={setUsername} autoComplete="username" autoFocus />
+        </InputGroup>
 
-      <Button title="Login" onPress={handleLogin} />
+        <InputGroup className="mb-4">
+          <Label>Password</Label>
+          <Input
+            value={password}
+            onChangeText={setPassword}
+            autoComplete="password"
+            secureTextEntry
+          />
+        </InputGroup>
+
+        <Button
+          title="Login"
+          onPress={handleLogin}
+          disabled={username.length === 0 || password.length === 0}
+          loading={isLoading}
+        />
+      </View>
     </SafeAreaView>
   )
-}
-
-const Label: FC<PropsWithChildren> = ({ children }) => {
-  return <Text className="font-semibold italic text-gray-700">{children}</Text>
 }
 
 export default Login
