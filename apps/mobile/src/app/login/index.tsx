@@ -6,6 +6,7 @@ import Button from '../../lib/atoms/Button'
 import Input from '../../lib/atoms/Input'
 import InputGroup from '../../lib/atoms/InputGroup'
 import Label from '../../lib/atoms/Label'
+import { setToken } from '../../lib/storage'
 import { trpc } from '../../lib/trpc'
 
 const Login = () => {
@@ -14,7 +15,14 @@ const Login = () => {
 
   const { mutate, isLoading } = trpc.accounts.login.useMutation()
   const handleLogin = useCallback(() => {
-    mutate({ username, password }, { onSuccess: (data) => console.log(data) })
+    mutate(
+      { username, password },
+      {
+        onSuccess: (data) => {
+          void setToken(data.token)
+        },
+      }
+    )
   }, [mutate, username, password])
 
   return (

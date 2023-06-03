@@ -41,7 +41,7 @@ const getBaseUrl = () => {
  * A wrapper for your app that provides the TRPC context.
  * Use only in _app.tsx
  */
-export const TRPCProvider: FC<PropsWithChildren> = ({ children }) => {
+export const TRPCProvider: FC<PropsWithChildren<{ token?: string }>> = ({ children, token }) => {
   const [queryClient] = useState(() => new QueryClient())
   const [trpcClient] = useState(() =>
     trpc.createClient({
@@ -49,6 +49,9 @@ export const TRPCProvider: FC<PropsWithChildren> = ({ children }) => {
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          headers: () => ({
+            Cookie: token ? `session_token=${token}` : undefined,
+          }),
         }),
       ],
     })

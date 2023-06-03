@@ -81,3 +81,5 @@ export const withoutRuns = <T>(array: T[]): T[] => {
   }
   return result
 }
+
+export const first = <T>(array: T[] | T) => (Array.isArray(array) ? array[0] : array)

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@acme/app-mobile",
+  "name": "mobile",
   "version": "1.0.0",
   "main": "index.tsx",
   "scripts": {
@@ -15,9 +15,11 @@
     "eas-build-post-install": "pnpm run -w build:mobile"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "1.17.11",
     "@tanstack/react-query": "^4.29.12",
     "@trpc/client": "^10.27.1",
     "@trpc/react-query": "^10.28.1",
+    "bool-lang": "workspace:*",
     "expo": "^48.0.4",
     "expo-constants": "~14.2.1",
     "expo-dev-client": "~2.2.1",
