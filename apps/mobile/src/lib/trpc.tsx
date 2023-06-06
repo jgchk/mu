@@ -3,7 +3,7 @@ import { httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import Constants from 'expo-constants'
 import type { FC, PropsWithChildren } from 'react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 
@@ -43,18 +43,20 @@ const getBaseUrl = () => {
  */
 export const TRPCProvider: FC<PropsWithChildren<{ token?: string }>> = ({ children, token }) => {
   const [queryClient] = useState(() => new QueryClient())
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      transformer: superjson,
-      links: [
-        httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
-          headers: () => ({
-            Cookie: token ? `session_token=${token}` : undefined,
+  const trpcClient = useMemo(
+    () =>
+      trpc.createClient({
+        transformer: superjson,
+        links: [
+          httpBatchLink({
+            url: `${getBaseUrl()}/api/trpc`,
+            headers: {
+              Cookie: token ? `session_token=${token}` : undefined,
+            },
           }),
-        }),
-      ],
-    })
+        ],
+      }),
+    [token]
   )
 
   return (
