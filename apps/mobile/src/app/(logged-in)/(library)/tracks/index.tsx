@@ -3,7 +3,7 @@ import { Tabs, useLocalSearchParams } from 'expo-router'
 import type { FC } from 'react'
 import { Fragment, useMemo } from 'react'
 import { SafeAreaView, Text, View } from 'react-native'
-import { first, ifNotNull } from 'utils'
+import { first, ifDefined } from 'utils'
 
 import Button from '../../../../lib/atoms/Button'
 import type { RouterInput } from '../../../../lib/trpc'
@@ -31,10 +31,9 @@ const TracksPage: FC = () => {
   const sort = useMemo(() => {
     const sortColumn = first(rawColumn)
     const sortDirection = first(rawDirection)
-    const sort =
-      ifNotNull(sortColumn, (column) =>
-        ifNotNull(sortDirection, (direction) => ({ column, direction } as TracksSort))
-      ) ?? undefined
+    const sort = ifDefined(sortColumn, (column) =>
+      ifDefined(sortDirection, (direction) => ({ column, direction } as TracksSort))
+    )
     return sort
   }, [rawColumn, rawDirection])
 
@@ -55,7 +54,7 @@ const TracksPage: FC = () => {
       return (
         <View>
           {tracksQuery.data.pages.map((page) => (
-            <Fragment key={page.nextCursor}>
+            <Fragment key={page.nextCursor ?? 'end'}>
               {page.items.map((track) => (
                 <Text key={track.id}>{track.title}</Text>
               ))}
