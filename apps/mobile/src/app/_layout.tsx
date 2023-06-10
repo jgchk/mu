@@ -4,18 +4,19 @@ import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import type { AuthContext } from '../lib/contexts/AuthContext'
+import { AuthProvider } from '../lib/contexts/AuthContext'
 import { getToken } from '../lib/storage'
 import { TRPCProvider } from '../lib/trpc'
 
-const AuthRedirect: FC<{ token?: string | null }> = ({ token }) => {
+const AuthRedirect: FC<AuthContext> = ({ token }) => {
   const pathname = usePathname()
-  console.log({ pathname, token })
 
-  if (token === null) {
+  if (token.status === 'none') {
     return <Redirect href="/login" />
   }
 
-  if (token && (pathname === '/' || pathname === '/--')) {
+  if (token.status === 'loaded' && (pathname === '/' || pathname === '/--')) {
     return <Redirect href="/tracks" />
   }
 
@@ -23,20 +24,28 @@ const AuthRedirect: FC<{ token?: string | null }> = ({ token }) => {
 }
 
 const Wrapper = () => {
-  const [token, setToken] = useState<string | null | undefined>(undefined)
+  const [token, setToken] = useState<AuthContext['token']>({ status: 'loading' })
 
   useEffect(() => {
-    void getToken().then((token) => setToken(token))
+    void getToken().then((token) => {
+      if (token === null) {
+        setToken({ status: 'none' })
+      } else {
+        setToken({ status: 'loaded', value: token })
+      }
+    })
   }, [])
 
   return (
-    <TRPCProvider token={token ?? undefined}>
-      <SafeAreaProvider>
-        <StatusBar />
-        <Slot />
-        <AuthRedirect token={token} />
-      </SafeAreaProvider>
-    </TRPCProvider>
+    <AuthProvider token={token}>
+      <TRPCProvider token={token}>
+        <SafeAreaProvider>
+          <StatusBar />
+          <Slot />
+          <AuthRedirect token={token} />
+        </SafeAreaProvider>
+      </TRPCProvider>
+    </AuthProvider>
   )
 }
 

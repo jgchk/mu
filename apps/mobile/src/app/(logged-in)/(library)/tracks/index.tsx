@@ -1,11 +1,13 @@
 import { decode } from 'bool-lang'
 import { Tabs, useLocalSearchParams } from 'expo-router'
+import { makeImageUrl } from 'mutils'
 import type { FC } from 'react'
 import { Fragment, useMemo } from 'react'
-import { SafeAreaView, Text, View } from 'react-native'
+import { SafeAreaView, View } from 'react-native'
 import { first, ifDefined } from 'utils'
 
 import Button from '../../../../lib/atoms/Button'
+import CoverArt from '../../../../lib/components/CoverArt'
 import type { RouterInput } from '../../../../lib/trpc'
 import { trpc } from '../../../../lib/trpc'
 
@@ -56,7 +58,12 @@ const TracksPage: FC = () => {
           {tracksQuery.data.pages.map((page) => (
             <Fragment key={page.nextCursor ?? 'end'}>
               {page.items.map((track) => (
-                <Text key={track.id}>{track.title}</Text>
+                <CoverArt
+                  key={track.id}
+                  src={
+                    track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined
+                  }
+                />
               ))}
             </Fragment>
           ))}
