@@ -104,6 +104,7 @@ ENV DOWNLOAD_DIR=/data/downloads
 ENV IMAGES_DIR=/data/images
 ENV ORIGIN=http://localhost:3001
 ENV LEVEL=info
+ENV BODY_SIZE_LIMIT=0
 
 COPY --from=installer /app .
 
