@@ -1,11 +1,11 @@
 import { error, fail, redirect } from '@sveltejs/kit'
+import { makeImageUrl } from 'mutils'
 import { superValidate } from 'sveltekit-superforms/server'
 import { ifDefined, isDefined } from 'utils'
 import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
 import { albumArtSchema } from '$lib/components/ReleaseForm'
-import { makeImageUrl } from '$lib/cover-art'
 import {
   fetchReleaseTracksQuery,
   fetchReleaseWithArtistsQuery,

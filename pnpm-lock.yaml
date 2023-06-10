@@ -69,6 +69,9 @@ importers:
       isomorphic-ws:
         specifier: ^5.0.0
         version: 5.0.0(ws@8.13.0)
+      mutils:
+        specifier: workspace:*
+        version: link:../../packages/mutils
       superjson:
         specifier: ^1.12.3
         version: 1.12.3
@@ -568,6 +571,15 @@ importers:
       zod:
         specifier: ^3.21.4
         version: 3.21.4
+
+  packages/mutils:
+    dependencies:
+      '@types/node':
+        specifier: ^18.16.13
+        version: 18.16.13
+      utils:
+        specifier: workspace:*
+        version: link:../utils
 
   packages/soundcloud:
     dependencies:

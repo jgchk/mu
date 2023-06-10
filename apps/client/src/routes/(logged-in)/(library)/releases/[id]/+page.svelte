@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
+
   import CommaList from '$lib/atoms/CommaList.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import { playTrack } from '$lib/now-playing'
   import { createReleaseTracksQuery, createReleaseWithArtistsQuery } from '$lib/services/releases'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'

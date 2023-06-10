@@ -1,10 +1,10 @@
 <script lang="ts">
   import { decode } from 'bool-lang'
+  import { makeCollageUrl, makeImageUrl } from 'mutils'
 
   import Button from '$lib/atoms/Button.svelte'
   import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
-  import { makeCollageUrl, makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import {

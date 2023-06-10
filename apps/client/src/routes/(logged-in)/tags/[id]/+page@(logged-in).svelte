@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
   import { ifDefined } from 'utils'
 
   import Button from '$lib/atoms/Button.svelte'
@@ -6,7 +7,6 @@
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import { createReleasesByTagQuery } from '$lib/services/releases'

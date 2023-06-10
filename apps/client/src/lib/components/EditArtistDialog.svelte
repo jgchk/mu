@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
   import { createEventDispatcher } from 'svelte'
   import { ifNotNullOrUndefined } from 'utils'
   import { blobToBase64 } from 'utils/browser'
@@ -10,7 +11,6 @@
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import TextArea from '$lib/atoms/TextArea.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import { createEditArtistMutation } from '$lib/services/artists'
   import { getContextToast } from '$lib/toast/toast'
