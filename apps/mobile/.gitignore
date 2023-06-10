@@ -1,6 +1,7 @@
 # Expo
 /android
 /ios
+/build
 
 __generated__
 node_modules
