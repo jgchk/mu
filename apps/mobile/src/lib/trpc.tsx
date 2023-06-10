@@ -33,11 +33,6 @@ export const TRPCProvider: FC<PropsWithChildren<AuthContext>> = ({ children, tok
               Cookie: token.status === 'loaded' ? `session_token=${token.value}` : undefined,
             },
             maxURLLength: 2083,
-            fetch: (...args) =>
-              fetch(...args).catch((err) => {
-                console.log({ err })
-                throw err
-              }),
           }),
         ],
       }),
