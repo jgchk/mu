@@ -71,6 +71,7 @@ COPY --from=builder /app/out/full/packages/last-fm ./packages/last-fm
 COPY --from=builder /app/out/full/packages/log ./packages/log
 COPY --from=builder /app/out/full/packages/music-metadata ./packages/music-metadata
 COPY --from=builder /app/out/full/packages/musicbrainz ./packages/musicbrainz
+COPY --from=builder /app/out/full/packages/mutils ./packages/mutils
 COPY --from=builder /app/out/full/packages/soundcloud ./packages/soundcloud
 COPY --from=builder /app/out/full/packages/trpc ./packages/trpc
 COPY --from=builder /app/out/full/packages/utils ./packages/utils
