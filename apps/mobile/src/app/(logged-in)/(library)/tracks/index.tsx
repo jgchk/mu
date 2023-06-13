@@ -63,6 +63,7 @@ const TracksPage: FC = () => {
                   src={
                     track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined
                   }
+                  size={100}
                 />
               ))}
             </Fragment>
