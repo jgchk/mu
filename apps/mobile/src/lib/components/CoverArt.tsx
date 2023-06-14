@@ -1,18 +1,19 @@
 import type { FC } from 'react'
 import { useState } from 'react'
+import type { StyleProp } from 'react-native'
+import type { ImageStyle } from 'react-native-fast-image'
 import FastImage from 'react-native-fast-image'
 
-import { tw } from '../classes'
 import { useAuthToken } from '../contexts/AuthContext'
 import { getBaseUrl } from '../url'
 
 export type CoverArtProps = {
   src?: string
   className?: string
-  size: number
+  style?: StyleProp<ImageStyle>
 }
 
-const CoverArt: FC<CoverArtProps> = ({ src, className, size }) => {
+const CoverArt: FC<CoverArtProps> = ({ src, style }) => {
   const [, setLoaded] = useState(false)
   const token = useAuthToken()
 
@@ -26,8 +27,8 @@ const CoverArt: FC<CoverArtProps> = ({ src, className, size }) => {
       }}
       onLoad={() => setLoaded(true)}
       onError={() => console.log('error loading')}
-      className={tw(className)}
-      style={{ width: size, height: size }}
+      className={'aspect-square w-full rounded shadow'}
+      style={style}
     />
   )
 }

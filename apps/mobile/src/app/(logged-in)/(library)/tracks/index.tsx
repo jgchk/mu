@@ -2,8 +2,8 @@ import { decode } from 'bool-lang'
 import { Tabs, useLocalSearchParams } from 'expo-router'
 import { makeImageUrl } from 'mutils'
 import type { FC } from 'react'
-import { Fragment, useMemo } from 'react'
-import { SafeAreaView, View } from 'react-native'
+import { useMemo } from 'react'
+import { FlatList, SafeAreaView, Text, View } from 'react-native'
 import { first, ifDefined } from 'utils'
 
 import Button from '../../../../lib/atoms/Button'
@@ -54,21 +54,32 @@ const TracksPage: FC = () => {
   const render = () => {
     if (tracksQuery.data) {
       return (
-        <View>
-          {tracksQuery.data.pages.map((page) => (
-            <Fragment key={page.nextCursor ?? 'end'}>
-              {page.items.map((track) => (
+        <FlatList
+          data={tracksQuery.data.pages.flatMap((page) => page.items)}
+          renderItem={({ item: track }) => (
+            <View className="flex-row items-center gap-x-2 p-1.5">
+              <View className="h-11 w-11">
                 <CoverArt
-                  key={track.id}
                   src={
                     track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined
                   }
-                  size={100}
+                  className="rounded-sm"
                 />
-              ))}
-            </Fragment>
-          ))}
-        </View>
+              </View>
+              <View className="flex-col">
+                <Text className="text-base text-white">{track.title}</Text>
+                <View>
+                  {track.artists.map((artist) => (
+                    <Text className="text-sm text-gray-400" key={artist.id}>
+                      {artist.name}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
+          keyExtractor={(track) => track.id.toString()}
+        />
       )
     }
 
