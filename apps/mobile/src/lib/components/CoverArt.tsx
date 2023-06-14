@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import { useState } from 'react'
+import { View } from 'react-native'
 import type { StyleProp } from 'react-native'
 import type { ImageStyle } from 'react-native-fast-image'
 import FastImage from 'react-native-fast-image'
@@ -17,7 +18,14 @@ const CoverArt: FC<CoverArtProps> = ({ src, style }) => {
   const [, setLoaded] = useState(false)
   const token = useAuthToken()
 
-  if (!src) return null
+  if (!src) {
+    return (
+      <View
+        className="aspect-square w-full rounded border border-gray-700 bg-gray-800 shadow"
+        style={style}
+      />
+    )
+  }
 
   return (
     <FastImage
