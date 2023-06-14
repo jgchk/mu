@@ -1,15 +1,15 @@
 import { Redirect, Slot, usePathname } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import type { FC } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-import type { AuthContext } from '../lib/contexts/AuthContext'
-import { AuthProvider } from '../lib/contexts/AuthContext'
+import { useAuth, useAuthToken } from '../lib/contexts/AuthContext'
 import { getToken } from '../lib/storage'
 import { TRPCProvider } from '../lib/trpc'
 
-const AuthRedirect: FC<AuthContext> = ({ token }) => {
+const AuthRedirect: FC = () => {
+  const token = useAuthToken()
   const pathname = usePathname()
 
   if (token.status === 'none') {
@@ -24,7 +24,7 @@ const AuthRedirect: FC<AuthContext> = ({ token }) => {
 }
 
 const Wrapper = () => {
-  const [token, setToken] = useState<AuthContext['token']>({ status: 'loading' })
+  const setToken = useAuth((state) => state.setToken)
 
   useEffect(() => {
     void getToken().then((token) => {
@@ -34,18 +34,16 @@ const Wrapper = () => {
         setToken({ status: 'loaded', value: token })
       }
     })
-  }, [])
+  }, [setToken])
 
   return (
-    <AuthProvider token={token}>
-      <TRPCProvider token={token}>
-        <SafeAreaProvider>
-          <StatusBar />
-          <Slot />
-          <AuthRedirect token={token} />
-        </SafeAreaProvider>
-      </TRPCProvider>
-    </AuthProvider>
+    <TRPCProvider>
+      <SafeAreaProvider>
+        <StatusBar />
+        <Slot />
+        <AuthRedirect />
+      </SafeAreaProvider>
+    </TRPCProvider>
   )
 }
 

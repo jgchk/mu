@@ -1,17 +1,17 @@
-import type { FC, PropsWithChildren } from 'react'
-import { createContext, useContext } from 'react'
+import { create } from 'zustand'
 
 export type AuthContext = {
-  token: { status: 'loading' } | { status: 'none' } | { status: 'loaded'; value: string }
+  token: TokenState
+  setToken: (token: TokenState) => void
 }
+export type TokenState =
+  | { status: 'loading' }
+  | { status: 'none' }
+  | { status: 'loaded'; value: string }
 
-const AuthContext = createContext<AuthContext>({ token: { status: 'loading' } })
+export const useAuth = create<AuthContext>((set) => ({
+  token: { status: 'loading' },
+  setToken: (token) => set({ token }),
+}))
 
-export const AuthProvider: FC<PropsWithChildren<AuthContext>> = ({ children, ...value }) => {
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export const useAuthToken = () => {
-  const { token } = useContext(AuthContext)
-  return token
-}
+export const useAuthToken = () => useAuth((state) => state.token)

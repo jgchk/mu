@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react'
 import superjson from 'superjson'
 import type { AppRouter, AppRouterInput, AppRouterOutput } from 'trpc'
 
-import type { AuthContext } from './contexts/AuthContext'
+import { useAuthToken } from './contexts/AuthContext'
 import { getBaseUrl } from './url'
 
 /**
@@ -20,8 +20,11 @@ export type RouterOutput = AppRouterOutput
  * A wrapper for your app that provides the TRPC context.
  * Use only in _app.tsx
  */
-export const TRPCProvider: FC<PropsWithChildren<AuthContext>> = ({ children, token }) => {
+export const TRPCProvider: FC<PropsWithChildren> = ({ children }) => {
   const [queryClient] = useState(() => new QueryClient())
+
+  const token = useAuthToken()
+
   const trpcClient = useMemo(
     () =>
       trpc.createClient({
