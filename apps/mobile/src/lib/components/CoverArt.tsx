@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import { useState } from 'react'
-import { View } from 'react-native'
+import { Pressable, View } from 'react-native'
 import type { StyleProp } from 'react-native'
 import type { ImageStyle } from 'react-native-fast-image'
 import FastImage from 'react-native-fast-image'
@@ -14,14 +14,19 @@ export type CoverArtProps = {
   className?: string
   style?: StyleProp<ImageStyle>
   rounding?: string
+  onPress?: () => void
 }
 
-const CoverArt: FC<CoverArtProps> = ({ src, style, rounding = 'rounded' }) => {
+const CoverArt: FC<CoverArtProps> = ({ src, style, rounding = 'rounded', onPress }) => {
   const [, setLoaded] = useState(false)
   const token = useAuthToken()
 
   return (
-    <View className={cn('relative aspect-square w-full shadow', rounding)} style={style}>
+    <Pressable
+      className={cn('relative aspect-square w-full shadow', rounding)}
+      style={style}
+      onPress={onPress}
+    >
       {src ? (
         <FastImage
           source={{
@@ -39,7 +44,7 @@ const CoverArt: FC<CoverArtProps> = ({ src, style, rounding = 'rounded' }) => {
         className={cn('absolute left-0 top-0 h-full w-full border', rounding)}
         style={{ borderColor: '#FFFFFF33' }}
       />
-    </View>
+    </Pressable>
   )
 }
 

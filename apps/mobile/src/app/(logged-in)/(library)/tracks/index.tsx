@@ -8,6 +8,7 @@ import { first, ifDefined } from 'utils'
 
 import Button from '../../../../lib/atoms/Button'
 import CoverArt from '../../../../lib/components/CoverArt'
+import { usePlayer } from '../../../../lib/contexts/PlayerContext'
 import type { RouterInput } from '../../../../lib/trpc'
 import { trpc } from '../../../../lib/trpc'
 
@@ -51,6 +52,8 @@ const TracksPage: FC = () => {
 
   const tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.useInfiniteQuery(query)
 
+  const playTrack = usePlayer((state) => state.playTrack)
+
   const render = () => {
     if (tracksQuery.data) {
       return (
@@ -64,6 +67,7 @@ const TracksPage: FC = () => {
                     track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined
                   }
                   rounding="rounded-sm"
+                  onPress={() => playTrack({ id: track.id })}
                 />
               </View>
               <View className="flex-col">
