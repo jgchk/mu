@@ -63,7 +63,7 @@ const TracksPage: FC = () => {
                   src={
                     track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined
                   }
-                  className="rounded-sm"
+                  rounding="rounded-sm"
                 />
               </View>
               <View className="flex-col">
