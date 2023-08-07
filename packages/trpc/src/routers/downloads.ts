@@ -174,7 +174,7 @@ export const downloadsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const track = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
       if (track.path !== null) {
-        await fs.promises.rm(path.resolve(track.path))
+        await fs.promises.rm(path.resolve(track.path), { force: true })
       }
       ctx.sys().db.downloads.deleteTrackDownload(input.service, input.id)
       return { success: true }
