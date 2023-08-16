@@ -15,7 +15,7 @@
     "image-manager": "workspace:*",
     "last-fm": "workspace:*",
     "log": "workspace:*",
-    "soulseek-ts": "^2.1.2",
+    "soulseek-ts": "^2.1.4",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "utils": "workspace:*"

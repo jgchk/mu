@@ -34,7 +34,7 @@
     "mime": "^3.0.0",
     "music-metadata": "workspace:*",
     "musicbrainz": "workspace:*",
-    "soulseek-ts": "^2.1.2",
+    "soulseek-ts": "^2.1.4",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "superjson": "^1.12.3",
