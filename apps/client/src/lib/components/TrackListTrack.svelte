@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
   import { createEventDispatcher } from 'svelte'
   import { formatMilliseconds } from 'utils'
 
   import CommaList from '$lib/atoms/CommaList.svelte'
   import IconButton from '$lib/atoms/IconButton.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
   import { cn } from '$lib/utils/classes'

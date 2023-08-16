@@ -1,5 +1,5 @@
 {
-  "name": "context",
+  "name": "mutils",
   "version": "0.0.0",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -9,15 +9,7 @@
     "format": "prettier --write --ignore-path=../../.prettierignore ."
   },
   "dependencies": {
-    "db": "workspace:*",
-    "downloader": "workspace:*",
-    "env": "workspace:*",
-    "image-manager": "workspace:*",
-    "last-fm": "workspace:*",
-    "log": "workspace:*",
-    "soulseek-ts": "^2.1.4",
-    "soundcloud": "workspace:*",
-    "spotify": "workspace:*",
+    "@types/node": "^18.16.13",
     "utils": "workspace:*"
   }
 }

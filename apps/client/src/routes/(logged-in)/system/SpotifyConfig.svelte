@@ -19,7 +19,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
-  import { useEditLink } from '$lib/utils/system-config'
+  import { listenForEditLink } from '$lib/utils/system-config'
 
   import type { ActionData } from './$types'
   import SpotifyConfigStatus from './SpotifyConfigStatus.svelte'
@@ -30,7 +30,7 @@
   $: stopped = status.status === 'stopped' || status.status === 'errored'
 
   let showConfig = false
-  useEditLink('spotify', () => (showConfig = true))
+  listenForEditLink('spotify', () => (showConfig = true))
 
   const toast = getContextToast()
   const trpc = getContextClient()

@@ -12,3 +12,5 @@ export const isElementInView = (el: Element, fullElement?: boolean) => {
     rect.right - width <= parentWidth
   )
 }
+
+export const cn = (...args: (string | false | undefined)[]) => args.filter(Boolean).join(' ')

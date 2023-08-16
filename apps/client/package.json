@@ -25,6 +25,7 @@
     "context": "workspace:*",
     "esm-env": "^1.0.0",
     "isomorphic-ws": "^5.0.0",
+    "mutils": "workspace:*",
     "superjson": "^1.12.3",
     "svelte-dnd-action": "^0.9.22",
     "svelte-inview": "^4.0.0",

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
   import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
   import { formatMilliseconds, ifDefined, ifNotNull } from 'utils'
@@ -9,7 +10,6 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import Range from '$lib/atoms/Range.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import FastForwardIcon from '$lib/icons/FastForwardIcon.svelte'
   import ListIcon from '$lib/icons/ListIcon.svelte'
   import PauseIcon from '$lib/icons/PauseIcon.svelte'

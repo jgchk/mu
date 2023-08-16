@@ -17,7 +17,7 @@
     "fastq": "^1.15.0",
     "got": "^12.6.0",
     "music-metadata": "workspace:*",
-    "soulseek-ts": "^2.1.2",
+    "soulseek-ts": "^2.1.4",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "utils": "workspace:*",

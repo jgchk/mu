@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { makeImageUrl } from 'mutils'
+
   import FileDrop from '$lib/atoms/FileDrop.svelte'
   import Input from '$lib/atoms/Input.svelte'
   import InputGroup from '$lib/atoms/InputGroup.svelte'
   import Label from '$lib/atoms/Label.svelte'
   import TextArea from '$lib/atoms/TextArea.svelte'
-  import { makeImageUrl } from '$lib/cover-art'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
 
   import CoverArt from './CoverArt.svelte'

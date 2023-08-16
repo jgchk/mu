@@ -39,7 +39,7 @@
     "musicbrainz": "workspace:*",
     "nanoid": "^4.0.2",
     "sharp": "^0.32.1",
-    "soulseek-ts": "^2.1.2",
+    "soulseek-ts": "^2.1.4",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
     "superjson": "^1.12.3",
