@@ -6,9 +6,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'turbo',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
-    'plugin:react-hooks/recommended',
     'prettier',
     'plugin:svelte/prettier',
   ],
@@ -40,9 +37,6 @@ module.exports = {
         '@typescript-eslint/no-unsafe-return',
         '@typescript-eslint/no-unsafe-call',
       ],
-    },
-    react: {
-      version: 'detect',
     },
   },
   parserOptions: {
