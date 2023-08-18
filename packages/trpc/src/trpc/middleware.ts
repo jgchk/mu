@@ -4,25 +4,14 @@ import { toErrorString } from 'utils'
 import { t } from './t'
 
 export const isLoggedIn = t.middleware(({ next, ctx }) => {
-  const token = ctx.token
-
-  if (token === undefined) {
+  if (ctx.session === undefined) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'Not logged in',
     })
   }
 
-  const session = ctx.sys().db.sessions.findByToken(token)
-
-  if (session === undefined) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'Not logged in',
-    })
-  }
-
-  return next({ ctx: { session } })
+  return next({ ctx: { session: ctx.session } })
 })
 
 export const isLastFmLoggedIn = t.middleware(({ next, ctx }) => {

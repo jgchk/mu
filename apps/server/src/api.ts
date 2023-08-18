@@ -6,7 +6,6 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
 import type { SystemContext } from 'context'
-import Cookie from 'cookie'
 import type { Session } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
@@ -71,6 +70,10 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
           ctx().db.sessions.delete(sessionToken)
         } else {
           req.session = session
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore - this is a hack to get around the fact that fastify's trpc plugin calls
+          // createContext with the raw request rather than the FastifyRequest
+          req.raw.session = session
         }
       }
     }
@@ -83,15 +86,7 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
     trpcOptions: {
       router: appRouter,
       createContext: ({ req }) => {
-        let token = req.cookies?.['session_token']
-
-        if (token === undefined && req.headers.cookie) {
-          // we get passed a raw request for webocket connections. attempt to extract the value from there
-          const value = Cookie.parse(req.headers.cookie)
-          token = value['session_token']
-        }
-
-        return { sys: ctx, token }
+        return { sys: ctx, session: req.session }
       },
       onError: ({ error }) => {
         log.error(error)
