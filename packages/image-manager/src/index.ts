@@ -42,7 +42,7 @@ export class ImageManager {
     const numUses = this.db.images.getNumberOfUses(id)
     if (numUses === 0) {
       this.db.images.delete(id)
-      await fs.rm(this.getImagePath(id))
+      await fs.rm(this.getImagePath(id), { force: true })
     }
   }
 }

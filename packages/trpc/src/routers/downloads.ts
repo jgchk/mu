@@ -189,7 +189,7 @@ export const downloadsRouter = router({
       await Promise.all(
         tracks.map(async (track) => {
           if (track.path !== null) {
-            await fs.promises.rm(path.resolve(track.path))
+            await fs.promises.rm(path.resolve(track.path), { force: true })
           }
           ctx.sys().db.downloads.deleteTrackDownload(input.service, track.id)
         })

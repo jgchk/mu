@@ -1,4 +1,4 @@
-import type { Database } from 'db'
+import type { Database, Session } from 'db'
 import type { Downloader } from 'downloader'
 import type { ImageManager } from 'image-manager'
 import type { LastFM, LastFMAuthenticated } from 'last-fm'
@@ -7,7 +7,7 @@ import type { Soundcloud } from 'soundcloud'
 import type { Spotify } from 'spotify'
 
 export type Context = {
-  token?: string
+  session?: Session
   sys: () => SystemContext
 }
 
