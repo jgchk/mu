@@ -195,13 +195,13 @@ export class Soundcloud {
         tempFile,
       ])
     } catch (e) {
-      await fs.promises.rm(tempFile)
+      await fs.promises.rm(tempFile, { force: true })
       throw e
     }
 
     const readPipe = fs.createReadStream(tempFile)
     readPipe.on('close', () => {
-      void fs.promises.rm(tempFile)
+      void fs.promises.rm(tempFile, { force: true })
       if (interval !== undefined) {
         clearInterval(interval)
       }
