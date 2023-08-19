@@ -24,7 +24,6 @@ export const artists = sqliteTable('artists', {
 export type ArtistsMixin = {
   artists: {
     preparedQueries: PreparedQueries
-    insert: (artist: InsertArtist) => Artist
     getAll: () => Artist[]
     get: (id: Artist['id']) => Artist | undefined
     getByName: (name: Artist['name']) => Artist[]
@@ -53,10 +52,6 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
 export const ArtistsMixin = <T extends DatabaseBase>(base: T): T & ArtistsMixin => {
   const artistsMixin: ArtistsMixin['artists'] = {
     preparedQueries: prepareQueries(base.db),
-
-    insert: (artist) => {
-      return base.db.insert(artists).values(artist).returning().get()
-    },
 
     getAll: () => {
       return base.db.select().from(artists).orderBy(artists.name).all()

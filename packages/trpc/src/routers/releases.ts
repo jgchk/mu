@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server'
+import { artists } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -117,7 +118,7 @@ export const releasesRouter = router({
       const artistMap = new Map(
         [...input.createArtists.entries()].map(([id, name]) => [
           id,
-          ctx.sys().db.artists.insert({ name }),
+          ctx.sys().db.db.insert(artists).values({ name }).returning().get(),
         ])
       )
 
@@ -275,12 +276,10 @@ export const releasesRouter = router({
         })
       }
 
-      const tracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
-      const artists = ctx.sys().db.artists.getByReleaseId(dbRelease.id)
       return {
         ...release,
-        tracks,
-        artists,
+        tracks: ctx.sys().db.tracks.getByReleaseId(dbRelease.id),
+        artists: ctx.sys().db.artists.getByReleaseId(dbRelease.id),
       }
     }),
 })
