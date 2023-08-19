@@ -8,7 +8,6 @@ import {
   SoulseekReleaseDownloadsMixin,
   TrackTagsMixin,
 } from './schema'
-import { AccountsMixin } from './schema/accounts'
 import { ArtistsMixin } from './schema/artists'
 import { DatabaseBase } from './schema/base'
 import { SoulseekTrackDownloadsMixin } from './schema/downloads/soulseek-track-downloads'
@@ -26,12 +25,12 @@ import { TrackArtistsMixin } from './schema/track-artists'
 import { TracksMixin } from './schema/tracks'
 
 export * from './schema'
+export * from 'drizzle-orm'
 
 export const Database = (url: string) => {
   const base = new DatabaseBase(url)
   return pipe(
     base,
-    AccountsMixin,
     ArtistsMixin,
     ConfigMixin,
     ImagesMixin,
