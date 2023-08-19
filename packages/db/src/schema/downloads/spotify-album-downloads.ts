@@ -32,8 +32,8 @@ export type SpotifyAlbumDownloadsMixin = {
     update: (
       id: SpotifyAlbumDownload['id'],
       data: UpdateData<InsertSpotifyAlbumDownload>
-    ) => SpotifyAlbumDownload
-    get: (id: SpotifyAlbumDownload['id']) => SpotifyAlbumDownload
+    ) => SpotifyAlbumDownload | undefined
+    get: (id: SpotifyAlbumDownload['id']) => SpotifyAlbumDownload | undefined
     getByAlbumId: (albumId: SpotifyAlbumDownload['albumId']) => SpotifyAlbumDownload | undefined
     getAll: () => SpotifyAlbumDownload[]
     delete: (id: SpotifyAlbumDownload['id']) => void

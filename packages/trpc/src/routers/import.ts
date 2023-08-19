@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
@@ -6,7 +7,7 @@ import type { Metadata } from 'music-metadata'
 import { readTrackMetadata, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
 import type { DistributiveOmit } from 'utils'
-import { ifDefined, isAudio, numDigits } from 'utils'
+import { ifDefined, isAudio, isDefined, numDigits } from 'utils'
 import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
@@ -26,6 +27,14 @@ export const importRouter = router({
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
       const releaseDownload = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+
+      if (releaseDownload === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group download not found',
+        })
+      }
+
       const trackDownloads = ctx
         .sys()
         .db.downloads.getGroupTrackDownloads(input.service, releaseDownload.id)
@@ -132,6 +141,14 @@ export const importRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const releaseDownload = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+
+      if (releaseDownload === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group download not found',
+        })
+      }
+
       const trackDownloads = ctx
         .sys()
         .db.downloads.getGroupTrackDownloads(input.service, releaseDownload.id)
@@ -160,17 +177,19 @@ export const importRouter = router({
       )
 
       const albumTitle = input.album.title
-      const albumArtists = input.album.artists.map((artist) => {
-        if (artist.action === 'create') {
-          const dbArtist = artistMap.get(artist.id)
-          if (!dbArtist) {
-            throw new Error(`Artist ${artist.id} missing from input.artists`)
+      const albumArtists = input.album.artists
+        .map((artist) => {
+          if (artist.action === 'create') {
+            const dbArtist = artistMap.get(artist.id)
+            if (!dbArtist) {
+              throw new Error(`Artist ${artist.id} missing from input.artists`)
+            }
+            return dbArtist
+          } else {
+            return ctx.sys().db.artists.get(artist.id)
           }
-          return dbArtist
-        } else {
-          return ctx.sys().db.artists.get(artist.id)
-        }
-      })
+        })
+        .filter(isDefined)
       const dbRelease = ctx.sys().db.releases.insert({
         title: albumTitle,
       })
@@ -208,17 +227,19 @@ export const importRouter = router({
             await fs.rename(download.dbDownload.path, newPath)
           }
 
-          const artists = download.metadata.artists.map((artist) => {
-            if (artist.action === 'create') {
-              const dbArtist = artistMap.get(artist.id)
-              if (!dbArtist) {
-                throw new Error(`Artist ${artist.id} missing from input.artists`)
+          const artists = download.metadata.artists
+            .map((artist) => {
+              if (artist.action === 'create') {
+                const dbArtist = artistMap.get(artist.id)
+                if (!dbArtist) {
+                  throw new Error(`Artist ${artist.id} missing from input.artists`)
+                }
+                return dbArtist
+              } else {
+                return ctx.sys().db.artists.get(artist.id)
               }
-              return dbArtist
-            } else {
-              return ctx.sys().db.artists.get(artist.id)
-            }
-          })
+            })
+            .filter(isDefined)
 
           const metadata: Metadata = {
             title: download.metadata.title ?? null,
@@ -285,6 +306,13 @@ export const importRouter = router({
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .query(async ({ input, ctx }) => {
       const dbDownload = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
+
+      if (dbDownload === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track download not found',
+        })
+      }
 
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
@@ -354,6 +382,13 @@ export const importRouter = router({
     .mutation(async ({ input, ctx }) => {
       const dbDownload = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
 
+      if (dbDownload === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track download not found',
+        })
+      }
+
       if (!isDownloadComplete(dbDownload)) {
         throw new Error('Download is not complete')
       }
@@ -365,28 +400,32 @@ export const importRouter = router({
         ])
       )
 
-      const albumArtists = input.album.artists.map((artist) => {
-        if (artist.action === 'create') {
-          const dbArtist = artistMap.get(artist.id)
-          if (!dbArtist) {
-            throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+      const albumArtists = input.album.artists
+        .map((artist) => {
+          if (artist.action === 'create') {
+            const dbArtist = artistMap.get(artist.id)
+            if (!dbArtist) {
+              throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+            }
+            return dbArtist
+          } else {
+            return ctx.sys().db.artists.get(artist.id)
           }
-          return dbArtist
-        } else {
-          return ctx.sys().db.artists.get(artist.id)
-        }
-      })
-      const trackArtists = input.track.artists.map((artist) => {
-        if (artist.action === 'create') {
-          const dbArtist = artistMap.get(artist.id)
-          if (!dbArtist) {
-            throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+        })
+        .filter(isDefined)
+      const trackArtists = input.track.artists
+        .map((artist) => {
+          if (artist.action === 'create') {
+            const dbArtist = artistMap.get(artist.id)
+            if (!dbArtist) {
+              throw new Error(`Artist ${artist.id} missing from input.createArtists`)
+            }
+            return dbArtist
+          } else {
+            return ctx.sys().db.artists.get(artist.id)
           }
-          return dbArtist
-        } else {
-          return ctx.sys().db.artists.get(artist.id)
-        }
-      })
+        })
+        .filter(isDefined)
 
       const dbRelease = ctx.sys().db.releases.insert({
         title: input.album.title,

@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -39,6 +40,14 @@ export const tracksRouter = router({
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
       const track = ctx.sys().db.tracks.get(id)
+
+      if (track === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track not found',
+        })
+      }
+
       return {
         ...track,
         artists: ctx.sys().db.artists.getByTrackId(id),
@@ -86,6 +95,13 @@ export const tracksRouter = router({
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .mutation(async ({ input: { id, favorite }, ctx }) => {
       const dbTrack = ctx.sys().db.tracks.update(id, { favorite })
+
+      if (dbTrack === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track not found',
+        })
+      }
 
       const artists = ctx
         .sys()

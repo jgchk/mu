@@ -21,7 +21,7 @@ export type AllDownloadsMixin = {
     getGroupDownload: (
       service: DownloadService,
       id: number
-    ) => SoulseekReleaseDownload | SoundcloudPlaylistDownload | SpotifyAlbumDownload
+    ) => SoulseekReleaseDownload | SoundcloudPlaylistDownload | SpotifyAlbumDownload | undefined
     getGroupTrackDownloads: (
       service: DownloadService,
       id: number
@@ -29,7 +29,7 @@ export type AllDownloadsMixin = {
     getTrackDownload: (
       service: DownloadService,
       id: number
-    ) => SoulseekTrackDownload | SoundcloudTrackDownload | SpotifyTrackDownload
+    ) => SoulseekTrackDownload | SoundcloudTrackDownload | SpotifyTrackDownload | undefined
     deleteGroupDownload: (service: DownloadService, id: number) => void
     deleteTrackDownload: (service: DownloadService, id: number) => void
   }

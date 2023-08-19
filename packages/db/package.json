@@ -11,18 +11,18 @@
     "db:remigrate": "dotenv -e ../../.env -e ../../.env.local -- rm db.sqlite || true && rm -r ./src/migrations || true && pnpm run db:push"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.2.1",
-    "drizzle-kit": "^0.17.6",
+    "dotenv-cli": "^7.3.0",
+    "drizzle-kit": "^0.19.13",
     "eslint-config-custom": "workspace:*"
   },
   "dependencies": {
     "@types/better-sqlite3": "^7.6.4",
-    "better-sqlite3": "^8.3.0",
+    "better-sqlite3": "^8.5.1",
     "bool-lang": "workspace:*",
-    "drizzle-orm": "^0.25.4",
+    "drizzle-orm": "^0.28.2",
     "soundcloud": "workspace:*",
     "spotify": "workspace:*",
-    "superjson": "^1.12.3",
+    "superjson": "^1.13.1",
     "utils": "workspace:*"
   }
 }

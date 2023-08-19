@@ -55,6 +55,10 @@ export class SoulseekDownloadManager {
 
       const dbTrack = db.soulseekTrackDownloads.get(dbId)
 
+      if (dbTrack === undefined) {
+        throw new Error('Track not found')
+      }
+
       if (dbTrack.status === 'done') {
         this.logger.error('Track already downloaded', dbId)
         return

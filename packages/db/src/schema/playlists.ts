@@ -22,9 +22,9 @@ export const playlists = sqliteTable('playlists', {
 export type PlaylistsMixin = {
   playlists: {
     insert: (playlist: AutoCreatedAt<InsertPlaylist>) => Playlist
-    get: (id: Playlist['id']) => Playlist
+    get: (id: Playlist['id']) => Playlist | undefined
     getAll: (filter?: { auto?: boolean }) => Playlist[]
-    update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => Playlist
+    update: (id: Playlist['id'], data: UpdateData<InsertPlaylist>) => Playlist | undefined
     delete: (id: Playlist['id']) => void
   }
 }

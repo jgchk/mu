@@ -41,8 +41,8 @@ export type SpotifyTrackDownloadsMixin = {
     update: (
       id: SpotifyTrackDownload['id'],
       data: UpdateData<InsertSpotifyTrackDownload>
-    ) => SpotifyTrackDownload
-    get: (id: SpotifyTrackDownload['id']) => SpotifyTrackDownload
+    ) => SpotifyTrackDownload | undefined
+    get: (id: SpotifyTrackDownload['id']) => SpotifyTrackDownload | undefined
     getByAlbumDownloadId: (
       albumDownloadId: SpotifyTrackDownload['albumDownloadId']
     ) => SpotifyTrackDownload[]

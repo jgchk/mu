@@ -25,14 +25,17 @@ export const playlistTracks = sqliteTable('playlist_tracks', {
 
 export type PlaylistTracksMixin = {
   playlistTracks: {
-    get: (id: PlaylistTrack['id']) => PlaylistTrack
+    get: (id: PlaylistTrack['id']) => PlaylistTrack | undefined
     insert: (playlistTrack: AutoCreatedAt<InsertPlaylistTrack>) => PlaylistTrack
     insertMany: (playlistTracks: AutoCreatedAt<InsertPlaylistTrack>[]) => PlaylistTrack[]
     insertManyByPlaylistId: (
       playlistId: PlaylistTrack['playlistId'],
       trackIds: PlaylistTrack['trackId'][]
     ) => PlaylistTrack[]
-    update: (id: PlaylistTrack['id'], data: UpdateData<InsertPlaylistTrack>) => PlaylistTrack
+    update: (
+      id: PlaylistTrack['id'],
+      data: UpdateData<InsertPlaylistTrack>
+    ) => PlaylistTrack | undefined
     updateByPlaylistId: (
       playlistId: PlaylistTrack['playlistId'],
       trackIds: PlaylistTrack['trackId'][]

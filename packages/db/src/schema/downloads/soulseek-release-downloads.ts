@@ -33,8 +33,8 @@ export type SoulseekReleaseDownloadsMixin = {
     update: (
       id: SoulseekReleaseDownload['id'],
       data: UpdateData<InsertSoulseekReleaseDownload>
-    ) => SoulseekReleaseDownload
-    get: (id: SoulseekReleaseDownload['id']) => SoulseekReleaseDownload
+    ) => SoulseekReleaseDownload | undefined
+    get: (id: SoulseekReleaseDownload['id']) => SoulseekReleaseDownload | undefined
     getByUsernameAndDir: (
       username: SoulseekReleaseDownload['username'],
       dir: SoulseekReleaseDownload['dir']

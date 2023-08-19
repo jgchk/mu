@@ -72,7 +72,7 @@ export type TracksSortDirection = 'asc' | 'desc'
 export type TracksMixin = {
   tracks: {
     insert: (track: InsertTrackPretty) => TrackPretty
-    update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty
+    update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty | undefined
     getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => TrackPretty[]
     getByArtistAndTitleCaseInsensitive: (
       artistId: Artist['id'],
@@ -86,7 +86,7 @@ export type TracksMixin = {
       filter?: TracksFilter
     ) => (TrackPretty & { playlistTrackId: PlaylistTrack['id'] })[]
     getByTagIds: (tagIds: number[], filter?: TracksFilter) => TrackPretty[]
-    get: (id: Track['id']) => TrackPretty
+    get: (id: Track['id']) => TrackPretty | undefined
     getMany: (ids: Track['id'][]) => TrackPretty[]
     delete: (id: Track['id']) => void
 
@@ -133,10 +133,12 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
     },
 
     getByArtist: (artistId, filter) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _, ...cols } = tracks
       let query = base.db
         .select({
           tracks: {
-            ...tracks,
+            ...cols,
             id: sql`distinct(${tracks.id})`,
           },
         })
@@ -209,7 +211,7 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
     },
 
     get: (id) => {
-      return convertTrack(base.db.select().from(tracks).where(eq(tracks.id, id)).get())
+      return ifDefined(base.db.select().from(tracks).where(eq(tracks.id, id)).get(), convertTrack)
     },
 
     getMany: (ids) => {

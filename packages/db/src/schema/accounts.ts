@@ -25,9 +25,9 @@ export const accounts = sqliteTable(
 export type AccountsMixin = {
   accounts: {
     insert: (account: AutoCreatedAt<InsertAccount>) => Account
-    get: (id: Account['id']) => Account
+    get: (id: Account['id']) => Account | undefined
     findByUsername: (username: Account['username']) => Account | undefined
-    update: (id: Account['id'], data: UpdateData<Account>) => Account
+    update: (id: Account['id'], data: UpdateData<Account>) => Account | undefined
     isEmpty: () => boolean
   }
 }

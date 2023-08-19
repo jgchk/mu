@@ -21,10 +21,10 @@ export const images = sqliteTable('images', {
 export type ImagesMixin = {
   images: {
     insert: (image: AutoCreatedAt<InsertImage>) => Image
-    get: (id: Image['id']) => Image
+    get: (id: Image['id']) => Image | undefined
     getNumberOfUses: (id: Image['id']) => number
     findHash: (hash: Image['hash']) => Image | undefined
-    update: (id: Image['id'], data: UpdateData<InsertImage>) => Image
+    update: (id: Image['id'], data: UpdateData<InsertImage>) => Image | undefined
     delete: (id: Image['id']) => void
   }
 }

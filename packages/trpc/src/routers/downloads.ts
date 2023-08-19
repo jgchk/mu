@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import type { DownloadStatus } from 'db'
 import fs from 'fs'
 import path from 'path'
@@ -173,6 +174,14 @@ export const downloadsRouter = router({
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const track = ctx.sys().db.downloads.getTrackDownload(input.service, input.id)
+
+      if (track === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track not found',
+        })
+      }
+
       if (track.path !== null) {
         await fs.promises.rm(path.resolve(track.path), { force: true })
       }
@@ -184,6 +193,14 @@ export const downloadsRouter = router({
     .input(z.object({ service: z.enum(['soundcloud', 'spotify', 'soulseek']), id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const group = ctx.sys().db.downloads.getGroupDownload(input.service, input.id)
+
+      if (group === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group not found',
+        })
+      }
+
       const tracks = ctx.sys().db.downloads.getGroupTrackDownloads(input.service, group.id)
 
       await Promise.all(

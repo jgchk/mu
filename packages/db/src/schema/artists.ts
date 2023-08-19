@@ -26,13 +26,13 @@ export type ArtistsMixin = {
     preparedQueries: PreparedQueries
     insert: (artist: InsertArtist) => Artist
     getAll: () => Artist[]
-    get: (id: Artist['id']) => Artist
+    get: (id: Artist['id']) => Artist | undefined
     getByName: (name: Artist['name']) => Artist[]
     getByNameCaseInsensitive: (name: Artist['name']) => Artist[]
     getBySimilarName: (name: string) => Artist[]
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => Artist[]
     getByTrackId: (trackId: TrackArtist['trackId']) => Artist[]
-    update: (id: Artist['id'], data: UpdateData<Artist>) => Artist
+    update: (id: Artist['id'], data: UpdateData<Artist>) => Artist | undefined
   }
 }
 

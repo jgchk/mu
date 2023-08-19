@@ -45,7 +45,16 @@ export const tagsRouter = router({
           message: `Loop detected: ${loop}`,
         })
       }
-      return ctx.sys().db.tags.update(input.id, input.data)
+      const tag = ctx.sys().db.tags.update(input.id, input.data)
+
+      if (tag === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Tag not found',
+        })
+      }
+
+      return tag
     }),
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ ctx, input }) => {
     ctx.sys().db.tags.delete(input.id)

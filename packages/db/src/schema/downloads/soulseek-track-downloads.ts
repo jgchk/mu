@@ -46,8 +46,8 @@ export type SoulseekTrackDownloadsMixin = {
     update: (
       id: SoulseekTrackDownload['id'],
       data: UpdateData<InsertSoulseekTrackDownload>
-    ) => SoulseekTrackDownload
-    get: (id: SoulseekTrackDownload['id']) => SoulseekTrackDownload
+    ) => SoulseekTrackDownload | undefined
+    get: (id: SoulseekTrackDownload['id']) => SoulseekTrackDownload | undefined
     getByReleaseDownloadId: (
       releaseDownloadId: SoulseekTrackDownload['releaseDownloadId']
     ) => SoulseekTrackDownload[]

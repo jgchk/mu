@@ -10,6 +10,11 @@ export const playbackRouter = router({
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
       const track = ctx.sys().db.tracks.get(input.id)
+
+      if (track === undefined) {
+        throw new Error(`Track ${input.id} does not exist`)
+      }
+
       const artists = ctx
         .sys()
         .db.artists.getByTrackId(track.id)
@@ -49,6 +54,11 @@ export const playbackRouter = router({
     .use(isLastFmLoggedIn)
     .mutation(({ ctx, input }) => {
       const track = ctx.sys().db.tracks.get(input.id)
+
+      if (track === undefined) {
+        throw new Error(`Track ${input.id} does not exist`)
+      }
+
       const artists = ctx
         .sys()
         .db.artists.getByTrackId(track.id)

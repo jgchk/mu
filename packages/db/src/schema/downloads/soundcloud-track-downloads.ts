@@ -43,8 +43,8 @@ export type SoundcloudTrackDownloadsMixin = {
     update: (
       id: SoundcloudTrackDownload['id'],
       data: UpdateData<InsertSoundcloudTrackDownload>
-    ) => SoundcloudTrackDownload
-    get: (id: SoundcloudTrackDownload['id']) => SoundcloudTrackDownload
+    ) => SoundcloudTrackDownload | undefined
+    get: (id: SoundcloudTrackDownload['id']) => SoundcloudTrackDownload | undefined
     getByPlaylistDownloadId: (
       playlistDownloadId: SoundcloudTrackDownload['playlistDownloadId']
     ) => SoundcloudTrackDownload[]

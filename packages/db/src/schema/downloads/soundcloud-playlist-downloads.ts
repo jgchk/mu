@@ -37,8 +37,8 @@ export type SoundcloudPlaylistDownloadsMixin = {
     update: (
       id: SoundcloudPlaylistDownload['id'],
       data: UpdateData<InsertSoundcloudPlaylistDownload>
-    ) => SoundcloudPlaylistDownload
-    get: (id: SoundcloudPlaylistDownload['id']) => SoundcloudPlaylistDownload
+    ) => SoundcloudPlaylistDownload | undefined
+    get: (id: SoundcloudPlaylistDownload['id']) => SoundcloudPlaylistDownload | undefined
     getByPlaylistId: (
       playlistId: SoundcloudPlaylistDownload['playlistId']
     ) => SoundcloudPlaylistDownload | undefined

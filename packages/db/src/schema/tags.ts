@@ -59,8 +59,8 @@ const convertTag = (tag: Tag): TagPretty => ({
 export type TagsMixin = {
   tags: {
     insert: (tag: InsertTagPretty) => TagPretty
-    update: (id: Tag['id'], data: UpdateData<InsertTagPretty>) => TagPretty
-    get: (id: Tag['id']) => TagPretty
+    update: (id: Tag['id'], data: UpdateData<InsertTagPretty>) => TagPretty | undefined
+    get: (id: Tag['id']) => TagPretty | undefined
     getAll: (filter?: { taggable?: boolean }) => TagPretty[]
     getParents: (id: Tag['id']) => TagPretty[]
     getChildren: (id: Tag['id']) => TagPretty[]
@@ -123,7 +123,7 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
       return result
     },
     get: (id) => {
-      return convertTag(base.db.select().from(tags).where(eq(tags.id, id)).get())
+      return ifDefined(base.db.select().from(tags).where(eq(tags.id, id)).get(), convertTag)
     },
     getAll: ({ taggable } = {}) => {
       let query = base.db.select().from(tags)

@@ -20,9 +20,9 @@ export type ReleasesMixin = {
   releases: {
     preparedQueries: PreparedQueries
     insert: (release: InsertRelease) => Release
-    update: (id: Release['id'], data: UpdateData<InsertRelease>) => Release
+    update: (id: Release['id'], data: UpdateData<InsertRelease>) => Release | undefined
     getAll: () => Release[]
-    get: (id: Release['id']) => Release
+    get: (id: Release['id']) => Release | undefined
     getByArtist: (artistId: Artist['id']) => Release[]
     findByTitleCaseInsensitiveAndArtists: (
       title: string,
