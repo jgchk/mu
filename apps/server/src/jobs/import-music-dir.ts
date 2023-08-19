@@ -1,6 +1,6 @@
 import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
-import { artists } from 'db'
+import { artists, sql } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
@@ -84,7 +84,11 @@ async function handleFile(filePath_: string) {
 }
 
 function getArtist(name: string) {
-  const existingArtist = db.artists.getByNameCaseInsensitive(name).at(0)
+  const existingArtist = db.db
+    .select()
+    .from(artists)
+    .where(sql`lower(${artists.name}) = lower(${name})`)
+    .get()
   if (existingArtist) {
     return existingArtist
   }
