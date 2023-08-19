@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists } from 'db'
+import { artists, eq } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
@@ -187,7 +187,7 @@ export const importRouter = router({
             }
             return dbArtist
           } else {
-            return ctx.sys().db.artists.get(artist.id)
+            return ctx.sys().db.db.select().from(artists).where(eq(artists.id, artist.id)).get()
           }
         })
         .filter(isDefined)
@@ -228,7 +228,7 @@ export const importRouter = router({
             await fs.rename(download.dbDownload.path, newPath)
           }
 
-          const artists = download.metadata.artists
+          const artists_ = download.metadata.artists
             .map((artist) => {
               if (artist.action === 'create') {
                 const dbArtist = artistMap.get(artist.id)
@@ -237,14 +237,14 @@ export const importRouter = router({
                 }
                 return dbArtist
               } else {
-                return ctx.sys().db.artists.get(artist.id)
+                return ctx.sys().db.db.select().from(artists).where(eq(artists.id, artist.id)).get()
               }
             })
             .filter(isDefined)
 
           const metadata: Metadata = {
             title: download.metadata.title ?? null,
-            artists: artists.map((artist) => artist.name),
+            artists: artists_.map((artist) => artist.name),
             track: trackNumber,
             album: albumTitle ?? null,
             albumArtists: albumArtists.map((artist) => artist.name),
@@ -266,10 +266,10 @@ export const importRouter = router({
 
           let favorite = false
           const lfm = ctx.sys().lfm
-          if (lfm.status === 'logged-in' && metadata.title !== null && artists.length > 0) {
+          if (lfm.status === 'logged-in' && metadata.title !== null && artists_.length > 0) {
             favorite = await lfm.getLovedTrack({
               track: metadata.title,
-              artist: artists.map((artist) => artist.name).join(', '),
+              artist: artists_.map((artist) => artist.name).join(', '),
             })
           }
 
@@ -284,7 +284,7 @@ export const importRouter = router({
           })
           const dbTrackArtists = ctx.sys().db.trackArtists.insertManyByTrackId(
             dbTrack.id,
-            artists.map((a) => a.id)
+            artists_.map((a) => a.id)
           )
 
           ctx.sys().db.downloads.deleteTrackDownload(input.service, download.dbDownload.id)
@@ -410,7 +410,7 @@ export const importRouter = router({
             }
             return dbArtist
           } else {
-            return ctx.sys().db.artists.get(artist.id)
+            return ctx.sys().db.db.select().from(artists).where(eq(artists.id, artist.id)).get()
           }
         })
         .filter(isDefined)
@@ -423,7 +423,7 @@ export const importRouter = router({
             }
             return dbArtist
           } else {
-            return ctx.sys().db.artists.get(artist.id)
+            return ctx.sys().db.db.select().from(artists).where(eq(artists.id, artist.id)).get()
           }
         })
         .filter(isDefined)
