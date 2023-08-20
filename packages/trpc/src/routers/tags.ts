@@ -22,7 +22,7 @@ export const tagsRouter = router({
           message: `Loop detected: ${loop}`,
         })
       }
-      return ctx.sys().db.tags.insert(input)
+      return ctx.sys().db.tags.insert({ ...input, taggable: input.taggable ?? false })
     }),
   edit: protectedProcedure
     .input(
