@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { asc, tracks } from 'db'
+import { artists, asc, tracks } from 'db'
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -115,6 +115,7 @@ export const artistsRouter = router({
 
   getAll: protectedProcedure.query(({ ctx }) => {
     const results = ctx.sys().db.db.query.artists.findMany({
+      orderBy: asc(artists.name),
       with: {
         releaseArtists: {
           with: {
