@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { navigating, page } from '$app/stores'
+  import { navigating } from '$app/stores'
   import { fade } from 'svelte/transition'
 
   import { tooltip } from '$lib/actions/tooltip'
@@ -15,9 +15,7 @@
   import NavLink from './NavLink.svelte'
   import SearchBar from './SearchBar.svelte'
 
-  $: initialQuery = $page.url.pathname.startsWith('/search')
-    ? $page.url.searchParams.get('q') ?? undefined
-    : undefined
+  export let searchQuery: string | undefined
 </script>
 
 <nav
@@ -32,7 +30,7 @@
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
   <div class="ml-2 hidden min-w-0 flex-1 md:inline">
-    <SearchBar class="w-full max-w-fit" {initialQuery} />
+    <SearchBar class="w-full max-w-fit" initialQuery={searchQuery} />
   </div>
 
   {#if $navigating}

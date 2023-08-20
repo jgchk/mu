@@ -6,7 +6,9 @@
   export let href: string
   export let label: string
 
-  $: isCurrentUrl = $page.url.pathname === href
+  $: hrefPathname = new URL(href, $page.url.origin).pathname
+
+  $: isCurrentUrl = $page.url.pathname === hrefPathname
 </script>
 
 <a
