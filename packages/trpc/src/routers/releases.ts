@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, eq } from 'db'
+import { artists } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -132,7 +132,7 @@ export const releasesRouter = router({
             }
             return dbArtist
           } else {
-            return ctx.sys().db.db.select().from(artists).where(eq(artists.id, artist.id)).get()
+            return ctx.sys().db.artists.get(artist.id)
           }
         })
         .filter(isDefined)
@@ -207,7 +207,7 @@ export const releasesRouter = router({
               await fs.rename(existingDbTrack.path, newPath)
             }
 
-            const artists_ = track.artists
+            const artists = track.artists
               .map((artist) => {
                 if (artist.action === 'create') {
                   const dbArtist = artistMap.get(artist.id)
@@ -216,19 +216,14 @@ export const releasesRouter = router({
                   }
                   return dbArtist
                 } else {
-                  return ctx
-                    .sys()
-                    .db.db.select()
-                    .from(artists)
-                    .where(eq(artists.id, artist.id))
-                    .get()
+                  return ctx.sys().db.artists.get(artist.id)
                 }
               })
               .filter(isDefined)
 
             const metadata: Metadata = {
               title: track.title ?? null,
-              artists: artists_.map((artist) => artist.name),
+              artists: artists.map((artist) => artist.name),
               track: trackNumber,
               album: albumTitle ?? null,
               albumArtists: albumArtists.map((artist) => artist.name),
@@ -262,7 +257,7 @@ export const releasesRouter = router({
             })
             ctx.sys().db.trackArtists.updateByTrackId(
               existingDbTrack.id,
-              artists_.map((a) => a.id)
+              artists.map((a) => a.id)
             )
 
             if (oldImageId !== null && image !== undefined) {

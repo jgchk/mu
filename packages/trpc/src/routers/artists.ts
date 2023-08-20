@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, eq } from 'db'
+import { artists } from 'db'
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -21,15 +21,7 @@ export const artistsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let artist = ctx.sys().db.db.select().from(artists).where(eq(artists.id, input.id)).get()
-      if (artist === undefined) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Artist not found',
-        })
-      }
-
-      const oldImageId = artist.imageId
+      const oldImageId = ctx.sys().db.artists.get(input.id)?.imageId ?? null
 
       let image: { data: Buffer; id: number } | null | undefined =
         input.art === null ? null : undefined
@@ -42,7 +34,7 @@ export const artistsRouter = router({
       }
 
       const imageId = image === null ? null : image?.id
-      artist = ctx.sys().db.artists.update(input.id, {
+      const artist = ctx.sys().db.artists.update(input.id, {
         ...input.data,
         imageId,
       })
@@ -61,7 +53,7 @@ export const artistsRouter = router({
       return artist
     }),
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
-    const artist = ctx.sys().db.db.select().from(artists).where(eq(artists.id, input.id)).get()
+    const artist = ctx.sys().db.artists.get(input.id)
 
     if (artist === undefined) {
       throw new TRPCError({
