@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { releaseArtists } from 'db'
+import { eq, releaseArtists, releases } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -14,19 +14,6 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAll: protectedProcedure.query(({ ctx }) => {
-    const results = ctx.sys().db.db.query.releases.findMany({
-      with: {
-        tracks: true,
-      },
-    })
-
-    return results.map((release) => ({
-      ...release,
-      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-    }))
-  }),
-
   getAllWithArtists: protectedProcedure.query(({ ctx }) => {
     const results = ctx.sys().db.db.query.releases.findMany({
       with: {
@@ -50,23 +37,32 @@ export const releasesRouter = router({
   getWithArtists: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
-      const release = ctx.sys().db.releases.get(id)
+      const result = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, id),
+        with: {
+          tracks: true,
+          releaseArtists: {
+            orderBy: releaseArtists.order,
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
 
-      if (release === undefined) {
+      if (result === undefined) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Release not found',
         })
       }
 
+      const { releaseArtists: releaseArtists_, ...release } = result
+
       return {
         ...release,
-        artists: ctx.sys().db.artists.getByReleaseId(release.id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
+        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+        artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
       }
     }),
 
