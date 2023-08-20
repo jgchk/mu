@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, eq, sql } from 'db'
+import { artists, eq } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
@@ -88,12 +88,7 @@ export const importRouter = router({
         if (artist) {
           return artist
         } else {
-          const dbArtist = ctx
-            .sys()
-            .db.db.select()
-            .from(artists)
-            .where(sql`lower(${artists.name}) = lower(${name})`)
-            .get()
+          const dbArtist = ctx.sys().db.artists.getByNameCaseInsensitive(name).at(0)
           if (dbArtist) {
             const artist = { action: 'connect', id: dbArtist.id } as const
             artistMap.set(name, artist)
@@ -344,12 +339,7 @@ export const importRouter = router({
         if (artist) {
           return artist
         } else {
-          const dbArtist = ctx
-            .sys()
-            .db.db.select()
-            .from(artists)
-            .where(sql`lower(${artists.name}) = lower(${name})`)
-            .get()
+          const dbArtist = ctx.sys().db.artists.getByNameCaseInsensitive(name).at(0)
           if (dbArtist) {
             const artist = { action: 'connect', id: dbArtist.id } as const
             artistMap.set(name, artist)

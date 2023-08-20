@@ -24,6 +24,7 @@ export const artists = sqliteTable('artists', {
 export type ArtistsMixin = {
   artists: {
     preparedQueries: PreparedQueries
+    getByNameCaseInsensitive: (name: Artist['name']) => Artist[]
     getBySimilarName: (name: string) => Artist[]
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => Artist[]
     getByTrackId: (trackId: TrackArtist['trackId']) => Artist[]
@@ -38,11 +39,20 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
     .from(artists)
     .where(sql`lower(${artists.name}) like ${placeholder('name')}`)
     .prepare(),
+  getArtistsByNameCaseInsensitive: db
+    .select()
+    .from(artists)
+    .where(sql`lower(${artists.name}) = lower(${placeholder('name')})`)
+    .prepare(),
 })
 
 export const ArtistsMixin = <T extends DatabaseBase>(base: T): T & ArtistsMixin => {
   const artistsMixin: ArtistsMixin['artists'] = {
     preparedQueries: prepareQueries(base.db),
+
+    getByNameCaseInsensitive: (name) => {
+      return artistsMixin.preparedQueries.getArtistsByNameCaseInsensitive.all({ name })
+    },
 
     getBySimilarName: (name) => {
       return artistsMixin.preparedQueries.getArtistsBySimilarName.all({
