@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import type { SQL } from 'db'
-import { and, artists, asc, convertTrack, desc, eq, releases, sql, trackArtists, tracks } from 'db'
+import { and, artists, asc, desc, eq, releases, sql, trackArtists, tracks } from 'db'
 import { generateWhereClause } from 'db/src/helpers/tracks'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
@@ -20,7 +20,7 @@ export const tracksRouter = router({
     }
 
     if (input.favorite !== undefined) {
-      where.push(eq(tracks.favorite, input.favorite ? 1 : 0))
+      where.push(eq(tracks.favorite, input.favorite))
     }
 
     if (input.tags) {
@@ -91,7 +91,7 @@ export const tracksRouter = router({
     }
 
     const formattedResults = results.map(({ trackArtists, ...track }) => ({
-      ...convertTrack(track),
+      ...track,
       artists: trackArtists.map((trackArtist) => trackArtist.artist),
     }))
 

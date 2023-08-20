@@ -14,8 +14,8 @@ import { releases } from '../schema/releases'
 import type { TrackArtist } from '../schema/track-artists'
 import { trackArtists } from '../schema/track-artists'
 import { trackTags } from '../schema/track-tags'
-import type { InsertTrackPretty, Track, TrackPretty } from '../schema/tracks'
-import { convertInsertTrack, convertTrack, tracks } from '../schema/tracks'
+import type { InsertTrack, Track } from '../schema/tracks'
+import { tracks } from '../schema/tracks'
 import type { UpdateData } from '../utils'
 import { hasUpdate, makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
@@ -36,23 +36,23 @@ export type TracksSortDirection = 'asc' | 'desc'
 
 export type TracksMixin = {
   tracks: {
-    insert: (track: InsertTrackPretty) => TrackPretty
-    update: (id: Track['id'], data: UpdateData<InsertTrackPretty>) => TrackPretty | undefined
-    getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => TrackPretty[]
+    insert: (track: InsertTrack) => Track
+    update: (id: Track['id'], data: UpdateData<InsertTrack>) => Track | undefined
+    getByArtist: (artistId: TrackArtist['artistId'], filter?: TracksFilter) => Track[]
     getByArtistAndTitleCaseInsensitive: (
       artistId: Artist['id'],
       title: NonNullable<Track['title']>
-    ) => TrackPretty[]
-    getByPath: (path: Track['path']) => TrackPretty | undefined
-    getAll: (filter?: TracksFilter) => TrackPretty[]
-    getByReleaseId: (releaseId: Release['id'], filter?: TracksFilter) => TrackPretty[]
+    ) => Track[]
+    getByPath: (path: Track['path']) => Track | undefined
+    getAll: (filter?: TracksFilter) => Track[]
+    getByReleaseId: (releaseId: Release['id'], filter?: TracksFilter) => Track[]
     getByPlaylistId: (
       playlistId: number,
       filter?: TracksFilter
-    ) => (TrackPretty & { playlistTrackId: PlaylistTrack['id'] })[]
-    getByTagIds: (tagIds: number[], filter?: TracksFilter) => TrackPretty[]
-    get: (id: Track['id']) => TrackPretty | undefined
-    getMany: (ids: Track['id'][]) => TrackPretty[]
+    ) => (Track & { playlistTrackId: PlaylistTrack['id'] })[]
+    getByTagIds: (tagIds: number[], filter?: TracksFilter) => Track[]
+    get: (id: Track['id']) => Track | undefined
+    getMany: (ids: Track['id'][]) => Track[]
     delete: (id: Track['id']) => void
 
     preparedQueries: PreparedQueries
@@ -81,20 +81,13 @@ const prepareQueries = (db: DatabaseBase['db']) => ({
 export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin => {
   const tracksMixin: TracksMixin['tracks'] = {
     insert: (track) => {
-      return convertTrack(
-        base.db.insert(tracks).values(convertInsertTrack(track)).returning().get()
-      )
+      return base.db.insert(tracks).values(track).returning().get()
     },
 
     update: (id, data) => {
-      const update = makeUpdate({
-        ...data,
-        favorite: ifDefined(data.favorite, (favorite) => (favorite ? 1 : 0)),
-      })
+      const update = makeUpdate(data)
       if (!hasUpdate(update)) return tracksMixin.get(id)
-      return convertTrack(
-        base.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
-      )
+      return base.db.update(tracks).set(update).where(eq(tracks.id, id)).returning().get()
     },
 
     getByArtist: (artistId, filter) => {
@@ -113,31 +106,24 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
 
       query = tracksMixin.withFilter(query, filter, [eq(trackArtists.artistId, artistId)])
 
-      return query.all().map((row) => convertTrack(row.tracks))
+      return query.all().map((row) => row.tracks)
     },
 
     getByArtistAndTitleCaseInsensitive: (artistId, title) => {
-      return tracksMixin.preparedQueries.getByArtistAndTitleCaseInsensitive
-        .all({
-          artistId,
-          title: title.toLowerCase(),
-        })
-        .map(convertTrack)
+      return tracksMixin.preparedQueries.getByArtistAndTitleCaseInsensitive.all({
+        artistId,
+        title: title.toLowerCase(),
+      })
     },
 
     getByPath: (path) => {
-      const results = base.db.select().from(tracks).where(eq(tracks.path, path)).limit(1).all()
-      if (results.length === 0) {
-        return undefined
-      } else {
-        return convertTrack(results[0])
-      }
+      return base.db.select().from(tracks).where(eq(tracks.path, path)).limit(1).all().at(0)
     },
 
     getAll: (filter) => {
       let query = base.db.select({ tracks }).from(tracks).orderBy(tracks.title)
       query = tracksMixin.withFilter(query, filter)
-      return query.all().map((row) => convertTrack(row.tracks))
+      return query.all().map((row) => row.tracks)
     },
 
     getByReleaseId: (releaseId, filter) => {
@@ -145,7 +131,7 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
 
       query = tracksMixin.withFilter(query, filter, [eq(tracks.releaseId, releaseId)])
 
-      return query.all().map((row) => convertTrack(row.tracks))
+      return query.all().map((row) => row.tracks)
     },
 
     getByPlaylistId: (playlistId, filter) => {
@@ -158,7 +144,7 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
       query = tracksMixin.withFilter(query, filter, [eq(playlistTracks.playlistId, playlistId)])
 
       return query.all().map((row) => ({
-        ...convertTrack(row.tracks),
+        ...row.tracks,
         playlistTrackId: row.playlistTrackId,
       }))
     },
@@ -172,16 +158,16 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
 
       query = tracksMixin.withFilter(query, filter, [inArray(trackTags.tagId, tagIds)])
 
-      return query.all().map((row) => convertTrack(row.tracks))
+      return query.all().map((row) => row.tracks)
     },
 
     get: (id) => {
-      return ifDefined(base.db.select().from(tracks).where(eq(tracks.id, id)).get(), convertTrack)
+      return base.db.select().from(tracks).where(eq(tracks.id, id)).get()
     },
 
     getMany: (ids) => {
       if (ids.length === 0) return []
-      return base.db.select().from(tracks).where(inArray(tracks.id, ids)).all().map(convertTrack)
+      return base.db.select().from(tracks).where(inArray(tracks.id, ids)).all()
     },
 
     delete: (id) => {
@@ -196,7 +182,7 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
       const where = where_
 
       if (filter?.favorite !== undefined) {
-        where.push(eq(tracks.favorite, filter.favorite ? 1 : 0))
+        where.push(eq(tracks.favorite, filter.favorite))
       }
 
       if (filter?.tags !== undefined) {

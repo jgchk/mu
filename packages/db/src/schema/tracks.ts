@@ -17,7 +17,7 @@ export const tracks = sqliteTable(
     releaseId: integer('release_id').references(() => releases.id),
     order: integer('order').notNull(),
     duration: integer('duration').notNull(),
-    favorite: integer('favorite').notNull(),
+    favorite: integer('favorite', { mode: 'boolean' }).notNull(),
     imageId: integer('image_id').references(() => images.id),
   },
   (tracks) => ({
@@ -32,19 +32,3 @@ export const trackRelations = relations(tracks, ({ one, many }) => ({
   }),
   trackArtists: many(trackArtists),
 }))
-
-export type TrackPretty = Omit<Track, 'favorite'> & {
-  favorite: boolean
-}
-export type InsertTrackPretty = Omit<InsertTrack, 'favorite'> & {
-  favorite?: boolean
-}
-
-export const convertInsertTrack = (track: InsertTrackPretty): InsertTrack => ({
-  ...track,
-  favorite: track.favorite ? 1 : 0,
-})
-export const convertTrack = (track: Track): TrackPretty => ({
-  ...track,
-  favorite: track.favorite !== 0,
-})

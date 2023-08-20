@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
-import type { Database, Playlist, PlaylistTrack, TrackPretty } from 'db'
+import type { Database, Playlist, PlaylistTrack, Track } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -268,7 +268,7 @@ const getPlaylistTracks = (
   db: Database,
   playlist: Playlist,
   filter?: TracksFilter
-): (TrackPretty & { playlistTrackId?: PlaylistTrack['id'] })[] => {
+): (Track & { playlistTrackId?: PlaylistTrack['id'] })[] => {
   if (playlist.filter !== null) {
     const tagsFilter = decode(playlist.filter)
     return db.tracks.getAll({ ...filter, tags: injectDescendants(db)(tagsFilter) })
