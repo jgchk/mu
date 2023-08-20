@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { eq, releaseArtists, releases } from 'db'
+import { eq, releaseArtists, releases, sql } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -14,25 +14,30 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAll: protectedProcedure.query(({ ctx }) => {
-    const results = ctx.sys().db.db.query.releases.findMany({
-      with: {
-        tracks: true,
-        releaseArtists: {
-          orderBy: releaseArtists.order,
-          with: {
-            artist: true,
+  getAll: protectedProcedure
+    .input(z.object({ title: z.string().optional() }))
+    .query(({ input, ctx }) => {
+      const results = ctx.sys().db.db.query.releases.findMany({
+        where: input?.title
+          ? sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`
+          : undefined,
+        with: {
+          tracks: true,
+          releaseArtists: {
+            orderBy: releaseArtists.order,
+            with: {
+              artist: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    return results.map(({ releaseArtists, ...release }) => ({
-      ...release,
-      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-      artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
-    }))
-  }),
+      return results.map(({ releaseArtists, ...release }) => ({
+        ...release,
+        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+        artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
+      }))
+    }),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => {
     const result = ctx.sys().db.db.query.releases.findFirst({

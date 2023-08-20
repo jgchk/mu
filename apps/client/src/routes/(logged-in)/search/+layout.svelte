@@ -1,6 +1,7 @@
 <script lang="ts">
   import SearchBar from '$lib/components/SearchBar.svelte'
   import SidebarLink from '$lib/components/SidebarLink.svelte'
+  import AlbumIcon from '$lib/icons/AlbumIcon.svelte'
   import MusicNoteIcon from '$lib/icons/MusicNoteIcon.svelte'
   import SoulseekIcon from '$lib/icons/SoulseekIcon.svelte'
   import SoundcloudIcon from '$lib/icons/SoundcloudIcon.svelte'
@@ -26,6 +27,10 @@
     <SidebarLink href={withSearchQuery('/search/tracks')} label="Tracks">
       <MusicNoteIcon />
     </SidebarLink>
+    <SidebarLink href={withSearchQuery('/search/releases')} label="Releases">
+      <AlbumIcon />
+    </SidebarLink>
+
     <SidebarLink href={withSearchQuery('/search/soulseek')} label="Soulseek">
       <SoulseekIcon />
     </SidebarLink>
