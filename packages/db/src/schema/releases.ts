@@ -2,6 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { relations } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
+import { releaseArtists } from './release-artists'
 import { tracks } from './tracks'
 
 export type Release = InferModel<typeof releases>
@@ -13,4 +14,5 @@ export const releases = sqliteTable('releases', {
 
 export const releaseRelations = relations(releases, ({ many }) => ({
   tracks: many(tracks),
+  releaseArtists: many(releaseArtists),
 }))

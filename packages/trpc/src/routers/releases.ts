@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server'
+import { releaseArtists } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -26,20 +27,25 @@ export const releasesRouter = router({
     }))
   }),
 
-  getAllWithArtists: protectedProcedure.query(({ ctx }) =>
-    ctx
-      .sys()
-      .db.releases.getAll()
-      .map((release) => ({
-        ...release,
-        artists: ctx.sys().db.artists.getByReleaseId(release.id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }))
-  ),
+  getAllWithArtists: protectedProcedure.query(({ ctx }) => {
+    const results = ctx.sys().db.db.query.releases.findMany({
+      with: {
+        tracks: true,
+        releaseArtists: {
+          orderBy: releaseArtists.order,
+          with: {
+            artist: true,
+          },
+        },
+      },
+    })
+
+    return results.map(({ releaseArtists, ...release }) => ({
+      ...release,
+      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+      artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
+    }))
+  }),
 
   getWithArtists: protectedProcedure
     .input(z.object({ id: z.number() }))
