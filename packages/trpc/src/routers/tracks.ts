@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server'
+import { convertTrack, sql, trackArtists, tracks } from 'db'
 import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -119,5 +120,26 @@ export const tracksRouter = router({
       }
 
       return dbTrack
+    }),
+
+  search: protectedProcedure
+    .input(z.object({ query: z.string() }))
+    .query(({ input: { query }, ctx }) => {
+      const results = ctx.sys().db.db.query.tracks.findMany({
+        where: sql`lower(${tracks.title}) like ${'%' + query.toLowerCase() + '%'}`,
+        with: {
+          trackArtists: {
+            orderBy: trackArtists.order,
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
+
+      return results.map(({ trackArtists, ...track }) => ({
+        ...convertTrack(track),
+        artists: trackArtists.map((trackArtist) => trackArtist.artist),
+      }))
     }),
 })

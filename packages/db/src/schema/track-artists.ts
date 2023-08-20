@@ -1,4 +1,4 @@
-import type { InferModel} from 'drizzle-orm';
+import type { InferModel } from 'drizzle-orm'
 import { relations } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
 
@@ -24,6 +24,10 @@ export const trackArtists = sqliteTable(
 )
 
 export const trackArtistRelations = relations(trackArtists, ({ one }) => ({
+  track: one(tracks, {
+    fields: [trackArtists.trackId],
+    references: [tracks.id],
+  }),
   artist: one(artists, {
     fields: [trackArtists.artistId],
     references: [artists.id],
