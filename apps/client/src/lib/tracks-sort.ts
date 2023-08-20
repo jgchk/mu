@@ -2,7 +2,7 @@ import { ifNotNull } from 'utils'
 
 import type { RouterInput } from './trpc'
 
-export type TracksSort = NonNullable<RouterInput['tracks']['getAllWithArtistsAndRelease']['sort']>
+export type TracksSort = NonNullable<RouterInput['tracks']['getAll']['sort']>
 
 export const TRACKS_SORT_COLUMN_PARAM = 'sort'
 export const TRACKS_SORT_DIRECTION_PARAM = 'dir'

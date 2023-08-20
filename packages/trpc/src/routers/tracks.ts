@@ -9,7 +9,7 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 
 export const tracksRouter = router({
-  getAllWithArtistsAndRelease: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
+  getAll: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 

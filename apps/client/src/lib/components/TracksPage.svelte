@@ -20,7 +20,7 @@
   import type { RouterInput, RouterOutput } from '$lib/trpc'
 
   export let data: {
-    query: RouterInput['tracks']['getAllWithArtistsAndRelease']
+    query: RouterInput['tracks']['getAll']
     tags?: {
       text: string
       parsed: Filter
@@ -28,7 +28,7 @@
   }
 
   const trpc = getContextClient()
-  $: tracksQuery = trpc.tracks.getAllWithArtistsAndRelease.infiniteQuery(data.query, {
+  $: tracksQuery = trpc.tracks.getAll.infiniteQuery(data.query, {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 
@@ -36,7 +36,7 @@
   $: hasAdvancedFilter = data.tags !== undefined && data.tags.parsed.kind !== 'id'
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getAllTracksWithArtistsAndReleaseQuery: data.query,
+    getAllTracksQuery: data.query,
   })
 
   let inView = false
@@ -47,7 +47,7 @@
   }
 
   const makeQueueData = (
-    tracks: RouterOutput['tracks']['getAllWithArtistsAndRelease']['items'],
+    tracks: RouterOutput['tracks']['getAll']['items'],
     trackIndex: number
   ) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),

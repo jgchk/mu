@@ -23,7 +23,7 @@ export const load: PageLoad = async ({ url, parent }) => {
 
   const sort = getTracksSort(url)
 
-  const query: RouterInput['tracks']['getAllWithArtistsAndRelease'] = {
+  const query: RouterInput['tracks']['getAll'] = {
     limit: 100,
     title,
     ...(favoritesOnly ? { favorite: true } : {}),
