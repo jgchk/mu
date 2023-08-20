@@ -10,24 +10,6 @@ export const prefetchTrackQuery = (trpc: TRPCClient, id: number) =>
 export const createTracksQuery = (trpc: TRPCClient, ids: number[]) =>
   trpc.tracks.getMany.query({ ids })
 
-export const createAllTracksWithArtistsAndReleaseQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['tracks']['getAll']
-) =>
-  trpc.tracks.getAll.infiniteQuery(input, {
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-  })
-
-export const prefetchAllTracksWithArtistsAndReleaseQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['tracks']['getAll']
-) => trpc.tracks.getAll.prefetchInfiniteQuery(input)
-
-export const fetchAllTracksWithArtistsAndReleaseQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['tracks']['getAll']
-) => trpc.tracks.getAll.fetchInfiniteQuery(input)
-
 export const createFavoriteTrackMutation = (
   trpc: TRPCClient,
   optimistic?: {

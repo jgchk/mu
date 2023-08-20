@@ -2,7 +2,6 @@ import { decode } from 'bool-lang'
 import { ifNotNull } from 'utils'
 
 import { prefetchTrackTagsQuery } from '$lib/services/tags'
-import { fetchAllTracksWithArtistsAndReleaseQuery } from '$lib/services/tracks'
 import { getTracksSort } from '$lib/tracks-sort'
 import type { RouterInput } from '$lib/trpc'
 
@@ -32,13 +31,15 @@ export const load: PageLoad = async ({ url, parent }) => {
   }
 
   const { trpc } = await parent()
-  await fetchAllTracksWithArtistsAndReleaseQuery(trpc, query).then((data) =>
-    Promise.all(
-      data.pages.flatMap((page) =>
-        page.items.map((track) => prefetchTrackTagsQuery(trpc, track.id))
+  await trpc.tracks.getAll
+    .fetchInfiniteQuery(query)
+    .then((data) =>
+      Promise.all(
+        data.pages.flatMap((page) =>
+          page.items.map((track) => prefetchTrackTagsQuery(trpc, track.id))
+        )
       )
     )
-  )
 
   return { title, favoritesOnly, tags, query }
 }
