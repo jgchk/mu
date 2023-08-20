@@ -111,8 +111,8 @@ export const artistsRouter = router({
         }))
     ),
   getAll: protectedProcedure.query(({ ctx }) => {
-    const results = ctx.sys().db.db.select().from(artists).orderBy(artists.name).all()
-    return results.map((artist) => {
+    const artists = ctx.sys().db.artists.getAll()
+    return artists.map((artist) => {
       const releaseImageIds = ctx
         .sys()
         .db.releases.getByArtist(artist.id)
