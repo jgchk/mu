@@ -1,31 +1,30 @@
 import { pipe } from 'utils'
 
-import {
-  AllDownloadsMixin,
-  ConfigMixin,
-  ImagesMixin,
-  SessionsMixin,
-  SoulseekReleaseDownloadsMixin,
-  TrackTagsMixin,
-} from './schema'
-import { AccountsMixin } from './schema/accounts'
-import { ArtistsMixin } from './schema/artists'
-import { DatabaseBase } from './schema/base'
-import { SoulseekTrackDownloadsMixin } from './schema/downloads/soulseek-track-downloads'
-import { SoundcloudPlaylistDownloadsMixin } from './schema/downloads/soundcloud-playlist-downloads'
-import { SoundcloudTrackDownloadsMixin } from './schema/downloads/soundcloud-track-downloads'
-import { SpotifyAlbumDownloadsMixin } from './schema/downloads/spotify-album-downloads'
-import { SpotifyTrackDownloadsMixin } from './schema/downloads/spotify-track-downloads'
-import { PlaylistTracksMixin } from './schema/playlist-tracks'
-import { PlaylistsMixin } from './schema/playlists'
-import { ReleaseArtistsMixin } from './schema/release-artists'
-import { ReleaseTagsMixin } from './schema/release-tags'
-import { ReleasesMixin } from './schema/releases'
-import { TagsMixin } from './schema/tags'
-import { TrackArtistsMixin } from './schema/track-artists'
-import { TracksMixin } from './schema/tracks'
+import { AccountsMixin } from './helpers/accounts'
+import { ArtistsMixin } from './helpers/artists'
+import { DatabaseBase } from './helpers/base'
+import { ConfigMixin } from './helpers/config'
+import { AllDownloadsMixin } from './helpers/downloads/all'
+import { SoulseekReleaseDownloadsMixin } from './helpers/downloads/soulseek-release-downloads'
+import { SoulseekTrackDownloadsMixin } from './helpers/downloads/soulseek-track-downloads'
+import { SoundcloudPlaylistDownloadsMixin } from './helpers/downloads/soundcloud-playlist-downloads'
+import { SoundcloudTrackDownloadsMixin } from './helpers/downloads/soundcloud-track-downloads'
+import { SpotifyAlbumDownloadsMixin } from './helpers/downloads/spotify-album-downloads'
+import { SpotifyTrackDownloadsMixin } from './helpers/downloads/spotify-track-downloads'
+import { ImagesMixin } from './helpers/images'
+import { PlaylistTracksMixin } from './helpers/playlist-tracks'
+import { PlaylistsMixin } from './helpers/playlists'
+import { ReleaseArtistsMixin } from './helpers/release-artists'
+import { ReleaseTagsMixin } from './helpers/release-tags'
+import { ReleasesMixin } from './helpers/releases'
+import { SessionsMixin } from './helpers/sessions'
+import { TagsMixin } from './helpers/tags'
+import { TrackArtistsMixin } from './helpers/track-artists'
+import { TrackTagsMixin } from './helpers/track-tags'
+import { TracksMixin } from './helpers/tracks'
 
 export * from './schema'
+export * from 'drizzle-orm'
 
 export const Database = (url: string) => {
   const base = new DatabaseBase(url)

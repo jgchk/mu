@@ -6,4 +6,6 @@ import drizzleConfig from '../drizzle.config.json'
 
 const migrationsFolder = path.resolve(path.join(__dirname, '../', drizzleConfig.out))
 
-export const migrate = (db: BetterSQLite3Database) => drizzleMigrate(db, { migrationsFolder })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const migrate = <D extends BetterSQLite3Database<any>>(db: D) =>
+  drizzleMigrate(db, { migrationsFolder })

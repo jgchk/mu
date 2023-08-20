@@ -3,18 +3,18 @@ import { withProps } from 'utils'
 import type {
   DownloadService,
   SoulseekReleaseDownload,
-  SoulseekReleaseDownloadsMixin,
   SoulseekTrackDownload,
-  SoulseekTrackDownloadsMixin,
   SoundcloudPlaylistDownload,
-  SoundcloudPlaylistDownloadsMixin,
   SoundcloudTrackDownload,
-  SoundcloudTrackDownloadsMixin,
   SpotifyAlbumDownload,
-  SpotifyAlbumDownloadsMixin,
   SpotifyTrackDownload,
-  SpotifyTrackDownloadsMixin,
-} from '.'
+} from '../../schema'
+import type { SoulseekReleaseDownloadsMixin } from './soulseek-release-downloads'
+import type { SoulseekTrackDownloadsMixin } from './soulseek-track-downloads'
+import type { SoundcloudPlaylistDownloadsMixin } from './soundcloud-playlist-downloads'
+import type { SoundcloudTrackDownloadsMixin } from './soundcloud-track-downloads'
+import type { SpotifyAlbumDownloadsMixin } from './spotify-album-downloads'
+import type { SpotifyTrackDownloadsMixin } from './spotify-track-downloads'
 
 export type AllDownloadsMixin = {
   downloads: {
