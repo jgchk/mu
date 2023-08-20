@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server'
+import { asc, tracks } from 'db'
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -9,6 +10,7 @@ export const artistsRouter = router({
   add: protectedProcedure
     .input(z.object({ name: z.string() }))
     .mutation(({ ctx, input }) => ctx.sys().db.artists.insert({ name: input.name })),
+
   edit: protectedProcedure
     .input(
       z.object({
@@ -49,6 +51,7 @@ export const artistsRouter = router({
 
       return artist
     }),
+
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
     const artist = ctx.sys().db.artists.get(input.id)
 
@@ -81,6 +84,7 @@ export const artistsRouter = router({
       imageIds: [...releaseImageIds, ...trackImageIds],
     }
   }),
+
   releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
     ctx
       .sys()
@@ -95,6 +99,7 @@ export const artistsRouter = router({
             .find((track) => track.imageId !== null)?.imageId ?? null,
       }))
   ),
+
   tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) =>
@@ -107,26 +112,42 @@ export const artistsRouter = router({
           artists: ctx.sys().db.artists.getByTrackId(track.id),
         }))
     ),
+
   getAll: protectedProcedure.query(({ ctx }) => {
-    const artists = ctx.sys().db.artists.getAll()
-    return artists.map((artist) => {
-      const releaseImageIds = ctx
-        .sys()
-        .db.releases.getByArtist(artist.id)
+    const results = ctx.sys().db.db.query.artists.findMany({
+      with: {
+        releaseArtists: {
+          with: {
+            release: {
+              with: {
+                tracks: {
+                  orderBy: asc(tracks.order),
+                },
+              },
+            },
+          },
+        },
+        trackArtists: {
+          with: {
+            track: true,
+          },
+        },
+      },
+    })
+
+    return results.map(({ releaseArtists, trackArtists, ...artist }) => {
+      const trackImageIds = trackArtists.map(({ track }) => track.imageId).filter(isNotNull)
+
+      const releaseImageIds = releaseArtists
         .map(
-          (release) =>
-            ctx
-              .sys()
-              .db.tracks.getByReleaseId(release.id)
-              .find((track) => track.imageId !== null)?.imageId ?? null
+          ({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null
         )
         .filter(isNotNull)
-      const trackImageIds = ctx
-        .sys()
-        .db.tracks.getByArtist(artist.id)
-        .map((track) => track.imageId)
-        .filter(isNotNull)
-      return { ...artist, imageIds: [...releaseImageIds, ...trackImageIds] }
+
+      return {
+        ...artist,
+        imageIds: [...releaseImageIds, ...trackImageIds],
+      }
     })
   }),
 })
