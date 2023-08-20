@@ -78,7 +78,7 @@ export const tracksRouter = router({
       with: {
         release: true,
         trackArtists: {
-          orderBy: trackArtists.order,
+          orderBy: asc(trackArtists.order),
           with: { artist: true },
         },
       },

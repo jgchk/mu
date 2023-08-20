@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { eq, releaseArtists, releases, sql } from 'db'
+import { asc, eq, releaseArtists, releases, sql } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -24,7 +24,7 @@ export const releasesRouter = router({
         with: {
           tracks: true,
           releaseArtists: {
-            orderBy: releaseArtists.order,
+            orderBy: asc(releaseArtists.order),
             with: {
               artist: true,
             },
@@ -45,7 +45,7 @@ export const releasesRouter = router({
       with: {
         tracks: true,
         releaseArtists: {
-          orderBy: releaseArtists.order,
+          orderBy: asc(releaseArtists.order),
           with: {
             artist: true,
           },
