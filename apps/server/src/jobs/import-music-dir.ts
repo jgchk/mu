@@ -1,6 +1,5 @@
 import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
-import { artists } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
@@ -89,7 +88,7 @@ function getArtist(name: string) {
     return existingArtist
   }
 
-  const newArtist = db.db.insert(artists).values({ name }).returning().get()
+  const newArtist = db.artists.insert({ name })
   return newArtist
 }
 

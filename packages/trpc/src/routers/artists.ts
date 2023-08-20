@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server'
-import { artists } from 'db'
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -9,9 +8,7 @@ import { TracksFilter } from '../utils'
 export const artistsRouter = router({
   add: protectedProcedure
     .input(z.object({ name: z.string() }))
-    .mutation(({ ctx, input }) =>
-      ctx.sys().db.db.insert(artists).values({ name: input.name }).returning().get()
-    ),
+    .mutation(({ ctx, input }) => ctx.sys().db.artists.insert({ name: input.name })),
   edit: protectedProcedure
     .input(
       z.object({

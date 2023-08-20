@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server'
-import { artists } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import filenamify from 'filenamify'
@@ -173,7 +172,7 @@ export const importRouter = router({
       const artistMap = new Map(
         [...input.createArtists.entries()].map(([id, name]) => [
           id,
-          ctx.sys().db.db.insert(artists).values({ name }).returning().get(),
+          ctx.sys().db.artists.insert({ name }),
         ])
       )
 
@@ -397,7 +396,7 @@ export const importRouter = router({
       const artistMap = new Map(
         [...input.createArtists.entries()].map(([id, name]) => [
           id,
-          ctx.sys().db.db.insert(artists).values({ name }).returning().get(),
+          ctx.sys().db.artists.insert({ name }),
         ])
       )
 
