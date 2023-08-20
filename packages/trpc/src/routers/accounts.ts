@@ -2,7 +2,6 @@ import { TRPCError } from '@trpc/server'
 import { compare, hash as hash_ } from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import type { Account, Database } from 'db'
-import { accounts, eq } from 'db'
 import { omit } from 'utils'
 import { z } from 'zod'
 
@@ -12,8 +11,7 @@ export const accountsRouter = router({
   register: publicProcedure
     .input(z.object({ username: z.string().min(1), password: z.string().min(1) }))
     .mutation(async ({ ctx, input: { username, password } }) => {
-      const noAccountsExist = ctx.sys().db.db.select().from(accounts).limit(1).all().length === 0
-
+      const noAccountsExist = ctx.sys().db.accounts.isEmpty()
       if (!noAccountsExist) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
@@ -22,12 +20,7 @@ export const accountsRouter = router({
       }
 
       const passwordHash = await hashPassword(password)
-      const account = ctx
-        .sys()
-        .db.db.insert(accounts)
-        .values({ username, passwordHash })
-        .returning()
-        .get()
+      const account = ctx.sys().db.accounts.insert({ username, passwordHash })
 
       const { token, maxAge } = createSession(ctx.sys().db, account.id)
 
@@ -61,9 +54,7 @@ export const accountsRouter = router({
       return session
     }),
 
-  isEmpty: publicProcedure.query(
-    ({ ctx }) => ctx.sys().db.db.select().from(accounts).limit(1).all().length === 0
-  ),
+  isEmpty: publicProcedure.query(({ ctx }) => ctx.sys().db.accounts.isEmpty()),
 })
 
 export const hashPassword = (password: string) => hash_(password, 12)
@@ -76,14 +67,7 @@ export const getAccountFromCredentials = async (
   username: string,
   password: string
 ): Promise<Account | false> => {
-  const account = db.db
-    .select()
-    .from(accounts)
-    .where(eq(accounts.username, username))
-    .limit(1)
-    .all()
-    .at(0)
-
+  const account = db.accounts.findByUsername(username)
   if (account === undefined) {
     // spend some time to "waste" some time
     // this makes brute forcing harder
