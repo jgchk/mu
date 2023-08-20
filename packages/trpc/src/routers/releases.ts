@@ -14,7 +14,7 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAllWithArtists: protectedProcedure.query(({ ctx }) => {
+  getAll: protectedProcedure.query(({ ctx }) => {
     const results = ctx.sys().db.db.query.releases.findMany({
       with: {
         tracks: true,

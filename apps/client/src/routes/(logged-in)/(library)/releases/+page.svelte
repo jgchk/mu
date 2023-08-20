@@ -5,11 +5,10 @@
   import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
-  import { createAllReleasesWithArtistsQuery } from '$lib/services/releases'
   import { getContextClient } from '$lib/trpc'
 
   const trpc = getContextClient()
-  const releasesQuery = createAllReleasesWithArtistsQuery(trpc)
+  const releasesQuery = trpc.releases.getAll.query()
 </script>
 
 {#if $releasesQuery.data}
