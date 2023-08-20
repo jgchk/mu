@@ -15,7 +15,7 @@
   import NavLink from './NavLink.svelte'
   import SearchBar from './SearchBar.svelte'
 
-  const initialQuery = $page.url.pathname.startsWith('/search')
+  $: initialQuery = $page.url.pathname.startsWith('/search')
     ? $page.url.searchParams.get('q') ?? undefined
     : undefined
 </script>

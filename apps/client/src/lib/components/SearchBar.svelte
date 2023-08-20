@@ -7,7 +7,7 @@
   import { cn } from '$lib/utils/classes'
 
   export let initialQuery: string | undefined = undefined
-  let query = initialQuery ?? ''
+  $: query = initialQuery ?? ''
 
   let input: HTMLInputElement | undefined
 
