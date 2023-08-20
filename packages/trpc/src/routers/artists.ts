@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, asc, tracks } from 'db'
+import { artists, asc, eq, releaseArtists, releases, tracks } from 'db'
 import { ifNotNull, isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -85,20 +85,28 @@ export const artistsRouter = router({
     }
   }),
 
-  releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) =>
-    ctx
-      .sys()
-      .db.releases.getByArtist(input.id)
-      .map((release) => ({
-        ...release,
-        artists: ctx.sys().db.artists.getByReleaseId(release.id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }))
-  ),
+  releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
+    const results = ctx.sys().db.db.query.releases.findMany({
+      where: eq(releases.id, input.id),
+      with: {
+        releaseArtists: {
+          orderBy: asc(releaseArtists.order),
+          with: {
+            artist: true,
+          },
+        },
+        tracks: {
+          orderBy: asc(tracks.order),
+        },
+      },
+    })
+
+    return results.map(({ releaseArtists, ...release }) => ({
+      ...release,
+      artists: releaseArtists.map(({ artist }) => artist),
+      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+    }))
+  }),
 
   tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
