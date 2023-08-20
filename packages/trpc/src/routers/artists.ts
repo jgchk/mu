@@ -53,36 +53,43 @@ export const artistsRouter = router({
     }),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
-    const artist = ctx.sys().db.artists.get(input.id)
+    const result = ctx.sys().db.db.query.artists.findFirst({
+      where: eq(artists.id, input.id),
+      with: {
+        releaseArtists: {
+          with: {
+            release: {
+              with: {
+                tracks: {
+                  orderBy: asc(tracks.order),
+                },
+              },
+            },
+          },
+        },
+        trackArtists: {
+          with: {
+            track: true,
+          },
+        },
+      },
+    })
 
-    if (artist === undefined) {
+    if (result === undefined) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Artist not found',
       })
     }
 
-    const releaseImageIds = ctx
-      .sys()
-      .db.releases.getByArtist(artist.id)
-      .map(
-        (release) =>
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null
-      )
-      .filter(isNotNull)
-    const trackImageIds = ctx
-      .sys()
-      .db.tracks.getByArtist(artist.id)
-      .map((track) => track.imageId)
+    const { releaseArtists: releaseArtists_, trackArtists: trackArtists_, ...artist } = result
+
+    const trackImageIds = trackArtists_.map(({ track }) => track.imageId).filter(isNotNull)
+    const releaseImageIds = releaseArtists_
+      .map(({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null)
       .filter(isNotNull)
 
-    return {
-      ...artist,
-      imageIds: [...releaseImageIds, ...trackImageIds],
-    }
+    return { ...artist, imageIds: [...releaseImageIds, ...trackImageIds] }
   }),
 
   releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
