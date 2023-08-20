@@ -6,11 +6,7 @@ import { isFile } from 'utils/browser'
 import { z } from 'zod'
 
 import { albumArtSchema } from '$lib/components/ReleaseForm'
-import {
-  fetchReleaseTracksQuery,
-  fetchReleaseWithArtistsQuery,
-  mutateReleaseWithTracksAndArtists,
-} from '$lib/services/releases'
+import { fetchReleaseTracksQuery, mutateReleaseWithTracksAndArtists } from '$lib/services/releases'
 import { createClient } from '$lib/trpc'
 import { paramNumber } from '$lib/utils/params'
 
@@ -42,7 +38,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   const id = paramNumber(params.id, 'Release ID must be a number')
 
   const trpc = createClient(fetch)
-  const release = await fetchReleaseWithArtistsQuery(trpc, id)
+  const release = await trpc.releases.get.fetchQuery({ id })
   const tracks = await fetchReleaseTracksQuery(trpc, { id })
 
   const form = await superValidate(

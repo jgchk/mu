@@ -6,7 +6,7 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { playTrack } from '$lib/now-playing'
-  import { createReleaseTracksQuery, createReleaseWithArtistsQuery } from '$lib/services/releases'
+  import { createReleaseTracksQuery } from '$lib/services/releases'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -18,7 +18,7 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: releaseQuery = createReleaseWithArtistsQuery(trpc, data.id)
+  $: releaseQuery = trpc.releases.get.query({ id: data.id })
   $: tracksQuery = createReleaseTracksQuery(trpc, data.tracksQuery)
   $: tracks = $tracksQuery.data
 
