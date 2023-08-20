@@ -13,19 +13,18 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAll: protectedProcedure.query(({ ctx }) =>
-    ctx
-      .sys()
-      .db.releases.getAll()
-      .map((release) => ({
-        ...release,
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }))
-  ),
+  getAll: protectedProcedure.query(({ ctx }) => {
+    const results = ctx.sys().db.db.query.releases.findMany({
+      with: {
+        tracks: true,
+      },
+    })
+
+    return results.map((release) => ({
+      ...release,
+      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+    }))
+  }),
 
   getAllWithArtists: protectedProcedure.query(({ ctx }) =>
     ctx
