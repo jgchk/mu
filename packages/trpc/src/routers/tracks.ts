@@ -1,6 +1,8 @@
 import { TRPCError } from '@trpc/server'
-import { convertTrack, sql, trackArtists, tracks } from 'db'
-import { ifDefined, ifNotNull } from 'utils'
+import type { SQL } from 'db'
+import { and, artists, asc, convertTrack, desc, eq, releases, sql, trackArtists, tracks } from 'db'
+import { generateWhereClause } from 'db/src/helpers/tracks'
+import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -11,28 +13,90 @@ export const tracksRouter = router({
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 
-    const tracks = ctx.sys().db.tracks.getAll({
-      favorite: input.favorite,
-      tags: ifDefined(input.tags, injectDescendants(ctx.sys().db)),
-      sort: input.sort,
-      skip,
+    const where = []
+
+    if (input.title) {
+      where.push(sql`lower(${tracks.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+    }
+
+    if (input.favorite !== undefined) {
+      where.push(eq(tracks.favorite, input.favorite ? 1 : 0))
+    }
+
+    if (input.tags) {
+      const tagsWithDescendants = injectDescendants(ctx.sys().db)(input.tags)
+      const tagsWhere = generateWhereClause(tagsWithDescendants)
+      if (tagsWhere) {
+        where.push(tagsWhere)
+      }
+    }
+
+    let orderBy: SQL | undefined
+    if (input.sort) {
+      const dir = input.sort.direction === 'asc' ? asc : desc
+
+      switch (input.sort.column) {
+        case 'title': {
+          orderBy = dir(tracks.title)
+          break
+        }
+        case 'artists': {
+          orderBy = dir(
+            ctx
+              .sys()
+              .db.db.select({ name: sql`group_concat(${artists.name}, ', ')` })
+              .from(trackArtists)
+              .where(eq(trackArtists.trackId, tracks.id))
+              .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+              .orderBy(trackArtists.order)
+              .groupBy(trackArtists.trackId)
+          )
+          break
+        }
+        case 'release': {
+          orderBy = dir(
+            ctx
+              .sys()
+              .db.db.select({ title: releases.title })
+              .from(releases)
+              .where(eq(tracks.releaseId, releases.id))
+          )
+          break
+        }
+        case 'duration': {
+          orderBy = dir(tracks.duration)
+          break
+        }
+      }
+    }
+
+    const results = ctx.sys().db.db.query.tracks.findMany({
+      where: and(...where),
+      orderBy,
+      offset: skip,
       limit: limit + 1,
+      with: {
+        release: true,
+        trackArtists: {
+          orderBy: trackArtists.order,
+          with: { artist: true },
+        },
+      },
     })
 
     let nextCursor: number | undefined = undefined
-    if (tracks.length > limit) {
-      tracks.pop()
+    if (results.length > limit) {
+      results.pop()
       nextCursor = skip + limit
     }
 
-    const tracksWithArtistsAndRelease = tracks.map((track) => ({
-      ...track,
-      artists: ctx.sys().db.artists.getByTrackId(track.id),
-      release: ifNotNull(track.releaseId, (releaseId) => ctx.sys().db.releases.get(releaseId)),
+    const formattedResults = results.map(({ trackArtists, ...track }) => ({
+      ...convertTrack(track),
+      artists: trackArtists.map((trackArtist) => trackArtist.artist),
     }))
 
     return {
-      items: tracksWithArtistsAndRelease,
+      items: formattedResults,
       nextCursor,
     }
   }),
@@ -120,26 +184,5 @@ export const tracksRouter = router({
       }
 
       return dbTrack
-    }),
-
-  search: protectedProcedure
-    .input(z.object({ query: z.string() }))
-    .query(({ input: { query }, ctx }) => {
-      const results = ctx.sys().db.db.query.tracks.findMany({
-        where: sql`lower(${tracks.title}) like ${'%' + query.toLowerCase() + '%'}`,
-        with: {
-          trackArtists: {
-            orderBy: trackArtists.order,
-            with: {
-              artist: true,
-            },
-          },
-        },
-      })
-
-      return results.map(({ trackArtists, ...track }) => ({
-        ...convertTrack(track),
-        artists: trackArtists.map((trackArtist) => trackArtist.artist),
-      }))
     }),
 })

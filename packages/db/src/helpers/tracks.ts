@@ -266,7 +266,7 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
   return withProps(base, { tracks: tracksMixin })
 }
 
-const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+export const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
   switch (node.kind) {
     case 'id':
       return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`

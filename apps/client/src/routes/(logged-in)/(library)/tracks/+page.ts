@@ -27,15 +27,13 @@ export const load: PageLoad = async ({ parent, url }) => {
   }
 
   const { trpc } = await parent()
-  await Promise.all([
-    fetchAllTracksWithArtistsAndReleaseQuery(trpc, query).then((data) =>
-      Promise.all(
-        data.pages.flatMap((page) =>
-          page.items.map((track) => prefetchTrackTagsQuery(trpc, track.id))
-        )
+  await fetchAllTracksWithArtistsAndReleaseQuery(trpc, query).then((data) =>
+    Promise.all(
+      data.pages.flatMap((page) =>
+        page.items.map((track) => prefetchTrackTagsQuery(trpc, track.id))
       )
-    ),
-  ])
+    )
+  )
 
   return { favoritesOnly, tags, query }
 }

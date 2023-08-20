@@ -25,7 +25,11 @@ export const tracks = sqliteTable(
   })
 )
 
-export const trackRelations = relations(tracks, ({ many }) => ({
+export const trackRelations = relations(tracks, ({ one, many }) => ({
+  release: one(releases, {
+    fields: [tracks.releaseId],
+    references: [releases.id],
+  }),
   trackArtists: many(trackArtists),
 }))
 
