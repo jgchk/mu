@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import type { SQL } from 'db'
-import { and, artists, asc, desc, eq, releases, sql, trackArtists, tracks } from 'db'
+import { and, artists, asc, desc, eq, inArray, releases, sql, trackArtists, tracks } from 'db'
 import { generateWhereClause } from 'db/src/helpers/tracks'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
@@ -17,6 +17,18 @@ export const tracksRouter = router({
 
     if (input.title) {
       where.push(sql`lower(${tracks.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+    }
+    if (input.artistId !== undefined) {
+      where.push(
+        inArray(
+          tracks.id,
+          ctx
+            .sys()
+            .db.db.select({ data: trackArtists.trackId })
+            .from(trackArtists)
+            .where(eq(trackArtists.artistId, input.artistId))
+        )
+      )
     }
 
     if (input.favorite !== undefined) {

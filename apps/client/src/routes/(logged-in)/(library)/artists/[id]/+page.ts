@@ -1,8 +1,4 @@
-import {
-  fetchArtistTracksQuery,
-  prefetchArtistQuery,
-  prefetchArtistReleasesQuery,
-} from '$lib/services/artists'
+import { prefetchArtistQuery, prefetchArtistReleasesQuery } from '$lib/services/artists'
 import { prefetchTrackTagsQuery } from '$lib/services/tags'
 import { getTracksSort } from '$lib/tracks-sort'
 import { paramNumber } from '$lib/utils/params'
@@ -17,6 +13,7 @@ export const load: PageLoad = async ({ parent, params, url }) => {
 
   const tracksQuery = {
     id,
+    artistId: id,
     ...(favoritesOnly ? { favorite: true } : {}),
     ...(sort !== undefined ? { sort } : {}),
   }
@@ -25,9 +22,13 @@ export const load: PageLoad = async ({ parent, params, url }) => {
   await Promise.all([
     prefetchArtistQuery(trpc, id),
     prefetchArtistReleasesQuery(trpc, id),
-    fetchArtistTracksQuery(trpc, tracksQuery).then((tracks) =>
-      Promise.all(tracks.map((track) => prefetchTrackTagsQuery(trpc, track.id)))
-    ),
+    trpc.tracks.getAll
+      .fetchInfiniteQuery(tracksQuery)
+      .then(({ pages }) =>
+        Promise.all(
+          pages.flatMap(({ items }) => items.map((track) => prefetchTrackTagsQuery(trpc, track.id)))
+        )
+      ),
   ])
 
   return { id, tracksQuery }

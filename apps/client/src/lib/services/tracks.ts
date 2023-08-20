@@ -18,7 +18,6 @@ export const createFavoriteTrackMutation = (
     getAllTracksQuery?: Omit<RouterInput['tracks']['getAll'], 'cursor'>
     getReleaseTracksQuery?: RouterInput['releases']['tracks']
     getPlaylistTracksQuery?: RouterInput['playlists']['tracks']
-    getArtistTracksQuery?: RouterInput['artists']['tracks']
     getTracksByTagQuery?: RouterInput['tracks']['getByTag']
   }
 ) =>
@@ -30,7 +29,6 @@ export const createFavoriteTrackMutation = (
         getAllTracksQuery?: InfiniteData<RouterOutput['tracks']['getAll']>
         getReleaseTracksQuery?: RouterOutput['releases']['tracks']
         getPlaylistTracksQuery?: RouterOutput['playlists']['tracks']
-        getArtistTracksQuery?: RouterOutput['artists']['tracks']
         getTracksByTagQuery?: RouterOutput['tracks']['getByTag']
       } = {}
 
@@ -112,22 +110,6 @@ export const createFavoriteTrackMutation = (
         )
       }
 
-      if (optimistic?.getArtistTracksQuery) {
-        await trpc.artists.tracks.utils.cancel(optimistic.getArtistTracksQuery)
-
-        output.getArtistTracksQuery = trpc.artists.tracks.utils.getData(
-          optimistic.getArtistTracksQuery
-        )
-
-        trpc.artists.tracks.utils.setData(optimistic.getArtistTracksQuery, (old) =>
-          old
-            ? old.map((track) =>
-                track.id === input.id ? { ...track, favorite: input.favorite } : track
-              )
-            : old
-        )
-      }
-
       if (optimistic?.getTracksByTagQuery) {
         await trpc.tracks.getByTag.utils.cancel(optimistic.getTracksByTagQuery)
 
@@ -179,13 +161,6 @@ export const createFavoriteTrackMutation = (
         )
       }
 
-      if (optimistic?.getArtistTracksQuery) {
-        trpc.artists.tracks.utils.setData(
-          optimistic.getArtistTracksQuery,
-          context?.getArtistTracksQuery
-        )
-      }
-
       if (optimistic?.getTracksByTagQuery) {
         trpc.tracks.getByTag.utils.setData(
           optimistic.getTracksByTagQuery,
@@ -200,7 +175,6 @@ export const createFavoriteTrackMutation = (
         trpc.tracks.getAll.utils.invalidate(optimistic?.getAllTracksQuery),
         trpc.releases.tracks.utils.invalidate(optimistic?.getReleaseTracksQuery),
         trpc.playlists.tracks.utils.invalidate(optimistic?.getPlaylistTracksQuery),
-        trpc.artists.tracks.utils.invalidate(optimistic?.getArtistTracksQuery),
         trpc.tracks.getByTag.utils.invalidate(optimistic?.getTracksByTagQuery),
       ])
     },
