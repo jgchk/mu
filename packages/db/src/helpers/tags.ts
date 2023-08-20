@@ -1,62 +1,27 @@
-import type { InferModel } from 'drizzle-orm'
 import { eq } from 'drizzle-orm'
-import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
-import { ifDefined, withProps } from 'utils'
+import { withProps } from 'utils'
 
 import type { ReleaseTag } from '../schema/release-tags'
 import { releaseTags } from '../schema/release-tags'
 import type { InsertTag, Tag } from '../schema/tags'
-import { tags } from '../schema/tags'
+import { tagRelationships, tags } from '../schema/tags'
 import type { TrackTag } from '../schema/track-tags'
 import { trackTags } from '../schema/track-tags'
 import type { UpdateData } from '../utils'
 import { hasUpdate, makeUpdate } from '../utils'
 import type { DatabaseBase } from './base'
 
-export type TagRelationship = InferModel<typeof tagRelationships>
-export type InsertTagRelationship = InferModel<typeof tagRelationships, 'insert'>
-export const tagRelationships = sqliteTable(
-  'tag_relationships',
-  {
-    parentId: integer('parent_id')
-      .references(() => tags.id, { onDelete: 'cascade' })
-      .notNull(),
-    childId: integer('child_id')
-      .references(() => tags.id, { onDelete: 'cascade' })
-      .notNull(),
-  },
-  (tagRelationships) => ({
-    tagRelationshipsPrimaryKey: primaryKey(tagRelationships.parentId, tagRelationships.childId),
-  })
-)
-
-export type TagPretty = Omit<Tag, 'taggable'> & {
-  taggable: boolean
-}
-export type InsertTagPretty = Omit<InsertTag, 'taggable'> & {
-  taggable?: boolean
-}
-
-const convertInsertTag = (tag: InsertTagPretty): InsertTag => ({
-  ...tag,
-  taggable: tag.taggable ? 1 : 0,
-})
-const convertTag = (tag: Tag): TagPretty => ({
-  ...tag,
-  taggable: tag.taggable !== 0,
-})
-
 export type TagsMixin = {
   tags: {
-    insert: (tag: InsertTagPretty) => TagPretty
-    update: (id: Tag['id'], data: UpdateData<InsertTagPretty>) => TagPretty | undefined
-    get: (id: Tag['id']) => TagPretty | undefined
-    getAll: (filter?: { taggable?: boolean }) => TagPretty[]
-    getParents: (id: Tag['id']) => TagPretty[]
-    getChildren: (id: Tag['id']) => TagPretty[]
-    getDescendants: (id: Tag['id']) => TagPretty[]
-    getByRelease: (releaseId: ReleaseTag['releaseId']) => TagPretty[]
-    getByTrack: (trackId: TrackTag['trackId']) => TagPretty[]
+    insert: (tag: InsertTag) => Tag
+    update: (id: Tag['id'], data: UpdateData<InsertTag>) => Tag | undefined
+    get: (id: Tag['id']) => Tag | undefined
+    getAll: (filter?: { taggable?: boolean }) => Tag[]
+    getParents: (id: Tag['id']) => Tag[]
+    getChildren: (id: Tag['id']) => Tag[]
+    getDescendants: (id: Tag['id']) => Tag[]
+    getByRelease: (releaseId: ReleaseTag['releaseId']) => Tag[]
+    getByTrack: (trackId: TrackTag['trackId']) => Tag[]
     delete: (id: Tag['id']) => void
     checkLoop: (
       newTag?: Partial<Pick<InsertTag, 'parents' | 'children' | 'id' | 'name'>>
@@ -67,7 +32,7 @@ export type TagsMixin = {
 export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
   const tagsMixin: TagsMixin['tags'] = {
     insert: ({ parents, children, ...tag }) => {
-      const result = base.db.insert(tags).values(convertInsertTag(tag)).returning().get()
+      const result = base.db.insert(tags).values(tag).returning().get()
       if (parents?.length) {
         base.db
           .insert(tagRelationships)
@@ -80,15 +45,12 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
           .values(children.map((childId) => ({ parentId: result.id, childId })))
           .run()
       }
-      return convertTag(result)
+      return result
     },
     update: (id, { parents, children, ...data }) => {
-      const update = makeUpdate({
-        ...data,
-        taggable: ifDefined(data.taggable, (taggable) => (taggable ? 1 : 0)),
-      })
+      const update = makeUpdate(data)
       const result = hasUpdate(update)
-        ? convertTag(base.db.update(tags).set(update).where(eq(tags.id, id)).returning().get())
+        ? base.db.update(tags).set(update).where(eq(tags.id, id)).returning().get()
         : tagsMixin.get(id)
 
       if (parents) {
@@ -113,16 +75,16 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
       return result
     },
     get: (id) => {
-      return ifDefined(base.db.select().from(tags).where(eq(tags.id, id)).get(), convertTag)
+      return base.db.select().from(tags).where(eq(tags.id, id)).get()
     },
     getAll: ({ taggable } = {}) => {
       let query = base.db.select().from(tags)
 
       if (taggable !== undefined) {
-        query = query.where(eq(tags.taggable, taggable ? 1 : 0))
+        query = query.where(eq(tags.taggable, taggable))
       }
 
-      return query.orderBy(tags.name).all().map(convertTag)
+      return query.orderBy(tags.name).all()
     },
     getParents: (id) => {
       return base.db
@@ -131,7 +93,7 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
         .where(eq(tagRelationships.childId, id))
         .innerJoin(tags, eq(tags.id, tagRelationships.parentId))
         .all()
-        .map((tag) => convertTag(tag.tags))
+        .map((tag) => tag.tags)
     },
     getChildren: (id) => {
       return base.db
@@ -140,11 +102,11 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
         .where(eq(tagRelationships.parentId, id))
         .innerJoin(tags, eq(tags.id, tagRelationships.childId))
         .all()
-        .map((tag) => convertTag(tag.tags))
+        .map((tag) => tag.tags)
     },
     getDescendants: (id) => {
       // bfs
-      const descendants: TagPretty[] = []
+      const descendants: Tag[] = []
       const visited = new Set<number>()
       const queue = tagsMixin.getChildren(id)
       while (queue.length) {
@@ -167,7 +129,7 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
         .where(eq(releaseTags.releaseId, releaseId))
         .innerJoin(tags, eq(releaseTags.tagId, tags.id))
         .all()
-        .map((t) => convertTag(t.tags))
+        .map((t) => t.tags)
     },
     getByTrack: (trackId) => {
       return base.db
@@ -176,7 +138,7 @@ export const TagsMixin = <T extends DatabaseBase>(base: T): T & TagsMixin => {
         .where(eq(trackTags.trackId, trackId))
         .innerJoin(tags, eq(trackTags.tagId, tags.id))
         .all()
-        .map((t) => convertTag(t.tags))
+        .map((t) => t.tags)
     },
     delete: (id) => {
       return base.db.delete(tags).where(eq(tags.id, id)).run()
