@@ -1,5 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
-import { eq } from 'drizzle-orm'
+import { eq, placeholder, sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { withProps } from 'utils'
 
@@ -23,14 +23,33 @@ export const artists = sqliteTable('artists', {
 
 export type ArtistsMixin = {
   artists: {
+    preparedQueries: PreparedQueries
+    getBySimilarName: (name: string) => Artist[]
     getByReleaseId: (releaseId: ReleaseArtist['releaseId']) => Artist[]
     getByTrackId: (trackId: TrackArtist['trackId']) => Artist[]
     update: (id: Artist['id'], data: UpdateData<Artist>) => Artist | undefined
   }
 }
 
+type PreparedQueries = ReturnType<typeof prepareQueries>
+const prepareQueries = (db: DatabaseBase['db']) => ({
+  getArtistsBySimilarName: db
+    .select()
+    .from(artists)
+    .where(sql`lower(${artists.name}) like ${placeholder('name')}`)
+    .prepare(),
+})
+
 export const ArtistsMixin = <T extends DatabaseBase>(base: T): T & ArtistsMixin => {
   const artistsMixin: ArtistsMixin['artists'] = {
+    preparedQueries: prepareQueries(base.db),
+
+    getBySimilarName: (name) => {
+      return artistsMixin.preparedQueries.getArtistsBySimilarName.all({
+        name: `%${name.toLowerCase()}%`,
+      })
+    },
+
     getByReleaseId: (releaseId) => {
       return base.db
         .select()

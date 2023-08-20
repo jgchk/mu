@@ -1,6 +1,5 @@
 import { makeDb, makeLastFm } from 'context'
 import type { Artist } from 'db'
-import { artists, sql } from 'db'
 import { distance } from 'fastest-levenshtein'
 import { log } from 'log'
 import { groupBy, toErrorString } from 'utils'
@@ -69,11 +68,8 @@ let numMatches = 0
 for (const tracks of groupedTracks.values()) {
   const artist = tracks[0].artist
 
-  const dbArtists = db.db
-    .select()
-    .from(artists)
-    .where(sql`lower(${artists.name}) like %${artist.name.toLowerCase()}%`)
-    .all()
+  const dbArtists = db.artists
+    .getBySimilarName(artist.name)
     .map((dbMatch) => ({
       dbMatch,
       distance: distance(dbMatch.name.toLowerCase(), artist.name.toLowerCase()),
