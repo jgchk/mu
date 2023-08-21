@@ -11,7 +11,7 @@
   import { playTrack } from '$lib/now-playing'
   import { createReleasesByTagQuery } from '$lib/services/releases'
   import { createTagQuery, createTagsTreeQuery } from '$lib/services/tags'
-  import { createFavoriteTrackMutation, createTracksByTagQuery } from '$lib/services/tracks'
+  import { createTracksByTagQuery } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -28,10 +28,6 @@
 
   $: releasesQuery = createReleasesByTagQuery(trpc, data.id)
   $: tracksQuery = createTracksByTagQuery(trpc, data.tracksQuery)
-
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getTracksByTagQuery: data.tracksQuery,
-  })
 
   const makeQueueData = (tracks: RouterOutput['tracks']['getByTag'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
@@ -153,8 +149,6 @@
           sortable
           favorites={data.tracksQuery.filter?.favorite ?? false}
           on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-          on:favorite={(e) =>
-            $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
         />
       {:else}
         <div>No tracks</div>

@@ -7,6 +7,8 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import { createFavoriteTrackMutation } from '$lib/services/tracks'
+  import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
   import AddToPlaylistButton from './AddToPlaylistButton.svelte'
@@ -20,13 +22,18 @@
   export let i: number
   export let showDelete = false
 
+  const trpc = getContextClient()
+  const favoriteMutation = createFavoriteTrackMutation(trpc)
+
+  const favorite = () => {
+    $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })
+  }
+
   const dispatch = createEventDispatcher<{
     play: undefined
-    favorite: undefined
     delete: undefined
   }>()
   const play = () => dispatch('play')
-  const favorite = () => dispatch('favorite')
   const delete_ = () => dispatch('delete')
 </script>
 

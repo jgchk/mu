@@ -7,7 +7,6 @@
   import TrackList from '$lib/components/TrackList.svelte'
   import { playTrack } from '$lib/now-playing'
   import { createReleaseTracksQuery } from '$lib/services/releases'
-  import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -21,10 +20,6 @@
   $: releaseQuery = trpc.releases.get.query({ id: data.id })
   $: tracksQuery = createReleaseTracksQuery(trpc, data.tracksQuery)
   $: tracks = $tracksQuery.data
-
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getReleaseTracksQuery: { id: data.id },
-  })
 
   const makeQueueData = (tracks: RouterOutput['releases']['tracks'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
@@ -64,8 +59,6 @@
         sortable
         showCoverArt={false}
         on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-        on:favorite={(e) =>
-          $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
       />
     {:else if $tracksQuery.error}
       <p>Something went wrong</p>
