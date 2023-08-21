@@ -11,13 +11,17 @@
   import { nowPlaying } from '$lib/now-playing'
   import Toaster from '$lib/toast/Toaster.svelte'
 
+  import type { LayoutData } from './$types'
+
+  export let data: LayoutData
+
   let showQueue = false
 </script>
 
 <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
   <div class="flex min-w-0 flex-1 flex-col gap-2">
     <div class="order-3 md:order-1">
-      <NavBar />
+      <NavBar searchQuery={data.searchQuery} />
     </div>
 
     <main class="relative order-1 min-h-0 flex-1 md:order-2">

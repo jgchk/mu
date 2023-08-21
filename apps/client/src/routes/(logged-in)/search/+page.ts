@@ -4,6 +4,6 @@ import type { PageLoad } from './$types'
 
 export const load: PageLoad = ({ url }) => {
   const newUrl = new URL(url)
-  newUrl.pathname = '/search/spotify'
+  newUrl.pathname = '/search/tracks'
   throw redirect(301, newUrl.toString())
 }

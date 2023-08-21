@@ -1,4 +1,4 @@
-import type { RouterInput, RouterOptions, TRPCClient } from '$lib/trpc'
+import type { RouterOptions, TRPCClient } from '$lib/trpc'
 
 export const createArtistQuery = (trpc: TRPCClient, id: number) => trpc.artists.get.query({ id })
 
@@ -36,16 +36,3 @@ export const createArtistReleasesQuery = (trpc: TRPCClient, id: number) =>
 
 export const prefetchArtistReleasesQuery = (trpc: TRPCClient, id: number) =>
   trpc.artists.releases.prefetchQuery({ id })
-
-export const createArtistTracksQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['artists']['tracks']
-) => trpc.artists.tracks.query(input)
-
-export const prefetchArtistTracksQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['artists']['tracks']
-) => trpc.artists.tracks.prefetchQuery(input)
-
-export const fetchArtistTracksQuery = (trpc: TRPCClient, input: RouterInput['artists']['tracks']) =>
-  trpc.artists.tracks.fetchQuery(input)

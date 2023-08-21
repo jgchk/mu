@@ -94,6 +94,10 @@ export class DownloadQueue {
 
       const dbPlaylist = db.soundcloudPlaylistDownloads.get(playlistId)
 
+      if (dbPlaylist === undefined) {
+        throw new Error(`Playlist with id ${playlistId} does not exist`)
+      }
+
       let scPlaylist = dbPlaylist.playlist
       if (!scPlaylist) {
         scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
@@ -142,6 +146,10 @@ export class DownloadQueue {
       }
 
       const dbTrack = db.soundcloudTrackDownloads.get(trackId)
+
+      if (dbTrack === undefined) {
+        throw new Error(`Track with id ${trackId} does not exist`)
+      }
 
       if (dbTrack.status === 'done') {
         return
@@ -203,6 +211,10 @@ export class DownloadQueue {
       if (dbTrack.playlistDownloadId !== null) {
         const dbPlaylist = db.soundcloudPlaylistDownloads.get(dbTrack.playlistDownloadId)
 
+        if (dbPlaylist === undefined) {
+          throw new Error(`Playlist with id ${dbTrack.playlistDownloadId} does not exist`)
+        }
+
         let scPlaylist = dbPlaylist.playlist
         if (!scPlaylist) {
           scPlaylist = await sc.getPlaylist(dbPlaylist.playlistId)
@@ -251,6 +263,10 @@ export class DownloadQueue {
       }
 
       const dbAlbum = db.spotifyAlbumDownloads.get(albumId)
+
+      if (dbAlbum === undefined) {
+        throw new Error(`Album with id ${albumId} does not exist`)
+      }
 
       let spotAlbum = dbAlbum.album
       if (!spotAlbum) {
@@ -302,6 +318,10 @@ export class DownloadQueue {
       }
 
       const dbTrack = db.spotifyTrackDownloads.get(trackId)
+
+      if (dbTrack === undefined) {
+        throw new Error(`Track with id ${trackId} does not exist`)
+      }
 
       if (dbTrack.status === 'done') {
         return
@@ -365,6 +385,10 @@ export class DownloadQueue {
       let spotAlbum: SpotifySimplifiedAlbum
       if (dbTrack.albumDownloadId !== null) {
         const dbAlbum = db.spotifyAlbumDownloads.get(dbTrack.albumDownloadId)
+
+        if (dbAlbum === undefined) {
+          throw new Error(`Album with id ${dbTrack.albumDownloadId} does not exist`)
+        }
 
         let spotAlbum_ = dbAlbum.album
         if (!spotAlbum_) {

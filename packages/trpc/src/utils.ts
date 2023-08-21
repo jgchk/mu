@@ -31,6 +31,8 @@ export const TracksSort = z.object({
 
 export type TracksFilter = z.infer<typeof TracksFilter>
 export const TracksFilter = z.object({
+  artistId: z.number().optional(),
+  title: z.string().optional(),
   favorite: z.boolean().optional(),
   tags: BoolLangString.optional(),
   sort: TracksSort.optional(),

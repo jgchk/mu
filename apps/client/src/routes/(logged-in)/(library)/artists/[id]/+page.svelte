@@ -1,5 +1,6 @@
 <script lang="ts">
   import { makeCollageUrl, makeImageUrl } from 'mutils'
+  import { inview } from 'svelte-inview'
 
   import Button from '$lib/atoms/Button.svelte'
   import FlowGrid from '$lib/atoms/FlowGrid.svelte'
@@ -8,11 +9,7 @@
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
-  import {
-    createArtistQuery,
-    createArtistReleasesQuery,
-    createArtistTracksQuery,
-  } from '$lib/services/artists'
+  import { createArtistQuery, createArtistReleasesQuery } from '$lib/services/artists'
   import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -25,14 +22,24 @@
   const trpc = getContextClient()
   $: artistQuery = createArtistQuery(trpc, data.id)
   $: releasesQuery = createArtistReleasesQuery(trpc, data.id)
-  $: tracksQuery = createArtistTracksQuery(trpc, data.tracksQuery)
-  $: tracks = $tracksQuery.data
+  $: tracksQuery = trpc.tracks.getAll.infiniteQuery(data.tracksQuery)
+  $: tracks = $tracksQuery.data?.pages.flatMap((page) => page.items)
 
   $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getArtistTracksQuery: { id: data.id },
+    getAllTracksQuery: data.tracksQuery,
   })
 
-  const makeQueueData = (tracks: RouterOutput['artists']['tracks'], trackIndex: number) => ({
+  let inView = false
+  $: {
+    if (inView && $tracksQuery.hasNextPage && !$tracksQuery.isFetchingNextPage) {
+      void $tracksQuery.fetchNextPage()
+    }
+  }
+
+  const makeQueueData = (
+    tracks: RouterOutput['tracks']['getAll']['items'],
+    trackIndex: number
+  ) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
@@ -106,7 +113,21 @@
         tracks?.length && playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       on:favorite={(e) =>
         $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-    />
+    >
+      <svelte:fragment slot="footer">
+        {#if $tracksQuery.hasNextPage}
+          <div
+            class="m-1 flex justify-center"
+            use:inview
+            on:inview_change={(event) => (inView = event.detail.inView)}
+          >
+            <Button kind="outline" on:click={() => $tracksQuery.fetchNextPage()}>
+              {$tracksQuery.isFetchingNextPage ? 'Loading...' : 'Load More'}
+            </Button>
+          </div>
+        {/if}
+      </svelte:fragment>
+    </TrackList>
   {:else if $tracksQuery.error}
     <p>Something went wrong</p>
   {:else}

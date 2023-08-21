@@ -1,4 +1,4 @@
-import { fetchReleaseTracksQuery, prefetchReleaseWithArtistsQuery } from '$lib/services/releases'
+import { fetchReleaseTracksQuery } from '$lib/services/releases'
 import { prefetchReleaseTagsQuery, prefetchTrackTagsQuery } from '$lib/services/tags'
 import { getTracksSort } from '$lib/tracks-sort'
 import { paramNumber } from '$lib/utils/params'
@@ -19,7 +19,7 @@ export const load: PageLoad = async ({ parent, params, url }) => {
 
   const { trpc } = await parent()
   await Promise.all([
-    prefetchReleaseWithArtistsQuery(trpc, id),
+    trpc.releases.get.prefetchQuery({ id }),
     fetchReleaseTracksQuery(trpc, tracksQuery).then((releaseTracks) =>
       Promise.all(releaseTracks.map((rt) => prefetchTrackTagsQuery(trpc, rt.id)))
     ),

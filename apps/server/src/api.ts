@@ -108,6 +108,11 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
         }
 
         const track = ctx().db.tracks.get(req.params.id)
+
+        if (track === undefined) {
+          return res.status(404).send('Track not found')
+        }
+
         const stream = fs.createReadStream(track.path)
 
         void res
@@ -207,6 +212,10 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
 
         const fileDownload = ctx().db.downloads.getTrackDownload(service, id)
 
+        if (fileDownload === undefined) {
+          return res.status(404).send('Download not found')
+        }
+
         if (!isDownloadComplete(fileDownload)) {
           return res.status(400).send('Download not complete')
         }
@@ -288,8 +297,13 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
         const { width, height } = req.query
 
         const track = ctx().db.tracks.get(id)
+
+        if (track === undefined) {
+          return res.status(404).send('Track not found')
+        }
+
         if (track.imageId === null) {
-          throw new Error('Track does not have cover art')
+          return res.status(404).send('Track does not have cover art')
         }
 
         const { output, contentType } = await handleResizeImage(track.imageId, { width, height })
@@ -316,6 +330,11 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
         const { width, height } = req.query
 
         const release = ctx().db.releases.get(id)
+
+        if (release === undefined) {
+          return res.status(404).send('Release not found')
+        }
+
         const tracks = ctx().db.tracks.getByReleaseId(release.id)
 
         for (const track of tracks) {

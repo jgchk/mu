@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
-import type { Database, Playlist, PlaylistTrack, TrackPretty } from 'db'
+import type { Database, Playlist, PlaylistTrack, Track } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -62,6 +62,14 @@ export const playlistsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const oldPlaylist = ctx.sys().db.playlists.get(input.id)
+
+      if (oldPlaylist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       const oldImageId = oldPlaylist.imageId
 
       if (
@@ -91,6 +99,13 @@ export const playlistsRouter = router({
         imageId,
       })
 
+      if (playlist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       if (imageId !== undefined && oldImageId !== null) {
         await ctx.sys().img.cleanupImage(oldImageId)
       }
@@ -101,6 +116,14 @@ export const playlistsRouter = router({
     .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
     .mutation(({ ctx, input }) => {
       const oldPlaylist = ctx.sys().db.playlists.get(input.playlistId)
+
+      if (oldPlaylist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       if (oldPlaylist.filter !== null) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -109,12 +132,29 @@ export const playlistsRouter = router({
       }
 
       ctx.sys().db.playlistTracks.updateByPlaylistId(input.playlistId, input.trackIds)
-      return ctx.sys().db.playlists.get(input.playlistId)
+      const playlist = ctx.sys().db.playlists.get(input.playlistId)
+
+      if (playlist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
+      return playlist
     }),
   addTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, trackId } }) => {
       const oldPlaylist = ctx.sys().db.playlists.get(playlistId)
+
+      if (oldPlaylist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       if (oldPlaylist.filter !== null) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -133,6 +173,14 @@ export const playlistsRouter = router({
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, playlistTrackId } }) => {
       const oldPlaylist = ctx.sys().db.playlists.get(playlistId)
+
+      if (oldPlaylist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       if (oldPlaylist.filter !== null) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -170,6 +218,14 @@ export const playlistsRouter = router({
     }),
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
     const playlist = ctx.sys().db.playlists.get(id)
+
+    if (playlist === undefined) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Playlist not found',
+      })
+    }
+
     const imageIds = getPlaylistTracks(ctx.sys().db, playlist)
       .map((track) => track.imageId)
       .filter(isNotNull)
@@ -182,6 +238,14 @@ export const playlistsRouter = router({
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) => {
       const playlist = ctx.sys().db.playlists.get(id)
+
+      if (playlist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
       return getPlaylistTracks(ctx.sys().db, playlist, filter).map((track) => ({
         ...track,
         artists: ctx.sys().db.artists.getByTrackId(track.id),
@@ -190,7 +254,8 @@ export const playlistsRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const imageId = ctx.sys().db.playlists.get(input.id).imageId
+      const imageId = ctx.sys().db.playlists.get(input.id)?.imageId ?? null
+
       if (imageId !== null) {
         await ctx.sys().img.cleanupImage(imageId)
       }
@@ -203,7 +268,7 @@ const getPlaylistTracks = (
   db: Database,
   playlist: Playlist,
   filter?: TracksFilter
-): (TrackPretty & { playlistTrackId?: PlaylistTrack['id'] })[] => {
+): (Track & { playlistTrackId?: PlaylistTrack['id'] })[] => {
   if (playlist.filter !== null) {
     const tagsFilter = decode(playlist.filter)
     return db.tracks.getAll({ ...filter, tags: injectDescendants(db)(tagsFilter) })

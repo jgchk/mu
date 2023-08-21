@@ -11,4 +11,4 @@ export type TrackListTrack = {
   playlistTrackId?: number
 }
 
-export type Sort = NonNullable<RouterInput['tracks']['getAllWithArtistsAndRelease']['sort']>
+export type Sort = NonNullable<RouterInput['tracks']['getAll']['sort']>

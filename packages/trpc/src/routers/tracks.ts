@@ -1,36 +1,114 @@
-import { ifDefined, ifNotNull } from 'utils'
+import { TRPCError } from '@trpc/server'
+import type { SQL } from 'db'
+import { and, artists, asc, desc, eq, inArray, releases, sql, trackArtists, tracks } from 'db'
+import { generateWhereClause } from 'db/src/helpers/tracks'
+import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
 import { TracksFilter, injectDescendants } from '../utils'
 
 export const tracksRouter = router({
-  getAllWithArtistsAndRelease: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
+  getAll: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 
-    const tracks = ctx.sys().db.tracks.getAll({
-      favorite: input.favorite,
-      tags: ifDefined(input.tags, injectDescendants(ctx.sys().db)),
-      sort: input.sort,
-      skip,
+    const where = []
+
+    if (input.title) {
+      where.push(sql`lower(${tracks.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+    }
+    if (input.artistId !== undefined) {
+      where.push(
+        inArray(
+          tracks.id,
+          ctx
+            .sys()
+            .db.db.select({ data: trackArtists.trackId })
+            .from(trackArtists)
+            .where(eq(trackArtists.artistId, input.artistId))
+        )
+      )
+    }
+
+    if (input.favorite !== undefined) {
+      where.push(eq(tracks.favorite, input.favorite))
+    }
+
+    if (input.tags) {
+      const tagsWithDescendants = injectDescendants(ctx.sys().db)(input.tags)
+      const tagsWhere = generateWhereClause(tagsWithDescendants)
+      if (tagsWhere) {
+        where.push(tagsWhere)
+      }
+    }
+
+    let orderBy: SQL | undefined
+    if (input.sort) {
+      const dir = input.sort.direction === 'asc' ? asc : desc
+
+      switch (input.sort.column) {
+        case 'title': {
+          orderBy = dir(tracks.title)
+          break
+        }
+        case 'artists': {
+          orderBy = dir(
+            ctx
+              .sys()
+              .db.db.select({ name: sql`group_concat(${artists.name}, ', ')` })
+              .from(trackArtists)
+              .where(eq(trackArtists.trackId, tracks.id))
+              .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+              .orderBy(trackArtists.order)
+              .groupBy(trackArtists.trackId)
+          )
+          break
+        }
+        case 'release': {
+          orderBy = dir(
+            ctx
+              .sys()
+              .db.db.select({ title: releases.title })
+              .from(releases)
+              .where(eq(tracks.releaseId, releases.id))
+          )
+          break
+        }
+        case 'duration': {
+          orderBy = dir(tracks.duration)
+          break
+        }
+      }
+    }
+
+    const results = ctx.sys().db.db.query.tracks.findMany({
+      where: and(...where),
+      orderBy,
+      offset: skip,
       limit: limit + 1,
+      with: {
+        release: true,
+        trackArtists: {
+          orderBy: asc(trackArtists.order),
+          with: { artist: true },
+        },
+      },
     })
 
     let nextCursor: number | undefined = undefined
-    if (tracks.length > limit) {
-      tracks.pop()
+    if (results.length > limit) {
+      results.pop()
       nextCursor = skip + limit
     }
 
-    const tracksWithArtistsAndRelease = tracks.map((track) => ({
+    const formattedResults = results.map(({ trackArtists, ...track }) => ({
       ...track,
-      artists: ctx.sys().db.artists.getByTrackId(track.id),
-      release: ifNotNull(track.releaseId, (releaseId) => ctx.sys().db.releases.get(releaseId)),
+      artists: trackArtists.map((trackArtist) => trackArtist.artist),
     }))
 
     return {
-      items: tracksWithArtistsAndRelease,
+      items: formattedResults,
       nextCursor,
     }
   }),
@@ -39,6 +117,14 @@ export const tracksRouter = router({
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
       const track = ctx.sys().db.tracks.get(id)
+
+      if (track === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track not found',
+        })
+      }
+
       return {
         ...track,
         artists: ctx.sys().db.artists.getByTrackId(id),
@@ -86,6 +172,13 @@ export const tracksRouter = router({
     .input(z.object({ id: z.number(), favorite: z.boolean() }))
     .mutation(async ({ input: { id, favorite }, ctx }) => {
       const dbTrack = ctx.sys().db.tracks.update(id, { favorite })
+
+      if (dbTrack === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Track not found',
+        })
+      }
 
       const artists = ctx
         .sys()

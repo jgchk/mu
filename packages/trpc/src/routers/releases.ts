@@ -1,10 +1,12 @@
+import { TRPCError } from '@trpc/server'
+import { asc, eq, releaseArtists, releases, sql } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { deleteTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { numDigits, uniq } from 'utils'
+import { isDefined, numDigits, uniq } from 'utils'
 import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
@@ -12,49 +14,60 @@ import { protectedProcedure, router } from '../trpc'
 import { TracksFilter } from '../utils'
 
 export const releasesRouter = router({
-  getAll: protectedProcedure.query(({ ctx }) =>
-    ctx
-      .sys()
-      .db.releases.getAll()
-      .map((release) => ({
-        ...release,
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }))
-  ),
+  getAll: protectedProcedure
+    .input(z.object({ title: z.string().optional() }))
+    .query(({ input, ctx }) => {
+      const results = ctx.sys().db.db.query.releases.findMany({
+        where: input?.title
+          ? sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`
+          : undefined,
+        with: {
+          tracks: true,
+          releaseArtists: {
+            orderBy: asc(releaseArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
 
-  getAllWithArtists: protectedProcedure.query(({ ctx }) =>
-    ctx
-      .sys()
-      .db.releases.getAll()
-      .map((release) => ({
+      return results.map(({ releaseArtists, ...release }) => ({
         ...release,
-        artists: ctx.sys().db.artists.getByReleaseId(release.id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
+        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+        artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
       }))
-  ),
-
-  getWithArtists: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ input: { id }, ctx }) => {
-      const release = ctx.sys().db.releases.get(id)
-      return {
-        ...release,
-        artists: ctx.sys().db.artists.getByReleaseId(release.id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(release.id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }
     }),
+
+  get: protectedProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => {
+    const result = ctx.sys().db.db.query.releases.findFirst({
+      where: eq(releases.id, id),
+      with: {
+        tracks: true,
+        releaseArtists: {
+          orderBy: asc(releaseArtists.order),
+          with: {
+            artist: true,
+          },
+        },
+      },
+    })
+
+    if (result === undefined) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Release not found',
+      })
+    }
+
+    const { releaseArtists: releaseArtists_, ...release } = result
+
+    return {
+      ...release,
+      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+      artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
+    }
+  }),
 
   tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
@@ -113,21 +126,31 @@ export const releasesRouter = router({
       )
 
       const albumTitle = input.album.title
-      const albumArtists = input.album.artists.map((artist) => {
-        if (artist.action === 'create') {
-          const dbArtist = artistMap.get(artist.id)
-          if (!dbArtist) {
-            throw new Error(`Artist ${artist.id} missing from input.artists`)
+      const albumArtists = input.album.artists
+        .map((artist) => {
+          if (artist.action === 'create') {
+            const dbArtist = artistMap.get(artist.id)
+            if (!dbArtist) {
+              throw new Error(`Artist ${artist.id} missing from input.artists`)
+            }
+            return dbArtist
+          } else {
+            return ctx.sys().db.artists.get(artist.id)
           }
-          return dbArtist
-        } else {
-          return ctx.sys().db.artists.get(artist.id)
-        }
-      })
+        })
+        .filter(isDefined)
 
       const dbRelease = ctx.sys().db.releases.update(input.id, {
         title: albumTitle,
       })
+
+      if (dbRelease === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Release not found',
+        })
+      }
+
       ctx.sys().db.releaseArtists.updateByReleaseId(
         input.id,
         albumArtists.map((a) => a.id)
@@ -152,6 +175,13 @@ export const releasesRouter = router({
         await Promise.all(
           input.tracks.map(async (track, i) => {
             const existingDbTrack = ctx.sys().db.tracks.get(track.id)
+
+            if (existingDbTrack === undefined) {
+              throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Track not found',
+              })
+            }
 
             const trackNumber = i + 1
 
@@ -180,17 +210,19 @@ export const releasesRouter = router({
               await fs.rename(existingDbTrack.path, newPath)
             }
 
-            const artists = track.artists.map((artist) => {
-              if (artist.action === 'create') {
-                const dbArtist = artistMap.get(artist.id)
-                if (!dbArtist) {
-                  throw new Error(`Artist ${artist.id} missing from input.artists`)
+            const artists = track.artists
+              .map((artist) => {
+                if (artist.action === 'create') {
+                  const dbArtist = artistMap.get(artist.id)
+                  if (!dbArtist) {
+                    throw new Error(`Artist ${artist.id} missing from input.artists`)
+                  }
+                  return dbArtist
+                } else {
+                  return ctx.sys().db.artists.get(artist.id)
                 }
-                return dbArtist
-              } else {
-                return ctx.sys().db.artists.get(artist.id)
-              }
-            })
+              })
+              .filter(isDefined)
 
             const metadata: Metadata = {
               title: track.title ?? null,
@@ -239,6 +271,14 @@ export const releasesRouter = router({
       }
 
       const release = ctx.sys().db.releases.get(dbRelease.id)
+
+      if (release === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Release not found',
+        })
+      }
+
       const tracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
       const artists = ctx.sys().db.artists.getByReleaseId(dbRelease.id)
       return {
