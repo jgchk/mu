@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, asc, eq, releaseArtists, releases, tracks } from 'db'
+import { artists, asc, eq, releaseArtists, releases, sql, tracks } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -114,42 +114,47 @@ export const artistsRouter = router({
     }))
   }),
 
-  getAll: protectedProcedure.query(({ ctx }) => {
-    const results = ctx.sys().db.db.query.artists.findMany({
-      orderBy: asc(artists.name),
-      with: {
-        releaseArtists: {
-          with: {
-            release: {
-              with: {
-                tracks: {
-                  orderBy: asc(tracks.order),
+  getAll: protectedProcedure
+    .input(z.object({ name: z.string().optional() }))
+    .query(({ input, ctx }) => {
+      const results = ctx.sys().db.db.query.artists.findMany({
+        where: input.name
+          ? sql`lower(${artists.name}) like ${'%' + input.name.toLowerCase() + '%'}`
+          : undefined,
+        orderBy: asc(artists.name),
+        with: {
+          releaseArtists: {
+            with: {
+              release: {
+                with: {
+                  tracks: {
+                    orderBy: asc(tracks.order),
+                  },
                 },
               },
             },
           },
-        },
-        trackArtists: {
-          with: {
-            track: true,
+          trackArtists: {
+            with: {
+              track: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    return results.map(({ releaseArtists, trackArtists, ...artist }) => {
-      const trackImageIds = trackArtists.map(({ track }) => track.imageId).filter(isNotNull)
+      return results.map(({ releaseArtists, trackArtists, ...artist }) => {
+        const trackImageIds = trackArtists.map(({ track }) => track.imageId).filter(isNotNull)
 
-      const releaseImageIds = releaseArtists
-        .map(
-          ({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null
-        )
-        .filter(isNotNull)
+        const releaseImageIds = releaseArtists
+          .map(
+            ({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null
+          )
+          .filter(isNotNull)
 
-      return {
-        ...artist,
-        imageIds: [...releaseImageIds, ...trackImageIds],
-      }
-    })
-  }),
+        return {
+          ...artist,
+          imageIds: [...releaseImageIds, ...trackImageIds],
+        }
+      })
+    }),
 })

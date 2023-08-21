@@ -8,10 +8,6 @@ export const prefetchArtistQuery = (trpc: TRPCClient, id: number) =>
 export const fetchArtistQuery = (trpc: TRPCClient, id: number) =>
   trpc.artists.get.fetchQuery({ id })
 
-export const createAllArtistsQuery = (trpc: TRPCClient) => trpc.artists.getAll.query()
-
-export const prefetchAllArtistsQuery = (trpc: TRPCClient) => trpc.artists.getAll.prefetchQuery()
-
 export const createAddArtistMutation = (trpc: TRPCClient) =>
   trpc.artists.add.mutation({ onSuccess: () => trpc.artists.getAll.utils.invalidate() })
 

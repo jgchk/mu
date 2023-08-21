@@ -3,6 +3,7 @@
   import SidebarLink from '$lib/components/SidebarLink.svelte'
   import AlbumIcon from '$lib/icons/AlbumIcon.svelte'
   import MusicNoteIcon from '$lib/icons/MusicNoteIcon.svelte'
+  import PersonIcon from '$lib/icons/PersonIcon.svelte'
   import SoulseekIcon from '$lib/icons/SoulseekIcon.svelte'
   import SoundcloudIcon from '$lib/icons/SoundcloudIcon.svelte'
   import SpotifyIcon from '$lib/icons/SpotifyIcon.svelte'
@@ -30,6 +31,11 @@
     <SidebarLink href={withSearchQuery('/search/releases')} label="Releases">
       <AlbumIcon />
     </SidebarLink>
+    <SidebarLink href={withSearchQuery('/search/artists')} label="Artists">
+      <PersonIcon />
+    </SidebarLink>
+
+    <div class="mx-2 my-2 h-px bg-gray-800" />
 
     <SidebarLink href={withSearchQuery('/search/soulseek')} label="Soulseek">
       <SoulseekIcon />
