@@ -6,7 +6,7 @@
   import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
   import { nowPlaying } from '$lib/now-playing'
-  import { createFavoriteTrackMutation, createTracksQuery } from '$lib/services/tracks'
+  import { createTracksQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
 
@@ -30,9 +30,6 @@
   }
 
   $: tracksQuery = createTracksQuery(trpc, tracks)
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getManyTracksQuery: { ids: tracks },
-  })
 </script>
 
 <div
@@ -51,33 +48,21 @@
     {#if previousTracks.length}
       <div>
         <h6 class="mb-1 ml-1 font-semibold text-gray-400">Previous</h6>
-        <TrackList
-          tracks={previousTracks}
-          on:favorite={(e) =>
-            $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-        />
+        <TrackList tracks={previousTracks} />
       </div>
     {/if}
 
     <div use:autoscroll>
       <h6 class="text-primary-500 mb-1 ml-1 font-bold">Now playing</h6>
       {#if nowPlayingTrack}
-        <TrackList
-          tracks={[nowPlayingTrack]}
-          on:favorite={(e) =>
-            $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-        />
+        <TrackList tracks={[nowPlayingTrack]} />
       {/if}
     </div>
 
     {#if nextTracks.length}
       <div>
         <h6 class="mb-1 ml-1 font-semibold text-gray-400">Next</h6>
-        <TrackList
-          tracks={nextTracks}
-          on:favorite={(e) =>
-            $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
-        />
+        <TrackList tracks={nextTracks} />
       </div>
     {/if}
   {:else if $tracksQuery.error}

@@ -4,7 +4,6 @@
 
   import type { Option } from '$lib/atoms/Select'
   import Select from '$lib/atoms/Select.svelte'
-  import { createAllArtistsQuery } from '$lib/services/artists'
   import { getContextClient } from '$lib/trpc'
 
   type Opt = Option<{
@@ -33,7 +32,7 @@
   let filter = ''
 
   const trpc = getContextClient()
-  const artistsQuery = createAllArtistsQuery(trpc)
+  const artistsQuery = trpc.artists.getAll.query({})
 
   export let value: $$Props['value'] = undefined
   export let createArtists: $$Props['createArtists']

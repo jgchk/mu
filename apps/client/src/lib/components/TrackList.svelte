@@ -22,14 +22,12 @@
 
   const dispatch = createEventDispatcher<{
     play: { track: T; i: number }
-    favorite: { track: T; favorite: boolean }
     delete: { track: T }
     reorder: { tracks: T[] }
   }>()
 
   /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
   const play = (track: T, i: number) => dispatch('play', { track, i })
-  const favorite = (track: T) => dispatch('favorite', { track, favorite: !track.favorite })
   const delete_ = (track: T) => dispatch('delete', { track })
   const reorder = (tracks: T[]) => dispatch('reorder', { tracks })
 
@@ -61,7 +59,6 @@
           {showCoverArt}
           {showDelete}
           on:play={() => play(track, i)}
-          on:favorite={() => favorite(track)}
           on:delete={() => delete_(track)}
         />
       </div>

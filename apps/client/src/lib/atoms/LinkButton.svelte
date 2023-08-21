@@ -12,7 +12,7 @@
 <a
   {href}
   class={tw(
-    'flex w-fit items-center rounded border px-2 py-1 text-sm font-medium transition',
+    'flex w-fit cursor-pointer items-center rounded border px-2 py-1 text-sm font-medium transition',
     kind === 'solid' && 'bg-primary-500 hover:bg-primary-600 border-transparent text-black',
     kind === 'outline' &&
       cn(

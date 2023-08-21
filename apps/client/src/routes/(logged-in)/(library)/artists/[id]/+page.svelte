@@ -10,7 +10,6 @@
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import { createArtistQuery, createArtistReleasesQuery } from '$lib/services/artists'
-  import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -24,10 +23,6 @@
   $: releasesQuery = createArtistReleasesQuery(trpc, data.id)
   $: tracksQuery = trpc.tracks.getAll.infiniteQuery(data.tracksQuery)
   $: tracks = $tracksQuery.data?.pages.flatMap((page) => page.items)
-
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getAllTracksQuery: data.tracksQuery,
-  })
 
   let inView = false
   $: {
@@ -111,8 +106,6 @@
       sortable
       on:play={(e) =>
         tracks?.length && playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
-      on:favorite={(e) =>
-        $favoriteMutation.mutate({ id: e.detail.track.id, favorite: e.detail.favorite })}
     >
       <svelte:fragment slot="footer">
         {#if $tracksQuery.hasNextPage}

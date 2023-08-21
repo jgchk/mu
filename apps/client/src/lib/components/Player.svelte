@@ -38,7 +38,7 @@
   $: trackId = track.id
   $: nowPlayingTrack = createTrackQuery(trpc, trackId)
 
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, { getTrackByIdQuery: { id: trackId } })
+  const favoriteMutation = createFavoriteTrackMutation(trpc)
 
   $: durationMs = $nowPlaying.track?.duration ?? $nowPlayingTrack.data?.duration
   $: formattedDuration = formatMilliseconds(durationMs ?? 0)

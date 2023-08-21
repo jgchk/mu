@@ -11,7 +11,6 @@
     createEditPlaylistTrackOrderMutation,
     createRemoveTrackFromPlaylistMutation,
   } from '$lib/services/playlists'
-  import { createFavoriteTrackMutation } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import type { RouterInput, RouterOutput } from '$lib/trpc'
 
@@ -30,9 +29,6 @@
 
   const trpc = getContextClient()
   const editTrackOrderMutation = createEditPlaylistTrackOrderMutation(trpc)
-  $: favoriteMutation = createFavoriteTrackMutation(trpc, {
-    getPlaylistTracksQuery: tracksQuery,
-  })
 
   const removeTrackMutation = createRemoveTrackFromPlaylistMutation(trpc)
   const handleRemoveTrack = (playlistTrackId: number) =>
@@ -103,8 +99,6 @@
       !tracksQuery.sort &&
       !$editTrackOrderMutation.isLoading}
     on:play={(e) => playTrack(e.detail.track.id, makeQueueData(e.detail.i))}
-    on:favorite={(e) =>
-      $favoriteMutation.mutate({ id: e.detail.track.id, favorite: !e.detail.favorite })}
     on:delete={(e) =>
       e.detail.track.playlistTrackId !== undefined &&
       handleRemoveTrack(e.detail.track.playlistTrackId)}
