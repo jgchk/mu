@@ -48,6 +48,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   edit: protectedProcedure
     .input(
       z.object({
@@ -112,6 +113,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   editTrackOrder: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
     .mutation(({ ctx, input }) => {
@@ -143,6 +145,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   addTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, trackId } }) => {
@@ -169,6 +172,7 @@ export const playlistsRouter = router({
         artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
+
   removeTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, playlistTrackId } }) => {
@@ -194,6 +198,7 @@ export const playlistsRouter = router({
         artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
+
   getAll: protectedProcedure
     .input(z.object({ auto: z.boolean().optional() }))
     .query(({ input, ctx }) =>
@@ -207,6 +212,7 @@ export const playlistsRouter = router({
             .filter(isNotNull),
         }))
     ),
+
   getAllHasTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
@@ -216,6 +222,7 @@ export const playlistsRouter = router({
         return { ...playlist, hasTrack }
       })
     }),
+
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
     const playlist = ctx.sys().db.playlists.get(id)
 
@@ -234,6 +241,7 @@ export const playlistsRouter = router({
       imageIds,
     }
   }),
+
   tracks: protectedProcedure
     .input(z.object({ id: z.number() }).and(TracksFilter))
     .query(({ ctx, input: { id, ...filter } }) => {
@@ -251,6 +259,7 @@ export const playlistsRouter = router({
         artists: ctx.sys().db.artists.getByTrackId(track.id),
       }))
     }),
+
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
