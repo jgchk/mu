@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
 import type { Database, Playlist, PlaylistTrack, Track } from 'db'
-import { asc, isNotNull, isNull, playlistTracks, playlists } from 'db'
+import { asc, eq, isNotNull, isNull, playlistTracks, playlists } from 'db'
 import { isNotNull as isNotNullUtil } from 'utils'
 import { z } from 'zod'
 
@@ -245,18 +245,29 @@ export const playlistsRouter = router({
     }),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
-    const playlist = ctx.sys().db.playlists.get(id)
+    const result = ctx.sys().db.db.query.playlists.findFirst({
+      where: eq(playlists.id, id),
+      with: {
+        playlistTracks: {
+          orderBy: asc(playlistTracks.order),
+          with: {
+            track: true,
+          },
+        },
+      },
+    })
 
-    if (playlist === undefined) {
+    if (result === undefined) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Playlist not found',
       })
     }
 
-    const imageIds = getPlaylistTracks(ctx.sys().db, playlist)
-      .map((track) => track.imageId)
-      .filter(isNotNullUtil)
+    const { playlistTracks: playlistTracks_, ...playlist } = result
+
+    const imageIds = playlistTracks_.map(({ track }) => track.imageId).filter(isNotNullUtil)
+
     return {
       ...playlist,
       imageIds,
