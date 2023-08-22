@@ -44,41 +44,39 @@ export const tracksRouter = router({
     }
 
     let orderBy: SQL | undefined
-    if (input.sort) {
-      const dir = input.sort.direction === 'asc' ? asc : desc
-
-      switch (input.sort.column) {
-        case 'title': {
-          orderBy = dir(tracks.title)
-          break
-        }
-        case 'artists': {
-          orderBy = dir(
-            ctx
-              .sys()
-              .db.db.select({ name: sql`group_concat(${artists.name}, ', ')` })
-              .from(trackArtists)
-              .where(eq(trackArtists.trackId, tracks.id))
-              .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-              .orderBy(trackArtists.order)
-              .groupBy(trackArtists.trackId)
-          )
-          break
-        }
-        case 'release': {
-          orderBy = dir(
-            ctx
-              .sys()
-              .db.db.select({ title: releases.title })
-              .from(releases)
-              .where(eq(tracks.releaseId, releases.id))
-          )
-          break
-        }
-        case 'duration': {
-          orderBy = dir(tracks.duration)
-          break
-        }
+    const sort = input.sort ?? { column: 'title', direction: 'asc' }
+    const dir = sort.direction === 'asc' ? asc : desc
+    switch (sort.column) {
+      case 'title': {
+        orderBy = dir(tracks.title)
+        break
+      }
+      case 'artists': {
+        orderBy = dir(
+          ctx
+            .sys()
+            .db.db.select({ name: sql`group_concat(${artists.name}, ', ')` })
+            .from(trackArtists)
+            .where(eq(trackArtists.trackId, tracks.id))
+            .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+            .orderBy(trackArtists.order)
+            .groupBy(trackArtists.trackId)
+        )
+        break
+      }
+      case 'release': {
+        orderBy = dir(
+          ctx
+            .sys()
+            .db.db.select({ title: releases.title })
+            .from(releases)
+            .where(eq(tracks.releaseId, releases.id))
+        )
+        break
+      }
+      case 'duration': {
+        orderBy = dir(tracks.duration)
+        break
       }
     }
 
