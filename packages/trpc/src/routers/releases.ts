@@ -18,6 +18,7 @@ export const releasesRouter = router({
     .input(z.object({ title: z.string().optional() }))
     .query(({ input, ctx }) => {
       const results = ctx.sys().db.db.query.releases.findMany({
+        orderBy: asc(releases.title),
         where: input?.title
           ? sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`
           : undefined,
