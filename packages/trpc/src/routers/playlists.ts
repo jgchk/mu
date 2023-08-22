@@ -1,8 +1,8 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
 import type { Database, Playlist, PlaylistTrack, Track } from 'db'
-import { asc, isNull, playlistTracks, playlists } from 'db'
-import { isNotNull } from 'utils'
+import { asc, isNotNull, isNull, playlistTracks, playlists } from 'db'
+import { isNotNull as isNotNullUtil } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -202,17 +202,24 @@ export const playlistsRouter = router({
 
   getAll: protectedProcedure
     .input(z.object({ auto: z.boolean().optional() }))
-    .query(({ input, ctx }) =>
-      ctx
-        .sys()
-        .db.playlists.getAll(input)
-        .map((playlist) => ({
-          ...playlist,
-          imageIds: getPlaylistTracks(ctx.sys().db, playlist)
-            .map((track) => track.imageId)
-            .filter(isNotNull),
-        }))
-    ),
+    .query(({ input, ctx }) => {
+      const results = ctx.sys().db.db.query.playlists.findMany({
+        where: input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter),
+        with: {
+          playlistTracks: {
+            orderBy: asc(playlistTracks.order),
+            with: {
+              track: true,
+            },
+          },
+        },
+      })
+
+      return results.map(({ playlistTracks, ...playlist }) => ({
+        ...playlist,
+        imageIds: playlistTracks.map(({ track }) => track.imageId).filter(isNotNullUtil),
+      }))
+    }),
 
   getAllHasTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
@@ -247,7 +254,7 @@ export const playlistsRouter = router({
 
     const imageIds = getPlaylistTracks(ctx.sys().db, playlist)
       .map((track) => track.imageId)
-      .filter(isNotNull)
+      .filter(isNotNullUtil)
     return {
       ...playlist,
       imageIds,
