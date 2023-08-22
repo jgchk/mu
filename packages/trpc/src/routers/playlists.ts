@@ -204,6 +204,7 @@ export const playlistsRouter = router({
     .input(z.object({ auto: z.boolean().optional() }))
     .query(({ input, ctx }) => {
       const results = ctx.sys().db.db.query.playlists.findMany({
+        orderBy: asc(playlists.name),
         where: input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter),
         with: {
           playlistTracks: {
@@ -225,6 +226,7 @@ export const playlistsRouter = router({
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
       const results = ctx.sys().db.db.query.playlists.findMany({
+        orderBy: asc(playlists.name),
         where: isNull(playlists.filter),
         with: {
           playlistTracks: {
