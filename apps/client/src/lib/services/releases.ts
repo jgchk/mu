@@ -10,18 +10,3 @@ export const createReleasesByTagQuery = (trpc: TRPCClient, tagId: number) =>
 
 export const prefetchReleasesByTagQuery = (trpc: TRPCClient, tagId: number) =>
   trpc.releases.getByTag.prefetchQuery({ tagId })
-
-export const createReleaseTracksQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['releases']['tracks']
-) => trpc.releases.tracks.query(input)
-
-export const prefetchReleaseTracksQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['releases']['tracks']
-) => trpc.releases.tracks.prefetchQuery(input)
-
-export const fetchReleaseTracksQuery = (
-  trpc: TRPCClient,
-  input: RouterInput['releases']['tracks']
-) => trpc.releases.tracks.fetchQuery(input)

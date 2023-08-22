@@ -11,7 +11,6 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksOptions } from '../utils'
 
 export const releasesRouter = router({
   getAll: protectedProcedure
@@ -69,18 +68,6 @@ export const releasesRouter = router({
       artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
     }
   }),
-
-  tracks: protectedProcedure
-    .input(z.object({ id: z.number() }).and(TracksOptions))
-    .query(({ input: { id, ...filter }, ctx }) =>
-      ctx
-        .sys()
-        .db.tracks.getByReleaseId(id, filter)
-        .map((track) => ({
-          ...track,
-          artists: ctx.sys().db.artists.getByTrackId(track.id),
-        }))
-    ),
 
   getByTag: protectedProcedure
     .input(z.object({ tagId: z.number() }))

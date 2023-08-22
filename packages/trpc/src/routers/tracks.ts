@@ -20,8 +20,7 @@ import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import type { TracksFilters } from '../utils'
-import { TracksOptions, injectDescendants } from '../utils'
+import { TracksFilters, TracksOptions, injectDescendants } from '../utils'
 
 const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limit?: number }) => {
   const where = []
@@ -39,6 +38,9 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
           .where(eq(trackArtists.artistId, input.artistId))
       )
     )
+  }
+  if (input.releaseId !== undefined) {
+    where.push(eq(tracks.releaseId, input.releaseId))
   }
 
   if (input.favorite !== undefined) {
@@ -124,8 +126,19 @@ export const tracksRouter = router({
     return { items, nextCursor }
   }),
 
+  getByReleaseId: protectedProcedure
+    .input(
+      z.object({
+        releaseId: z.number(),
+        filter: TracksFilters.omit({ releaseId: true }).optional(),
+      })
+    )
+    .query(({ input: { releaseId, filter }, ctx }) =>
+      getAllTracks(ctx.sys().db, { ...filter, releaseId })
+    ),
+
   getByPlaylistId: protectedProcedure
-    .input(z.object({ playlistId: z.number(), filter: TracksOptions.optional() }))
+    .input(z.object({ playlistId: z.number(), filter: TracksFilters.optional() }))
     .query(({ input: { playlistId, filter }, ctx }) => {
       const result = ctx.sys().db.db.query.playlists.findFirst({
         where: eq(playlists.id, playlistId),
@@ -199,20 +212,6 @@ export const tracksRouter = router({
     .input(z.object({ ids: z.array(z.number()) }))
     .query(({ input: { ids }, ctx }) => {
       const tracks = ctx.sys().db.tracks.getMany(ids)
-      return tracks.map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
-    }),
-
-  getByReleaseId: protectedProcedure
-    .input(z.object({ releaseId: z.number() }))
-    .query(({ input: { releaseId }, ctx }) => ctx.sys().db.tracks.getByReleaseId(releaseId)),
-
-  getByReleaseIdWithArtists: protectedProcedure
-    .input(z.object({ releaseId: z.number() }))
-    .query(({ input: { releaseId }, ctx }) => {
-      const tracks = ctx.sys().db.tracks.getByReleaseId(releaseId)
       return tracks.map((track) => ({
         ...track,
         artists: ctx.sys().db.artists.getByTrackId(track.id),

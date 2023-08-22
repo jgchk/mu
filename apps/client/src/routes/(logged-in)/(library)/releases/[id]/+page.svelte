@@ -6,7 +6,6 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { playTrack } from '$lib/now-playing'
-  import { createReleaseTracksQuery } from '$lib/services/releases'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -18,10 +17,13 @@
 
   const trpc = getContextClient()
   $: releaseQuery = trpc.releases.get.query({ id: data.id })
-  $: tracksQuery = createReleaseTracksQuery(trpc, data.tracksQuery)
+  $: tracksQuery = trpc.tracks.getByReleaseId.query({
+    releaseId: data.id,
+    filter: data.tracksQuery,
+  })
   $: tracks = $tracksQuery.data
 
-  const makeQueueData = (tracks: RouterOutput['releases']['tracks'], trackIndex: number) => ({
+  const makeQueueData = (tracks: RouterOutput['tracks']['getByReleaseId'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
