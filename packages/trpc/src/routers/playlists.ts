@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
 import type { Database, Playlist, PlaylistTrack, Track } from 'db'
+import { asc, isNull, playlistTracks, playlists } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -216,11 +217,22 @@ export const playlistsRouter = router({
   getAllHasTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
-      const playlists = ctx.sys().db.playlists.getAll({ auto: false })
-      return playlists.map((playlist) => {
-        const hasTrack = !!ctx.sys().db.playlistTracks.find(playlist.id, trackId)
-        return { ...playlist, hasTrack }
+      const results = ctx.sys().db.db.query.playlists.findMany({
+        where: isNull(playlists.filter),
+        with: {
+          playlistTracks: {
+            orderBy: asc(playlistTracks.order),
+            with: {
+              track: true,
+            },
+          },
+        },
       })
+
+      return results.map(({ playlistTracks, ...playlist }) => ({
+        ...playlist,
+        hasTrack: playlistTracks.some((playlistTrack) => playlistTrack.track.id === trackId),
+      }))
     }),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
