@@ -1,115 +1,180 @@
 import { TRPCError } from '@trpc/server'
-import type { SQL } from 'db'
-import { and, artists, asc, desc, eq, inArray, releases, sql, trackArtists, tracks } from 'db'
+import { decode } from 'bool-lang'
+import type { Database, SQL } from 'db'
+import {
+  and,
+  artists,
+  asc,
+  desc,
+  eq,
+  inArray,
+  playlistTracks,
+  playlists,
+  releases,
+  sql,
+  trackArtists,
+  tracks,
+} from 'db'
 import { generateWhereClause } from 'db/src/helpers/tracks'
 import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilter, injectDescendants } from '../utils'
+import type { TracksFilters } from '../utils'
+import { TracksOptions, injectDescendants } from '../utils'
+
+const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limit?: number }) => {
+  const where = []
+
+  if (input.title) {
+    where.push(sql`lower(${tracks.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+  }
+  if (input.artistId !== undefined) {
+    where.push(
+      inArray(
+        tracks.id,
+        db.db
+          .select({ data: trackArtists.trackId })
+          .from(trackArtists)
+          .where(eq(trackArtists.artistId, input.artistId))
+      )
+    )
+  }
+
+  if (input.favorite !== undefined) {
+    where.push(eq(tracks.favorite, input.favorite))
+  }
+
+  if (input.tags) {
+    const tagsWithDescendants = injectDescendants(db)(input.tags)
+    const tagsWhere = generateWhereClause(tagsWithDescendants)
+    if (tagsWhere) {
+      where.push(tagsWhere)
+    }
+  }
+
+  let orderBy: SQL | undefined
+  const sort = input.sort ?? { column: 'title', direction: 'asc' }
+  const dir = sort.direction === 'asc' ? asc : desc
+  switch (sort.column) {
+    case 'title': {
+      orderBy = dir(tracks.title)
+      break
+    }
+    case 'artists': {
+      orderBy = dir(
+        db.db
+          .select({ name: sql`group_concat(${artists.name}, ', ')` })
+          .from(trackArtists)
+          .where(eq(trackArtists.trackId, tracks.id))
+          .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+          .orderBy(trackArtists.order)
+          .groupBy(trackArtists.trackId)
+      )
+      break
+    }
+    case 'release': {
+      orderBy = dir(
+        db.db
+          .select({ title: releases.title })
+          .from(releases)
+          .where(eq(tracks.releaseId, releases.id))
+      )
+      break
+    }
+    case 'duration': {
+      orderBy = dir(tracks.duration)
+      break
+    }
+  }
+
+  const results = db.db.query.tracks.findMany({
+    where: and(...where),
+    orderBy,
+    offset: input.skip,
+    limit: input.limit,
+    with: {
+      release: true,
+      trackArtists: {
+        orderBy: asc(trackArtists.order),
+        with: { artist: true },
+      },
+    },
+  })
+
+  return results.map(({ trackArtists, ...track }) => ({
+    ...track,
+    artists: trackArtists.map((trackArtist) => trackArtist.artist),
+  }))
+}
 
 export const tracksRouter = router({
-  getAll: protectedProcedure.input(TracksFilter).query(({ input, ctx }) => {
+  getAll: protectedProcedure.input(TracksOptions).query(({ input, ctx }) => {
     const skip = input.cursor ?? 0
     const limit = input.limit ?? 50
 
-    const where = []
-
-    if (input.title) {
-      where.push(sql`lower(${tracks.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
-    }
-    if (input.artistId !== undefined) {
-      where.push(
-        inArray(
-          tracks.id,
-          ctx
-            .sys()
-            .db.db.select({ data: trackArtists.trackId })
-            .from(trackArtists)
-            .where(eq(trackArtists.artistId, input.artistId))
-        )
-      )
-    }
-
-    if (input.favorite !== undefined) {
-      where.push(eq(tracks.favorite, input.favorite))
-    }
-
-    if (input.tags) {
-      const tagsWithDescendants = injectDescendants(ctx.sys().db)(input.tags)
-      const tagsWhere = generateWhereClause(tagsWithDescendants)
-      if (tagsWhere) {
-        where.push(tagsWhere)
-      }
-    }
-
-    let orderBy: SQL | undefined
-    const sort = input.sort ?? { column: 'title', direction: 'asc' }
-    const dir = sort.direction === 'asc' ? asc : desc
-    switch (sort.column) {
-      case 'title': {
-        orderBy = dir(tracks.title)
-        break
-      }
-      case 'artists': {
-        orderBy = dir(
-          ctx
-            .sys()
-            .db.db.select({ name: sql`group_concat(${artists.name}, ', ')` })
-            .from(trackArtists)
-            .where(eq(trackArtists.trackId, tracks.id))
-            .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-            .orderBy(trackArtists.order)
-            .groupBy(trackArtists.trackId)
-        )
-        break
-      }
-      case 'release': {
-        orderBy = dir(
-          ctx
-            .sys()
-            .db.db.select({ title: releases.title })
-            .from(releases)
-            .where(eq(tracks.releaseId, releases.id))
-        )
-        break
-      }
-      case 'duration': {
-        orderBy = dir(tracks.duration)
-        break
-      }
-    }
-
-    const results = ctx.sys().db.db.query.tracks.findMany({
-      where: and(...where),
-      orderBy,
-      offset: skip,
-      limit: limit + 1,
-      with: {
-        release: true,
-        trackArtists: {
-          orderBy: asc(trackArtists.order),
-          with: { artist: true },
-        },
-      },
-    })
+    const items = getAllTracks(ctx.sys().db, { ...input, skip, limit: limit + 1 })
 
     let nextCursor: number | undefined = undefined
-    if (results.length > limit) {
-      results.pop()
+    if (items.length > limit) {
+      items.pop()
       nextCursor = skip + limit
     }
 
-    const formattedResults = results.map(({ trackArtists, ...track }) => ({
-      ...track,
-      artists: trackArtists.map((trackArtist) => trackArtist.artist),
-    }))
-
-    return {
-      items: formattedResults,
-      nextCursor,
-    }
+    return { items, nextCursor }
   }),
+
+  getByPlaylistId: protectedProcedure
+    .input(z.object({ playlistId: z.number(), filter: TracksOptions.optional() }))
+    .query(({ input: { playlistId, filter }, ctx }) => {
+      const result = ctx.sys().db.db.query.playlists.findFirst({
+        where: eq(playlists.id, playlistId),
+        with: {
+          playlistTracks: {
+            orderBy: asc(playlistTracks.order),
+            with: {
+              track: {
+                with: {
+                  release: true,
+                  trackArtists: {
+                    with: {
+                      artist: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (result === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Playlist not found',
+        })
+      }
+
+      let tracks: (ReturnType<typeof getAllTracks>[number] & { playlistTrackId?: number })[]
+      if (result.filter !== null) {
+        const tagsFilter = decode(result.filter)
+        tracks = getAllTracks(ctx.sys().db, {
+          ...filter,
+          tags: tagsFilter,
+        }).map((track) => ({
+          ...track,
+          playlistTrackId: undefined,
+        }))
+      } else {
+        tracks = result.playlistTracks.map(({ id, track: { trackArtists, ...track } }) => ({
+          ...track,
+          artists: trackArtists.map(({ artist }) => artist),
+          playlistTrackId: id,
+        }))
+      }
+
+      return tracks
+    }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
@@ -155,7 +220,7 @@ export const tracksRouter = router({
     }),
 
   getByTag: protectedProcedure
-    .input(z.object({ tagId: z.number(), filter: TracksFilter.optional() }))
+    .input(z.object({ tagId: z.number(), filter: TracksOptions.optional() }))
     .query(({ input: { tagId, filter }, ctx }) => {
       const descendants = ctx.sys().db.tags.getDescendants(tagId)
       const ids = [tagId, ...descendants.map((t) => t.id)]

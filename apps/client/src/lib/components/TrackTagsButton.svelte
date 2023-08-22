@@ -25,7 +25,7 @@
 
   const close = () => {
     void trpc.tracks.getByTag.utils.invalidate()
-    void trpc.playlists.tracks.utils.invalidate()
+    void trpc.tracks.getByPlaylistId.utils.invalidate()
     showAddTagPopover = false
   }
 </script>

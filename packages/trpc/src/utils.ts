@@ -29,16 +29,23 @@ export const TracksSort = z.object({
   direction: SortDirection,
 })
 
-export type TracksFilter = z.infer<typeof TracksFilter>
-export const TracksFilter = z.object({
+export type TracksFilters = z.infer<typeof TracksFilters>
+export const TracksFilters = z.object({
   artistId: z.number().optional(),
   title: z.string().optional(),
   favorite: z.boolean().optional(),
   tags: BoolLangString.optional(),
   sort: TracksSort.optional(),
+})
+
+export type Pagination = z.infer<typeof Pagination>
+export const Pagination = z.object({
   limit: z.number().min(1).max(100).optional(),
   cursor: z.number().optional(),
 })
+
+export type TracksOptions = z.infer<typeof TracksOptions>
+export const TracksOptions = TracksFilters.and(Pagination)
 
 export const injectDescendants =
   (db: Database) =>

@@ -11,7 +11,7 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilter } from '../utils'
+import { TracksOptions } from '../utils'
 
 export const releasesRouter = router({
   getAll: protectedProcedure
@@ -71,7 +71,7 @@ export const releasesRouter = router({
   }),
 
   tracks: protectedProcedure
-    .input(z.object({ id: z.number() }).and(TracksFilter))
+    .input(z.object({ id: z.number() }).and(TracksOptions))
     .query(({ input: { id, ...filter }, ctx }) =>
       ctx
         .sys()

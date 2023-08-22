@@ -1,12 +1,9 @@
 import { TRPCError } from '@trpc/server'
-import { decode } from 'bool-lang'
-import type { Database, Playlist, PlaylistTrack, Track } from 'db'
 import { asc, eq, isNotNull, isNull, playlistTracks, playlists } from 'db'
 import { isNotNull as isNotNullUtil } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilter, injectDescendants } from '../utils'
 
 export const playlistsRouter = router({
   new: protectedProcedure
@@ -168,10 +165,7 @@ export const playlistsRouter = router({
 
       ctx.sys().db.playlistTracks.addTrack(playlistId, trackId)
 
-      return getPlaylistTracks(ctx.sys().db, oldPlaylist).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
+      return { success: true }
     }),
 
   removeTrack: protectedProcedure
@@ -194,10 +188,8 @@ export const playlistsRouter = router({
       }
 
       ctx.sys().db.playlistTracks.delete(playlistTrackId)
-      return getPlaylistTracks(ctx.sys().db, oldPlaylist).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
+
+      return { success: true }
     }),
 
   getAll: protectedProcedure
@@ -274,24 +266,6 @@ export const playlistsRouter = router({
     }
   }),
 
-  tracks: protectedProcedure
-    .input(z.object({ id: z.number() }).and(TracksFilter))
-    .query(({ ctx, input: { id, ...filter } }) => {
-      const playlist = ctx.sys().db.playlists.get(id)
-
-      if (playlist === undefined) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Playlist not found',
-        })
-      }
-
-      return getPlaylistTracks(ctx.sys().db, playlist, filter).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
-    }),
-
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -304,16 +278,3 @@ export const playlistsRouter = router({
       return null
     }),
 })
-
-const getPlaylistTracks = (
-  db: Database,
-  playlist: Playlist,
-  filter?: TracksFilter
-): (Track & { playlistTrackId?: PlaylistTrack['id'] })[] => {
-  if (playlist.filter !== null) {
-    const tagsFilter = decode(playlist.filter)
-    return db.tracks.getAll({ ...filter, tags: injectDescendants(db)(tagsFilter) })
-  } else {
-    return db.tracks.getByPlaylistId(playlist.id, filter)
-  }
-}

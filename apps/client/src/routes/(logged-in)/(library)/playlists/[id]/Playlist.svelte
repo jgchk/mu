@@ -17,8 +17,8 @@
   import Header from '../../Header.svelte'
 
   export let playlist: RouterOutput['playlists']['get']
-  export let tracks: RouterOutput['playlists']['tracks']
-  export let tracksQuery: RouterInput['playlists']['tracks']
+  export let tracks: RouterOutput['tracks']['getByPlaylistId']
+  export let tracksQuery: NonNullable<RouterInput['tracks']['getByPlaylistId']['filter']>
 
   const dialogs = getContextDialogs()
 
