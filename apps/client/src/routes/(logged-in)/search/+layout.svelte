@@ -2,6 +2,7 @@
   import SearchBar from '$lib/components/SearchBar.svelte'
   import SidebarLink from '$lib/components/SidebarLink.svelte'
   import AlbumIcon from '$lib/icons/AlbumIcon.svelte'
+  import CollectionIcon from '$lib/icons/CollectionIcon.svelte'
   import ListIcon from '$lib/icons/ListIcon.svelte'
   import MusicNoteIcon from '$lib/icons/MusicNoteIcon.svelte'
   import PersonIcon from '$lib/icons/PersonIcon.svelte'
@@ -35,6 +36,9 @@
     </SidebarLink>
     <SidebarLink href={withSearchQuery('/search/artists')} label="Artists">
       <PersonIcon />
+    </SidebarLink>
+    <SidebarLink href={withSearchQuery('/search/playlists')} label="Playlists">
+      <CollectionIcon />
     </SidebarLink>
 
     <div class="mx-2 my-2 h-px bg-gray-800" />

@@ -21,6 +21,7 @@
   $: tracksQuery = trpc.tracks.getAll.query({ title: data.searchQuery, limit: NUM_TRACKS })
   $: releasesQuery = trpc.releases.getAll.query({ title: data.searchQuery })
   $: artistsQuery = trpc.artists.getAll.query({ name: data.searchQuery })
+  $: playlistsQuery = trpc.playlists.getAll.query({ name: data.searchQuery })
 
   const makeQueueData = (
     tracks: RouterOutput['tracks']['getAll']['items'],
@@ -112,4 +113,44 @@
   <div>{$artistsQuery.error.message}</div>
 {:else}
   <FullscreenLoader />
+{/if}
+
+<h2 class="mb-4 mt-12 text-2xl font-bold">Playlists</h2>
+{#if $playlistsQuery.data}
+  {@const playlists = $playlistsQuery.data}
+
+  <FlowGrid>
+    {#each playlists as playlist (playlist.id)}
+      <div class="w-full">
+        <a href="/playlists/{playlist.id}" class="relative block w-full">
+          <CoverArt
+            src={playlist.imageId !== null
+              ? makeImageUrl(playlist.imageId, { size: 512 })
+              : makeCollageUrl(playlist.imageIds, { size: 512 })}
+          >
+            <svelte:fragment slot="insert">
+              {#if playlist.filter !== null}
+                <div
+                  class="bg-secondary-600 border-secondary-700 absolute bottom-0 right-0 ml-auto rounded-br rounded-tl border-l border-t border-opacity-75 bg-opacity-75 pb-[3px] pl-[3px] pr-[6px] pt-[1px] text-xs font-semibold italic text-white"
+                >
+                  Auto
+                </div>
+              {/if}
+            </svelte:fragment>
+          </CoverArt>
+        </a>
+        <a
+          href="/playlists/{playlist.id}"
+          class="mt-1 block truncate font-medium hover:underline"
+          title={playlist.name}
+        >
+          {playlist.name}
+        </a>
+      </div>
+    {/each}
+  </FlowGrid>
+{:else if $playlistsQuery.error}
+  <div>{$playlistsQuery.error.message}</div>
+{:else}
+  <FullscreenLoader class="flex-1" />
 {/if}

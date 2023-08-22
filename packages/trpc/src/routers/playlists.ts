@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { asc, eq, isNotNull, isNull, playlistTracks, playlists } from 'db'
+import { and, asc, eq, isNotNull, isNull, playlistTracks, playlists, sql } from 'db'
 import { isNotNull as isNotNullUtil } from 'utils'
 import { z } from 'zod'
 
@@ -193,11 +193,17 @@ export const playlistsRouter = router({
     }),
 
   getAll: protectedProcedure
-    .input(z.object({ auto: z.boolean().optional() }))
+    .input(z.object({ name: z.string().optional(), auto: z.boolean().optional() }))
     .query(({ input, ctx }) => {
+      const where = [input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter)]
+
+      if (input.name !== undefined) {
+        where.push(sql`lower(${playlists.name}) like ${'%' + input.name.toLowerCase() + '%'}`)
+      }
+
       const results = ctx.sys().db.db.query.playlists.findMany({
         orderBy: asc(playlists.name),
-        where: input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter),
+        where: and(...where),
         with: {
           playlistTracks: {
             orderBy: asc(playlistTracks.order),

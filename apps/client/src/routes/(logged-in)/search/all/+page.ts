@@ -16,6 +16,7 @@ export const load: PageLoad = async ({ url, parent }) => {
       ),
     trpc.releases.getAll.prefetchQuery({ title: searchQuery }),
     trpc.artists.getAll.prefetchQuery({ name: searchQuery }),
+    trpc.playlists.getAll.prefetchQuery({ name: searchQuery }),
   ])
 
   return { searchQuery }
