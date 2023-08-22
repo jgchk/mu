@@ -19,7 +19,7 @@
   <FlowGrid>
     {#each $releasesQuery.data as release (release.id)}
       <div class="w-full">
-        <a href="/releases/{release.id}" class="w-full">
+        <a href="/library/releases/{release.id}" class="w-full">
           <CoverArt
             src={release.imageId !== null
               ? makeImageUrl(release.imageId, { size: 512 })
@@ -27,7 +27,7 @@
           />
         </a>
         <a
-          href="/releases/{release.id}"
+          href="/library/releases/{release.id}"
           class="mt-1 block truncate font-medium hover:underline"
           title={release.title}
         >
@@ -35,7 +35,7 @@
         </a>
         <div class="truncate text-sm text-gray-400">
           <CommaList items={release.artists} let:item>
-            <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+            <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>
           </CommaList>
         </div>
       </div>

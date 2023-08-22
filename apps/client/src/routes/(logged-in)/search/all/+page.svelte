@@ -57,7 +57,7 @@
   <FlowGrid>
     {#each $releasesQuery.data as release (release.id)}
       <div class="w-full">
-        <a href="/releases/{release.id}" class="w-full">
+        <a href="/library/releases/{release.id}" class="w-full">
           <CoverArt
             src={release.imageId !== null
               ? makeImageUrl(release.imageId, { size: 512 })
@@ -65,7 +65,7 @@
           />
         </a>
         <a
-          href="/releases/{release.id}"
+          href="/library/releases/{release.id}"
           class="mt-1 block truncate font-medium hover:underline"
           title={release.title}
         >
@@ -73,7 +73,7 @@
         </a>
         <div class="truncate text-sm text-gray-400">
           <CommaList items={release.artists} let:item>
-            <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+            <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>
           </CommaList>
         </div>
       </div>
@@ -92,7 +92,7 @@
   <FlowGrid>
     {#each artists as artist (artist.id)}
       <div class="w-full">
-        <a href="/artists/{artist.id}" class="w-full">
+        <a href="/library/artists/{artist.id}" class="w-full">
           <CoverArt
             src={artist.imageId !== null
               ? makeImageUrl(artist.imageId, { size: 512 })
@@ -100,7 +100,7 @@
           />
         </a>
         <a
-          href="/artists/{artist.id}"
+          href="/library/artists/{artist.id}"
           class="mt-1 block truncate font-medium hover:underline"
           title={artist.name}
         >
@@ -122,7 +122,7 @@
   <FlowGrid>
     {#each playlists as playlist (playlist.id)}
       <div class="w-full">
-        <a href="/playlists/{playlist.id}" class="relative block w-full">
+        <a href="/library/playlists/{playlist.id}" class="relative block w-full">
           <CoverArt
             src={playlist.imageId !== null
               ? makeImageUrl(playlist.imageId, { size: 512 })
@@ -140,7 +140,7 @@
           </CoverArt>
         </a>
         <a
-          href="/playlists/{playlist.id}"
+          href="/library/playlists/{playlist.id}"
           class="mt-1 block truncate font-medium hover:underline"
           title={playlist.name}
         >

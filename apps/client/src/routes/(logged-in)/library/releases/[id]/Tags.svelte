@@ -17,7 +17,7 @@
   <div class="flex items-center">
     {#if tags.length}
       <CommaList class="text-sm text-gray-400" items={tags} let:item>
-        <a class="transition hover:text-white hover:underline" href="/artists/{item.id}"
+        <a class="transition hover:text-white hover:underline" href="/library/artists/{item.id}"
           >{item.name}</a
         >
       </CommaList>

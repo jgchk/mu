@@ -108,6 +108,6 @@ export const actions: Actions = {
       })),
     })
 
-    throw redirect(303, `/releases/${result.id}`)
+    throw redirect(303, `/library/releases/${result.id}`)
   },
 }

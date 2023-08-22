@@ -44,13 +44,15 @@
     >
       <div class="flex items-center gap-2 text-sm" slot="subtitle">
         <CommaList class="text-sm font-bold" items={release.artists} let:item>
-          <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+          <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>
         </CommaList>
         •
         <Tags releaseId={data.id} />
       </div>
 
-      <LinkButton href="/releases/{release.id}/edit" kind="outline" slot="buttons">Edit</LinkButton>
+      <LinkButton href="/library/releases/{release.id}/edit" kind="outline" slot="buttons"
+        >Edit</LinkButton
+      >
     </Header>
 
     {#if $tracksQuery.data}

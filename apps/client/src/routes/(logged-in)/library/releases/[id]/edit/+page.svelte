@@ -20,7 +20,7 @@
       props: {
         message: [
           'Updated ',
-          { href: `/releases/${data.id}`, text: data.album.title || 'release' },
+          { href: `/library/releases/${data.id}`, text: data.album.title || 'release' },
           '!',
         ],
       },

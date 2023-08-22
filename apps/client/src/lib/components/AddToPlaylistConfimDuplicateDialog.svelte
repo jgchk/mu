@@ -26,7 +26,11 @@
         onSuccess: () => {
           toast.success(LinkToast, {
             props: {
-              message: ['Added to ', { href: `/playlists/${playlistId}`, text: playlistName }, '!'],
+              message: [
+                'Added to ',
+                { href: `/library/playlists/${playlistId}`, text: playlistName },
+                '!',
+              ],
             },
           })
           close()

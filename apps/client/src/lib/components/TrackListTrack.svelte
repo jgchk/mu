@@ -75,14 +75,16 @@
     <div class="truncate">{track.title || '[untitled]'}</div>
     <div class="truncate text-sm text-gray-400">
       <CommaList items={track.artists} let:item>
-        <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+        <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>
       </CommaList>
     </div>
   </div>
 
   {#if track.release}
     <div class="hidden truncate text-sm text-gray-400 md:block">
-      <a class="hover:underline group-hover/track:text-white" href="/releases/{track.release.id}"
+      <a
+        class="hover:underline group-hover/track:text-white"
+        href="/library/releases/{track.release.id}"
         >{#if track.release.title}
           {track.release.title}
         {:else}

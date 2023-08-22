@@ -21,7 +21,11 @@
 <nav
   class="flex items-center justify-around overflow-auto rounded text-white md:justify-start md:bg-black md:p-2 md:px-3"
 >
-  <NavLink label="Library" href="/artists" otherMatches={['/playlists', '/releases', '/tracks']}>
+  <NavLink
+    label="Library"
+    href="/library/tracks"
+    otherMatches={['/library/playlists', '/library/releases', '/library/artists']}
+  >
     <LibraryIcon />
   </NavLink>
   <NavLink label="Tags" href="/tags"><TagIcon /></NavLink>

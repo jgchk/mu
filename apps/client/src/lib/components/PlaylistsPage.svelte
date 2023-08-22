@@ -30,7 +30,7 @@
     <FlowGrid>
       {#each playlists as playlist (playlist.id)}
         <div class="w-full">
-          <a href="/playlists/{playlist.id}" class="relative block w-full">
+          <a href="/library/playlists/{playlist.id}" class="relative block w-full">
             <CoverArt
               src={playlist.imageId !== null
                 ? makeImageUrl(playlist.imageId, { size: 512 })
@@ -48,7 +48,7 @@
             </CoverArt>
           </a>
           <a
-            href="/playlists/{playlist.id}"
+            href="/library/playlists/{playlist.id}"
             class="mt-1 block truncate font-medium hover:underline"
             title={playlist.name}
           >

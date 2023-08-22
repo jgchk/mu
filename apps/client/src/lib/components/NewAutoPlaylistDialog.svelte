@@ -61,7 +61,11 @@
         onSuccess: (data) => {
           toast.success(LinkToast, {
             props: {
-              message: ['Created ', { href: `/playlists/${data.id}`, text: data.name }, '!'],
+              message: [
+                'Created ',
+                { href: `/library/playlists/${data.id}`, text: data.name },
+                '!',
+              ],
             },
           })
           close()

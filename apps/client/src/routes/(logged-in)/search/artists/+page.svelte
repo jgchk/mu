@@ -20,7 +20,7 @@
   <FlowGrid>
     {#each artists as artist (artist.id)}
       <div class="w-full">
-        <a href="/artists/{artist.id}" class="w-full">
+        <a href="/library/artists/{artist.id}" class="w-full">
           <CoverArt
             src={artist.imageId !== null
               ? makeImageUrl(artist.imageId, { size: 512 })
@@ -28,7 +28,7 @@
           />
         </a>
         <a
-          href="/artists/{artist.id}"
+          href="/library/artists/{artist.id}"
           class="mt-1 block truncate font-medium hover:underline"
           title={artist.name}
         >
