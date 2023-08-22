@@ -3,11 +3,8 @@ import { prefetchTrackTagsQuery } from '$lib/services/tags'
 import type { PageLoad } from './$types'
 import { NUM_TRACKS } from './common'
 
-export const load: PageLoad = async ({ url, parent }) => {
-  const queryParam = url.searchParams.get('q')
-  const searchQuery = queryParam ?? ''
-
-  const { trpc } = await parent()
+export const load: PageLoad = async ({ parent }) => {
+  const { trpc, searchQuery } = await parent()
   await Promise.all([
     trpc.tracks.getAll
       .fetchQuery({ title: searchQuery, limit: NUM_TRACKS })

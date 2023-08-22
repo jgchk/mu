@@ -43,7 +43,7 @@
     <LinkButton
       class="mt-2"
       kind="outline"
-      href={withSearchQuery('/search/tracks', data.searchQuery)}>See All</LinkButton
+      href={withSearchQuery('/library/tracks', data.searchQuery)}>See All</LinkButton
     >
   {/if}
 {:else if $tracksQuery.error}

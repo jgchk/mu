@@ -9,7 +9,6 @@
   import CogIcon from '$lib/icons/CogIcon.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import LibraryIcon from '$lib/icons/LibraryIcon.svelte'
-  import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
 
   import NavLink from './NavLink.svelte'
@@ -21,15 +20,8 @@
 <nav
   class="flex items-center justify-around overflow-auto rounded text-white md:justify-start md:bg-black md:p-2 md:px-3"
 >
-  <NavLink
-    label="Library"
-    href="/library/tracks"
-    otherMatches={['/library/playlists', '/library/releases', '/library/artists']}
-  >
-    <LibraryIcon />
-  </NavLink>
+  <NavLink label="Library" href="/library"><LibraryIcon /></NavLink>
   <NavLink label="Tags" href="/tags"><TagIcon /></NavLink>
-  <NavLink label="Search" href="/search"><SearchIcon /></NavLink>
   <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 

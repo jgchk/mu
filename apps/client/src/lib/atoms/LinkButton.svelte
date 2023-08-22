@@ -3,6 +3,7 @@
 
   export let href: string | undefined = undefined
   export let kind: 'solid' | 'outline' | 'text' = 'solid'
+  export let align: 'left' | 'center' | 'right' = 'center'
   let class_: string | undefined = undefined
   export { class_ as class }
 
@@ -13,6 +14,11 @@
   {href}
   class={tw(
     'flex w-fit cursor-pointer items-center rounded border px-2 py-1 text-sm font-medium transition',
+
+    align === 'left' && 'justify-start',
+    align === 'center' && 'justify-center',
+    align === 'right' && 'justify-end',
+
     kind === 'solid' && 'bg-primary-500 hover:bg-primary-600 border-transparent text-black',
     kind === 'outline' &&
       cn(

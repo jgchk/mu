@@ -6,8 +6,12 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import { getContextClient } from '$lib/trpc'
 
+  import type { PageData } from './$types'
+
+  export let data: PageData
+
   const trpc = getContextClient()
-  const artistsQuery = trpc.artists.getAll.query({})
+  const artistsQuery = trpc.artists.getAll.query({ name: data.searchQuery })
 </script>
 
 {#if $artistsQuery.data}
