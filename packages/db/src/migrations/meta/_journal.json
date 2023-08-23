@@ -43,6 +43,13 @@
       "when": 1692814802590,
       "tag": "0005_organic_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1692815225494,
+      "tag": "0006_next_hedge_knight",
+      "breakpoints": true
     }
   ]
 }
