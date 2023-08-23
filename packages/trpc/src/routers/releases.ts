@@ -67,7 +67,9 @@ export const releasesRouter = router({
     const result = ctx.sys().db.db.query.releases.findFirst({
       where: eq(releases.id, id),
       with: {
-        tracks: true,
+        tracks: {
+          orderBy: asc(tracks.order),
+        },
         releaseArtists: {
           orderBy: asc(releaseArtists.order),
           with: {
@@ -298,5 +300,36 @@ export const releasesRouter = router({
         tracks,
         artists,
       }
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id }, ctx }) => {
+      const result = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, id),
+        with: {
+          tracks: true,
+        },
+      })
+
+      if (result === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Release not found',
+        })
+      }
+
+      ctx.sys().db.db.delete(releases).where(eq(releases.id, id)).run()
+
+      await Promise.all(
+        result.tracks.map(async (track) => {
+          ctx.sys().db.db.delete(tracks).where(eq(tracks.id, track.id)).run()
+          await fs.rm(track.path, { force: true })
+        })
+      )
+
+      // TODO: cleanup empty directories
+
+      return { success: true }
     }),
 })

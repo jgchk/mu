@@ -1,10 +1,12 @@
 <script lang="ts">
   import { makeImageUrl } from 'mutils'
 
+  import Button from '$lib/atoms/Button.svelte'
   import CommaList from '$lib/atoms/CommaList.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
+  import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -27,6 +29,8 @@
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
     nextTracks: tracks.slice(trackIndex + 1).map((t) => t.id),
   })
+
+  const dialogs = getContextDialogs()
 </script>
 
 {#if $releaseQuery.data}
@@ -50,9 +54,12 @@
         <Tags releaseId={data.id} />
       </div>
 
-      <LinkButton href="/library/releases/{release.id}/edit" kind="outline" slot="buttons"
-        >Edit</LinkButton
-      >
+      <svelte:fragment slot="buttons">
+        <Button kind="text" on:click={() => dialogs.open('delete-release', { release })}>
+          Delete
+        </Button>
+        <LinkButton href="/library/releases/{release.id}/edit" kind="outline">Edit</LinkButton>
+      </svelte:fragment>
     </Header>
 
     {#if $tracksQuery.data}

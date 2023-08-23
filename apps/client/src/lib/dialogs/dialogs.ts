@@ -7,6 +7,7 @@ import type { AreAllPropsOptional } from 'utils'
 import type AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
 import type CoverArtDialog from '$lib/components/CoverArtDialog.svelte'
 import type DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
+import type DeleteReleaseDialog from '$lib/components/DeleteReleaseDialog.svelte'
 import type DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
 import type EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
 import type EditAutoPlaylistDialog from '$lib/components/EditAutoPlaylistDialog.svelte'
@@ -27,6 +28,7 @@ export type AllDialogs = {
   'edit-playlist': ComponentProps<EditPlaylistDialog>
   'edit-auto-playlist': ComponentProps<EditAutoPlaylistDialog>
   'delete-playlist': ComponentProps<DeletePlaylistDialog>
+  'delete-release': { release: ComponentProps<DeleteReleaseDialog>['release'] }
   'edit-artist': ComponentProps<EditArtistDialog>
   'new-tag': NoProps
   'edit-tag': ComponentProps<EditTagDialog>
