@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
-import { asc, eq, releaseArtists, releases, sql } from 'db'
+import type { Database } from 'db'
+import { and, asc, eq, inArray, releaseArtists, releases, sql, tracks } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -12,32 +13,55 @@ import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
 
+const getAllReleases = (db: Database, input: { title?: string; artistId?: number }) => {
+  const where = []
+
+  if (input.title) {
+    where.push(sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+  }
+  if (input.artistId !== undefined) {
+    where.push(
+      inArray(
+        releases.id,
+        db.db
+          .select({ data: releaseArtists.releaseId })
+          .from(releaseArtists)
+          .where(eq(releaseArtists.artistId, input.artistId))
+      )
+    )
+  }
+
+  const results = db.db.query.releases.findMany({
+    orderBy: asc(releases.title),
+    where: and(...where),
+    with: {
+      tracks: {
+        orderBy: asc(tracks.order),
+      },
+      releaseArtists: {
+        orderBy: asc(releaseArtists.order),
+        with: {
+          artist: true,
+        },
+      },
+    },
+  })
+
+  return results.map(({ releaseArtists, tracks, ...release }) => ({
+    ...release,
+    imageId: tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+    artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
+  }))
+}
+
 export const releasesRouter = router({
   getAll: protectedProcedure
-    .input(z.object({ title: z.string().optional() }))
-    .query(({ input, ctx }) => {
-      const results = ctx.sys().db.db.query.releases.findMany({
-        orderBy: asc(releases.title),
-        where: input?.title
-          ? sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`
-          : undefined,
-        with: {
-          tracks: true,
-          releaseArtists: {
-            orderBy: asc(releaseArtists.order),
-            with: {
-              artist: true,
-            },
-          },
-        },
-      })
+    .input(z.object({ title: z.string().optional(), artistId: z.number().optional() }))
+    .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
 
-      return results.map(({ releaseArtists, ...release }) => ({
-        ...release,
-        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-        artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
-      }))
-    }),
+  getByArtistId: protectedProcedure
+    .input(z.object({ artistId: z.number() }))
+    .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => {
     const result = ctx.sys().db.db.query.releases.findFirst({

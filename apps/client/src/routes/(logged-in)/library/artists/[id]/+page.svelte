@@ -9,7 +9,7 @@
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
   import { playTrack } from '$lib/now-playing'
-  import { createArtistQuery, createArtistReleasesQuery } from '$lib/services/artists'
+  import { createArtistQuery } from '$lib/services/artists'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -20,7 +20,7 @@
 
   const trpc = getContextClient()
   $: artistQuery = createArtistQuery(trpc, data.id)
-  $: releasesQuery = createArtistReleasesQuery(trpc, data.id)
+  $: releasesQuery = trpc.releases.getByArtistId.query({ artistId: data.id })
   $: tracksQuery = trpc.tracks.getAll.infiniteQuery(data.tracksQuery)
   $: tracks = $tracksQuery.data?.pages.flatMap((page) => page.items)
 
