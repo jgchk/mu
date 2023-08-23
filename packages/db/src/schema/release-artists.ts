@@ -11,10 +11,10 @@ export const releaseArtists = sqliteTable(
   'release_artists',
   {
     releaseId: integer('release_id')
-      .references(() => releases.id)
+      .references(() => releases.id, { onDelete: 'cascade' })
       .notNull(),
     artistId: integer('artist_id')
-      .references(() => artists.id)
+      .references(() => artists.id, { onDelete: 'cascade' })
       .notNull(),
     order: integer('order').notNull(),
   },
