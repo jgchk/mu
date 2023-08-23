@@ -1,5 +1,5 @@
 import { makeDb, makeLastFm } from 'context'
-import type { Artist } from 'db'
+import type { Artist, Release } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
@@ -87,24 +87,46 @@ async function handleFile(filePath_: string) {
   }
 }
 
+const cache = {
+  artists: new Map<string, Artist>(),
+  releases: new Map<string, Release>(),
+}
+
 function getArtist(name: string) {
-  const existingArtist = db.artists.getByNameCaseInsensitive(name).at(0)
+  let existingArtist = cache.artists.get(name.toLowerCase())
+
   if (existingArtist) {
     return existingArtist
   }
 
+  existingArtist = db.artists.getByNameCaseInsensitive(name).at(0)
+  if (existingArtist) {
+    cache.artists.set(name.toLowerCase(), existingArtist)
+    return existingArtist
+  }
+
   const newArtist = db.artists.insert({ name })
+  cache.artists.set(name.toLowerCase(), newArtist)
   return newArtist
 }
 
 function getRelease(title: string, albumArtists: number[]) {
-  const existingRelease = db.releases.findByTitleCaseInsensitiveAndArtists(title, albumArtists)
+  const cacheKey = title.toLowerCase() + albumArtists.join(',')
+  let existingRelease = cache.releases.get(cacheKey)
+
   if (existingRelease) {
+    return existingRelease
+  }
+
+  existingRelease = db.releases.findByTitleCaseInsensitiveAndArtists(title, albumArtists)
+  if (existingRelease) {
+    cache.releases.set(cacheKey, existingRelease)
     return existingRelease
   }
 
   const newRelease = db.releases.insert({ title })
   db.releaseArtists.insertManyByReleaseId(newRelease.id, albumArtists)
+  cache.releases.set(cacheKey, newRelease)
   return newRelease
 }
 
