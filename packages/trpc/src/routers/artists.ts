@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { artists, asc, eq, releaseArtists, releases, sql, tracks } from 'db'
+import { artists, asc, eq, sql, tracks } from 'db'
 import { isNotNull } from 'utils'
 import { z } from 'zod'
 
@@ -89,29 +89,6 @@ export const artistsRouter = router({
       .filter(isNotNull)
 
     return { ...artist, imageIds: [...releaseImageIds, ...trackImageIds] }
-  }),
-
-  releases: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input }) => {
-    const results = ctx.sys().db.db.query.releases.findMany({
-      where: eq(releases.id, input.id),
-      with: {
-        releaseArtists: {
-          orderBy: asc(releaseArtists.order),
-          with: {
-            artist: true,
-          },
-        },
-        tracks: {
-          orderBy: asc(tracks.order),
-        },
-      },
-    })
-
-    return results.map(({ releaseArtists, ...release }) => ({
-      ...release,
-      artists: releaseArtists.map(({ artist }) => artist),
-      imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-    }))
   }),
 
   getAll: protectedProcedure

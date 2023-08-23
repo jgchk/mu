@@ -14,7 +14,7 @@
 {#each data as friend (friend.friendUrl)}
   <div class="flex gap-2.5">
     <div class="relative top-[0.2rem] h-10 w-10 shrink-0">
-      <a href="/search?q={encodeURIComponent(`${friend.artist} - ${friend.album}`)}">
+      <a href="/library/spotify?q={encodeURIComponent(`${friend.artist} - ${friend.album}`)}">
         <CoverArt
           src={friend.art}
           alt={friend.album}

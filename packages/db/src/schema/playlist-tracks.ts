@@ -1,4 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { integer, sqliteTable } from 'drizzle-orm/sqlite-core'
 
 import { playlists } from './playlists'
@@ -17,3 +18,14 @@ export const playlistTracks = sqliteTable('playlist_tracks', {
   order: integer('order').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
+
+export const playlistTrackRelations = relations(playlistTracks, ({ one }) => ({
+  playlist: one(playlists, {
+    fields: [playlistTracks.playlistId],
+    references: [playlists.id],
+  }),
+  track: one(tracks, {
+    fields: [playlistTracks.trackId],
+    references: [tracks.id],
+  }),
+}))

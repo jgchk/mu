@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
 
   import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import XIcon from '$lib/icons/XIcon.svelte'
@@ -21,13 +20,7 @@
   class={class_}
   on:submit|preventDefault={() => {
     if (query.length > 0) {
-      if ($page.url.pathname.startsWith('/search')) {
-        const newUrl = new URL($page.url)
-        newUrl.searchParams.set('q', query)
-        void goto(newUrl)
-      } else {
-        void goto(`/search?q=${query}`)
-      }
+      void goto(`/library?q=${query}`)
     }
   }}
 >

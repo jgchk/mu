@@ -26,8 +26,8 @@
       {
         onSuccess: () => {
           toast.success(`Deleted ${playlist.name}`)
-          if ($page.url.pathname === `/playlists/${playlist.id}`) {
-            void goto('/playlists')
+          if ($page.url.pathname === `/library/playlists/${playlist.id}`) {
+            void goto('/library/playlists')
           }
           close()
         },

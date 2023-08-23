@@ -45,41 +45,46 @@ const imported = results.filter(Boolean).length
 log.info(`Imported ${imported} tracks`)
 
 async function handleFile(filePath_: string) {
-  const filePath = path.resolve(filePath_)
-  const fileType = await fileTypeFromFile(filePath)
-  if (!fileType || !isAudio(fileType.mime)) return false
+  try {
+    const filePath = path.resolve(filePath_)
+    const fileType = await fileTypeFromFile(filePath)
+    if (!fileType || !isAudio(fileType.mime)) return false
 
-  const existingTrack = db.tracks.getByPath(filePath)
-  if (existingTrack) return false
+    const existingTrack = db.tracks.getByPath(filePath)
+    if (existingTrack) return false
 
-  const metadata = await readTrackMetadata(filePath)
-  const image = await getCoverArtImage(imageManager, filePath)
+    const metadata = await readTrackMetadata(filePath)
+    const image = await getCoverArtImage(imageManager, filePath)
 
-  const albumArtists = metadata.albumArtists.map((name) => getArtist(name))
-  const artists = metadata.artists.map((name) => getArtist(name))
-  const albumTitle = getAlbumTitle(metadata, filePath)
-  const release = getRelease(
-    albumTitle,
-    albumArtists.map((a) => a.id)
-  )
-  const order = await getOrder(metadata, filePath)
-  const favorite = await getFavorite(metadata.title, artists)
+    const albumArtists = metadata.albumArtists.map((name) => getArtist(name))
+    const artists = metadata.artists.map((name) => getArtist(name))
+    const albumTitle = getAlbumTitle(metadata, filePath)
+    const release = getRelease(
+      albumTitle,
+      albumArtists.map((a) => a.id)
+    )
+    const order = await getOrder(metadata, filePath)
+    const favorite = await getFavorite(metadata.title, artists)
 
-  const dbTrack = db.tracks.insert({
-    title: metadata.title,
-    path: filePath,
-    releaseId: release.id,
-    order,
-    imageId: image?.id,
-    duration: metadata.length,
-    favorite,
-  })
-  db.trackArtists.insertManyByTrackId(
-    dbTrack.id,
-    artists.map((a) => a.id)
-  )
+    const dbTrack = db.tracks.insert({
+      title: metadata.title,
+      path: filePath,
+      releaseId: release.id,
+      order,
+      imageId: image?.id,
+      duration: metadata.length,
+      favorite,
+    })
+    db.trackArtists.insertManyByTrackId(
+      dbTrack.id,
+      artists.map((a) => a.id)
+    )
 
-  return true
+    return true
+  } catch (e) {
+    log.error({ cause: e }, `Error importing file: ${filePath_}`)
+    throw new Error(`Error importing file: ${filePath_}`, { cause: e })
+  }
 }
 
 function getArtist(name: string) {

@@ -14,11 +14,11 @@ export const tracks = sqliteTable(
     id: integer('id').primaryKey(),
     path: text('path').notNull(),
     title: text('title'),
-    releaseId: integer('release_id').references(() => releases.id),
+    releaseId: integer('release_id').references(() => releases.id, { onDelete: 'set null' }),
     order: integer('order').notNull(),
     duration: integer('duration').notNull(),
     favorite: integer('favorite', { mode: 'boolean' }).notNull(),
-    imageId: integer('image_id').references(() => images.id),
+    imageId: integer('image_id').references(() => images.id, { onDelete: 'set null' }),
   },
   (tracks) => ({
     pathUniqueIndex: uniqueIndex('pathUniqueIndex').on(tracks.path),

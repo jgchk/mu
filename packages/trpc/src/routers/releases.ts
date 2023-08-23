@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
-import { asc, eq, releaseArtists, releases, sql } from 'db'
+import type { Database } from 'db'
+import { and, asc, eq, inArray, releaseArtists, releases, sql, tracks } from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -11,39 +12,64 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilter } from '../utils'
+
+const getAllReleases = (db: Database, input: { title?: string; artistId?: number }) => {
+  const where = []
+
+  if (input.title) {
+    where.push(sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`)
+  }
+  if (input.artistId !== undefined) {
+    where.push(
+      inArray(
+        releases.id,
+        db.db
+          .select({ data: releaseArtists.releaseId })
+          .from(releaseArtists)
+          .where(eq(releaseArtists.artistId, input.artistId))
+      )
+    )
+  }
+
+  const results = db.db.query.releases.findMany({
+    orderBy: asc(releases.title),
+    where: and(...where),
+    with: {
+      tracks: {
+        orderBy: asc(tracks.order),
+      },
+      releaseArtists: {
+        orderBy: asc(releaseArtists.order),
+        with: {
+          artist: true,
+        },
+      },
+    },
+  })
+
+  return results.map(({ releaseArtists, tracks, ...release }) => ({
+    ...release,
+    imageId: tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+    artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
+  }))
+}
 
 export const releasesRouter = router({
   getAll: protectedProcedure
-    .input(z.object({ title: z.string().optional() }))
-    .query(({ input, ctx }) => {
-      const results = ctx.sys().db.db.query.releases.findMany({
-        where: input?.title
-          ? sql`lower(${releases.title}) like ${'%' + input.title.toLowerCase() + '%'}`
-          : undefined,
-        with: {
-          tracks: true,
-          releaseArtists: {
-            orderBy: asc(releaseArtists.order),
-            with: {
-              artist: true,
-            },
-          },
-        },
-      })
+    .input(z.object({ title: z.string().optional(), artistId: z.number().optional() }))
+    .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
 
-      return results.map(({ releaseArtists, ...release }) => ({
-        ...release,
-        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-        artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
-      }))
-    }),
+  getByArtistId: protectedProcedure
+    .input(z.object({ artistId: z.number() }))
+    .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
 
   get: protectedProcedure.input(z.object({ id: z.number() })).query(({ input: { id }, ctx }) => {
     const result = ctx.sys().db.db.query.releases.findFirst({
       where: eq(releases.id, id),
       with: {
-        tracks: true,
+        tracks: {
+          orderBy: asc(tracks.order),
+        },
         releaseArtists: {
           orderBy: asc(releaseArtists.order),
           with: {
@@ -68,18 +94,6 @@ export const releasesRouter = router({
       artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
     }
   }),
-
-  tracks: protectedProcedure
-    .input(z.object({ id: z.number() }).and(TracksFilter))
-    .query(({ input: { id, ...filter }, ctx }) =>
-      ctx
-        .sys()
-        .db.tracks.getByReleaseId(id, filter)
-        .map((track) => ({
-          ...track,
-          artists: ctx.sys().db.artists.getByTrackId(track.id),
-        }))
-    ),
 
   getByTag: protectedProcedure
     .input(z.object({ tagId: z.number() }))
@@ -286,5 +300,36 @@ export const releasesRouter = router({
         tracks,
         artists,
       }
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input: { id }, ctx }) => {
+      const result = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, id),
+        with: {
+          tracks: true,
+        },
+      })
+
+      if (result === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Release not found',
+        })
+      }
+
+      ctx.sys().db.db.delete(releases).where(eq(releases.id, id)).run()
+
+      await Promise.all(
+        result.tracks.map(async (track) => {
+          ctx.sys().db.db.delete(tracks).where(eq(tracks.id, track.id)).run()
+          await fs.rm(track.path, { force: true })
+        })
+      )
+
+      // TODO: cleanup empty directories
+
+      return { success: true }
     }),
 })

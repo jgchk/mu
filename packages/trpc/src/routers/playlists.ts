@@ -1,11 +1,9 @@
 import { TRPCError } from '@trpc/server'
-import { decode } from 'bool-lang'
-import type { Database, Playlist, PlaylistTrack, Track } from 'db'
-import { isNotNull } from 'utils'
+import { and, asc, eq, isNotNull, isNull, playlistTracks, playlists, sql } from 'db'
+import { isNotNull as isNotNullUtil } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilter, injectDescendants } from '../utils'
 
 export const playlistsRouter = router({
   new: protectedProcedure
@@ -48,6 +46,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   edit: protectedProcedure
     .input(
       z.object({
@@ -112,6 +111,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   editTrackOrder: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackIds: z.number().array() }))
     .mutation(({ ctx, input }) => {
@@ -143,6 +143,7 @@ export const playlistsRouter = router({
 
       return playlist
     }),
+
   addTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), trackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, trackId } }) => {
@@ -164,11 +165,9 @@ export const playlistsRouter = router({
 
       ctx.sys().db.playlistTracks.addTrack(playlistId, trackId)
 
-      return getPlaylistTracks(ctx.sys().db, oldPlaylist).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
+      return { success: true }
     }),
+
   removeTrack: protectedProcedure
     .input(z.object({ playlistId: z.number(), playlistTrackId: z.number() }))
     .mutation(({ ctx, input: { playlistId, playlistTrackId } }) => {
@@ -189,68 +188,90 @@ export const playlistsRouter = router({
       }
 
       ctx.sys().db.playlistTracks.delete(playlistTrackId)
-      return getPlaylistTracks(ctx.sys().db, oldPlaylist).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
+
+      return { success: true }
+    }),
+
+  getAll: protectedProcedure
+    .input(z.object({ name: z.string().optional(), auto: z.boolean().optional() }))
+    .query(({ input, ctx }) => {
+      const where = [input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter)]
+
+      if (input.name !== undefined) {
+        where.push(sql`lower(${playlists.name}) like ${'%' + input.name.toLowerCase() + '%'}`)
+      }
+
+      const results = ctx.sys().db.db.query.playlists.findMany({
+        orderBy: asc(playlists.name),
+        where: and(...where),
+        with: {
+          playlistTracks: {
+            orderBy: asc(playlistTracks.order),
+            with: {
+              track: true,
+            },
+          },
+        },
+      })
+
+      return results.map(({ playlistTracks, ...playlist }) => ({
+        ...playlist,
+        imageIds: playlistTracks.map(({ track }) => track.imageId).filter(isNotNullUtil),
       }))
     }),
-  getAll: protectedProcedure
-    .input(z.object({ auto: z.boolean().optional() }))
-    .query(({ input, ctx }) =>
-      ctx
-        .sys()
-        .db.playlists.getAll(input)
-        .map((playlist) => ({
-          ...playlist,
-          imageIds: getPlaylistTracks(ctx.sys().db, playlist)
-            .map((track) => track.imageId)
-            .filter(isNotNull),
-        }))
-    ),
+
   getAllHasTrack: protectedProcedure
     .input(z.object({ trackId: z.number() }))
     .query(({ input: { trackId }, ctx }) => {
-      const playlists = ctx.sys().db.playlists.getAll({ auto: false })
-      return playlists.map((playlist) => {
-        const hasTrack = !!ctx.sys().db.playlistTracks.find(playlist.id, trackId)
-        return { ...playlist, hasTrack }
+      const results = ctx.sys().db.db.query.playlists.findMany({
+        orderBy: asc(playlists.name),
+        where: isNull(playlists.filter),
+        with: {
+          playlistTracks: {
+            orderBy: asc(playlistTracks.order),
+            with: {
+              track: true,
+            },
+          },
+        },
       })
-    }),
-  get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
-    const playlist = ctx.sys().db.playlists.get(id)
 
-    if (playlist === undefined) {
+      return results.map(({ playlistTracks, ...playlist }) => ({
+        ...playlist,
+        hasTrack: playlistTracks.some((playlistTrack) => playlistTrack.track.id === trackId),
+      }))
+    }),
+
+  get: protectedProcedure.input(z.object({ id: z.number() })).query(({ ctx, input: { id } }) => {
+    const result = ctx.sys().db.db.query.playlists.findFirst({
+      where: eq(playlists.id, id),
+      with: {
+        playlistTracks: {
+          orderBy: asc(playlistTracks.order),
+          with: {
+            track: true,
+          },
+        },
+      },
+    })
+
+    if (result === undefined) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Playlist not found',
       })
     }
 
-    const imageIds = getPlaylistTracks(ctx.sys().db, playlist)
-      .map((track) => track.imageId)
-      .filter(isNotNull)
+    const { playlistTracks: playlistTracks_, ...playlist } = result
+
+    const imageIds = playlistTracks_.map(({ track }) => track.imageId).filter(isNotNullUtil)
+
     return {
       ...playlist,
       imageIds,
     }
   }),
-  tracks: protectedProcedure
-    .input(z.object({ id: z.number() }).and(TracksFilter))
-    .query(({ ctx, input: { id, ...filter } }) => {
-      const playlist = ctx.sys().db.playlists.get(id)
 
-      if (playlist === undefined) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Playlist not found',
-        })
-      }
-
-      return getPlaylistTracks(ctx.sys().db, playlist, filter).map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
-    }),
   delete: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -263,16 +284,3 @@ export const playlistsRouter = router({
       return null
     }),
 })
-
-const getPlaylistTracks = (
-  db: Database,
-  playlist: Playlist,
-  filter?: TracksFilter
-): (Track & { playlistTrackId?: PlaylistTrack['id'] })[] => {
-  if (playlist.filter !== null) {
-    const tagsFilter = decode(playlist.filter)
-    return db.tracks.getAll({ ...filter, tags: injectDescendants(db)(tagsFilter) })
-  } else {
-    return db.tracks.getByPlaylistId(playlist.id, filter)
-  }
-}

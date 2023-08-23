@@ -2,6 +2,7 @@
   import AddToPlaylistConfimDuplicateDialog from '$lib/components/AddToPlaylistConfimDuplicateDialog.svelte'
   import CoverArtDialog from '$lib/components/CoverArtDialog.svelte'
   import DeletePlaylistDialog from '$lib/components/DeletePlaylistDialog.svelte'
+  import DeleteReleaseDialog from '$lib/components/DeleteReleaseDialog.svelte'
   import DeleteTagDialog from '$lib/components/DeleteTagDialog.svelte'
   import EditArtistDialog from '$lib/components/EditArtistDialog.svelte'
   import EditAutoPlaylistDialog from '$lib/components/EditAutoPlaylistDialog.svelte'
@@ -44,6 +45,8 @@
       playlist={dialog.playlist}
       on:close={() => dialogs.close('delete-playlist')}
     />
+  {:else if dialog._tag === 'delete-release'}
+    <DeleteReleaseDialog {...dialog} on:close={() => dialogs.close('delete-release')} />
   {:else if dialog._tag === 'edit-artist'}
     <EditArtistDialog artist={dialog.artist} on:close={() => dialogs.close('edit-artist')} />
   {:else if dialog._tag === 'new-tag'}
@@ -54,7 +57,7 @@
     <DeleteTagDialog tag={dialog.tag} on:close={() => dialogs.close('delete-tag')} />
   {:else if dialog._tag === 'edit-tags-filter'}
     <EditTagsFilterDialog {...dialog} on:close={() => dialogs.close('edit-tags-filter')} />
-  {:else if (dialog._tag = 'search-cover-art')}
+  {:else if dialog._tag === 'search-cover-art'}
     <CoverArtDialog
       {...dialog}
       on:close={() => dialogs.close('search-cover-art')}

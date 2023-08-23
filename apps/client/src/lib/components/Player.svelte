@@ -140,7 +140,7 @@
   <div class="flex min-w-[180px] max-w-fit flex-1 items-center gap-4 lg:flex-[3]">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
-      <a href="/releases/{track.releaseId}" class="w-10 shrink-0 md:w-16">
+      <a href="/library/releases/{track.releaseId}" class="w-10 shrink-0 md:w-16">
         <CoverArt
           src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 128 }) : undefined}
           alt={track.title}
@@ -155,7 +155,7 @@
         </div>
         <div class="truncate text-xs text-gray-400 md:text-sm">
           <CommaList items={track.artists} let:item>
-            <a class="hover:underline" href="/artists/{item.id}">{item.name}</a>
+            <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>
           </CommaList>
         </div>
       </div>
