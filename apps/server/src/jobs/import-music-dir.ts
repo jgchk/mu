@@ -13,6 +13,11 @@ import { dirExists, walkDir } from 'utils/node'
 
 import { getCoverArtImage } from '../utils'
 
+const cache = {
+  artists: new Map<string, Artist>(),
+  releases: new Map<string, Release>(),
+}
+
 const musicDir = env.MUSIC_DIR
 const imagesDir = env.IMAGES_DIR
 
@@ -85,11 +90,6 @@ async function handleFile(filePath_: string) {
     log.error({ cause: e }, `Error importing file: ${filePath_}`)
     throw new Error(`Error importing file: ${filePath_}`, { cause: e })
   }
-}
-
-const cache = {
-  artists: new Map<string, Artist>(),
-  releases: new Map<string, Release>(),
 }
 
 function getArtist(name: string) {
