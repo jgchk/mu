@@ -87,7 +87,10 @@ async function handleFile(filePath_: string) {
 
     return true
   } catch (e) {
-    log.error({ cause: e }, `Error importing file: ${filePath_}`)
+    log.error(
+      { cause: e, stack: e instanceof Error ? e.stack : undefined },
+      `Error importing file: ${filePath_}`
+    )
     throw new Error(`Error importing file: ${filePath_}`, { cause: e })
   }
 }
