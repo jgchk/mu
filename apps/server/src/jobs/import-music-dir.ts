@@ -10,13 +10,9 @@ import { readTrackMetadata } from 'music-metadata'
 import path from 'path'
 import { isAudio } from 'utils'
 import { dirExists, walkDir } from 'utils/node'
+import { parentPort } from 'worker_threads'
 
 import { getCoverArtImage } from '../utils'
-
-const cache = {
-  artists: new Map<string, Artist>(),
-  releases: new Map<string, Release>(),
-}
 
 const musicDir = env.MUSIC_DIR
 const imagesDir = env.IMAGES_DIR
@@ -41,22 +37,24 @@ const lfm = config.lastFmKey
 
 const imageManager = new ImageManager({ imagesDir, db })
 
-const promises: Promise<boolean>[] = []
-for await (const filePath of walkDir(musicDir)) {
-  promises.push(handleFile(filePath))
+const main = async () => {
+  const promises: Promise<boolean>[] = []
+  for await (const filePath of walkDir(musicDir)) {
+    promises.push(handleFile(filePath))
+  }
+  const results = await Promise.allSettled(promises)
+  const successes = results.filter(
+    (r): r is PromiseFulfilledResult<boolean> => r.status === 'fulfilled'
+  )
+  const errors = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+
+  const imported = successes.filter((result) => result.value).length
+  log.info(`Imported ${imported} tracks`)
+  log.info(`Skipped ${successes.length - imported} tracks`)
+  log.info(`Encountered ${errors.length} errors`)
 }
-const results = await Promise.allSettled(promises)
-const successes = results.filter(
-  (r): r is PromiseFulfilledResult<boolean> => r.status === 'fulfilled'
-)
-const errors = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
 
-const imported = successes.filter((result) => result.value).length
-log.info(`Imported ${imported} tracks`)
-log.info(`Skipped ${successes.length - imported} tracks`)
-log.info(`Encountered ${errors.length} errors`)
-
-async function handleFile(filePath_: string) {
+const handleFile = async (filePath_: string) => {
   try {
     const filePath = path.resolve(filePath_)
     const fileType = await fileTypeFromFile(filePath)
@@ -102,7 +100,12 @@ async function handleFile(filePath_: string) {
   }
 }
 
-function getArtist(name: string) {
+const cache = {
+  artists: new Map<string, Artist>(),
+  releases: new Map<string, Release>(),
+}
+
+const getArtist = (name: string) => {
   let existingArtist = cache.artists.get(name.toLowerCase())
 
   if (existingArtist) {
@@ -120,7 +123,7 @@ function getArtist(name: string) {
   return newArtist
 }
 
-function getRelease(title: string, albumArtists: number[]) {
+const getRelease = (title: string, albumArtists: number[]) => {
   const cacheKey = title.toLowerCase() + albumArtists.join(',')
   let existingRelease = cache.releases.get(cacheKey)
 
@@ -140,7 +143,7 @@ function getRelease(title: string, albumArtists: number[]) {
   return newRelease
 }
 
-function getAlbumTitle(metadata: Metadata, filePath: string) {
+const getAlbumTitle = (metadata: Metadata, filePath: string) => {
   if (metadata.album !== null) {
     return metadata.album
   }
@@ -150,7 +153,7 @@ function getAlbumTitle(metadata: Metadata, filePath: string) {
   return dirName
 }
 
-async function getOrder(metadata: Metadata, filePath: string) {
+const getOrder = async (metadata: Metadata, filePath: string) => {
   if (metadata.track !== null) {
     return metadata.track
   }
@@ -163,7 +166,7 @@ async function getOrder(metadata: Metadata, filePath: string) {
   return fileIndex
 }
 
-async function getFavorite(title: string | null, artists: Artist[]): Promise<boolean> {
+const getFavorite = async (title: string | null, artists: Artist[]): Promise<boolean> => {
   if (lfm?.status !== 'logged-in') return false
   if (title === null) return false
   if (artists.length === 0) return false
@@ -177,3 +180,9 @@ async function getFavorite(title: string | null, artists: Artist[]): Promise<boo
     return false
   }
 }
+
+await main()
+
+// signal to parent that the job is done
+if (parentPort) parentPort.postMessage('done')
+else process.exit(0)
