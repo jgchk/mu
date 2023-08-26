@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server'
+import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
 import type { Filter } from 'bool-lang/src/ast'
 import type { Database, SQL } from 'db'
@@ -9,15 +10,17 @@ import {
   desc,
   eq,
   inArray,
+  not,
+  or,
   playlistTracks,
   playlists,
   releases,
   sql,
   trackArtists,
+  trackTags,
   tracks,
 } from 'db'
-import { generateWhereClause } from 'db/src/helpers/tracks'
-import { ifNotNull } from 'utils'
+import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -285,3 +288,19 @@ export const tracksRouter = router({
       return dbTrack
     }),
 })
+
+export const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+  switch (node.kind) {
+    case 'id':
+      return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`
+
+    case 'not':
+      return ifDefined(generateWhereClause(node.child, index + 1), not)
+
+    case 'and':
+      return and(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+
+    case 'or':
+      return or(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+  }
+}

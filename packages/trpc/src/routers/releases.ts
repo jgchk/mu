@@ -190,7 +190,10 @@ export const releasesRouter = router({
         albumArtists.map((a) => a.id)
       )
 
-      const existingDbTracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
+      const existingDbTracks = ctx.sys().db.db.query.tracks.findMany({
+        where: eq(tracks.releaseId, dbRelease.id),
+        orderBy: asc(tracks.order),
+      })
 
       let image: { data: Buffer; id: number } | null | undefined = undefined
       if (input.album.art) {
@@ -304,21 +307,34 @@ export const releasesRouter = router({
         )
       }
 
-      const release = ctx.sys().db.releases.get(dbRelease.id)
+      const result = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, dbRelease.id),
+        with: {
+          tracks: {
+            orderBy: asc(tracks.order),
+          },
+          releaseArtists: {
+            orderBy: asc(releaseArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
 
-      if (release === undefined) {
+      if (result === undefined) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Release not found',
         })
       }
 
-      const tracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
-      const artists = ctx.sys().db.artists.getByReleaseId(dbRelease.id)
+      const { releaseArtists: releaseArtists_, ...release } = result
+
       return {
         ...release,
-        tracks,
-        artists,
+        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+        artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
       }
     }),
 
