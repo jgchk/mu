@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { decode } from 'bool-lang'
+import type { Filter } from 'bool-lang/src/ast'
 import type { Database, SQL } from 'db'
 import {
   and,
@@ -20,7 +21,35 @@ import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilters, TracksOptions, injectDescendants } from '../utils'
+import { BoolLangString, SortDirection, injectDescendants } from '../utils'
+
+export type TracksSortColumn = z.infer<typeof TracksSortColumn>
+export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration', 'order'])
+
+export type TracksSort = z.infer<typeof TracksSort>
+export const TracksSort = z.object({
+  column: TracksSortColumn,
+  direction: SortDirection,
+})
+
+export type TracksFilters = z.infer<typeof TracksFilters>
+export const TracksFilters = z.object({
+  artistId: z.number().optional(),
+  releaseId: z.number().optional(),
+  title: z.string().optional(),
+  favorite: z.boolean().optional(),
+  tags: BoolLangString.optional(),
+  sort: TracksSort.optional(),
+})
+
+export type Pagination = z.infer<typeof Pagination>
+export const Pagination = z.object({
+  limit: z.number().min(1).max(100).optional(),
+  cursor: z.number().optional(),
+})
+
+export type TracksOptions = z.infer<typeof TracksOptions>
+export const TracksOptions = TracksFilters.and(Pagination)
 
 const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limit?: number }) => {
   const where = []
@@ -226,15 +255,10 @@ export const tracksRouter = router({
     }),
 
   getByTag: protectedProcedure
-    .input(z.object({ tagId: z.number(), filter: TracksOptions.optional() }))
+    .input(z.object({ tagId: z.number(), filter: TracksFilters.omit({ tags: true }).optional() }))
     .query(({ input: { tagId, filter }, ctx }) => {
-      const descendants = ctx.sys().db.tags.getDescendants(tagId)
-      const ids = [tagId, ...descendants.map((t) => t.id)]
-      const tracks = ctx.sys().db.tracks.getByTagIds(ids, filter)
-      return tracks.map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
+      const tagFilter: Filter = { kind: 'id', value: tagId }
+      return getAllTracks(ctx.sys().db, { ...filter, tags: tagFilter })
     }),
 
   favorite: protectedProcedure
