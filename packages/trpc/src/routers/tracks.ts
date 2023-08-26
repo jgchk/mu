@@ -21,7 +21,7 @@ import { ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { BoolLangString, SortDirection, injectDescendants } from '../utils'
+import { BoolLangString, Pagination, SortDirection, injectDescendants } from '../utils'
 
 export type TracksSortColumn = z.infer<typeof TracksSortColumn>
 export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration', 'order'])
@@ -40,12 +40,6 @@ export const TracksFilters = z.object({
   favorite: z.boolean().optional(),
   tags: BoolLangString.optional(),
   sort: TracksSort.optional(),
-})
-
-export type Pagination = z.infer<typeof Pagination>
-export const Pagination = z.object({
-  limit: z.number().min(1).max(100).optional(),
-  cursor: z.number().optional(),
 })
 
 export type TracksOptions = z.infer<typeof TracksOptions>

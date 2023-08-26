@@ -20,6 +20,12 @@ export const BoolLangString = z.string().transform((val, ctx) => {
 export type SortDirection = z.infer<typeof SortDirection>
 export const SortDirection = z.enum(['asc', 'desc'])
 
+export type Pagination = z.infer<typeof Pagination>
+export const Pagination = z.object({
+  limit: z.number().min(1).max(100).optional(),
+  cursor: z.number().optional(),
+})
+
 export const injectDescendants =
   (db: Database) =>
   (node: BoolLang): BoolLang => {
