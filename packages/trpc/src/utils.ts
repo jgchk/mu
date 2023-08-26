@@ -21,7 +21,7 @@ export type SortDirection = z.infer<typeof SortDirection>
 export const SortDirection = z.enum(['asc', 'desc'])
 
 export type TracksSortColumn = z.infer<typeof TracksSortColumn>
-export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration'])
+export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration', 'order'])
 
 export type TracksSort = z.infer<typeof TracksSort>
 export const TracksSort = z.object({

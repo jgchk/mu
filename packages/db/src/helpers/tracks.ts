@@ -31,7 +31,7 @@ export type TracksSort = {
   column: TracksSortColumn
   direction: TracksSortDirection
 }
-export type TracksSortColumn = 'title' | 'artists' | 'release' | 'duration'
+export type TracksSortColumn = 'title' | 'artists' | 'release' | 'duration' | 'order'
 export type TracksSortDirection = 'asc' | 'desc'
 
 export type TracksMixin = {
@@ -233,6 +233,10 @@ export const TracksMixin = <T extends DatabaseBase>(base: T): T & TracksMixin =>
           }
           case 'duration': {
             query = query.orderBy(dir(tracks.duration))
+            break
+          }
+          case 'order': {
+            query = query.orderBy(dir(tracks.order))
             break
           }
         }

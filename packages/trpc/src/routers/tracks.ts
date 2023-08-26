@@ -56,7 +56,10 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
   }
 
   let orderBy: SQL | undefined
-  const sort = input.sort ?? { column: 'title', direction: 'asc' }
+  const sort = input.sort ?? {
+    column: input.releaseId !== undefined ? 'order' : 'title',
+    direction: 'asc',
+  }
   const dir = sort.direction === 'asc' ? asc : desc
   switch (sort.column) {
     case 'title': {
@@ -86,6 +89,10 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     }
     case 'duration': {
       orderBy = dir(tracks.duration)
+      break
+    }
+    case 'order': {
+      orderBy = dir(tracks.order)
       break
     }
   }
