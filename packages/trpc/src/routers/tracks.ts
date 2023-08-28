@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server'
 import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
 import type { Filter } from 'bool-lang/src/ast'
-import type { Database, SQL } from 'db'
+import type { Artist, Database, Release, SQL, Track } from 'db'
 import {
   and,
   artists,
@@ -123,24 +123,46 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     }
   }
 
-  const results = db.db.query.tracks.findMany({
-    where: and(...where),
-    orderBy,
-    offset: input.skip,
-    limit: input.limit,
-    with: {
-      release: true,
-      trackArtists: {
-        orderBy: asc(trackArtists.order),
-        with: { artist: true },
-      },
-    },
-  })
+  let query = db.db
+    .select()
+    .from(trackArtists)
+    .innerJoin(artists, eq(trackArtists.artistId, artists.id))
+    .innerJoin(tracks, eq(trackArtists.trackId, tracks.id))
+    .where(and(...where))
+    .leftJoin(releases, eq(tracks.releaseId, releases.id))
+    .orderBy(orderBy)
 
-  return results.map(({ trackArtists, ...track }) => ({
-    ...track,
-    artists: trackArtists.map((trackArtist) => trackArtist.artist),
+  if (input.skip !== undefined) {
+    query = query.offset(input.skip)
+  }
+  if (input.limit !== undefined) {
+    query = query.limit(input.limit)
+  }
+
+  const rows = query.all()
+
+  const results_ = rows.reduce<
+    Map<number, Track & { release: Release | null; artists: (Artist & { order: number })[] }>
+  >((acc, row) => {
+    const track = row.tracks
+    const release = row.releases
+    const artist = row.artists
+
+    const existing = acc.get(track.id) ?? { ...track, release: null, artists: [] }
+    existing.release = existing.release ?? release
+    existing.artists.push({ ...artist, order: row.track_artists.order })
+
+    acc.set(track.id, existing)
+
+    return acc
+  }, new Map())
+
+  const results__ = [...results_.values()].map((result) => ({
+    ...result,
+    artists: result.artists.sort((a, b) => a.order - b.order),
   }))
+
+  return results__
 }
 
 export const tracksRouter = router({
@@ -214,7 +236,7 @@ export const tracksRouter = router({
       } else {
         tracks = result.playlistTracks.map(({ id, track: { trackArtists, ...track } }) => ({
           ...track,
-          artists: trackArtists.map(({ artist }) => artist),
+          artists: trackArtists.map(({ artist, order }) => ({ ...artist, order })),
           playlistTrackId: id,
         }))
       }
