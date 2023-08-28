@@ -1,19 +1,41 @@
 import { TRPCError } from '@trpc/server'
-import type { Database } from 'db'
-import { and, asc, eq, inArray, releaseArtists, releases, sql, tracks } from 'db'
+import type { BoolLang } from 'bool-lang'
+import type { Filter } from 'bool-lang/src/ast'
+import type { Database, SQL } from 'db'
+import {
+  and,
+  asc,
+  eq,
+  inArray,
+  not,
+  or,
+  releaseArtists,
+  releaseTags,
+  releases,
+  sql,
+  tracks,
+} from 'db'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
 import type { Metadata } from 'music-metadata'
 import { deleteTrackCoverArt, writeTrackCoverArt, writeTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { isDefined, numDigits, uniq } from 'utils'
+import { ifDefined, isDefined, numDigits } from 'utils'
 import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
+import { BoolLangString, injectDescendants } from '../utils'
 
-const getAllReleases = (db: Database, input: { title?: string; artistId?: number }) => {
+export type ReleasesFilters = z.infer<typeof ReleasesFilters>
+export const ReleasesFilters = z.object({
+  artistId: z.number().optional(),
+  title: z.string().optional(),
+  tags: BoolLangString.optional(),
+})
+
+const getAllReleases = (db: Database, input: ReleasesFilters) => {
   const where = []
 
   if (input.title) {
@@ -29,6 +51,14 @@ const getAllReleases = (db: Database, input: { title?: string; artistId?: number
           .where(eq(releaseArtists.artistId, input.artistId))
       )
     )
+  }
+
+  if (input.tags) {
+    const tagsWithDescendants = injectDescendants(db)(input.tags)
+    const tagsWhere = generateWhereClause(tagsWithDescendants)
+    if (tagsWhere) {
+      where.push(tagsWhere)
+    }
   }
 
   const results = db.db.query.releases.findMany({
@@ -56,7 +86,7 @@ const getAllReleases = (db: Database, input: { title?: string; artistId?: number
 
 export const releasesRouter = router({
   getAll: protectedProcedure
-    .input(z.object({ title: z.string().optional(), artistId: z.number().optional() }))
+    .input(ReleasesFilters)
     .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
 
   getByArtistId: protectedProcedure
@@ -96,20 +126,10 @@ export const releasesRouter = router({
   }),
 
   getByTag: protectedProcedure
-    .input(z.object({ tagId: z.number() }))
-    .query(({ input: { tagId }, ctx }) => {
-      const descendants = ctx.sys().db.tags.getDescendants(tagId)
-      const ids = [tagId, ...descendants.map((t) => t.id)]
-      const releaseTags = ctx.sys().db.releaseTags.getByTags(ids)
-      const releaseIds = uniq(releaseTags.map((rt) => rt.releaseId))
-      return releaseIds.map((id) => ({
-        ...ctx.sys().db.releases.get(id),
-        imageId:
-          ctx
-            .sys()
-            .db.tracks.getByReleaseId(id)
-            .find((track) => track.imageId !== null)?.imageId ?? null,
-      }))
+    .input(z.object({ tagId: z.number(), filter: ReleasesFilters.omit({ tags: true }).optional() }))
+    .query(({ input: { tagId, filter }, ctx }) => {
+      const tagFilter: Filter = { kind: 'id', value: tagId }
+      return getAllReleases(ctx.sys().db, { ...filter, tags: tagFilter })
     }),
 
   updateWithTracksAndArtists: protectedProcedure
@@ -170,7 +190,10 @@ export const releasesRouter = router({
         albumArtists.map((a) => a.id)
       )
 
-      const existingDbTracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
+      const existingDbTracks = ctx.sys().db.db.query.tracks.findMany({
+        where: eq(tracks.releaseId, dbRelease.id),
+        orderBy: asc(tracks.order),
+      })
 
       let image: { data: Buffer; id: number } | null | undefined = undefined
       if (input.album.art) {
@@ -284,21 +307,34 @@ export const releasesRouter = router({
         )
       }
 
-      const release = ctx.sys().db.releases.get(dbRelease.id)
+      const result = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, dbRelease.id),
+        with: {
+          tracks: {
+            orderBy: asc(tracks.order),
+          },
+          releaseArtists: {
+            orderBy: asc(releaseArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
 
-      if (release === undefined) {
+      if (result === undefined) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Release not found',
         })
       }
 
-      const tracks = ctx.sys().db.tracks.getByReleaseId(dbRelease.id)
-      const artists = ctx.sys().db.artists.getByReleaseId(dbRelease.id)
+      const { releaseArtists: releaseArtists_, ...release } = result
+
       return {
         ...release,
-        tracks,
-        artists,
+        imageId: release.tracks.find((track) => track.imageId !== null)?.imageId ?? null,
+        artists: releaseArtists_.map((releaseArtist) => releaseArtist.artist),
       }
     }),
 
@@ -333,3 +369,19 @@ export const releasesRouter = router({
       return { success: true }
     }),
 })
+
+export const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+  switch (node.kind) {
+    case 'id':
+      return sql`exists(select 1 from ${releaseTags} where ${releases.id} = ${releaseTags.releaseId} and ${releaseTags.tagId} = ${node.value})`
+
+    case 'not':
+      return ifDefined(generateWhereClause(node.child, index + 1), not)
+
+    case 'and':
+      return and(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+
+    case 'or':
+      return or(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+  }
+}

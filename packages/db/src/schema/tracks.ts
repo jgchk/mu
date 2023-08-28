@@ -5,6 +5,7 @@ import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core
 import { images } from './images'
 import { releases } from './releases'
 import { trackArtists } from './track-artists'
+import { trackTags } from './track-tags'
 
 export type Track = InferModel<typeof tracks>
 export type InsertTrack = InferModel<typeof tracks, 'insert'>
@@ -31,4 +32,5 @@ export const trackRelations = relations(tracks, ({ one, many }) => ({
     references: [releases.id],
   }),
   trackArtists: many(trackArtists),
+  trackTags: many(trackTags),
 }))

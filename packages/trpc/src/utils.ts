@@ -20,33 +20,11 @@ export const BoolLangString = z.string().transform((val, ctx) => {
 export type SortDirection = z.infer<typeof SortDirection>
 export const SortDirection = z.enum(['asc', 'desc'])
 
-export type TracksSortColumn = z.infer<typeof TracksSortColumn>
-export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration'])
-
-export type TracksSort = z.infer<typeof TracksSort>
-export const TracksSort = z.object({
-  column: TracksSortColumn,
-  direction: SortDirection,
-})
-
-export type TracksFilters = z.infer<typeof TracksFilters>
-export const TracksFilters = z.object({
-  artistId: z.number().optional(),
-  releaseId: z.number().optional(),
-  title: z.string().optional(),
-  favorite: z.boolean().optional(),
-  tags: BoolLangString.optional(),
-  sort: TracksSort.optional(),
-})
-
 export type Pagination = z.infer<typeof Pagination>
 export const Pagination = z.object({
   limit: z.number().min(1).max(100).optional(),
   cursor: z.number().optional(),
 })
-
-export type TracksOptions = z.infer<typeof TracksOptions>
-export const TracksOptions = TracksFilters.and(Pagination)
 
 export const injectDescendants =
   (db: Database) =>

@@ -7,6 +7,7 @@ import type { FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify'
 import { handler as svelteKitHandler } from 'client'
 import type { SystemContext } from 'context'
 import type { Session } from 'db'
+import { asc, eq, releases, tracks } from 'db'
 import Fastify from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod'
@@ -329,15 +330,20 @@ export const makeApiServer = async (ctx: () => SystemContext) => {
         const { id } = req.params
         const { width, height } = req.query
 
-        const release = ctx().db.releases.get(id)
+        const release = ctx().db.db.query.releases.findFirst({
+          where: eq(releases.id, id),
+          with: {
+            tracks: {
+              orderBy: asc(tracks.order),
+            },
+          },
+        })
 
         if (release === undefined) {
           return res.status(404).send('Release not found')
         }
 
-        const tracks = ctx().db.tracks.getByReleaseId(release.id)
-
-        for (const track of tracks) {
+        for (const track of release.tracks) {
           if (track.imageId === null) continue
 
           const { output, contentType } = await handleResizeImage(track.imageId, {

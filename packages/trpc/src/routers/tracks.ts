@@ -1,5 +1,7 @@
 import { TRPCError } from '@trpc/server'
+import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
+import type { Filter } from 'bool-lang/src/ast'
 import type { Database, SQL } from 'db'
 import {
   and,
@@ -8,19 +10,43 @@ import {
   desc,
   eq,
   inArray,
+  not,
+  or,
   playlistTracks,
   playlists,
   releases,
   sql,
   trackArtists,
+  trackTags,
   tracks,
 } from 'db'
-import { generateWhereClause } from 'db/src/helpers/tracks'
-import { ifNotNull } from 'utils'
+import { ifDefined, ifNotNull } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { TracksFilters, TracksOptions, injectDescendants } from '../utils'
+import { BoolLangString, Pagination, SortDirection, injectDescendants } from '../utils'
+
+export type TracksSortColumn = z.infer<typeof TracksSortColumn>
+export const TracksSortColumn = z.enum(['title', 'artists', 'release', 'duration', 'order'])
+
+export type TracksSort = z.infer<typeof TracksSort>
+export const TracksSort = z.object({
+  column: TracksSortColumn,
+  direction: SortDirection,
+})
+
+export type TracksFilters = z.infer<typeof TracksFilters>
+export const TracksFilters = z.object({
+  artistId: z.number().optional(),
+  releaseId: z.number().optional(),
+  title: z.string().optional(),
+  favorite: z.boolean().optional(),
+  tags: BoolLangString.optional(),
+  sort: TracksSort.optional(),
+})
+
+export type TracksOptions = z.infer<typeof TracksOptions>
+export const TracksOptions = TracksFilters.and(Pagination)
 
 const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limit?: number }) => {
   const where = []
@@ -56,7 +82,10 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
   }
 
   let orderBy: SQL | undefined
-  const sort = input.sort ?? { column: 'title', direction: 'asc' }
+  const sort = input.sort ?? {
+    column: input.releaseId !== undefined ? 'order' : 'title',
+    direction: 'asc',
+  }
   const dir = sort.direction === 'asc' ? asc : desc
   switch (sort.column) {
     case 'title': {
@@ -86,6 +115,10 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     }
     case 'duration': {
       orderBy = dir(tracks.duration)
+      break
+    }
+    case 'order': {
+      orderBy = dir(tracks.order)
       break
     }
   }
@@ -219,15 +252,10 @@ export const tracksRouter = router({
     }),
 
   getByTag: protectedProcedure
-    .input(z.object({ tagId: z.number(), filter: TracksOptions.optional() }))
+    .input(z.object({ tagId: z.number(), filter: TracksFilters.omit({ tags: true }).optional() }))
     .query(({ input: { tagId, filter }, ctx }) => {
-      const descendants = ctx.sys().db.tags.getDescendants(tagId)
-      const ids = [tagId, ...descendants.map((t) => t.id)]
-      const tracks = ctx.sys().db.tracks.getByTagIds(ids, filter)
-      return tracks.map((track) => ({
-        ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
-      }))
+      const tagFilter: Filter = { kind: 'id', value: tagId }
+      return getAllTracks(ctx.sys().db, { ...filter, tags: tagFilter })
     }),
 
   favorite: protectedProcedure
@@ -260,3 +288,19 @@ export const tracksRouter = router({
       return dbTrack
     }),
 })
+
+export const generateWhereClause = (node: BoolLang, index = 0): SQL | undefined => {
+  switch (node.kind) {
+    case 'id':
+      return sql`exists(select 1 from ${trackTags} where ${tracks.id} = ${trackTags.trackId} and ${trackTags.tagId} = ${node.value})`
+
+    case 'not':
+      return ifDefined(generateWhereClause(node.child, index + 1), not)
+
+    case 'and':
+      return and(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+
+    case 'or':
+      return or(...node.children.map((child, idx) => generateWhereClause(child, index + idx + 1)))
+  }
+}
