@@ -45,9 +45,16 @@ const promises: Promise<boolean>[] = []
 for await (const filePath of walkDir(musicDir)) {
   promises.push(handleFile(filePath))
 }
-const results = await Promise.all(promises)
-const imported = results.filter(Boolean).length
+const results = await Promise.allSettled(promises)
+const successes = results.filter(
+  (r): r is PromiseFulfilledResult<boolean> => r.status === 'fulfilled'
+)
+const errors = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+
+const imported = successes.filter((result) => result.value).length
 log.info(`Imported ${imported} tracks`)
+log.info(`Skipped ${successes.length - imported} tracks`)
+log.info(`Encountered ${errors.length} errors`)
 
 async function handleFile(filePath_: string) {
   try {
@@ -87,7 +94,10 @@ async function handleFile(filePath_: string) {
 
     return true
   } catch (e) {
-    log.error({ cause: e }, `Error importing file: ${filePath_}`)
+    log.error(
+      { cause: e, stack: e instanceof Error ? e.stack : undefined },
+      `Error importing file: ${filePath_}`
+    )
     throw new Error(`Error importing file: ${filePath_}`, { cause: e })
   }
 }
