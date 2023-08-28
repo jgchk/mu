@@ -106,6 +106,10 @@
     {/if}
     <FavoriteButton layer={700} favorite={track.favorite} on:click={() => favorite()} />
     <AddToPlaylistButton trackId={track.id} layer={700} />
-    <TrackTagsButton trackId={track.id} layer={700} />
+    <TrackTagsButton
+      trackId={track.id}
+      selectedTagIds={track.tags.map((tag) => tag.id)}
+      layer={700}
+    />
   </div>
 </div>

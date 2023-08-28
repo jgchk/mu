@@ -6,20 +6,20 @@
   import IconButton from '$lib/atoms/IconButton.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
   import TagOutlineIcon from '$lib/icons/TagOutlineIcon.svelte'
-  import { createTrackTagsQuery, prefetchTagsQuery } from '$lib/services/tags'
+  import { prefetchTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
 
   import TagsPopover from './TrackTagsPopover.svelte'
 
   export let trackId: number
+  export let selectedTagIds: number[]
   export let layer: ComponentProps<IconButton>['layer'] = undefined
 
   let showAddTagPopover = false
   const [popperElement, popperTooltip] = createPopperAction()
 
   const trpc = getContextClient()
-  const trackTagsQuery = createTrackTagsQuery(trpc, trackId)
-  $: hasTags = !!$trackTagsQuery.data?.length
+  $: hasTags = selectedTagIds.length > 0
 
   void prefetchTagsQuery(trpc, { taggable: true })
 
@@ -51,6 +51,6 @@
   </IconButton>
 
   {#if showAddTagPopover}
-    <TagsPopover {trackId} trackTags={$trackTagsQuery.data} {popperTooltip} on:close={close} />
+    <TagsPopover {trackId} {selectedTagIds} {popperTooltip} on:close={close} />
   {/if}
 </div>

@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server'
 import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
 import type { Filter } from 'bool-lang/src/ast'
-import type { Artist, Database, Release, SQL, Track } from 'db'
+import type { Artist, Database, Release, SQL, Tag, Track } from 'db'
 import {
   and,
   artists,
@@ -16,11 +16,12 @@ import {
   playlists,
   releases,
   sql,
+  tags,
   trackArtists,
   trackTags,
   tracks,
 } from 'db'
-import { ifDefined, ifNotNull } from 'utils'
+import { ifDefined } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -130,6 +131,8 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     .innerJoin(tracks, eq(trackArtists.trackId, tracks.id))
     .where(and(...where))
     .leftJoin(releases, eq(tracks.releaseId, releases.id))
+    .leftJoin(trackTags, eq(tracks.id, trackTags.trackId))
+    .leftJoin(tags, eq(trackTags.tagId, tags.id))
     .orderBy(orderBy)
 
   if (input.skip !== undefined) {
@@ -142,15 +145,22 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
   const rows = query.all()
 
   const results_ = rows.reduce<
-    Map<number, Track & { release: Release | null; artists: (Artist & { order: number })[] }>
+    Map<
+      number,
+      Track & { release: Release | null; artists: (Artist & { order: number })[]; tags: Tag[] }
+    >
   >((acc, row) => {
     const track = row.tracks
     const release = row.releases
     const artist = row.artists
+    const tag = row.tags
 
-    const existing = acc.get(track.id) ?? { ...track, release: null, artists: [] }
+    const existing = acc.get(track.id) ?? { ...track, release: null, artists: [], tags: [] }
     existing.release = existing.release ?? release
     existing.artists.push({ ...artist, order: row.track_artists.order })
+    if (tag) {
+      existing.tags.push(tag)
+    }
 
     acc.set(track.id, existing)
 
@@ -205,8 +215,14 @@ export const tracksRouter = router({
                 with: {
                   release: true,
                   trackArtists: {
+                    orderBy: asc(trackArtists.order),
                     with: {
                       artist: true,
+                    },
+                  },
+                  trackTags: {
+                    with: {
+                      tag: true,
                     },
                   },
                 },
@@ -234,11 +250,14 @@ export const tracksRouter = router({
           playlistTrackId: undefined,
         }))
       } else {
-        tracks = result.playlistTracks.map(({ id, track: { trackArtists, ...track } }) => ({
-          ...track,
-          artists: trackArtists.map(({ artist, order }) => ({ ...artist, order })),
-          playlistTrackId: id,
-        }))
+        tracks = result.playlistTracks.map(
+          ({ id, track: { trackArtists, trackTags, ...track } }) => ({
+            ...track,
+            artists: trackArtists.map(({ artist, order }) => ({ ...artist, order })),
+            tags: trackTags.map(({ tag }) => tag),
+            playlistTrackId: id,
+          })
+        )
       }
 
       return tracks
@@ -247,29 +266,65 @@ export const tracksRouter = router({
   getById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input: { id }, ctx }) => {
-      const track = ctx.sys().db.tracks.get(id)
+      const result = ctx.sys().db.db.query.tracks.findFirst({
+        where: eq(tracks.id, id),
+        with: {
+          release: true,
+          trackArtists: {
+            orderBy: asc(trackArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+          trackTags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
+      })
 
-      if (track === undefined) {
+      if (result === undefined) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Track not found',
         })
       }
 
+      const { trackArtists: trackArtists_, trackTags: trackTags_, ...track } = result
+
       return {
         ...track,
-        artists: ctx.sys().db.artists.getByTrackId(id),
-        release: ifNotNull(track.releaseId, (releaseId) => ctx.sys().db.releases.get(releaseId)),
+        artists: trackArtists_.map(({ artist, order }) => ({ ...artist, order })),
+        tags: trackTags_.map(({ tag }) => tag),
       }
     }),
 
   getMany: protectedProcedure
     .input(z.object({ ids: z.array(z.number()) }))
     .query(({ input: { ids }, ctx }) => {
-      const tracks = ctx.sys().db.tracks.getMany(ids)
-      return tracks.map((track) => ({
+      const results = ctx.sys().db.db.query.tracks.findMany({
+        where: inArray(tracks.id, ids),
+        with: {
+          release: true,
+          trackArtists: {
+            orderBy: asc(trackArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+          trackTags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
+      })
+
+      return results.map(({ trackArtists, trackTags, ...track }) => ({
         ...track,
-        artists: ctx.sys().db.artists.getByTrackId(track.id),
+        artists: trackArtists.map(({ artist, order }) => ({ ...artist, order })),
+        tags: trackTags.map(({ tag }) => tag),
       }))
     }),
 
