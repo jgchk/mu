@@ -1,5 +1,6 @@
-import { makeDb, makeLastFm } from 'context'
-import type { Artist, Release } from 'db'
+import { makeDb } from 'context'
+import type { Artist, InsertTrack, Release } from 'db'
+import { inArray, trackArtists, tracks } from 'db'
 import { env } from 'env'
 import { fileTypeFromFile } from 'file-type'
 import fs from 'fs/promises'
@@ -8,96 +9,116 @@ import { log } from 'log'
 import type { Metadata } from 'music-metadata'
 import { readTrackMetadata } from 'music-metadata'
 import path from 'path'
-import { isAudio } from 'utils'
+import { chunk, isAudio, isFulfillfed, isRejected } from 'utils'
 import { dirExists, walkDir } from 'utils/node'
 import { parentPort } from 'worker_threads'
 
 import { getCoverArtImage } from '../utils'
 
-const musicDir = env.MUSIC_DIR
-const imagesDir = env.IMAGES_DIR
-
-const musicDirExists = await dirExists(musicDir)
-if (!musicDirExists) {
-  process.exit(0)
-}
-
 const db = makeDb()
-
-const config = db.config.get()
-
-const lfm = config.lastFmKey
-  ? await makeLastFm({
-      apiKey: config.lastFmKey,
-      username: config.lastFmUsername,
-      password: config.lastFmPassword,
-      apiSecret: config.lastFmSecret,
-    })
-  : undefined
-
-const imageManager = new ImageManager({ imagesDir, db })
+const imageManager = new ImageManager({ imagesDir: env.IMAGES_DIR, db })
 
 const main = async () => {
-  const promises: Promise<boolean>[] = []
-  for await (const filePath of walkDir(musicDir)) {
-    promises.push(handleFile(filePath))
+  const filePaths: string[] = []
+  for await (const filePath of walkDir(env.MUSIC_DIR)) {
+    filePaths.push(filePath)
   }
-  const results = await Promise.allSettled(promises)
-  const successes = results.filter(
-    (r): r is PromiseFulfilledResult<boolean> => r.status === 'fulfilled'
-  )
-  const errors = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected')
 
-  const imported = successes.filter((result) => result.value).length
-  log.info(`Imported ${imported} tracks`)
-  log.info(`Skipped ${successes.length - imported} tracks`)
-  log.info(`Encountered ${errors.length} errors`)
+  const audioFilePaths = (
+    await Promise.all(
+      filePaths.map(async (filePath) => {
+        const fileType = await fileTypeFromFile(filePath)
+        const isAudioFile = fileType !== undefined && isAudio(fileType.mime)
+        return [filePath, isAudioFile] as const
+      })
+    )
+  )
+    .filter(([, isAudioFile]) => isAudioFile)
+    .map(([filePath]) => filePath)
+
+  const BATCH_SIZE = 100
+  const batchedAudioFilePaths = chunk(audioFilePaths, BATCH_SIZE)
+
+  let successes = 0
+  let rejections = 0
+  for (const [i, batch] of batchedAudioFilePaths.entries()) {
+    log.info(`Starting batch ${i + 1} of ${batchedAudioFilePaths.length}`)
+    const results = await handleFileBatch(batch)
+    log.info(`Batch ${i + 1} of ${batchedAudioFilePaths.length} complete`)
+    successes += results.successes.length
+    rejections += results.rejections.length
+  }
+
+  log.info(`Imported ${successes} tracks`)
+  log.info(`Skipped ${filePaths.length - audioFilePaths.length} non-audio files`)
+  log.info(`Encountered ${rejections} errors`)
 }
 
-const handleFile = async (filePath_: string) => {
-  try {
-    const filePath = path.resolve(filePath_)
-    const fileType = await fileTypeFromFile(filePath)
-    if (!fileType || !isAudio(fileType.mime)) return false
+const handleFileBatch = async (filePaths: string[]) => {
+  const existingTracks = db.db.query.tracks.findMany({
+    where: inArray(tracks.path, filePaths),
+  })
+  const existingFilePaths = new Set(existingTracks.map((t) => t.path))
+  const newFilePaths = filePaths.filter((filePath) => !existingFilePaths.has(filePath))
 
-    const existingTrack = db.tracks.getByPath(filePath)
-    if (existingTrack) return false
+  const promiseResults = await Promise.allSettled(
+    newFilePaths.map(async (filePath) => {
+      const [metadata, image] = await Promise.all([
+        readTrackMetadata(filePath),
+        getCoverArtImage(imageManager, filePath),
+      ])
 
-    const metadata = await readTrackMetadata(filePath)
-    const image = await getCoverArtImage(imageManager, filePath)
+      const albumArtists = metadata.albumArtists.map((name) => getArtist(name))
+      const artists = metadata.artists.map((name) => getArtist(name))
+      const albumTitle = getAlbumTitle(metadata, filePath)
+      const release = getRelease(
+        albumTitle,
+        albumArtists.map((a) => a.id)
+      )
 
-    const albumArtists = metadata.albumArtists.map((name) => getArtist(name))
-    const artists = metadata.artists.map((name) => getArtist(name))
-    const albumTitle = getAlbumTitle(metadata, filePath)
-    const release = getRelease(
-      albumTitle,
-      albumArtists.map((a) => a.id)
-    )
-    const order = await getOrder(metadata, filePath)
-    const favorite = await getFavorite(metadata.title, artists)
+      const order = await getOrder(metadata, filePath)
 
-    const dbTrack = db.tracks.insert({
-      title: metadata.title,
-      path: filePath,
-      releaseId: release.id,
-      order,
-      imageId: image?.id,
-      duration: metadata.length,
-      favorite,
+      const insertTrack: InsertTrack = {
+        title: metadata.title,
+        path: filePath,
+        releaseId: release.id,
+        order,
+        imageId: image?.id,
+        duration: metadata.length,
+        favorite: false,
+      }
+
+      return {
+        track: insertTrack,
+        artistIds: artists.map((artist) => artist.id),
+      }
     })
-    db.trackArtists.insertManyByTrackId(
-      dbTrack.id,
-      artists.map((a) => a.id)
+  )
+
+  const insertTracksData = promiseResults.filter(isFulfillfed).map((p) => p.value)
+  const rejections = promiseResults.filter(isRejected)
+
+  if (insertTracksData.length > 0) {
+    const dbTracks = db.db
+      .insert(tracks)
+      .values(insertTracksData.map((i) => i.track))
+      .returning({ id: tracks.id })
+      .all()
+
+    const trackArtistsData = dbTracks.flatMap((dbTrack, i) =>
+      insertTracksData[i].artistIds.map((artistId, order) => ({
+        trackId: dbTrack.id,
+        artistId,
+        order,
+      }))
     )
 
-    return true
-  } catch (e) {
-    log.error(
-      { cause: e, stack: e instanceof Error ? e.stack : undefined },
-      `Error importing file: ${filePath_}`
-    )
-    throw new Error(`Error importing file: ${filePath_}`, { cause: e })
+    if (trackArtistsData.length > 0) {
+      db.db.insert(trackArtists).values(trackArtistsData)
+    }
   }
+
+  return { successes: insertTracksData, rejections }
 }
 
 const cache = {
@@ -166,23 +187,15 @@ const getOrder = async (metadata: Metadata, filePath: string) => {
   return fileIndex
 }
 
-const getFavorite = async (title: string | null, artists: Artist[]): Promise<boolean> => {
-  if (lfm?.status !== 'logged-in') return false
-  if (title === null) return false
-  if (artists.length === 0) return false
-
-  try {
-    return lfm.getLovedTrack({
-      track: title,
-      artist: artists.map((a) => a.name).join(', '),
-    })
-  } catch {
-    return false
-  }
+if (!(await dirExists(env.MUSIC_DIR))) {
+  process.exit(0)
 }
 
 await main()
 
 // signal to parent that the job is done
-if (parentPort) parentPort.postMessage('done')
-else process.exit(0)
+if (parentPort) {
+  parentPort.postMessage('done')
+} else {
+  process.exit(0)
+}

@@ -13,3 +13,10 @@ export const pAll = <T, O>(
 }
 
 export const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
+
+export const isFulfillfed = <T>(
+  promise: PromiseSettledResult<T>
+): promise is PromiseFulfilledResult<T> => promise.status === 'fulfilled'
+
+export const isRejected = <T>(promise: PromiseSettledResult<T>): promise is PromiseRejectedResult =>
+  promise.status === 'rejected'

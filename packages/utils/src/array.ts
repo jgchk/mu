@@ -83,3 +83,11 @@ export const withoutRuns = <T>(array: T[]): T[] => {
 }
 
 export const first = <T>(array: T[] | T) => (Array.isArray(array) ? array[0] : array)
+
+export const chunk = <T>(array: T[], size: number): T[][] => {
+  const output: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    output.push(array.slice(i, i + size))
+  }
+  return output
+}

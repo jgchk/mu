@@ -92,5 +92,8 @@ for (const tracks of groupedTracks.values()) {
 log.info(`Matches: ${numMatches}`)
 
 // signal to parent that the job is done
-if (parentPort) parentPort.postMessage('done')
-else process.exit(0)
+if (parentPort) {
+  parentPort.postMessage('done')
+} else {
+  process.exit(0)
+}
