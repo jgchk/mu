@@ -12,7 +12,7 @@ export class DatabaseBase {
 
   constructor(url: string) {
     this.sqlite = new SqliteDatabase(url)
-    this.db = drizzle(this.sqlite, { schema })
+    this.db = drizzle(this.sqlite, { schema, logger: true })
     migrate(this.db)
   }
 

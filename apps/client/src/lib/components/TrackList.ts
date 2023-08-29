@@ -8,6 +8,7 @@ export type TrackListTrack = {
   favorite: boolean
   release?: { id: number; title: string | null } | null
   artists: { id: number; name: string }[]
+  tags: { id: number; name: string }[]
   playlistTrackId?: number
 }
 

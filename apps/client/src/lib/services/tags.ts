@@ -86,15 +86,6 @@ export const createReleaseTagMutation = (
     },
   })
 
-export const createTrackTagsQuery = (
-  trpc: TRPCClient,
-  trackId: number,
-  opts?: RouterOptions['tags']['getByTrack']
-) => trpc.tags.getByTrack.query({ trackId }, opts)
-
-export const prefetchTrackTagsQuery = (trpc: TRPCClient, trackId: number) =>
-  trpc.tags.getByTrack.prefetchQuery({ trackId })
-
 export const createTrackTagMutation = (
   trpc: TRPCClient,
   options?: RouterOptions['tags']['tagTrack']
@@ -105,6 +96,7 @@ export const createTrackTagMutation = (
       const [data, input] = args
       await Promise.all([
         trpc.tags.getByTrack.utils.setData({ trackId: input.trackId }, data),
+        trpc.tracks.utils.invalidate(),
         options?.onSuccess?.(...args),
       ])
     },

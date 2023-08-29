@@ -11,11 +11,7 @@ import { makeApiServer } from './api'
 const main = async () => {
   const ctx = await makeContext()
 
-  const [bree, apiServer] = await Promise.all([
-    startBree(),
-    makeApiServer(ctx),
-    resumeDownloads(ctx()),
-  ])
+  const apiServer = await makeApiServer(ctx)
 
   apiServer.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }, (err, address) => {
     if (err) {
@@ -25,6 +21,8 @@ const main = async () => {
       log.info(`> Running on ${address}`)
     }
   })
+
+  const [bree] = await Promise.all([startBree(), resumeDownloads(ctx())])
 
   let shuttingDown = false
   for (const sig of ['SIGTERM', 'SIGHUP', 'SIGINT', 'SIGUSR2']) {
@@ -41,20 +39,23 @@ const main = async () => {
 const startBree = async () => {
   const bree = new Bree({
     root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'jobs'),
-    jobs: [{ name: 'import-lastfm-loved' }, { name: 'import-music-dir' }],
+    jobs: ['import-music-dir'],
     logger: log,
     errorHandler: (error, workerMetadata) => {
       log.error(error)
       log.error(workerMetadata)
     },
-    workerMessageHandler: ({ name, message }) => {
-      log.debug(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions
-        `Worker for job "${name}" sent a message: ${JSON.stringify(message).slice(0, 4096)}`
-      )
-    },
   })
+
+  bree.on('worker deleted', (worker) => {
+    if (worker === 'import-music-dir') {
+      console.log('deleted', worker)
+      void bree.add('import-lastfm-loved').then(() => bree.start('import-lastfm-loved'))
+    }
+  })
+
   await bree.start()
+
   return bree
 }
 
