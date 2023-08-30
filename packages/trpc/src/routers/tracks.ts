@@ -2,13 +2,14 @@ import { TRPCError } from '@trpc/server'
 import type { BoolLang } from 'bool-lang'
 import { decode } from 'bool-lang'
 import type { Filter } from 'bool-lang/src/ast'
-import type { Artist, Database, Release, SQL, Tag, Track } from 'db'
+import type { Database, SQL } from 'db'
 import {
   and,
   artists,
   asc,
   desc,
   eq,
+  getTableColumns,
   inArray,
   not,
   or,
@@ -120,19 +121,14 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     }
     case 'order': {
       orderBy = dir(tracks.order)
-      break
     }
   }
 
   let query = db.db
-    .select()
-    .from(trackArtists)
-    .innerJoin(artists, eq(trackArtists.artistId, artists.id))
-    .innerJoin(tracks, eq(trackArtists.trackId, tracks.id))
-    .where(and(...where))
+    .select({ ...getTableColumns(tracks), release: releases })
+    .from(tracks)
     .leftJoin(releases, eq(tracks.releaseId, releases.id))
-    .leftJoin(trackTags, eq(tracks.id, trackTags.trackId))
-    .leftJoin(tags, eq(trackTags.tagId, tags.id))
+    .where(and(...where))
     .orderBy(orderBy)
 
   if (input.skip !== undefined) {
@@ -142,37 +138,24 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     query = query.limit(input.limit)
   }
 
-  const rows = query.all()
-
-  const results_ = rows.reduce<
-    Map<
-      number,
-      Track & { release: Release | null; artists: (Artist & { order: number })[]; tags: Tag[] }
-    >
-  >((acc, row) => {
-    const track = row.tracks
-    const release = row.releases
-    const artist = row.artists
-    const tag = row.tags
-
-    const existing = acc.get(track.id) ?? { ...track, release: null, artists: [], tags: [] }
-    existing.release = existing.release ?? release
-    existing.artists.push({ ...artist, order: row.track_artists.order })
-    if (tag) {
-      existing.tags.push(tag)
-    }
-
-    acc.set(track.id, existing)
-
-    return acc
-  }, new Map())
-
-  const results__ = [...results_.values()].map((result) => ({
-    ...result,
-    artists: result.artists.sort((a, b) => a.order - b.order),
+  const results = query.all().map((track) => ({
+    ...track,
+    artists: db.db
+      .select(getTableColumns(artists))
+      .from(trackArtists)
+      .leftJoin(artists, eq(trackArtists.artistId, artists.id))
+      .where(eq(trackArtists.trackId, track.id))
+      .orderBy(trackArtists.order)
+      .all(),
+    tags: db.db
+      .select(getTableColumns(tags))
+      .from(trackTags)
+      .leftJoin(tags, eq(trackTags.tagId, tags.id))
+      .where(eq(trackTags.trackId, track.id))
+      .all(),
   }))
 
-  return results__
+  return results
 }
 
 export const tracksRouter = router({
