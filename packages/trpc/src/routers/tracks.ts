@@ -143,14 +143,14 @@ const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limi
     artists: db.db
       .select(getTableColumns(artists))
       .from(trackArtists)
-      .leftJoin(artists, eq(trackArtists.artistId, artists.id))
+      .innerJoin(artists, eq(trackArtists.artistId, artists.id))
       .where(eq(trackArtists.trackId, track.id))
       .orderBy(trackArtists.order)
       .all(),
     tags: db.db
       .select(getTableColumns(tags))
       .from(trackTags)
-      .leftJoin(tags, eq(trackTags.tagId, tags.id))
+      .innerJoin(tags, eq(trackTags.tagId, tags.id))
       .where(eq(trackTags.trackId, track.id))
       .all(),
   }))
