@@ -195,7 +195,10 @@ export const playlistsRouter = router({
   getAll: protectedProcedure
     .input(z.object({ name: z.string().optional(), auto: z.boolean().optional() }))
     .query(({ input, ctx }) => {
-      const where = [input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter)]
+      const where = []
+      if (input.auto !== undefined) {
+        where.push(input.auto ? isNotNull(playlists.filter) : isNull(playlists.filter))
+      }
 
       if (input.name !== undefined) {
         where.push(sql`lower(${playlists.name}) like ${'%' + input.name.toLowerCase() + '%'}`)
