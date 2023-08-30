@@ -114,7 +114,7 @@ const handleFileBatch = async (filePaths: string[]) => {
     )
 
     if (trackArtistsData.length > 0) {
-      db.db.insert(trackArtists).values(trackArtistsData)
+      db.db.insert(trackArtists).values(trackArtistsData).run()
     }
   }
 
