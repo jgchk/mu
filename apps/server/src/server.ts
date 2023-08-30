@@ -49,7 +49,6 @@ const startBree = async () => {
 
   bree.on('worker deleted', (worker) => {
     if (worker === 'import-music-dir') {
-      console.log('deleted', worker)
       void bree.add('import-lastfm-loved').then(() => bree.start('import-lastfm-loved'))
     }
   })
