@@ -25,6 +25,10 @@ declare global {
       onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void
     }
   }
+
+  interface Window {
+    Android?: {}
+  }
 }
 
 declare module '@tanstack/svelte-query' {
