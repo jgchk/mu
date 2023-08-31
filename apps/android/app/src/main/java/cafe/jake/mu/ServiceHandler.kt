@@ -49,6 +49,26 @@ class ServiceHandler @Inject constructor(
         player.play()
     }
 
+    fun nextTrack() {
+        player.seekToNextMediaItem()
+    }
+
+    fun previousTrack() {
+        player.seekToPreviousMediaItem()
+    }
+
+    fun play() {
+        player.play()
+    }
+
+    fun pause() {
+        player.pause()
+    }
+
+    fun seek(time: Int) {
+        player.seekTo(time.toLong())
+    }
+
     suspend fun onPlayerEvent(playerEvent: PlayerEvent) {
         when (playerEvent) {
             PlayerEvent.Backward -> player.seekBack()

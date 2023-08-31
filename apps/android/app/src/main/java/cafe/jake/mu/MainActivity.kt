@@ -50,11 +50,41 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface
         fun nextTrack() {
             println("nextTrack()")
+            runOnUiThread {
+                serviceHandler.nextTrack()
+            }
         }
 
         @JavascriptInterface
         fun previousTrack() {
             println("previousTrack()")
+            runOnUiThread {
+                serviceHandler.previousTrack()
+            }
+        }
+
+        @JavascriptInterface
+        fun play() {
+            println("play()")
+            runOnUiThread {
+                serviceHandler.play()
+            }
+        }
+
+        @JavascriptInterface
+        fun pause() {
+            println("pause()")
+            runOnUiThread {
+                serviceHandler.pause()
+            }
+        }
+
+        @JavascriptInterface
+        fun seek(time: Int) {
+            println("seek($time)")
+            runOnUiThread {
+                serviceHandler.seek(time)
+            }
         }
     }
 
@@ -96,6 +126,13 @@ class MainActivity : ComponentActivity() {
                                         }
                                         is MediaState.Progress -> {
                                             loadUrl("javascript:window.dispatchEvent(new CustomEvent('timeupdate', {detail: ${mediaState.progress}}))")
+                                        }
+                                        is MediaState.Playing -> {
+                                            if (mediaState.isPlaying) {
+                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('played'))")
+                                            } else {
+                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('paused'))")
+                                            }
                                         }
                                         else -> {}
                                     }

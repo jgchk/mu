@@ -63,13 +63,25 @@
   }
   /* eslint-disable */
   const play = () => {
-    player?.play()
+    if (window.Android) {
+      window.Android.play()
+    } else {
+      player?.play()
+    }
   }
   const pause = () => {
-    player?.pause()
+    if (window.Android) {
+      window.Android.pause()
+    } else {
+      player?.pause()
+    }
   }
   const seek = (time: number) => {
-    player?.seek(time)
+    if (window.Android) {
+      window.Android.seek(time)
+    } else {
+      player?.seek(time)
+    }
   }
   /* eslint-enable */
 
@@ -294,6 +306,7 @@
 {#if browser}
   {#if window.Android}
     <PlayerAudioAndroid
+      bind:paused
       on:timeupdate={(e) => {
         console.log('timeupdate', e.detail)
         if ($nowPlaying.track) {

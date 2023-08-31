@@ -29,6 +29,8 @@ declare global {
   interface AppEventMap {
     timeupdate: CustomEvent<number>
     durationchange: CustomEvent<number>
+    paused: CustomEvent<void>
+    played: CustomEvent<void>
   }
 
   interface Window {
@@ -46,6 +48,10 @@ declare global {
       playTrack: (id: number, previousTracks: string, nextTracks: string) => void
       nextTrack: () => void
       previousTrack: () => void
+
+      play: () => void
+      pause: () => void
+      seek: (time: number) => void
     }
   }
 }
