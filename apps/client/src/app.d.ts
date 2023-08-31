@@ -26,8 +26,27 @@ declare global {
     }
   }
 
+  interface AppEventMap {
+    timeupdate: CustomEvent<number>
+    durationchange: CustomEvent<number>
+  }
+
   interface Window {
-    Android?: {}
+    addEventListener<K extends keyof AppEventMap>(
+      type: K,
+      listener: (this: Document, ev: AppEventMap[K]) => void
+    ): void
+    removeEventListener<K extends keyof AppEventMap>(
+      type: K,
+      listener: (this: Document, ev: AppEventMap[K]) => void
+    ): void
+    dispatchEvent<K extends keyof AppEventMap>(ev: AppEventMap[K]): void
+
+    Android?: {
+      playTrack: (id: number, previousTracks: string, nextTracks: string) => void
+      nextTrack: () => void
+      previousTrack: () => void
+    }
   }
 }
 

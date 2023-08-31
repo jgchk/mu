@@ -26,6 +26,7 @@ export const playTrack = (
     nextTracks = [],
   }: { previousTracks?: number[]; nextTracks?: number[] } = {}
 ) => {
+  window.Android?.playTrack(id, previousTracks.toString(), nextTracks.toString())
   nowPlaying.set({
     track: {
       id,
@@ -38,6 +39,7 @@ export const playTrack = (
 }
 
 export const nextTrack = () => {
+  window.Android?.nextTrack()
   nowPlaying.update((data) => {
     if (data.nextTracks.length > 0) {
       const nextTrackId = data.nextTracks[0]
@@ -60,6 +62,7 @@ export const nextTrack = () => {
 }
 
 export const previousTrack = () => {
+  window.Android?.previousTrack()
   nowPlaying.update((data) => {
     if (data.previousTracks.length > 0) {
       const previousTrackId = data.previousTracks[data.previousTracks.length - 1]

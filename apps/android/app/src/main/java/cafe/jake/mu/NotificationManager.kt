@@ -47,7 +47,7 @@ class NotificationManager(private val context: Context, private val player: ExoP
                 it.setMediaSessionToken(mediaSession.sessionCompatToken)
                 it.setUseFastForwardActionInCompactView(true)
                 it.setUseRewindActionInCompactView(true)
-                it.setUseNextActionInCompactView(false)
+                it.setUseNextActionInCompactView(true)
                 it.setPriority(NotificationCompat.PRIORITY_LOW)
                 it.setPlayer(player)
             }

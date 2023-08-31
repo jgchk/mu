@@ -10,23 +10,61 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
 import cafe.jake.mu.ui.theme.MuTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import java.util.Arrays
+import javax.inject.Inject
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var isServiceRunning = false
+
+    @Inject
+    lateinit var serviceHandler: ServiceHandler
+
+
+    private inner class WebAppInterface(private val mContext: Context) {
+        @JavascriptInterface
+        @UnstableApi
+        fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
+            val previousTracks = previousTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
+            val nextTracks = nextTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
+            println("playTrack($id, $previousTracks, $nextTracks)")
+            runOnUiThread {
+                serviceHandler.playTrack(id, previousTracks, nextTracks);
+            }
+        }
+
+        @JavascriptInterface
+        fun nextTrack() {
+            println("nextTrack()")
+        }
+
+        @JavascriptInterface
+        fun previousTrack() {
+            println("previousTrack()")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        applicationContext.startForegroundService(Intent(this, PlaybackService::class.java))
+        startService()
+
+
+        val mUrl = "http://$HOST:$PORT"
 
         setContent {
             MuTheme {
@@ -35,11 +73,57 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Content("Android")
+                    AndroidView(factory = {
+                        WebView(it).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            webViewClient = MyWebViewClient()
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            settings.loadsImagesAutomatically = true
+                            settings.cacheMode = WebSettings.LOAD_DEFAULT
+
+                            addJavascriptInterface(WebAppInterface(it), "Android")
+                            loadUrl(mUrl)
+
+                            lifecycleScope.launch {
+                                serviceHandler.simpleMediaState.collect { mediaState ->
+                                    when (mediaState) {
+                                        is MediaState.Ready -> {
+                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
+                                        }
+                                        is MediaState.Progress -> {
+                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('timeupdate', {detail: ${mediaState.progress}}))")
+                                        }
+                                        else -> {}
+                                    }
+                                }
+                            }
+                        }
+                    }, update = {
+                        it.loadUrl(mUrl)
+                    })
                 }
             }
         }
     }
+
+    private fun startService() {
+        if (!isServiceRunning) {
+            val intent = Intent(this, PlaybackService::class.java)
+            startForegroundService(intent)
+            isServiceRunning = true
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService(Intent(this, PlaybackService::class.java))
+        isServiceRunning = false
+    }
+
 }
 
 const val HOST = "10.0.0.45"
@@ -67,42 +151,3 @@ private class MyWebViewClient : WebViewClient() {
     }
 }
 
-private class WebAppInterface(private val mContext: Context) {
-    @JavascriptInterface
-    fun showToast(toast: String) {
-        Toast.makeText(mContext, toast, android.widget.Toast.LENGTH_SHORT).show()
-    }
-}
-
-@Composable
-fun Content(name: String, modifier: Modifier = Modifier) {
-    val mUrl = "http://$HOST:$PORT"
-
-    // Adding a WebView inside AndroidView
-    // with layout as full screen
-    AndroidView(factory = {
-        WebView(it).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            webViewClient = MyWebViewClient()
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.loadsImagesAutomatically = true
-            settings.cacheMode = WebSettings.LOAD_DEFAULT
-            addJavascriptInterface(WebAppInterface(it), "Android")
-            loadUrl(mUrl)
-        }
-    }, update = {
-        it.loadUrl(mUrl)
-    })
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MuTheme {
-        Content("Android")
-    }
-}
