@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ServiceHandler @Inject constructor(
-    private val player: ExoPlayer
+    private val player: ExoPlayer,
+    private val connection: Connection
 ) : Player.Listener {
     private val _simpleMediaState = MutableStateFlow<MediaState>(MediaState.Initial)
     val simpleMediaState = _simpleMediaState.asStateFlow()
@@ -33,16 +34,16 @@ class ServiceHandler @Inject constructor(
     @UnstableApi
     fun playTrack(id: Int, previousTracks: List<Int>?, nextTracks: List<Int>?) {
         val factory = DefaultHttpDataSource.Factory()
-            .setDefaultRequestProperties(mapOf("Cookie" to "session_token=35a7276e20b554043603dfe02b15b97992561ff5e18fde6bf276d356135ef5f8"))
+            .setDefaultRequestProperties(mapOf("Cookie" to "session_token=903f2e2de597cf8dca25925445b833afac6feffabed75c6742ce81c5a516f41e"))
 
         // add previous and next tracks to queue
         player.clearMediaItems()
         previousTracks?.forEach {
-            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://$HOST:$PORT/api/tracks/$it/stream")))
+            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$it/stream")))
         }
-        player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://$HOST:$PORT/api/tracks/$id/stream")))
+        player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$id/stream")))
         nextTracks?.forEach {
-            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://$HOST:$PORT/api/tracks/$it/stream")))
+            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$it/stream")))
         }
 
         player.seekTo(previousTracks?.size ?: 0, 0)

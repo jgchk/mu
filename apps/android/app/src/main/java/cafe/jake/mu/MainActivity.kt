@@ -3,6 +3,8 @@ package cafe.jake.mu
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.wifi.WifiInfo
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
@@ -24,8 +26,6 @@ import androidx.media3.common.util.UnstableApi
 import cafe.jake.mu.ui.theme.MuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import java.util.Arrays
 import javax.inject.Inject
 
 
@@ -36,6 +36,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var serviceHandler: ServiceHandler
 
+    @Inject
+    lateinit var connection: Connection
 
     private inner class WebAppInterface(private val mContext: Context) {
         @JavascriptInterface
@@ -90,13 +92,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private inner class MyWebViewClient : WebViewClient() {
+        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val url = url.replace("localhost", connection.HOST)
+            view.loadUrl(url)
+            return true;
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         startService()
 
 
-        val mUrl = "http://$HOST:$PORT"
+        val mUrl = "http://${connection.HOST}:${connection.PORT}"
 
         setContent {
             MuTheme {
@@ -177,8 +187,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-const val HOST = "10.0.0.45"
-const val PORT = 3002
 
 private class MediaWebView : WebView {
     constructor(context: Context) : super(context)
@@ -194,11 +202,4 @@ private class MediaWebView : WebView {
     }
 }
 
-private class MyWebViewClient : WebViewClient() {
-    override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-        val url = url.replace("localhost", HOST)
-        view.loadUrl(url)
-        return true;
-    }
-}
 
