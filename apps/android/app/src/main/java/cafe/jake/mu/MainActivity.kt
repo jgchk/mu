@@ -2,6 +2,7 @@ package cafe.jake.mu
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
@@ -171,6 +172,9 @@ class MainActivity : ComponentActivity() {
         isServiceRunning = false
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+    }
 }
 
 const val HOST = "10.0.0.45"
