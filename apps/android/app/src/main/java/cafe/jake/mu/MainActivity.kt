@@ -1,6 +1,7 @@
 package cafe.jake.mu
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
@@ -15,34 +16,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.MediaItem
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import cafe.jake.mu.ui.theme.MuTheme
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 
 class MainActivity : ComponentActivity() {
-    @OptIn(UnstableApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val player = ExoPlayer.Builder(baseContext).build()
-
-        val factory = DefaultHttpDataSource.Factory()
-            .setDefaultRequestProperties(mapOf("Cookie" to "session_token=35a7276e20b554043603dfe02b15b97992561ff5e18fde6bf276d356135ef5f8"))
-        val mediaSource = ProgressiveMediaSource.Factory(factory)
-            .createMediaSource(MediaItem.fromUri("http://$HOST:$PORT/api/tracks/99/stream"));
-
-        player.setMediaSource(mediaSource);
-        player.prepare()
-        player.play()
+        applicationContext.startForegroundService(Intent(this, PlaybackService::class.java))
 
         setContent {
             MuTheme {
