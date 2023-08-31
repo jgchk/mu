@@ -1,5 +1,6 @@
 package cafe.jake.mu
 
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -97,6 +98,18 @@ class ServiceHandler @Inject constructor(
         }
     }
 
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int
+    ) {
+        super.onPositionDiscontinuity(oldPosition, newPosition, reason)
+        Log.d("ServiceHandler", "POJSITION DISCONTINUITY: $reason")
+        if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
+            _simpleMediaState.value = MediaState.Ended
+        }
+    }
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         _simpleMediaState.value = MediaState.Playing(isPlaying = isPlaying)
@@ -112,7 +125,7 @@ class ServiceHandler @Inject constructor(
     private suspend fun startProgressUpdate() = job.run {
         while (true) {
             delay(500)
-            _simpleMediaState.value = MediaState.Progress(player.currentPosition)
+            _simpleMediaState.value = MediaState.Progress(player.currentPosition, player.duration)
         }
     }
 
@@ -133,7 +146,8 @@ sealed class PlayerEvent {
 sealed class MediaState {
     object Initial : MediaState()
     data class Ready(val duration: Long) : MediaState()
-    data class Progress(val progress: Long) : MediaState()
+    data class Progress(val progress: Long, val duration: Long) : MediaState()
     data class Buffering(val progress: Long) : MediaState()
     data class Playing(val isPlaying: Boolean) : MediaState()
+    object Ended : MediaState()
 }

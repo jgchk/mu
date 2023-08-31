@@ -31,6 +31,7 @@ declare global {
     durationchange: CustomEvent<number>
     paused: CustomEvent<void>
     played: CustomEvent<void>
+    ended: CustomEvent<void>
   }
 
   interface Window {

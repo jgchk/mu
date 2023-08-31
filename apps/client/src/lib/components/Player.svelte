@@ -307,15 +307,16 @@
   {#if window.Android}
     <PlayerAudioAndroid
       bind:paused
+      on:ended={() => {
+        nextTrack()
+      }}
       on:timeupdate={(e) => {
-        console.log('timeupdate', e.detail)
         if ($nowPlaying.track) {
           $nowPlaying.track.currentTime = e.detail
         }
         updatePosition()
       }}
       on:durationchange={(e) => {
-        console.log('durationchange', e.detail)
         if ($nowPlaying.track) {
           $nowPlaying.track.duration = e.detail * 1000
         }

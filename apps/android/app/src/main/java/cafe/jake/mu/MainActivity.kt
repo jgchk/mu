@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
         fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
             val previousTracks = previousTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
             val nextTracks = nextTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
-            println("playTrack($id, $previousTracks, $nextTracks)")
+            Log.d("MainActivity", "playTrack($id, $previousTracks, $nextTracks)")
             runOnUiThread {
                 serviceHandler.playTrack(id, previousTracks, nextTracks);
             }
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun nextTrack() {
-            println("nextTrack()")
+            Log.d("MainActivity", "nextTrack()")
             runOnUiThread {
                 serviceHandler.nextTrack()
             }
@@ -57,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun previousTrack() {
-            println("previousTrack()")
+            Log.d("MainActivity", "previousTrack()")
             runOnUiThread {
                 serviceHandler.previousTrack()
             }
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun play() {
-            println("play()")
+            Log.d("MainActivity", "play()")
             runOnUiThread {
                 serviceHandler.play()
             }
@@ -73,7 +74,7 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun pause() {
-            println("pause()")
+            Log.d("MainActivity", "pause()")
             runOnUiThread {
                 serviceHandler.pause()
             }
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun seek(time: Int) {
-            println("seek($time)")
+            Log.d("MainActivity", "seek($time)")
             runOnUiThread {
                 serviceHandler.seek(time)
             }
@@ -122,17 +123,26 @@ class MainActivity : ComponentActivity() {
                                 serviceHandler.simpleMediaState.collect { mediaState ->
                                     when (mediaState) {
                                         is MediaState.Ready -> {
+                                            Log.d("MainActivity", "MediaState.Ready")
                                             loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
                                         }
                                         is MediaState.Progress -> {
+                                            Log.d("MainActivity", "MediaState.Progress(${mediaState.progress}, ${mediaState.duration})")
                                             loadUrl("javascript:window.dispatchEvent(new CustomEvent('timeupdate', {detail: ${mediaState.progress}}))")
+                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
                                         }
                                         is MediaState.Playing -> {
                                             if (mediaState.isPlaying) {
+                                                Log.d("MainActivity", "MediaState.Playing")
                                                 loadUrl("javascript:window.dispatchEvent(new CustomEvent('played'))")
                                             } else {
+                                                Log.d("MainActivity", "MediaState.Paused")
                                                 loadUrl("javascript:window.dispatchEvent(new CustomEvent('paused'))")
                                             }
+                                        }
+                                        is MediaState.Ended -> {
+                                            Log.d("MainActivity", "MediaState.Ended")
+                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('ended'))")
                                         }
                                         else -> {}
                                     }
