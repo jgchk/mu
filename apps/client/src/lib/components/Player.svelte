@@ -92,11 +92,17 @@
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
   const toggleQueue = () => dispatch('toggleQueue')
 
-  $: navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
-  onDestroy(() => (navigator.mediaSession.playbackState = 'none'))
+  $: if (navigator.mediaSession) {
+    navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
+  }
+  onDestroy(() => {
+    if (navigator.mediaSession) {
+      navigator.mediaSession.playbackState = 'none'
+    }
+  })
 
   $: {
-    if ($nowPlayingTrack.data) {
+    if ($nowPlayingTrack.data && navigator.mediaSession) {
       const track = $nowPlayingTrack.data
       navigator.mediaSession.metadata = new MediaMetadata({
         title: track.title ?? undefined,
@@ -114,17 +120,21 @@
     }
   }
 
-  navigator.mediaSession.setActionHandler('play', () => play())
-  navigator.mediaSession.setActionHandler('pause', () => pause())
-  navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
-  navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
-  navigator.mediaSession.setActionHandler('seekto', (e) => {
-    if (e.seekTime !== undefined) {
-      seek(e.seekTime)
-    }
-  })
+  if (navigator.mediaSession) {
+    navigator.mediaSession.setActionHandler('play', () => play())
+    navigator.mediaSession.setActionHandler('pause', () => pause())
+    navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
+    navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
+    navigator.mediaSession.setActionHandler('seekto', (e) => {
+      if (e.seekTime !== undefined) {
+        seek(e.seekTime)
+      }
+    })
+  }
 
   $: updatePosition = () => {
+    if (!navigator.mediaSession) return
+
     const duration = ifDefined(durationMs, (duration) => duration / 1000)
     const position = $nowPlaying.track?.currentTime
     if (duration !== undefined && position !== undefined) {
