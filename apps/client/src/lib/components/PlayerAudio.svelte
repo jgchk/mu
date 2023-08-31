@@ -7,12 +7,15 @@
   export let paused = false
   export let playSignal: symbol | undefined
 
-  let player: HTMLAudioElement | undefined
+  let player: HTMLAudioElement
 
   $: {
-    playSignal // play from beginning of song every time playSignal changes
-    seek(0)
-    play()
+    playSignal
+    if (player) {
+      player.src = `/api/tracks/${trackId}/stream`
+      player.load()
+      void player.play()
+    }
   }
 
   const dispatch = createEventDispatcher<{
@@ -36,12 +39,12 @@
     }
   }
 
-  export function play() {
-    void player?.play()
+  export async function play() {
+    await player.play()
   }
 
   export function pause() {
-    player?.pause()
+    player.pause()
   }
 
   export function seek(time: number) {
@@ -56,7 +59,6 @@
 </script>
 
 <audio
-  autoplay
   class="hidden"
   bind:this={player}
   bind:paused
@@ -69,5 +71,4 @@
       dispatch('durationchange', durationSec)
     }
   }}
-  src="/api/tracks/{trackId}/stream"
 />
