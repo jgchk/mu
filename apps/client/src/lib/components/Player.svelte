@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
   import { makeImageUrl } from 'mutils'
   import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
@@ -30,6 +31,7 @@
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
   import PlayerAudio from './PlayerAudio.svelte'
+  import PlayerAudioAndroid from './PlayerAudioAndroid.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
@@ -61,13 +63,25 @@
   }
   /* eslint-disable */
   const play = () => {
-    player?.play()
+    if (window.Android) {
+      window.Android.play()
+    } else {
+      player?.play()
+    }
   }
   const pause = () => {
-    player?.pause()
+    if (window.Android) {
+      window.Android.pause()
+    } else {
+      player?.pause()
+    }
   }
   const seek = (time: number) => {
-    player?.seek(time)
+    if (window.Android) {
+      window.Android.seek(time)
+    } else {
+      player?.seek(time)
+    }
   }
   /* eslint-enable */
 
@@ -92,11 +106,17 @@
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
   const toggleQueue = () => dispatch('toggleQueue')
 
-  $: navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
-  onDestroy(() => (navigator.mediaSession.playbackState = 'none'))
+  $: if (navigator.mediaSession) {
+    navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
+  }
+  onDestroy(() => {
+    if (navigator.mediaSession) {
+      navigator.mediaSession.playbackState = 'none'
+    }
+  })
 
   $: {
-    if ($nowPlayingTrack.data) {
+    if ($nowPlayingTrack.data && navigator.mediaSession) {
       const track = $nowPlayingTrack.data
       navigator.mediaSession.metadata = new MediaMetadata({
         title: track.title ?? undefined,
@@ -114,17 +134,21 @@
     }
   }
 
-  navigator.mediaSession.setActionHandler('play', () => play())
-  navigator.mediaSession.setActionHandler('pause', () => pause())
-  navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
-  navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
-  navigator.mediaSession.setActionHandler('seekto', (e) => {
-    if (e.seekTime !== undefined) {
-      seek(e.seekTime)
-    }
-  })
+  if (navigator.mediaSession) {
+    navigator.mediaSession.setActionHandler('play', () => play())
+    navigator.mediaSession.setActionHandler('pause', () => pause())
+    navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
+    navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
+    navigator.mediaSession.setActionHandler('seekto', (e) => {
+      if (e.seekTime !== undefined) {
+        seek(e.seekTime)
+      }
+    })
+  }
 
   $: updatePosition = () => {
+    if (!navigator.mediaSession) return
+
     const duration = ifDefined(durationMs, (duration) => duration / 1000)
     const position = $nowPlaying.track?.currentTime
     if (duration !== undefined && position !== undefined) {
@@ -279,25 +303,48 @@
   </div>
 </div>
 
-<PlayerAudio
-  bind:this={player}
-  bind:paused
-  bind:volume={$volume}
-  {trackId}
-  playSignal={$nowPlaying.track?.__playSignal}
-  on:ended={() => {
-    nextTrack()
-  }}
-  on:timeupdate={(e) => {
-    if ($nowPlaying.track) {
-      $nowPlaying.track.currentTime = e.detail
-    }
-    updatePosition()
-  }}
-  on:durationchange={(e) => {
-    if ($nowPlaying.track) {
-      $nowPlaying.track.duration = e.detail * 1000
-    }
-    updatePosition()
-  }}
-/>
+{#if browser}
+  {#if window.Android}
+    <PlayerAudioAndroid
+      bind:paused
+      on:ended={() => {
+        nextTrack()
+      }}
+      on:timeupdate={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.currentTime = e.detail
+        }
+        updatePosition()
+      }}
+      on:durationchange={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.duration = e.detail * 1000
+        }
+        updatePosition()
+      }}
+    />
+  {:else}
+    <PlayerAudio
+      bind:this={player}
+      bind:paused
+      bind:volume={$volume}
+      {trackId}
+      playSignal={$nowPlaying.track?.__playSignal}
+      on:ended={() => {
+        nextTrack()
+      }}
+      on:timeupdate={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.currentTime = e.detail
+        }
+        updatePosition()
+      }}
+      on:durationchange={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.duration = e.detail * 1000
+        }
+        updatePosition()
+      }}
+    />
+  {/if}
+{/if}

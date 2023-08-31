@@ -26,6 +26,7 @@ export const playTrack = (
     nextTracks = [],
   }: { previousTracks?: number[]; nextTracks?: number[] } = {}
 ) => {
+  window.Android?.playTrack(id, previousTracks.toString(), nextTracks.toString())
   nowPlaying.set({
     track: {
       id,

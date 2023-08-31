@@ -25,6 +25,36 @@ declare global {
       onfinalize?: (event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T }) => void
     }
   }
+
+  interface AppEventMap {
+    timeupdate: CustomEvent<number>
+    durationchange: CustomEvent<number>
+    paused: CustomEvent<void>
+    played: CustomEvent<void>
+    ended: CustomEvent<void>
+  }
+
+  interface Window {
+    addEventListener<K extends keyof AppEventMap>(
+      type: K,
+      listener: (this: Document, ev: AppEventMap[K]) => void
+    ): void
+    removeEventListener<K extends keyof AppEventMap>(
+      type: K,
+      listener: (this: Document, ev: AppEventMap[K]) => void
+    ): void
+    dispatchEvent<K extends keyof AppEventMap>(ev: AppEventMap[K]): void
+
+    Android?: {
+      playTrack: (id: number, previousTracks: string, nextTracks: string) => void
+      nextTrack: () => void
+      previousTrack: () => void
+
+      play: () => void
+      pause: () => void
+      seek: (time: number) => void
+    }
+  }
 }
 
 declare module '@tanstack/svelte-query' {
