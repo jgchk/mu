@@ -1,6 +1,7 @@
 package cafe.jake.mu
 
 import android.util.Log
+import android.webkit.CookieManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -33,8 +34,11 @@ class ServiceHandler @Inject constructor(
 
     @UnstableApi
     fun playTrack(id: Int, previousTracks: List<Int>?, nextTracks: List<Int>?) {
+        val cookie = CookieManager.getInstance().getCookie("http://${connection.HOST}:${connection.PORT}/api/tracks/$id/stream")
+        Log.d("ServiceHandler", "Cookie: $cookie")
+
         val factory = DefaultHttpDataSource.Factory()
-            .setDefaultRequestProperties(mapOf("Cookie" to "session_token=903f2e2de597cf8dca25925445b833afac6feffabed75c6742ce81c5a516f41e"))
+            .setDefaultRequestProperties(mapOf("Cookie" to cookie))
 
         // add previous and next tracks to queue
         player.clearMediaItems()
