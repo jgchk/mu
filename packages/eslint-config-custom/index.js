@@ -24,6 +24,7 @@ module.exports = {
       },
       globals: {
         $$Generic: 'readonly',
+        AppEventMap: 'readonly',
       },
     },
   ],

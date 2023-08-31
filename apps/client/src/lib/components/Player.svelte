@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
   import { makeImageUrl } from 'mutils'
   import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
@@ -30,6 +31,7 @@
   import CoverArt from './CoverArt.svelte'
   import FavoriteButton from './FavoriteButton.svelte'
   import PlayerAudio from './PlayerAudio.svelte'
+  import PlayerAudioAndroid from './PlayerAudioAndroid.svelte'
   import TrackTagsButton from './TrackTagsButton.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
@@ -289,25 +291,46 @@
   </div>
 </div>
 
-<PlayerAudio
-  bind:this={player}
-  bind:paused
-  bind:volume={$volume}
-  {trackId}
-  playSignal={$nowPlaying.track?.__playSignal}
-  on:ended={() => {
-    nextTrack()
-  }}
-  on:timeupdate={(e) => {
-    if ($nowPlaying.track) {
-      $nowPlaying.track.currentTime = e.detail
-    }
-    updatePosition()
-  }}
-  on:durationchange={(e) => {
-    if ($nowPlaying.track) {
-      $nowPlaying.track.duration = e.detail * 1000
-    }
-    updatePosition()
-  }}
-/>
+{#if browser}
+  {#if window.Android}
+    <PlayerAudioAndroid
+      on:timeupdate={(e) => {
+        console.log('timeupdate', e.detail)
+        if ($nowPlaying.track) {
+          $nowPlaying.track.currentTime = e.detail
+        }
+        updatePosition()
+      }}
+      on:durationchange={(e) => {
+        console.log('durationchange', e.detail)
+        if ($nowPlaying.track) {
+          $nowPlaying.track.duration = e.detail * 1000
+        }
+        updatePosition()
+      }}
+    />
+  {:else}
+    <PlayerAudio
+      bind:this={player}
+      bind:paused
+      bind:volume={$volume}
+      {trackId}
+      playSignal={$nowPlaying.track?.__playSignal}
+      on:ended={() => {
+        nextTrack()
+      }}
+      on:timeupdate={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.currentTime = e.detail
+        }
+        updatePosition()
+      }}
+      on:durationchange={(e) => {
+        if ($nowPlaying.track) {
+          $nowPlaying.track.duration = e.detail * 1000
+        }
+        updatePosition()
+      }}
+    />
+  {/if}
+{/if}
