@@ -5,6 +5,7 @@
 
   import { clickOutside } from '$lib/actions/clickOutside'
   import type { PopperTooltipAction } from '$lib/actions/popper'
+  import Button from '$lib/atoms/Button.svelte'
   import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import HeartIcon from '$lib/icons/HeartIcon.svelte'
   import PlusIcon from '$lib/icons/PlusIcon.svelte'
@@ -56,49 +57,52 @@
     {:else if state === 'add-to-playlist'}
       <AddToPlaylistPopoverMobile trackId={track.id} on:close={() => (state = 'default')} />
     {:else}
-      <div class="flex flex-col gap-1">
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded p-1.5 px-2 hover:bg-gray-600"
-          on:click={() => favorite()}
-        >
-          <HeartIcon class={cn('h-5 w-5', track.favorite && 'text-error-600')} />
-          <span class="text-sm font-medium text-gray-300">Favorite</span>
-        </button>
+      <Button
+        kind="text"
+        class="w-full text-white"
+        layer={700}
+        align="left"
+        on:click={() => favorite()}
+        icon={HeartIcon}
+        iconClass={track.favorite ? 'text-error-600' : undefined}
+      >
+        Favorite
+      </Button>
 
-        {#if showDelete}
-          <button
-            type="button"
-            class="flex w-full items-center gap-3 rounded p-1.5 px-2 hover:bg-gray-600"
-            on:click={() => dispatch('delete')}
-          >
-            <DeleteIcon class="h-5 w-5" />
-            <span class="text-sm font-medium text-gray-300">Remove from playlist</span>
-          </button>
-        {/if}
-
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded p-1.5 px-2 hover:bg-gray-600"
-          on:click={() => (state = 'add-to-playlist')}
+      {#if showDelete}
+        <Button
+          kind="text"
+          class="w-full text-white"
+          layer={700}
+          align="left"
+          on:click={() => dispatch('delete')}
+          icon={DeleteIcon}
         >
-          <PlusIcon class="h-5 w-5" />
-          <span class="text-sm font-medium text-gray-300">Add to playlist</span>
-        </button>
+          Remove from playlist
+        </Button>
+      {/if}
 
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded p-1.5 px-2 hover:bg-gray-600"
-          on:click={() => (state = 'edit-tags')}
-        >
-          {#if track.tags.length > 0}
-            <TagIcon class="h-5 w-5" />
-          {:else}
-            <TagOutlineIcon class="h-5 w-5" />
-          {/if}
-          <span class="text-sm font-medium text-gray-300">Edit Tags</span>
-        </button>
-      </div>
+      <Button
+        kind="text"
+        class="w-full text-white"
+        layer={700}
+        align="left"
+        on:click={() => (state = 'add-to-playlist')}
+        icon={PlusIcon}
+      >
+        Add to playlist
+      </Button>
+
+      <Button
+        kind="text"
+        class="w-full text-white"
+        layer={700}
+        align="left"
+        on:click={() => (state = 'edit-tags')}
+        icon={track.tags.length > 0 ? TagIcon : TagOutlineIcon}
+      >
+        Edit tags
+      </Button>
     {/if}
   </div>
 </div>
