@@ -4,37 +4,23 @@
   import { formatMilliseconds } from 'utils'
 
   import CommaList from '$lib/atoms/CommaList.svelte'
-  import IconButton from '$lib/atoms/IconButton.svelte'
-  import DeleteIcon from '$lib/icons/DeleteIcon.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
-  import { createFavoriteTrackMutation } from '$lib/services/tracks'
-  import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
-  import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
-  import FavoriteButton from './FavoriteButton.svelte'
   import type { TrackListTrack as TrackListTrackType } from './TrackList'
-  import TrackTagsButton from './TrackTagsButton.svelte'
+  import TrackOptions from './TrackOptions.svelte'
 
   export let track: TrackListTrackType
   export let showCoverArt = true
   export let i: number
   export let showDelete = false
 
-  const trpc = getContextClient()
-  const favoriteMutation = createFavoriteTrackMutation(trpc)
-
-  const favorite = () => {
-    $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })
-  }
-
   const dispatch = createEventDispatcher<{
     play: undefined
     delete: undefined
   }>()
   const play = () => dispatch('play')
-  const delete_ = () => dispatch('delete')
 </script>
 
 <div
@@ -98,18 +84,5 @@
     {formatMilliseconds(track.duration)}
   </div>
 
-  <div class="flex items-center gap-1">
-    {#if showDelete}
-      <IconButton kind="text" layer={700} tooltip="Remove from playlist" on:click={() => delete_()}>
-        <DeleteIcon />
-      </IconButton>
-    {/if}
-    <FavoriteButton layer={700} favorite={track.favorite} on:click={() => favorite()} />
-    <AddToPlaylistButton trackId={track.id} layer={700} />
-    <TrackTagsButton
-      trackId={track.id}
-      selectedTagIds={track.tags.map((tag) => tag.id)}
-      layer={700}
-    />
-  </div>
+  <TrackOptions layer={700} {track} {showDelete} on:delete={() => dispatch('delete')} />
 </div>

@@ -1,8 +1,8 @@
-const colors = require('tailwindcss/colors')
-const defaults = require('tailwindcss/defaultTheme')
+import type { Config } from 'tailwindcss'
+import colors from 'tailwindcss/colors'
+import defaults from 'tailwindcss/defaultTheme'
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     fontFamily: {
@@ -27,5 +27,6 @@ module.exports = {
     },
     extend: {},
   },
-  plugins: [],
-}
+} satisfies Config
+
+export default config

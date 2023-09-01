@@ -23,24 +23,20 @@
   import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { createScrobbleMutation, createUpdateNowPlayingMutation } from '$lib/services/playback'
-  import { createFavoriteTrackMutation, createTrackQuery } from '$lib/services/tracks'
+  import { createTrackQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
 
-  import AddToPlaylistButton from './AddToPlaylistButton.svelte'
   import CoverArt from './CoverArt.svelte'
-  import FavoriteButton from './FavoriteButton.svelte'
   import PlayerAudio from './PlayerAudio.svelte'
   import PlayerAudioAndroid from './PlayerAudioAndroid.svelte'
-  import TrackTagsButton from './TrackTagsButton.svelte'
+  import TrackOptions from './TrackOptions.svelte'
 
   export let track: NonNullable<NowPlaying['track']>
 
   const trpc = getContextClient()
   $: trackId = track.id
   $: nowPlayingTrack = createTrackQuery(trpc, trackId)
-
-  const favoriteMutation = createFavoriteTrackMutation(trpc)
 
   $: durationMs = $nowPlaying.track?.duration ?? $nowPlayingTrack.data?.duration
   $: formattedDuration = formatMilliseconds(durationMs ?? 0)
@@ -161,7 +157,7 @@
 </script>
 
 <div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] md:pb-2">
-  <div class="flex min-w-[180px] max-w-fit flex-1 items-center gap-4 lg:flex-[3]">
+  <div class="flex min-w-[180px] flex-1 items-center gap-4 lg:flex-[3]">
     {#if $nowPlayingTrack.data}
       {@const track = $nowPlayingTrack.data}
       <a href="/library/releases/{track.releaseId}" class="w-10 shrink-0 md:w-16">
@@ -184,19 +180,7 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-1">
-        <FavoriteButton
-          layer="black"
-          favorite={track.favorite}
-          on:click={() => $favoriteMutation.mutate({ id: track.id, favorite: !track.favorite })}
-        />
-        <AddToPlaylistButton trackId={track.id} layer="black" />
-        <TrackTagsButton
-          trackId={track.id}
-          selectedTagIds={track.tags.map((tag) => tag.id)}
-          layer="black"
-        />
-      </div>
+      <TrackOptions {track} layer="black" />
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
