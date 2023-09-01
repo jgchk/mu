@@ -106,3 +106,12 @@
     {/if}
   </div>
 </div>
+
+<svelte:window
+  on:keydown={(e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      dispatch('close')
+    }
+  }}
+/>
