@@ -38,7 +38,7 @@
 
 <div class={class_}>
   {#if sortable}
-    <TrackListSort {showRelease} {showCoverArt} {showDelete} {favorites} />
+    <TrackListSort {showRelease} {showCoverArt} {favorites} />
   {/if}
 
   <div

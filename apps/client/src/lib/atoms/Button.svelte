@@ -21,6 +21,7 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type C = $$Generic<typeof SvelteComponentTyped<any, any, any>>
   export let icon: C | undefined = undefined
+  export let iconClass: string | undefined = undefined
 
   export let layer: 700 | 800 = 800
 </script>
@@ -60,7 +61,7 @@
           <Loader />
         {:else}
           <div class="absolute" transition:scale|local={{ duration: 150 }}>
-            <svelte:component this={icon} />
+            <svelte:component this={icon} class={iconClass} />
           </div>
         {/if}
       </div>

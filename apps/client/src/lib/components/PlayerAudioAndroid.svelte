@@ -13,9 +13,9 @@
     const handleTimeUpdate = (e: AppEventMap['timeupdate']) => dispatch('timeupdate', e.detail)
     const handleDurationChange = (e: AppEventMap['durationchange']) =>
       dispatch('durationchange', e.detail)
-    const handlePaused = (e: AppEventMap['paused']) => (paused = true)
-    const handlePlayed = (e: AppEventMap['played']) => (paused = false)
-    const handleEnded = (e: AppEventMap['ended']) => dispatch('ended')
+    const handlePaused = () => (paused = true)
+    const handlePlayed = () => (paused = false)
+    const handleEnded = () => dispatch('ended')
 
     window.addEventListener('timeupdate', handleTimeUpdate)
     window.addEventListener('durationchange', handleDurationChange)
