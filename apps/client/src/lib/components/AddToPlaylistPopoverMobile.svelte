@@ -108,7 +108,7 @@
   }}
 />
 
-<div class="max-h-[calc(100vh/3)] overflow-auto p-2" tabindex="-1">
+<div class="max-h-[calc(100vh/3)] overflow-auto" tabindex="-1">
   <Button
     kind="text"
     class="w-full text-white"

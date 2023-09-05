@@ -17,9 +17,11 @@
 
   export let showRelease: boolean
   export let showCoverArt: boolean
+  export let showDelete: boolean
   export let favorites: boolean | undefined
 
   $: sort = getTracksSort($page.url)
+  $: numButtons = 3 + (showDelete ? 1 : 0)
 
   $: withSortUpdate = (sort: Sort | undefined) =>
     toRelativeUrl(
@@ -101,7 +103,7 @@
       >{' '}{/if}Length</a
   >
 
-  <div class="w-8">
+  <div style:width="{numButtons * 32}px">
     {#if favorites !== undefined}
       <a
         class="center block h-full w-8 text-gray-400 hover:text-white"
