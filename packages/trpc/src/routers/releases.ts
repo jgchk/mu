@@ -4,8 +4,10 @@ import type { Filter } from 'bool-lang/src/ast'
 import type { Database, SQL } from 'db'
 import {
   and,
+  artists,
   asc,
   eq,
+  getTableColumns,
   inArray,
   not,
   or,
@@ -61,27 +63,34 @@ const getAllReleases = (db: Database, input: ReleasesFilters) => {
     }
   }
 
-  const results = db.db.query.releases.findMany({
-    orderBy: asc(releases.title),
-    where: and(...where),
-    with: {
-      tracks: {
-        orderBy: asc(tracks.order),
-      },
-      releaseArtists: {
-        orderBy: asc(releaseArtists.order),
-        with: {
-          artist: true,
-        },
-      },
-    },
+  const query = db.db
+    .select()
+    .from(releases)
+    .where(and(...where))
+    .orderBy(asc(releases.title))
+
+  const results = query.all().map((release) => {
+    const tracks_ = db.db
+      .select()
+      .from(tracks)
+      .where(eq(tracks.releaseId, release.id))
+      .orderBy(asc(tracks.order))
+      .all()
+    return {
+      ...release,
+      artists: db.db
+        .select(getTableColumns(artists))
+        .from(releaseArtists)
+        .innerJoin(artists, eq(releaseArtists.artistId, artists.id))
+        .where(eq(releaseArtists.releaseId, release.id))
+        .orderBy(asc(releaseArtists.order))
+        .all(),
+      tracks: tracks_,
+      imageId: tracks_.find((track) => track.imageId !== null)?.imageId ?? null,
+    }
   })
 
-  return results.map(({ releaseArtists, tracks, ...release }) => ({
-    ...release,
-    imageId: tracks.find((track) => track.imageId !== null)?.imageId ?? null,
-    artists: releaseArtists.map((releaseArtist) => releaseArtist.artist),
-  }))
+  return results
 }
 
 export const releasesRouter = router({
