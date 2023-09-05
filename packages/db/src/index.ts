@@ -26,8 +26,8 @@ import { TracksMixin } from './helpers/tracks'
 export * from './schema'
 export * from 'drizzle-orm'
 
-export const Database = (url: string) => {
-  const base = new DatabaseBase(url)
+export const Database = (url: string, log = false) => {
+  const base = new DatabaseBase(url, log)
   return pipe(
     base,
     AccountsMixin,

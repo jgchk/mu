@@ -10,9 +10,9 @@ export class DatabaseBase {
   sqlite: Database
   db: BetterSQLite3Database<typeof schema>
 
-  constructor(url: string) {
+  constructor(url: string, log = false) {
     this.sqlite = new SqliteDatabase(url)
-    this.db = drizzle(this.sqlite, { schema, logger: true })
+    this.db = drizzle(this.sqlite, { schema, logger: log })
     migrate(this.db)
   }
 
