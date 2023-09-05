@@ -24,7 +24,7 @@ export const setConfigFromEnv = (db: Database) => {
   })
 }
 
-export const makeDb = () => Database(env.DATABASE_URL)
+export const makeDb = () => Database(env.DATABASE_URL, env.NODE_ENV === 'development')
 
 export const makeLastFm = async (
   opts: {
