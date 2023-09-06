@@ -1,6 +1,7 @@
 package cafe.jake.mu
 
 import android.content.Intent
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -29,8 +30,12 @@ class PlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         mediaSession.run {
-            player.release()
             release()
+            if (player.playbackState != Player.STATE_IDLE) {
+                player.seekTo(0)
+                player.playWhenReady = false
+                player.stop()
+            }
         }
         super.onDestroy()
     }
