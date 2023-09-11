@@ -1,4 +1,5 @@
 import type { InferModel } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable } from 'drizzle-orm/sqlite-core'
 
 import { releases } from './releases'
@@ -20,3 +21,14 @@ export const releaseTags = sqliteTable(
     releaseTagsPrimaryKey: primaryKey(releaseTags.releaseId, releaseTags.tagId),
   })
 )
+
+export const releaseTagRelations = relations(releaseTags, ({ one }) => ({
+  release: one(releases, {
+    fields: [releaseTags.releaseId],
+    references: [releases.id],
+  }),
+  tag: one(tags, {
+    fields: [releaseTags.tagId],
+    references: [tags.id],
+  }),
+}))

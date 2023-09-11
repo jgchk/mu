@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation'
   import { navigating } from '$app/stores'
   import { fade } from 'svelte/transition'
 
@@ -9,12 +10,16 @@
   import CogIcon from '$lib/icons/CogIcon.svelte'
   import DownloadIcon from '$lib/icons/DownloadIcon.svelte'
   import LibraryIcon from '$lib/icons/LibraryIcon.svelte'
+  import SearchIcon from '$lib/icons/SearchIcon.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
+  import { useBreakpoint } from '$lib/utils/media-query'
 
   import NavLink from './NavLink.svelte'
   import SearchBar from './SearchBar.svelte'
 
   export let searchQuery: string | undefined
+
+  const isMedium = useBreakpoint('md')
 </script>
 
 <nav
@@ -22,11 +27,24 @@
 >
   <NavLink label="Library" href="/library"><LibraryIcon /></NavLink>
   <NavLink label="Tags" href="/tags"><TagIcon /></NavLink>
+  {#if !$isMedium}
+    <NavLink label="Search" href="/search"><SearchIcon /></NavLink>
+  {/if}
   <NavLink label="Downloads" href="/downloads"><DownloadIcon /></NavLink>
   <NavLink label="System" href="/system"><CogIcon /></NavLink>
 
   <div class="ml-2 hidden min-w-0 flex-1 md:inline">
-    <SearchBar class="w-full max-w-fit" initialQuery={searchQuery} />
+    <SearchBar
+      class="w-full max-w-fit"
+      initialQuery={searchQuery}
+      on:search={(e) => {
+        if (e.detail.length > 0) {
+          void goto(`/library?q=${e.detail}`)
+        } else {
+          void goto('/library')
+        }
+      }}
+    />
   </div>
 
   {#if $navigating}

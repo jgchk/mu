@@ -2,6 +2,7 @@ import type { InferModel } from 'drizzle-orm'
 import { relations } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
+import { releaseTags } from './release-tags'
 import { trackTags } from './track-tags'
 
 export type Tag = InferModel<typeof tags>
@@ -35,4 +36,5 @@ export const tagRelationships = sqliteTable(
 
 export const tagRelations = relations(tags, ({ many }) => ({
   trackTags: many(trackTags),
+  releaseTags: many(releaseTags),
 }))

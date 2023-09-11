@@ -24,6 +24,7 @@
     "bool-lang": "workspace:*",
     "context": "workspace:*",
     "esm-env": "^1.0.0",
+    "fastest-levenshtein": "^1.0.16",
     "isomorphic-ws": "^5.0.0",
     "mutils": "workspace:*",
     "superjson": "^1.12.3",
