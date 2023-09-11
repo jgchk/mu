@@ -62,4 +62,5 @@ input {
 html,
 body {
   @apply h-full w-full text-white;
+  -webkit-tap-highlight-color: transparent;
 }
