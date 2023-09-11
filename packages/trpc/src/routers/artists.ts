@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { artists, asc, eq, sql, tracks } from 'db'
-import { isNotNull } from 'utils'
+import { isNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -130,7 +130,7 @@ export const artistsRouter = router({
 
         return {
           ...artist,
-          imageIds: [...releaseImageIds, ...trackImageIds],
+          imageIds: uniq([...releaseImageIds, ...trackImageIds]),
         }
       })
     }),

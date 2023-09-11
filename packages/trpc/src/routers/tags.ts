@@ -1,4 +1,6 @@
 import { TRPCError } from '@trpc/server'
+import { and, asc, eq, sql, tags } from 'db'
+import { isNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
@@ -64,8 +66,53 @@ export const tagsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(({ ctx, input }) => ctx.sys().db.tags.get(input.id)),
   getAll: protectedProcedure
-    .input(z.object({ taggable: z.boolean().optional() }))
-    .query(({ input, ctx }) => ctx.sys().db.tags.getAll(input)),
+    .input(z.object({ taggable: z.boolean().optional(), name: z.string().optional() }))
+    .query(({ input, ctx }) => {
+      const where = []
+
+      if (input.taggable !== undefined) {
+        where.push(eq(tags.taggable, input.taggable))
+      }
+      if (input.name !== undefined) {
+        where.push(sql`lower(${tags.name}) like ${'%' + input.name.toLowerCase() + '%'}`)
+      }
+
+      const results = ctx.sys().db.db.query.tags.findMany({
+        where: and(...where),
+        orderBy: asc(tags.name),
+        with: {
+          trackTags: {
+            with: {
+              track: true,
+            },
+          },
+          releaseTags: {
+            with: {
+              release: {
+                with: {
+                  tracks: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      return results.map(({ trackTags, releaseTags, ...result }) => {
+        const trackImageIds = trackTags.map(({ track }) => track.imageId).filter(isNotNull)
+
+        const releaseImageIds = releaseTags
+          .map(
+            ({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null
+          )
+          .filter(isNotNull)
+
+        return {
+          ...result,
+          imageIds: uniq([...releaseImageIds, ...trackImageIds]),
+        }
+      })
+    }),
   getAllTree: protectedProcedure.query(({ ctx }) =>
     ctx
       .sys()
