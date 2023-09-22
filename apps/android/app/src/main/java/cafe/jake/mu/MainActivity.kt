@@ -3,8 +3,6 @@ package cafe.jake.mu
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.ConnectivityManager
-import android.net.wifi.WifiInfo
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
@@ -39,7 +37,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var connection: Connection
 
-    private inner class WebAppInterface(private val mContext: Context) {
+    private inner class WebAppInterface {
         @JavascriptInterface
         @UnstableApi
         fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
@@ -127,7 +125,7 @@ class MainActivity : ComponentActivity() {
                             settings.loadsImagesAutomatically = true
                             settings.cacheMode = WebSettings.LOAD_DEFAULT
 
-                            addJavascriptInterface(WebAppInterface(it), "Android")
+                            addJavascriptInterface(WebAppInterface(), "Android")
                             loadUrl(mUrl)
 
                             lifecycleScope.launch {
