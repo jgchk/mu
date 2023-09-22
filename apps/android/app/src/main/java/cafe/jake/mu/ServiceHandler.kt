@@ -18,10 +18,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ServiceHandler @Inject constructor(
+class ServiceHandler constructor(
     private val player: ExoPlayer,
     private val connection: Connection
 ) : Player.Listener {
+
     private val _simpleMediaState = MutableStateFlow<MediaState>(MediaState.Initial)
     val simpleMediaState = _simpleMediaState.asStateFlow()
 

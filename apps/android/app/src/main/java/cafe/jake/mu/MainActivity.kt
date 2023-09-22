@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import cafe.jake.mu.ui.theme.MuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -32,77 +33,25 @@ class MainActivity : ComponentActivity() {
     private var isServiceRunning = false
 
     @Inject
+    lateinit var player: ExoPlayer
     lateinit var serviceHandler: ServiceHandler
 
-    @Inject
-    lateinit var connection: Connection
-
-    private inner class WebAppInterface {
-        @JavascriptInterface
-        @UnstableApi
-        fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
-            val previousTracks = previousTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
-            val nextTracks = nextTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
-            Log.d("MainActivity", "playTrack($id, $previousTracks, $nextTracks)")
-            runOnUiThread {
-                serviceHandler.playTrack(id, previousTracks, nextTracks);
-            }
-        }
-
-        @JavascriptInterface
-        fun nextTrack() {
-            Log.d("MainActivity", "nextTrack()")
-            runOnUiThread {
-                serviceHandler.nextTrack()
-            }
-        }
-
-        @JavascriptInterface
-        fun previousTrack() {
-            Log.d("MainActivity", "previousTrack()")
-            runOnUiThread {
-                serviceHandler.previousTrack()
-            }
-        }
-
-        @JavascriptInterface
-        fun play() {
-            Log.d("MainActivity", "play()")
-            runOnUiThread {
-                serviceHandler.play()
-            }
-        }
-
-        @JavascriptInterface
-        fun pause() {
-            Log.d("MainActivity", "pause()")
-            runOnUiThread {
-                serviceHandler.pause()
-            }
-        }
-
-        @JavascriptInterface
-        fun seek(time: Int) {
-            Log.d("MainActivity", "seek($time)")
-            runOnUiThread {
-                serviceHandler.seek(time)
-            }
-        }
-    }
-
-    private inner class MyWebViewClient : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            val url = url.replace("localhost", connection.HOST)
-            view.loadUrl(url)
-            return true;
-        }
-    }
+    private lateinit var connection: Connection
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        startService()
+        val host = intent.getStringExtra("HOST")
+        val port = intent.getIntExtra("PORT", -1)
+        if (host == null || port == -1) {
+            finish()
+            return
+        }
+        connection = Connection(host, port)
 
+        serviceHandler = ServiceHandler(player, connection)
+
+        startService()
 
         val mUrl = "http://${connection.HOST}:${connection.PORT}"
 
@@ -162,6 +111,67 @@ class MainActivity : ComponentActivity() {
                         it.loadUrl(mUrl)
                     })
                 }
+            }
+        }
+    }
+
+    private inner class MyWebViewClient : WebViewClient() {
+        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val url = url.replace("localhost", connection.HOST)
+            view.loadUrl(url)
+            return true;
+        }
+    }
+
+    private inner class WebAppInterface {
+        @JavascriptInterface
+        @UnstableApi
+        fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
+            val previousTracks = previousTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
+            val nextTracks = nextTracksStr.split(",").filter { it.isNotEmpty() }.map { it.toInt() }
+            Log.d("MainActivity", "playTrack($id, $previousTracks, $nextTracks)")
+            runOnUiThread {
+                serviceHandler.playTrack(id, previousTracks, nextTracks);
+            }
+        }
+
+        @JavascriptInterface
+        fun nextTrack() {
+            Log.d("MainActivity", "nextTrack()")
+            runOnUiThread {
+                serviceHandler.nextTrack()
+            }
+        }
+
+        @JavascriptInterface
+        fun previousTrack() {
+            Log.d("MainActivity", "previousTrack()")
+            runOnUiThread {
+                serviceHandler.previousTrack()
+            }
+        }
+
+        @JavascriptInterface
+        fun play() {
+            Log.d("MainActivity", "play()")
+            runOnUiThread {
+                serviceHandler.play()
+            }
+        }
+
+        @JavascriptInterface
+        fun pause() {
+            Log.d("MainActivity", "pause()")
+            runOnUiThread {
+                serviceHandler.pause()
+            }
+        }
+
+        @JavascriptInterface
+        fun seek(time: Int) {
+            Log.d("MainActivity", "seek($time)")
+            runOnUiThread {
+                serviceHandler.seek(time)
             }
         }
     }

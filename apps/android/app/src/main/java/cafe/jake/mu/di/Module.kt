@@ -61,23 +61,4 @@ class Module {
     ): MediaSession =
         MediaSession.Builder(context, player).build()
 
-    @Provides
-    @Singleton
-    fun provideServiceHandler(
-        player: ExoPlayer,
-        connection: Connection
-    ): ServiceHandler =
-        ServiceHandler(
-            player = player,
-            connection = connection
-        )
-
-    @Provides
-    @Singleton
-    fun provideConnection(
-        @ApplicationContext context: Context
-    ): Connection =
-        Connection(
-            context = context
-        )
 }
