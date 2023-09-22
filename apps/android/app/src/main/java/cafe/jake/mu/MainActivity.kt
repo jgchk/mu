@@ -77,30 +77,38 @@ class MainActivity : ComponentActivity() {
                             addJavascriptInterface(WebAppInterface(), "Android")
                             loadUrl(mUrl)
 
+                            fun dispatchEvent(name: String, detail: Long? = null) {
+                                if (detail == null) {
+                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('$name'))")
+                                } else {
+                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('$name', {detail: $detail}))")
+                                }
+                            }
+
                             lifecycleScope.launch {
                                 serviceHandler.simpleMediaState.collect { mediaState ->
                                     when (mediaState) {
                                         is MediaState.Ready -> {
                                             Log.d("MainActivity", "MediaState.Ready")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
+                                            dispatchEvent("durationchange", mediaState.duration)
                                         }
                                         is MediaState.Progress -> {
                                             Log.d("MainActivity", "MediaState.Progress(${mediaState.progress}, ${mediaState.duration})")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('timeupdate', {detail: ${mediaState.progress}}))")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
+                                            dispatchEvent("timeupdate", mediaState.progress)
+                                            dispatchEvent("durationchange", mediaState.duration)
                                         }
                                         is MediaState.Playing -> {
                                             if (mediaState.isPlaying) {
                                                 Log.d("MainActivity", "MediaState.Playing")
-                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('played'))")
+                                                dispatchEvent("played")
                                             } else {
                                                 Log.d("MainActivity", "MediaState.Paused")
-                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('paused'))")
+                                                dispatchEvent("paused")
                                             }
                                         }
                                         is MediaState.Ended -> {
                                             Log.d("MainActivity", "MediaState.Ended")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('ended'))")
+                                            dispatchEvent("ended")
                                         }
                                         else -> {}
                                     }
