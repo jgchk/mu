@@ -20,7 +20,8 @@ import javax.inject.Inject
 
 class ServiceHandler constructor(
     private val player: ExoPlayer,
-    private val connection: Connection
+    private val connection: Connection,
+    private val broadcaster: PlayerEventBroadcaster
 ) : Player.Listener {
 
     private val _simpleMediaState = MutableStateFlow<MediaState>(MediaState.Initial)
@@ -28,9 +29,22 @@ class ServiceHandler constructor(
 
     private var job: Job? = null
 
+    private val playerEventListener: (PlayerEvent) -> Unit = { event ->
+        if (event == PlayerEvent.SeekToNext) {
+            // Trigger MediaState.SeekToNext event or do whatever you want
+            _simpleMediaState.value = MediaState.SeekToNext
+        }
+    }
+
     init {
         player.addListener(this)
         job = Job()
+
+        broadcaster.addListener(playerEventListener)
+    }
+
+    fun cleanup() {
+        broadcaster.removeListener(playerEventListener)
     }
 
     @UnstableApi
@@ -76,25 +90,6 @@ class ServiceHandler constructor(
         player.seekTo(time.toLong())
     }
 
-    suspend fun onPlayerEvent(playerEvent: PlayerEvent) {
-        when (playerEvent) {
-            PlayerEvent.Backward -> player.seekBack()
-            PlayerEvent.Forward -> player.seekForward()
-            PlayerEvent.PlayPause -> {
-                if (player.isPlaying) {
-                    player.pause()
-                    stopProgressUpdate()
-                } else {
-                    player.play()
-                    _simpleMediaState.value = MediaState.Playing(isPlaying = true)
-                    startProgressUpdate()
-                }
-            }
-            PlayerEvent.Stop -> stopProgressUpdate()
-            is PlayerEvent.UpdateProgress -> player.seekTo((player.duration * playerEvent.newProgress).toLong())
-        }
-    }
-
     override fun onPlaybackStateChanged(playbackState: Int) {
         when (playbackState) {
             ExoPlayer.STATE_BUFFERING -> _simpleMediaState.value =
@@ -114,6 +109,11 @@ class ServiceHandler constructor(
         if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
             _simpleMediaState.value = MediaState.Ended
         }
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        super.onMediaItemTransition(mediaItem, reason)
+        Log.d("ServiceHandler", "MEDIA ITEM TRANSITION: $reason, ${mediaItem?.localConfiguration?.uri}")
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -142,11 +142,7 @@ class ServiceHandler constructor(
 }
 
 sealed class PlayerEvent {
-    object PlayPause : PlayerEvent()
-    object Backward : PlayerEvent()
-    object Forward : PlayerEvent()
-    object Stop : PlayerEvent()
-    data class UpdateProgress(val newProgress: Float) : PlayerEvent()
+    object SeekToNext : PlayerEvent()
 }
 
 sealed class MediaState {
@@ -156,4 +152,6 @@ sealed class MediaState {
     data class Buffering(val progress: Long) : MediaState()
     data class Playing(val isPlaying: Boolean) : MediaState()
     object Ended : MediaState()
+
+    object SeekToNext : MediaState()
 }

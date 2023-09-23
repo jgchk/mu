@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var player: ExoPlayer
+    @Inject
+    lateinit var broadcaster: PlayerEventBroadcaster
+
     lateinit var serviceHandler: ServiceHandler
 
     private lateinit var connection: Connection
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
         }
         connection = Connection(host, port)
 
-        serviceHandler = ServiceHandler(player, connection)
+        serviceHandler = ServiceHandler(player, connection, broadcaster)
 
         startService()
 
@@ -109,6 +112,10 @@ class MainActivity : ComponentActivity() {
                                         is MediaState.Ended -> {
                                             Log.d("MainActivity", "MediaState.Ended")
                                             dispatchEvent("ended")
+                                        }
+                                        is MediaState.SeekToNext -> {
+                                            Log.d("MainActivity", "MediaState.SeekToNext")
+                                            dispatchEvent("seek-to-next")
                                         }
                                         else -> {}
                                     }
@@ -195,6 +202,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopService(Intent(this, PlaybackService::class.java))
+        serviceHandler.cleanup()
         isServiceRunning = false
     }
 
