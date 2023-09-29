@@ -15,15 +15,32 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: tracksQuery = trpc.tracks.getAll.query({ title: data.searchQuery, limit: NUM_TRACKS })
-  $: releasesQuery = trpc.releases.getAll.query({ title: data.searchQuery })
-  $: artistsQuery = trpc.artists.getAll.query({ name: data.searchQuery })
-  $: playlistsQuery = trpc.playlists.getAll.query({ name: data.searchQuery })
-  $: tagsQuery = trpc.tags.getAll.query({ name: data.searchQuery })
+  $: tracksQuery = trpc.tracks.getAll.query(
+    { title: data.searchQuery, limit: NUM_TRACKS },
+    { enabled: !!data.searchQuery?.length }
+  )
+  $: releasesQuery = trpc.releases.getAll.query(
+    { title: data.searchQuery },
+    { enabled: !!data.searchQuery?.length }
+  )
+  $: artistsQuery = trpc.artists.getAll.query(
+    { name: data.searchQuery },
+    { enabled: !!data.searchQuery?.length }
+  )
+  $: playlistsQuery = trpc.playlists.getAll.query(
+    { name: data.searchQuery },
+    { enabled: !!data.searchQuery?.length }
+  )
+  $: tagsQuery = trpc.tags.getAll.query(
+    { name: data.searchQuery },
+    { enabled: !!data.searchQuery?.length }
+  )
 
   let results: SearchResultType[] | undefined
   $: {
-    if (
+    if (!data.searchQuery?.length) {
+      results = []
+    } else if (
       $tracksQuery.data &&
       $releasesQuery.data &&
       $artistsQuery.data &&
