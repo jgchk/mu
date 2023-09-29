@@ -4,7 +4,7 @@
 
   import CommaList from '$lib/atoms/CommaList.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
 
   import type { SearchResult } from './model'
   import { getTitle } from './model'
@@ -27,7 +27,7 @@
 
   $: if (result.kind === 'track') {
     href = undefined
-    onClick = () => playTrack(result.id)
+    onClick = () => player.playTrack(result.id)
   } else if (result.kind === 'release') {
     href = `/library/releases/${result.id}`
     onClick = undefined

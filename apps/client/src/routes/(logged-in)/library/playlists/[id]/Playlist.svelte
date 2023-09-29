@@ -6,7 +6,7 @@
   import EditTagsFilterPlaintext from '$lib/components/EditTagsFilterPlaintext.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import {
     createEditPlaylistTrackOrderMutation,
     createRemoveTrackFromPlaylistMutation,
@@ -42,7 +42,7 @@
       ? makeImageUrl(playlist.imageId, { size: 512 })
       : makeCollageUrl(playlist.imageIds, { size: 512 })}
     coverArtClickable={tracks.length > 0}
-    on:clickCoverArt={() => playTrack(tracks[0].id, makeQueueData(0))}
+    on:clickCoverArt={() => player.playTrack(tracks[0].id, makeQueueData(0))}
   >
     <svelte:fragment slot="cover-art-icon">
       {#if playlist.filter !== null}
@@ -98,7 +98,7 @@
     reorderable={playlist.filter === null &&
       !tracksQuery.sort &&
       !$editTrackOrderMutation.isLoading}
-    on:play={(e) => playTrack(e.detail.track.id, makeQueueData(e.detail.i))}
+    on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(e.detail.i))}
     on:delete={(e) =>
       e.detail.track.playlistTrackId !== undefined &&
       handleRemoveTrack(e.detail.track.playlistTrackId)}

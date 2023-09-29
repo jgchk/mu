@@ -25,6 +25,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import cafe.jake.mu.ui.theme.MuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 
@@ -34,8 +36,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var player: ExoPlayer
-    @Inject
-    lateinit var broadcaster: PlayerEventBroadcaster
 
     lateinit var serviceHandler: ServiceHandler
 
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
         }
         connection = Connection(host, port)
 
-        serviceHandler = ServiceHandler(player, connection, broadcaster)
+        serviceHandler = ServiceHandler(player, connection)
 
         startService()
 
@@ -80,45 +80,11 @@ class MainActivity : ComponentActivity() {
                             addJavascriptInterface(WebAppInterface(), "Android")
                             loadUrl(mUrl)
 
-                            fun dispatchEvent(name: String, detail: Long? = null) {
-                                if (detail == null) {
-                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('$name'))")
-                                } else {
-                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('$name', {detail: $detail}))")
-                                }
-                            }
-
                             lifecycleScope.launch {
-                                serviceHandler.simpleMediaState.collect { mediaState ->
-                                    when (mediaState) {
-                                        is MediaState.Ready -> {
-                                            Log.d("MainActivity", "MediaState.Ready")
-                                            dispatchEvent("durationchange", mediaState.duration)
-                                        }
-                                        is MediaState.Progress -> {
-                                            Log.d("MainActivity", "MediaState.Progress(${mediaState.progress}, ${mediaState.duration})")
-                                            dispatchEvent("timeupdate", mediaState.progress)
-                                            dispatchEvent("durationchange", mediaState.duration)
-                                        }
-                                        is MediaState.Playing -> {
-                                            if (mediaState.isPlaying) {
-                                                Log.d("MainActivity", "MediaState.Playing")
-                                                dispatchEvent("played")
-                                            } else {
-                                                Log.d("MainActivity", "MediaState.Paused")
-                                                dispatchEvent("paused")
-                                            }
-                                        }
-                                        is MediaState.Ended -> {
-                                            Log.d("MainActivity", "MediaState.Ended")
-                                            dispatchEvent("ended")
-                                        }
-                                        is MediaState.SeekToNext -> {
-                                            Log.d("MainActivity", "MediaState.SeekToNext")
-                                            dispatchEvent("seek-to-next")
-                                        }
-                                        else -> {}
-                                    }
+                                serviceHandler.simplePlayerState.collect { mediaState ->
+                                    Log.d("MainActivity", "mediaState: $mediaState")
+                                    val json = Json.encodeToString(PlayerState.serializer(), mediaState)
+                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('mediastate', {detail: $json}))")
                                 }
                             }
                         }
@@ -202,12 +168,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopService(Intent(this, PlaybackService::class.java))
-        serviceHandler.cleanup()
         isServiceRunning = false
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
     }
 }
 

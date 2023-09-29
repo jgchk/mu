@@ -1,28 +1,18 @@
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { onDestroy } from 'svelte'
   import { raf } from 'svelte/internal'
 
-  export let volume: number
-  export let trackId: number
-  export let paused = false
-  export let playSignal: symbol | undefined
+  import { player } from '$lib/now-playing'
 
-  let player: HTMLAudioElement
+  import PlayerEvents from './PlayerEvents.svelte'
 
-  $: {
-    playSignal
-    if (player) {
-      player.src = `/api/tracks/${trackId}/stream`
-      player.load()
-      void player.play()
-    }
+  let audio: HTMLAudioElement
+
+  const playTrack = (trackId: number) => {
+    audio.src = `/api/tracks/${trackId}/stream`
+    audio.load()
+    void audio.play()
   }
-
-  const dispatch = createEventDispatcher<{
-    timeupdate: number
-    durationchange: number
-    ended: undefined
-  }>()
 
   let audioAnimationFrame: number | void
   function handleTimeUpdate() {
@@ -30,45 +20,40 @@
       cancelAnimationFrame(audioAnimationFrame)
     }
 
-    if (!paused) {
+    if (!$player.paused) {
       audioAnimationFrame = raf(handleTimeUpdate)
     }
 
-    if (player) {
-      dispatch('timeupdate', player.currentTime)
-    }
-  }
-
-  export async function play() {
-    await player.play()
-  }
-
-  export function pause() {
-    player.pause()
-  }
-
-  export function seek(time: number) {
-    if (player) {
-      player.currentTime = time
+    if ($player.track) {
+      $player.track.currentTime = audio.currentTime
     }
   }
 
   onDestroy(() => {
-    pause()
+    audio?.pause()
   })
 </script>
 
 <audio
   class="hidden"
-  bind:this={player}
-  bind:paused
-  bind:volume
-  on:ended={() => dispatch('ended')}
+  bind:this={audio}
+  bind:paused={$player.paused}
+  bind:volume={$player.volume}
+  on:ended={() => player.nextTrack()}
   on:timeupdate={() => handleTimeUpdate()}
   on:durationchange={(e) => {
     const durationSec = e.currentTarget.duration
-    if (durationSec !== Infinity) {
-      dispatch('durationchange', durationSec)
+    if (durationSec !== Infinity && $player.track) {
+      $player.track.duration = durationSec * 1000
     }
   }}
+/>
+
+<PlayerEvents
+  on:playTrack={(e) => playTrack(e.detail.trackId)}
+  on:nextTrack={(e) => playTrack(e.detail.trackId)}
+  on:previousTrack={(e) => playTrack(e.detail.trackId)}
+  on:play={() => void audio.play()}
+  on:pause={() => audio.pause()}
+  on:seek={(e) => (audio.currentTime = e.detail.time)}
 />

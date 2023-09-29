@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
   import '@fontsource/inter/variable.css'
   import '@fontsource/noto-emoji'
   import { fade } from 'svelte/transition'
@@ -6,9 +7,11 @@
   import FriendsSidebar from '$lib/components/FriendsSidebar.svelte'
   import NavBar from '$lib/components/NavBar.svelte'
   import Player from '$lib/components/Player.svelte'
+  import PlayerAudio from '$lib/components/PlayerAudio.svelte'
+  import PlayerAudioAndroid from '$lib/components/PlayerAudioAndroid.svelte'
   import Queue from '$lib/components/Queue.svelte'
   import Dialogs from '$lib/dialogs/Dialogs.svelte'
-  import { nowPlaying } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import Toaster from '$lib/toast/Toaster.svelte'
 
   import type { LayoutData } from './$types'
@@ -39,10 +42,10 @@
       <Toaster />
     </main>
 
-    {#if $nowPlaying.track}
+    {#if $player.track}
       <div class="order-2 md:order-3">
         <Player
-          track={$nowPlaying.track}
+          track={$player.track}
           on:toggleQueue={() => (showQueue = !showQueue)}
           queueOpen={showQueue}
         />
@@ -54,3 +57,11 @@
     <FriendsSidebar />
   </div>
 </div>
+
+{#if browser}
+  {#if window.Android}
+    <PlayerAudioAndroid />
+  {:else}
+    <PlayerAudio />
+  {/if}
+{/if}

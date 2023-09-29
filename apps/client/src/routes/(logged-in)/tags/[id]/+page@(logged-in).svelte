@@ -8,7 +8,7 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import { createReleasesByTagQuery } from '$lib/services/releases'
   import { createTagQuery, createTagsTreeQuery } from '$lib/services/tags'
   import { createTracksByTagQuery } from '$lib/services/tracks'
@@ -148,7 +148,7 @@
           {tracks}
           sortable
           favorites={data.tracksQuery.filter?.favorite ?? false}
-          on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+          on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
         />
       {:else}
         <div>No tracks</div>

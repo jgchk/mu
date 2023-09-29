@@ -26,12 +26,25 @@ declare global {
     }
   }
 
+  type AndroidMediaState =
+    | {
+        type: 'cafe.jake.mu.PlayerState.Idle'
+      }
+    | {
+        type: 'cafe.jake.mu.PlayerState.Playing'
+        trackId: number
+        progress: number
+        duration: number
+        state: {
+          type:
+            | 'cafe.jake.mu.MediaState.Playing'
+            | 'cafe.jake.mu.MediaState.Paused'
+            | 'cafe.jake.mu.MediaState.Buffering'
+        }
+      }
+
   interface AppEventMap {
-    timeupdate: CustomEvent<number>
-    durationchange: CustomEvent<number>
-    paused: CustomEvent<void>
-    played: CustomEvent<void>
-    ended: CustomEvent<void>
+    mediastate: CustomEvent<AndroidMediaState>
   }
 
   interface Window {

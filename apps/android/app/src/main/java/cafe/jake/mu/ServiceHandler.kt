@@ -8,48 +8,39 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.yield
+import kotlinx.serialization.Serializable
 
 class ServiceHandler constructor(
     private val player: ExoPlayer,
     private val connection: Connection,
-    private val broadcaster: PlayerEventBroadcaster
 ) : Player.Listener {
 
-    private val _simpleMediaState = MutableStateFlow<MediaState>(MediaState.Initial)
-    val simpleMediaState = _simpleMediaState.asStateFlow()
+    private val _simplePlayerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
+    val simplePlayerState = _simplePlayerState.asStateFlow()
 
-    private var job: Job? = null
-
-    private val playerEventListener: (PlayerEvent) -> Unit = { event ->
-        if (event == PlayerEvent.SeekToNext) {
-            // Trigger MediaState.SeekToNext event or do whatever you want
-            _simpleMediaState.value = MediaState.SeekToNext
-        }
-    }
+    private var scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
         player.addListener(this)
-        job = Job()
-
-        broadcaster.addListener(playerEventListener)
-    }
-
-    fun cleanup() {
-        broadcaster.removeListener(playerEventListener)
     }
 
     @UnstableApi
     fun playTrack(id: Int, previousTracks: List<Int>?, nextTracks: List<Int>?) {
-        val cookie = CookieManager.getInstance().getCookie("http://${connection.HOST}:${connection.PORT}/api/tracks/$id/stream")
+        val cookie = CookieManager.getInstance().getCookie(idToUri(id))
         Log.d("ServiceHandler", "Cookie: $cookie")
 
         val factory = DefaultHttpDataSource.Factory()
@@ -58,16 +49,35 @@ class ServiceHandler constructor(
         // add previous and next tracks to queue
         player.clearMediaItems()
         previousTracks?.forEach {
-            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$it/stream")))
+            player.addMediaSource(
+                ProgressiveMediaSource.Factory(factory)
+                    .createMediaSource(MediaItem.fromUri(idToUri(it)))
+            )
         }
-        player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$id/stream")))
+        player.addMediaSource(
+            ProgressiveMediaSource.Factory(factory)
+                .createMediaSource(MediaItem.fromUri(idToUri(id)))
+        )
         nextTracks?.forEach {
-            player.addMediaSource(ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri("http://${connection.HOST}:${connection.PORT}/api/tracks/$it/stream")))
+            player.addMediaSource(
+                ProgressiveMediaSource.Factory(factory)
+                    .createMediaSource(MediaItem.fromUri(idToUri(it)))
+            )
         }
 
         player.seekTo(previousTracks?.size ?: 0, 0)
         player.prepare()
         player.play()
+
+        updateState()
+    }
+
+    private fun idToUri(id: Int): String {
+        return "http://${connection.HOST}:${connection.PORT}/api/tracks/$id/stream"
+    }
+
+    private fun uriToId(uri: String): Int {
+        return uri.split("/").dropLast(1).last().toInt()
     }
 
     fun nextTrack() {
@@ -90,68 +100,95 @@ class ServiceHandler constructor(
         player.seekTo(time.toLong())
     }
 
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        when (playbackState) {
-            ExoPlayer.STATE_BUFFERING -> _simpleMediaState.value =
-                MediaState.Buffering(player.currentPosition)
-            ExoPlayer.STATE_READY -> _simpleMediaState.value =
-                MediaState.Ready(player.duration)
-        }
+    override fun onEvents(player: Player, events: Player.Events) {
+        super.onEvents(player, events)
+        Log.d("ServiceHandler", "Events: $events")
+        updateState()
     }
 
-    override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        reason: Int
-    ) {
-        super.onPositionDiscontinuity(oldPosition, newPosition, reason)
-        Log.d("ServiceHandler", "POJSITION DISCONTINUITY: $reason")
-        if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
-            _simpleMediaState.value = MediaState.Ended
-        }
-    }
-
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        super.onMediaItemTransition(mediaItem, reason)
-        Log.d("ServiceHandler", "MEDIA ITEM TRANSITION: $reason, ${mediaItem?.localConfiguration?.uri}")
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        _simpleMediaState.value = MediaState.Playing(isPlaying = isPlaying)
+        Log.d("ServiceHandler", "IsPlayingChanged: $isPlaying")
+        updateState()
         if (isPlaying) {
-            GlobalScope.launch(Dispatchers.Main) {
-                startProgressUpdate()
-            }
+            startProgressUpdate()
         } else {
             stopProgressUpdate()
         }
     }
 
-    private suspend fun startProgressUpdate() = job.run {
-        while (true) {
-            delay(500)
-            _simpleMediaState.value = MediaState.Progress(player.currentPosition, player.duration)
+    private fun startProgressUpdate() {
+        Log.d("ServiceHandler", "Starting progress update")
+
+        // Ensure the scope is active before launching the coroutine
+        if (scope.isActive.not()) {
+            scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+
+        scope.launch {
+            while (true) {
+                delay(500)
+                Log.d("ServiceHandler", "Progress: ${player.currentPosition}/${player.duration}")
+                updateState()
+                yield() // It's good practice to yield within infinite loops
+            }
         }
     }
 
     private fun stopProgressUpdate() {
-        job?.cancel()
-        _simpleMediaState.value = MediaState.Playing(isPlaying = false)
+        Log.d("ServiceHandler", "Stopping progress update")
+        scope.cancel() // This cancels the scope and its underlying job
+    }
+
+    private fun updateState() {
+        val currentMediaItem = player.currentMediaItem
+        if (currentMediaItem == null) {
+            _simplePlayerState.value = PlayerState.Idle
+            return
+        }
+
+        val uri = currentMediaItem.localConfiguration?.uri
+        if (uri == null) {
+            _simplePlayerState.value = PlayerState.Idle
+            return
+        }
+
+        _simplePlayerState.value = PlayerState.Playing(
+            trackId = uriToId(uri.toString()),
+            progress = player.currentPosition,
+            duration = player.duration,
+            state = if (player.playbackState == ExoPlayer.STATE_BUFFERING) {
+                MediaState.Buffering
+            } else if (player.isPlaying) {
+                MediaState.Playing
+            } else {
+                MediaState.Paused
+            }
+        )
+
+        Log.d("ServiceHandler", "PlayerState: ${_simplePlayerState.value}")
     }
 }
 
-sealed class PlayerEvent {
-    object SeekToNext : PlayerEvent()
+
+@Serializable
+sealed class PlayerState {
+    @Serializable
+    data object Idle : PlayerState()
+    @Serializable
+    data class Playing(
+        val trackId: Int,
+        val progress: Long,
+        val duration: Long,
+        val state: MediaState
+    ) : PlayerState()
 }
 
+@Serializable
 sealed class MediaState {
-    object Initial : MediaState()
-    data class Ready(val duration: Long) : MediaState()
-    data class Progress(val progress: Long, val duration: Long) : MediaState()
-    data class Buffering(val progress: Long) : MediaState()
-    data class Playing(val isPlaying: Boolean) : MediaState()
-    object Ended : MediaState()
-
-    object SeekToNext : MediaState()
+    @Serializable
+    data object Playing : MediaState()
+    @Serializable
+    data object Paused : MediaState()
+    @Serializable
+    data object Buffering : MediaState()
 }
