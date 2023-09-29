@@ -153,9 +153,11 @@
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
-      <div class="flex h-[64px] w-[64px] items-center justify-center rounded-sm bg-gray-800">
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-sm bg-gray-800 md:h-16 md:w-16"
+      >
         <Delay>
-          <Loader class="h-8 w-8 text-gray-600" />
+          <Loader class="h-6 w-6 text-gray-600 md:h-8 md:w-8" />
         </Delay>
       </div>
     {/if}
