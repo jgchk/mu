@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { navigating } from '$app/stores'
+  import { navigating, page } from '$app/stores'
   import { fade } from 'svelte/transition'
 
   import { tooltip } from '$lib/actions/tooltip'
@@ -39,7 +39,13 @@
       initialQuery={searchQuery}
       on:search={(e) => {
         if (e.detail.length > 0) {
-          void goto(`/library?q=${e.detail}`)
+          if ($page.url.pathname.startsWith('/library')) {
+            const newURL = new URL($page.url)
+            newURL.searchParams.set('q', e.detail)
+            void goto(newURL.toString())
+          } else {
+            void goto(`/library?q=${e.detail}`)
+          }
         } else {
           void goto('/library')
         }
