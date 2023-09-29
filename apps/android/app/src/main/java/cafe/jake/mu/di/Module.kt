@@ -7,9 +7,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.session.MediaSession
-import cafe.jake.mu.Connection
 import cafe.jake.mu.NotificationManager
-import cafe.jake.mu.ServiceHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,27 +55,8 @@ class Module {
     @Singleton
     fun provideMediaSession(
         @ApplicationContext context: Context,
-        player: ExoPlayer
+        player: ExoPlayer,
     ): MediaSession =
         MediaSession.Builder(context, player).build()
 
-    @Provides
-    @Singleton
-    fun provideServiceHandler(
-        player: ExoPlayer,
-        connection: Connection
-    ): ServiceHandler =
-        ServiceHandler(
-            player = player,
-            connection = connection
-        )
-
-    @Provides
-    @Singleton
-    fun provideConnection(
-        @ApplicationContext context: Context
-    ): Connection =
-        Connection(
-            context = context
-        )
 }

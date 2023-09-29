@@ -7,7 +7,7 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
 
@@ -43,7 +43,7 @@
         ? makeImageUrl(release.imageId, { size: 512 })
         : undefined}
       coverArtClickable={!!tracks?.length}
-      on:clickCoverArt={() => tracks && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
+      on:clickCoverArt={() => tracks && player.playTrack(tracks[0].id, makeQueueData(tracks, 0))}
       class="group/tags"
     >
       <div class="flex items-center gap-2 text-sm" slot="subtitle">
@@ -69,7 +69,7 @@
         favorites={data.tracksQuery.favorite ?? false}
         sortable
         showCoverArt={false}
-        on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+        on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
       />
     {:else if $tracksQuery.error}
       <p>Something went wrong</p>

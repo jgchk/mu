@@ -7,7 +7,7 @@
   import CoverArt from '$lib/components/CoverArt.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
   import type { RouterOutput } from '$lib/trpc'
 
@@ -37,7 +37,7 @@
   {@const tracks = $tracksQuery.data.items}
   <TrackList
     {tracks}
-    on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+    on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
   />
   {#if $tracksQuery.data.nextCursor !== undefined}
     <LinkButton

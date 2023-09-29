@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
   import { makeImageUrl } from 'mutils'
   import { onDestroy, onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
@@ -19,8 +18,8 @@
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
   import { createLocalStorageJson } from '$lib/local-storage'
-  import type { NowPlaying } from '$lib/now-playing'
-  import { nextTrack, nowPlaying, previousTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
+  import type { PlayerState } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
   import { createScrobbleMutation, createUpdateNowPlayingMutation } from '$lib/services/playback'
   import { createTrackQuery } from '$lib/services/tracks'
@@ -28,17 +27,15 @@
   import { cn } from '$lib/utils/classes'
 
   import CoverArt from './CoverArt.svelte'
-  import PlayerAudio from './PlayerAudio.svelte'
-  import PlayerAudioAndroid from './PlayerAudioAndroid.svelte'
   import TrackOptions from './TrackOptions.svelte'
 
-  export let track: NonNullable<NowPlaying['track']>
+  export let track: NonNullable<PlayerState['track']>
 
   const trpc = getContextClient()
   $: trackId = track.id
   $: nowPlayingTrack = createTrackQuery(trpc, trackId)
 
-  $: durationMs = $nowPlaying.track?.duration ?? $nowPlayingTrack.data?.duration
+  $: durationMs = $player.track?.duration ?? $nowPlayingTrack.data?.duration
   $: formattedDuration = formatMilliseconds(durationMs ?? 0)
 
   $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
@@ -47,39 +44,13 @@
   const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
-  let paused = false
-
-  let player: PlayerAudio | undefined = undefined
   const togglePlaying = () => {
-    if (paused) {
-      play()
+    if ($player.paused) {
+      player.play()
     } else {
-      pause()
+      player.pause()
     }
   }
-  /* eslint-disable */
-  const play = () => {
-    if (window.Android) {
-      window.Android.play()
-    } else {
-      player?.play()
-    }
-  }
-  const pause = () => {
-    if (window.Android) {
-      window.Android.pause()
-    } else {
-      player?.pause()
-    }
-  }
-  const seek = (time: number) => {
-    if (window.Android) {
-      window.Android.seek(time)
-    } else {
-      player?.seek(time)
-    }
-  }
-  /* eslint-enable */
 
   const updateNowPlayingMutation = createUpdateNowPlayingMutation(trpc)
   const { mutate: updateNowPlaying } = $updateNowPlayingMutation
@@ -103,7 +74,7 @@
   const toggleQueue = () => dispatch('toggleQueue')
 
   $: if (navigator.mediaSession) {
-    navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'
+    navigator.mediaSession.playbackState = $player.paused ? 'paused' : 'playing'
   }
   onDestroy(() => {
     if (navigator.mediaSession) {
@@ -131,24 +102,22 @@
   }
 
   if (navigator.mediaSession) {
-    navigator.mediaSession.setActionHandler('play', () => play())
-    navigator.mediaSession.setActionHandler('pause', () => pause())
-    navigator.mediaSession.setActionHandler('previoustrack', () => previousTrack())
-    navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack())
+    navigator.mediaSession.setActionHandler('play', () => player.play())
+    navigator.mediaSession.setActionHandler('pause', () => player.pause())
+    navigator.mediaSession.setActionHandler('previoustrack', () => player.previousTrack())
+    navigator.mediaSession.setActionHandler('nexttrack', () => player.nextTrack())
     navigator.mediaSession.setActionHandler('seekto', (e) => {
       if (e.seekTime !== undefined) {
-        seek(e.seekTime)
+        player.seek(e.seekTime)
       }
     })
   }
 
-  $: updatePosition = () => {
-    if (!navigator.mediaSession) return
-
+  $: {
     const duration = ifDefined(durationMs, (duration) => duration / 1000)
-    const position = $nowPlaying.track?.currentTime
+    const position = $player.track?.currentTime
     if (duration !== undefined && position !== undefined) {
-      navigator.mediaSession.setPositionState({
+      navigator.mediaSession?.setPositionState({
         duration,
         position,
       })
@@ -184,9 +153,11 @@
     {:else if $nowPlayingTrack.error}
       <div>{$nowPlayingTrack.error.message}</div>
     {:else}
-      <div class="flex h-[64px] w-[64px] items-center justify-center rounded-sm bg-gray-800">
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-sm bg-gray-800 md:h-16 md:w-16"
+      >
         <Delay>
-          <Loader class="h-8 w-8 text-gray-600" />
+          <Loader class="h-6 w-6 text-gray-600 md:h-8 md:w-8" />
         </Delay>
       </div>
     {/if}
@@ -199,7 +170,7 @@
           type="button"
           class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
           use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
-          on:click={() => previousTrack()}
+          on:click={() => player.previousTrack()}
         >
           <RewindIcon class="h-6 w-6" />
         </button>
@@ -207,9 +178,12 @@
           type="button"
           class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
           on:click={togglePlaying}
-          use:tooltip={{ content: paused ? 'Play' : 'Pause', delay: [2000, TooltipDefaults.delay] }}
+          use:tooltip={{
+            content: $player.paused ? 'Play' : 'Pause',
+            delay: [2000, TooltipDefaults.delay],
+          }}
         >
-          {#if paused}
+          {#if $player.paused}
             <PlayIcon />
           {:else}
             <PauseIcon />
@@ -219,7 +193,7 @@
           type="button"
           class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
           use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
-          on:click={() => nextTrack()}
+          on:click={() => player.nextTrack()}
         >
           <FastForwardIcon class="h-6 w-6" />
         </button>
@@ -240,7 +214,7 @@
             max={(durationMs ?? 1000) / 1000}
             height="h-[3px]"
             on:change={(e) => {
-              seek(e.detail)
+              player.seek(e.detail)
             }}
           />
         </div>
@@ -286,49 +260,3 @@
     </div>
   </div>
 </div>
-
-{#if browser}
-  {#if window.Android}
-    <PlayerAudioAndroid
-      bind:paused
-      on:ended={() => {
-        nextTrack()
-      }}
-      on:timeupdate={(e) => {
-        if ($nowPlaying.track) {
-          $nowPlaying.track.currentTime = e.detail
-        }
-        updatePosition()
-      }}
-      on:durationchange={(e) => {
-        if ($nowPlaying.track) {
-          $nowPlaying.track.duration = e.detail * 1000
-        }
-        updatePosition()
-      }}
-    />
-  {:else}
-    <PlayerAudio
-      bind:this={player}
-      bind:paused
-      bind:volume={$volume}
-      {trackId}
-      playSignal={$nowPlaying.track?.__playSignal}
-      on:ended={() => {
-        nextTrack()
-      }}
-      on:timeupdate={(e) => {
-        if ($nowPlaying.track) {
-          $nowPlaying.track.currentTime = e.detail
-        }
-        updatePosition()
-      }}
-      on:durationchange={(e) => {
-        if ($nowPlaying.track) {
-          $nowPlaying.track.duration = e.detail * 1000
-        }
-        updatePosition()
-      }}
-    />
-  {/if}
-{/if}

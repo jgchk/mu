@@ -3,8 +3,6 @@ package cafe.jake.mu
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.ConnectivityManager
-import android.net.wifi.WifiInfo
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
@@ -23,9 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import cafe.jake.mu.ui.theme.MuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 
@@ -34,12 +35,76 @@ class MainActivity : ComponentActivity() {
     private var isServiceRunning = false
 
     @Inject
+    lateinit var player: ExoPlayer
+
     lateinit var serviceHandler: ServiceHandler
 
-    @Inject
-    lateinit var connection: Connection
+    private lateinit var connection: Connection
 
-    private inner class WebAppInterface(private val mContext: Context) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val host = intent.getStringExtra("HOST")
+        val port = intent.getIntExtra("PORT", -1)
+        if (host == null || port == -1) {
+            finish()
+            return
+        }
+        connection = Connection(host, port)
+
+        serviceHandler = ServiceHandler(player, connection)
+
+        startService()
+
+        val mUrl = "http://${connection.HOST}:${connection.PORT}"
+
+        setContent {
+            MuTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AndroidView(factory = {
+                        WebView(it).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            webViewClient = MyWebViewClient()
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            settings.loadsImagesAutomatically = true
+                            settings.cacheMode = WebSettings.LOAD_DEFAULT
+
+                            addJavascriptInterface(WebAppInterface(), "Android")
+                            loadUrl(mUrl)
+
+                            lifecycleScope.launch {
+                                serviceHandler.simplePlayerState.collect { mediaState ->
+                                    Log.d("MainActivity", "mediaState: $mediaState")
+                                    val json = Json.encodeToString(PlayerState.serializer(), mediaState)
+                                    loadUrl("javascript:window.dispatchEvent(new CustomEvent('mediastate', {detail: $json}))")
+                                }
+                            }
+                        }
+                    }, update = {
+                        it.loadUrl(mUrl)
+                    })
+                }
+            }
+        }
+    }
+
+    private inner class MyWebViewClient : WebViewClient() {
+        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+            val url = url.replace("localhost", connection.HOST)
+            view.loadUrl(url)
+            return true;
+        }
+    }
+
+    private inner class WebAppInterface {
         @JavascriptInterface
         @UnstableApi
         fun playTrack(id: Int, previousTracksStr: String, nextTracksStr: String) {
@@ -92,82 +157,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private inner class MyWebViewClient : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            val url = url.replace("localhost", connection.HOST)
-            view.loadUrl(url)
-            return true;
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        startService()
-
-
-        val mUrl = "http://${connection.HOST}:${connection.PORT}"
-
-        setContent {
-            MuTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AndroidView(factory = {
-                        WebView(it).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                            webViewClient = MyWebViewClient()
-                            settings.javaScriptEnabled = true
-                            settings.domStorageEnabled = true
-                            settings.loadsImagesAutomatically = true
-                            settings.cacheMode = WebSettings.LOAD_DEFAULT
-
-                            addJavascriptInterface(WebAppInterface(it), "Android")
-                            loadUrl(mUrl)
-
-                            lifecycleScope.launch {
-                                serviceHandler.simpleMediaState.collect { mediaState ->
-                                    when (mediaState) {
-                                        is MediaState.Ready -> {
-                                            Log.d("MainActivity", "MediaState.Ready")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
-                                        }
-                                        is MediaState.Progress -> {
-                                            Log.d("MainActivity", "MediaState.Progress(${mediaState.progress}, ${mediaState.duration})")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('timeupdate', {detail: ${mediaState.progress}}))")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('durationchange', {detail: ${mediaState.duration}}))")
-                                        }
-                                        is MediaState.Playing -> {
-                                            if (mediaState.isPlaying) {
-                                                Log.d("MainActivity", "MediaState.Playing")
-                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('played'))")
-                                            } else {
-                                                Log.d("MainActivity", "MediaState.Paused")
-                                                loadUrl("javascript:window.dispatchEvent(new CustomEvent('paused'))")
-                                            }
-                                        }
-                                        is MediaState.Ended -> {
-                                            Log.d("MainActivity", "MediaState.Ended")
-                                            loadUrl("javascript:window.dispatchEvent(new CustomEvent('ended'))")
-                                        }
-                                        else -> {}
-                                    }
-                                }
-                            }
-                        }
-                    }, update = {
-                        it.loadUrl(mUrl)
-                    })
-                }
-            }
-        }
-    }
-
     private fun startService() {
         if (!isServiceRunning) {
             val intent = Intent(this, PlaybackService::class.java)
@@ -180,10 +169,6 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         stopService(Intent(this, PlaybackService::class.java))
         isServiceRunning = false
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
     }
 }
 

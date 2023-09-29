@@ -1,21 +1,21 @@
 import { derived } from 'svelte/store'
 
-import type { NowPlaying } from './now-playing'
-import { nowPlaying } from './now-playing'
+import type { PlayerState } from './now-playing'
+import { player } from './now-playing'
 
 export const createListenedDuration = () => {
-  let __playSignal: symbol | undefined = undefined
+  let startTime: Date | undefined = undefined
   let previousTime = 0
   let listenedDuration = 0
 
-  return derived(nowPlaying, (data) => {
+  return derived(player, (data) => {
     if (!data.track) return 0
 
-    if (data.track.__playSignal !== __playSignal) {
+    if (data.track.startTime !== startTime) {
       // reset
       previousTime = 0
       listenedDuration = 0
-      __playSignal = data.track.__playSignal
+      startTime = data.track.startTime
     }
 
     if (data.track.currentTime === undefined) return 0
@@ -33,16 +33,18 @@ export const createListenedDuration = () => {
   })
 }
 
-export const createNowPlayer = (onNowPlaying: (data: NonNullable<NowPlaying['track']>) => void) => {
-  let __playSignal: symbol | undefined = undefined
+export const createNowPlayer = (
+  onNowPlaying: (data: NonNullable<PlayerState['track']>) => void
+) => {
+  let startTime: Date | undefined = undefined
   let nowPlayingSent = false
 
-  const unsubscribe = nowPlaying.subscribe((data) => {
+  const unsubscribe = player.subscribe((data) => {
     if (!data.track) return
 
-    if (data.track.__playSignal !== __playSignal) {
+    if (data.track.startTime !== startTime) {
       nowPlayingSent = false
-      __playSignal = data.track.__playSignal
+      startTime = data.track.startTime
     }
 
     if (!nowPlayingSent) {
@@ -56,24 +58,22 @@ export const createNowPlayer = (onNowPlaying: (data: NonNullable<NowPlaying['tra
 }
 
 export const createScrobbler = (
-  onScrobble: (data: Pick<NonNullable<NowPlaying['track']>, 'id' | 'startTime'>) => void
+  onScrobble: (data: Pick<NonNullable<PlayerState['track']>, 'id' | 'startTime'>) => void
 ) => {
-  let __playSignal: symbol | undefined = undefined
+  const startTime: Date | undefined = undefined
   let scrobbled = false
   const listenedDuration = createListenedDuration()
 
-  const combined = derived([nowPlaying, listenedDuration], ([np, ld]) => ({
+  const combined = derived([player, listenedDuration], ([np, ld]) => ({
     id: np.track?.id,
     startTime: np.track?.startTime,
-    __playSignal: np.track?.__playSignal,
     duration: np.track?.duration,
     listenedDuration: ld,
   }))
 
   const unsubscribe = combined.subscribe((data) => {
-    if (data.__playSignal !== __playSignal) {
+    if (data.startTime !== startTime) {
       scrobbled = false
-      __playSignal = data.__playSignal
     }
 
     if (

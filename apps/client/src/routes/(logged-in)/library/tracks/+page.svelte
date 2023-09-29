@@ -13,7 +13,7 @@
   import TagSelect from '$lib/components/TagSelect.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import { getContextClient } from '$lib/trpc'
   import type { RouterOutput } from '$lib/trpc'
 
@@ -131,7 +131,7 @@
     favorites={data.query.favorite ?? false}
     sortable
     class="pt-2"
-    on:play={(e) => playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+    on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
   >
     <svelte:fragment slot="footer">
       {#if $tracksQuery.hasNextPage}

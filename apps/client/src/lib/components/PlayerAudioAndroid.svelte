@@ -1,34 +1,51 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { onMount } from 'svelte'
 
-  const dispatch = createEventDispatcher<{
-    timeupdate: number
-    durationchange: number
-    ended: undefined
-  }>()
+  import { player } from '$lib/now-playing'
 
-  export let paused: boolean
+  import PlayerEvents from './PlayerEvents.svelte'
 
   onMount(() => {
-    const handleTimeUpdate = (e: AppEventMap['timeupdate']) => dispatch('timeupdate', e.detail)
-    const handleDurationChange = (e: AppEventMap['durationchange']) =>
-      dispatch('durationchange', e.detail)
-    const handlePaused = () => (paused = true)
-    const handlePlayed = () => (paused = false)
-    const handleEnded = () => dispatch('ended')
+    const handleMediaState = (e: AppEventMap['mediastate']) => {
+      if (e.detail.type === 'cafe.jake.mu.PlayerState.Idle') {
+        $player.paused = true
+        $player.track = undefined
+      } else {
+        $player.paused = e.detail.state.type === 'cafe.jake.mu.MediaState.Paused'
 
-    window.addEventListener('timeupdate', handleTimeUpdate)
-    window.addEventListener('durationchange', handleDurationChange)
-    window.addEventListener('paused', handlePaused)
-    window.addEventListener('played', handlePlayed)
-    window.addEventListener('ended', handleEnded)
+        if (!$player.track || $player.track.id !== e.detail.trackId) {
+          $player.track = {
+            id: e.detail.trackId,
+            currentTime: e.detail.progress / 1000,
+            duration: e.detail.duration,
+            startTime: new Date(),
+          }
+        } else {
+          $player.track.id = e.detail.trackId
+          $player.track.currentTime = e.detail.progress / 1000
+          $player.track.duration = e.detail.duration
+        }
+      }
+    }
+
+    window.addEventListener('mediastate', handleMediaState)
 
     return () => {
-      window.removeEventListener('timeupdate', handleTimeUpdate)
-      window.removeEventListener('durationchange', handleDurationChange)
-      window.removeEventListener('paused', handlePaused)
-      window.removeEventListener('played', handlePlayed)
-      window.removeEventListener('ended', handleEnded)
+      window.removeEventListener('mediastate', handleMediaState)
     }
   })
 </script>
+
+<PlayerEvents
+  on:playTrack={(e) =>
+    window.Android?.playTrack(
+      e.detail.trackId,
+      e.detail.previousTracks.toString(),
+      e.detail.nextTracks.toString()
+    )}
+  on:nextTrack={() => window.Android?.nextTrack()}
+  on:previousTrack={() => window.Android?.previousTrack()}
+  on:play={() => window.Android?.play()}
+  on:pause={() => window.Android?.pause()}
+  on:seek={(e) => window.Android?.seek(e.detail.time * 1000)}
+/>

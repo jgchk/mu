@@ -26,6 +26,7 @@
     "esm-env": "^1.0.0",
     "fastest-levenshtein": "^1.0.16",
     "isomorphic-ws": "^5.0.0",
+    "mitt": "^3.0.1",
     "mutils": "workspace:*",
     "superjson": "^1.12.3",
     "svelte-dnd-action": "^0.9.22",

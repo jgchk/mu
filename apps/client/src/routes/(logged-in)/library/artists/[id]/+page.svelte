@@ -8,7 +8,7 @@
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
-  import { playTrack } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import { createArtistQuery } from '$lib/services/artists'
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
@@ -51,7 +51,8 @@
       ? makeImageUrl(artist.imageId, { size: 512 })
       : makeCollageUrl(artist.imageIds, { size: 512 })}
     coverArtClickable={!!tracks?.length}
-    on:clickCoverArt={() => tracks?.length && playTrack(tracks[0].id, makeQueueData(tracks, 0))}
+    on:clickCoverArt={() =>
+      tracks?.length && player.playTrack(tracks[0].id, makeQueueData(tracks, 0))}
   >
     <svelte:fragment slot="subtitle">
       {#if artist.description}
@@ -105,7 +106,7 @@
       favorites={data.tracksQuery.favorite ?? false}
       sortable
       on:play={(e) =>
-        tracks?.length && playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+        tracks?.length && player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
     >
       <svelte:fragment slot="footer">
         {#if $tracksQuery.hasNextPage}

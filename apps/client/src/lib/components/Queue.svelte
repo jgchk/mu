@@ -5,7 +5,7 @@
   import { autoscroll } from '$lib/actions/autoscroll'
   import Delay from '$lib/atoms/Delay.svelte'
   import Loader from '$lib/atoms/Loader.svelte'
-  import { nowPlaying } from '$lib/now-playing'
+  import { player } from '$lib/now-playing'
   import { createTracksQuery } from '$lib/services/tracks'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
@@ -18,9 +18,7 @@
   const trpc = getContextClient()
 
   const makeTracks = () =>
-    [...$nowPlaying.previousTracks, $nowPlaying.track?.id, ...$nowPlaying.nextTracks].filter(
-      isDefined
-    )
+    [...$player.previousTracks, $player.track?.id, ...$player.nextTracks].filter(isDefined)
   let tracks: number[] = makeTracks()
   $: {
     const newTracks = makeTracks()
@@ -39,11 +37,9 @@
   )}
 >
   {#if $tracksQuery.data}
-    {@const previousTracks = $tracksQuery.data.filter((t) =>
-      $nowPlaying.previousTracks.includes(t.id)
-    )}
-    {@const nowPlayingTrack = $tracksQuery.data.find((t) => t.id === $nowPlaying.track?.id)}
-    {@const nextTracks = $tracksQuery.data.filter((t) => $nowPlaying.nextTracks.includes(t.id))}
+    {@const previousTracks = $tracksQuery.data.filter((t) => $player.previousTracks.includes(t.id))}
+    {@const nowPlayingTrack = $tracksQuery.data.find((t) => t.id === $player.track?.id)}
+    {@const nextTracks = $tracksQuery.data.filter((t) => $player.nextTracks.includes(t.id))}
 
     {#if previousTracks.length}
       <div>
