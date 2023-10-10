@@ -9,14 +9,7 @@ RUN npm install -g pnpm
 
 # Install dependencies
 RUN apt-get update \
-    && apt-get install -y python3 python3-venv libasound2-dev ffmpeg
-
-# Create a virtual environment and install packages
-RUN python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install mutagen six
-
-# Make this virtual environment as the default python
-ENV PATH="/opt/venv/bin:$PATH"
+    && apt-get install -y python3 python3-pip python3-mutagen python3-six libasound2-dev ffmpeg
 
 # Install Rust using rustup
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
