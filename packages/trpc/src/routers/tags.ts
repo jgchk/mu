@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { and, asc, eq, sql, tags } from 'db'
+import { and, asc, eq, inArray, sql, tags, trackTags, tracks } from 'db'
 import { isNotNull, uniq } from 'utils'
 import { z } from 'zod'
 
@@ -142,15 +142,40 @@ export const tagsRouter = router({
       })
     )
     .mutation(({ ctx, input }) => {
+      const trackIds = ctx
+        .sys()
+        .db.db.select({ trackId: tracks.id })
+        .from(tracks)
+        .where(eq(tracks.releaseId, input.releaseId))
+        .all()
+        .map((t) => t.trackId)
+
       if (input.tagged) {
         const existingTag = ctx.sys().db.releaseTags.find(input.releaseId, input.tagId)
         if (!existingTag) {
           ctx.sys().db.releaseTags.addTag(input.releaseId, input.tagId)
         }
+
+        ctx
+          .sys()
+          .db.db.insert(trackTags)
+          .values(trackIds.map((trackId) => ({ trackId, tagId: input.tagId })))
+          .onConflictDoNothing()
+          .run()
       } else {
         ctx.sys().db.releaseTags.delete(input.releaseId, input.tagId)
+
+        ctx
+          .sys()
+          .db.db.delete(trackTags)
+          .where(and(inArray(trackTags.trackId, trackIds), eq(trackTags.tagId, input.tagId)))
+          .run()
       }
-      return ctx.sys().db.tags.getByRelease(input.releaseId)
+
+      return {
+        releaseTags: ctx.sys().db.tags.getByRelease(input.releaseId),
+        trackIds,
+      }
     }),
 
   getByTrack: protectedProcedure

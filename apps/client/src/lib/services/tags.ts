@@ -80,7 +80,9 @@ export const createReleaseTagMutation = (
     onSuccess: async (...args) => {
       const [data, input] = args
       await Promise.all([
-        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data),
+        trpc.tags.getByRelease.utils.setData({ releaseId: input.releaseId }, data.releaseTags),
+        ...data.trackIds.map((trackId) => trpc.tags.getByTrack.utils.invalidate({ trackId })),
+        trpc.tracks.utils.invalidate(),
         options?.onSuccess?.(...args),
       ])
     },
