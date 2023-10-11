@@ -8,7 +8,6 @@ export const createNowPlayer = (
 
   return {
     update: (data: PlayerState['track']) => {
-      // console.log('UPDATE NOW PLAYER', data)
       if (!data) {
         return
       }
@@ -42,8 +41,6 @@ export const createScrobbler = (
         startTime = data.startTime
         scrobbled = false
       }
-
-      console.log('SCROBBLER', data.durationMs, data.currentTimeMs ?? 0)
 
       if (
         !scrobbled &&
