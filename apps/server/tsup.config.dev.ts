@@ -9,6 +9,7 @@ export default defineConfig({
     '../../packages/context',
     '../../packages/db',
     '../../packages/downloader',
+    '../../packages/duckduckgo',
     '../../packages/env',
     '../../packages/image-manager',
     '../../packages/last-fm',

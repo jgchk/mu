@@ -1,9 +1,11 @@
 <script lang="ts">
   import { makeImageUrl } from 'mutils'
 
+  import rymLogo from '$lib/assets/sonemic-128.png'
   import Button from '$lib/atoms/Button.svelte'
   import CommaList from '$lib/atoms/CommaList.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'
+  import Loader from '$lib/atoms/Loader.svelte'
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
   import TrackList from '$lib/components/TrackList.svelte'
   import { getContextDialogs } from '$lib/dialogs/dialogs'
@@ -24,6 +26,8 @@
     filter: data.tracksQuery,
   })
   $: tracks = $tracksQuery.data
+
+  $: rymLinksQuery = trpc.releases.getRymLinks.query({ id: data.id })
 
   const makeQueueData = (tracks: RouterOutput['tracks']['getByReleaseId'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
@@ -70,6 +74,7 @@
         sortable
         showCoverArt={false}
         on:play={(e) => player.playTrack(e.detail.track.id, makeQueueData(tracks, e.detail.i))}
+        class="mb-7"
       />
     {:else if $tracksQuery.error}
       <p>Something went wrong</p>
@@ -81,4 +86,24 @@
   <div>{$releaseQuery.error.message}</div>
 {:else}
   <FullscreenLoader />
+{/if}
+
+{#if $rymLinksQuery.isLoading || ($rymLinksQuery.data && $rymLinksQuery.data.length > 0)}
+  <div
+    class="absolute bottom-0 right-0 mb-1 mt-2 hidden h-7 max-w-full justify-center rounded border border-gray-700 bg-gray-800 p-1 shadow md:flex"
+  >
+    {#if $rymLinksQuery.data}
+      {#if $rymLinksQuery.data.length > 0}
+        <a href={$rymLinksQuery.data[0].url} target="_blank" class="h-full">
+          <img
+            src={rymLogo}
+            class="h-full grayscale transition-all hover:grayscale-0"
+            alt="RateYourMusic"
+          />
+        </a>
+      {/if}
+    {:else if $rymLinksQuery.isLoading}
+      <Loader class="text-gray-600" />
+    {/if}
+  </div>
 {/if}

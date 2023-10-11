@@ -17,6 +17,7 @@ import {
   sql,
   tracks,
 } from 'db'
+import { search } from 'duckduckgo'
 import { env } from 'env'
 import filenamify from 'filenamify'
 import fs from 'fs/promises'
@@ -376,6 +377,38 @@ export const releasesRouter = router({
       // TODO: cleanup empty directories
 
       return { success: true }
+    }),
+
+  getRymLinks: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input: { id }, ctx }) => {
+      const release = ctx.sys().db.db.query.releases.findFirst({
+        where: eq(releases.id, id),
+        with: {
+          releaseArtists: {
+            orderBy: asc(releaseArtists.order),
+            with: {
+              artist: true,
+            },
+          },
+        },
+      })
+
+      if (release === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Release not found',
+        })
+      }
+
+      const artistText = release.releaseArtists.map(({ artist }) => artist.name).join(', ')
+      const searchText = `site:rateyourmusic.com/release ${
+        release.title ?? 'untitled'
+      } by ${artistText}`
+
+      const { results } = await search(searchText)
+
+      return results
     }),
 })
 
