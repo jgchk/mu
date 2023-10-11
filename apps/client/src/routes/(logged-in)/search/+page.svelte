@@ -6,7 +6,7 @@
   import SearchBar from '$lib/components/SearchBar.svelte'
   import { getContextClient } from '$lib/trpc'
 
-  import { NUM_TRACKS } from '../library/all/common'
+  import { NUM_RELEASES, NUM_TRACKS } from '../library/all/common'
   import type { PageData } from './$types'
   import SearchKindButton from './SearchKindButton.svelte'
   import SearchResult from './SearchResult.svelte'
@@ -21,7 +21,7 @@
     { enabled: !!data.searchQuery?.length }
   )
   $: releasesQuery = trpc.releases.getAll.query(
-    { title: data.searchQuery },
+    { title: data.searchQuery, limit: NUM_RELEASES },
     { enabled: !!data.searchQuery?.length }
   )
   $: artistsQuery = trpc.artists.getAll.query(
@@ -53,7 +53,7 @@
         results.push(...$tracksQuery.data.items.map((i) => ({ ...i, kind: 'track' } as const)))
       }
       if (kind === 'release' || kind === undefined) {
-        results.push(...$releasesQuery.data.map((i) => ({ ...i, kind: 'release' } as const)))
+        results.push(...$releasesQuery.data.items.map((i) => ({ ...i, kind: 'release' } as const)))
       }
       if (kind === 'artist' || kind === undefined) {
         results.push(...$artistsQuery.data.map((i) => ({ ...i, kind: 'artist' } as const)))

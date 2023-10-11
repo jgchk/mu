@@ -13,13 +13,13 @@
 
   import { withSearchQuery } from '../common'
   import type { PageData } from './$types'
-  import { NUM_TRACKS } from './common'
+  import { NUM_RELEASES, NUM_TRACKS } from './common'
 
   export let data: PageData
 
   const trpc = getContextClient()
   $: tracksQuery = trpc.tracks.getAll.query({ title: data.searchQuery, limit: NUM_TRACKS })
-  $: releasesQuery = trpc.releases.getAll.query({ title: data.searchQuery })
+  $: releasesQuery = trpc.releases.getAll.query({ title: data.searchQuery, limit: NUM_RELEASES })
   $: artistsQuery = trpc.artists.getAll.query({ name: data.searchQuery })
   $: playlistsQuery = trpc.playlists.getAll.query({ name: data.searchQuery })
 
@@ -55,7 +55,7 @@
 <h2 class="mb-4 mt-12 text-2xl font-bold">Releases</h2>
 {#if $releasesQuery.data}
   <FlowGrid>
-    {#each $releasesQuery.data as release (release.id)}
+    {#each $releasesQuery.data.items as release (release.id)}
       <div class="w-full">
         <a href="/library/releases/{release.id}" class="w-full">
           <CoverArt
@@ -79,6 +79,13 @@
       </div>
     {/each}
   </FlowGrid>
+  {#if $releasesQuery.data.nextCursor !== undefined}
+    <LinkButton
+      class="mt-2"
+      kind="outline"
+      href={withSearchQuery('/library/releases', data.searchQuery)}>See All</LinkButton
+    >
+  {/if}
 {:else if $releasesQuery.error}
   <div>{$releasesQuery.error.message}</div>
 {:else}

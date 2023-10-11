@@ -29,7 +29,7 @@ import { ensureDir } from 'utils/node'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
-import { BoolLangString, injectDescendants } from '../utils'
+import { BoolLangString, Pagination, injectDescendants } from '../utils'
 
 export type ReleasesFilters = z.infer<typeof ReleasesFilters>
 export const ReleasesFilters = z.object({
@@ -38,7 +38,13 @@ export const ReleasesFilters = z.object({
   tags: BoolLangString.optional(),
 })
 
-const getAllReleases = (db: Database, input: ReleasesFilters) => {
+export type ReleasesOptions = z.infer<typeof ReleasesOptions>
+export const ReleasesOptions = ReleasesFilters.and(Pagination)
+
+const getAllReleases = (
+  db: Database,
+  input: ReleasesFilters & { skip?: number; limit?: number }
+) => {
   const where = []
 
   if (input.title) {
@@ -64,11 +70,18 @@ const getAllReleases = (db: Database, input: ReleasesFilters) => {
     }
   }
 
-  const query = db.db
+  let query = db.db
     .select()
     .from(releases)
     .where(and(...where))
     .orderBy(asc(releases.title))
+
+  if (input.skip !== undefined) {
+    query = query.offset(input.skip)
+  }
+  if (input.limit !== undefined) {
+    query = query.limit(input.limit)
+  }
 
   const results = query.all().map((release) => {
     const tracks_ = db.db
@@ -95,9 +108,20 @@ const getAllReleases = (db: Database, input: ReleasesFilters) => {
 }
 
 export const releasesRouter = router({
-  getAll: protectedProcedure
-    .input(ReleasesFilters)
-    .query(({ input, ctx }) => getAllReleases(ctx.sys().db, input)),
+  getAll: protectedProcedure.input(ReleasesOptions).query(({ input, ctx }) => {
+    const skip = input.cursor ?? 0
+    const limit = input.limit ?? 50
+
+    const items = getAllReleases(ctx.sys().db, { ...input, skip, limit: limit + 1 })
+
+    let nextCursor: number | undefined = undefined
+    if (items.length > limit) {
+      items.pop()
+      nextCursor = skip + limit
+    }
+
+    return { items, nextCursor }
+  }),
 
   getByArtistId: protectedProcedure
     .input(z.object({ artistId: z.number() }))
