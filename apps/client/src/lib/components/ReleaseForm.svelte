@@ -30,6 +30,9 @@
   export let formData: PageServerData['form']
   export let artUrl: string | undefined
 
+  let albumArt: AlbumArt = artUrl === undefined ? { kind: 'none' } : { kind: 'default' }
+  let dragDisabled = true
+
   const dispatch = createEventDispatcher<{
     success: { data: StoreType<typeof form> }
     failure: { reason: unknown }
@@ -37,6 +40,9 @@
   }>()
 
   const toast = getContextToast()
+  const dialogs = getContextDialogs()
+  const trpc = getContextClient()
+
   const { form, enhance, errors, constraints, delayed } = superForm(formData, {
     dataType: 'json',
     onSubmit: (event) => {
@@ -61,7 +67,7 @@
     },
   })
 
-  let albumArt: AlbumArt = artUrl === undefined ? { kind: 'none' } : { kind: 'default' }
+  // --- Utility Functions ---
 
   const removeIfUnused = (artist: StoreType<typeof form>['album']['artists'][number]) => {
     if (artist?.action !== 'create') return
@@ -81,7 +87,27 @@
     }
   }
 
-  let dragDisabled = true
+  const updateAlbumArtist = (
+    newArtist: StoreType<typeof form>['album']['artists'][number],
+    artistIndex: number
+  ) => {
+    const oldArtist = $form.album.artists[artistIndex]
+    $form.album.artists[artistIndex] = newArtist
+    removeIfUnused(oldArtist)
+  }
+
+  const updateTrackArtist = (
+    newArtist: StoreType<typeof form>['album']['artists'][number],
+    trackIndex: number,
+    artistIndex: number
+  ) => {
+    const oldArtist = $form.tracks[trackIndex].artists[artistIndex]
+    $form.tracks[trackIndex].artists[artistIndex] = newArtist
+    removeIfUnused(oldArtist)
+  }
+
+  // --- Event Handlers ---
+
   const handleConsider = (
     e: CustomEvent<DndEvent<PageServerData['form']['data']['tracks'][number]>> & {
       target: EventTarget & HTMLDivElement
@@ -129,8 +155,6 @@
     }
   }
 
-  const dialogs = getContextDialogs()
-  const trpc = getContextClient()
   const handleSearchCoverArt = async () => {
     const queryParts = []
     if ($form.album.artists.length > 0) {
@@ -197,44 +221,38 @@
         {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
 
         <div class="space-y-1">
-          {#each $form.album.artists as artist, i}
+          {#each $form.album.artists as artist, artistIndex}
             <div class="flex gap-1">
               <ArtistSelect
                 value={artist}
                 createArtists={$form.createArtists}
                 on:create={({ detail }) => {
-                  const oldArtist = artist
-
                   const id = $form.createArtists.size + 1
                   $form.createArtists.set(id, detail)
-
-                  $form.album.artists[i] = {
-                    action: 'create',
-                    id,
-                  }
-
-                  removeIfUnused(oldArtist)
+                  updateAlbumArtist(
+                    {
+                      action: 'create',
+                      id,
+                    },
+                    artistIndex
+                  )
                 }}
-                on:created={({ detail }) => {
-                  const oldArtist = artist
-
-                  $form.album.artists[i] = {
-                    action: 'create',
-                    id: detail,
-                  }
-
-                  removeIfUnused(oldArtist)
-                }}
-                on:connect={({ detail }) => {
-                  const oldArtist = artist
-
-                  $form.album.artists[i] = {
-                    action: 'connect',
-                    id: detail,
-                  }
-
-                  removeIfUnused(oldArtist)
-                }}
+                on:created={({ detail }) =>
+                  updateAlbumArtist(
+                    {
+                      action: 'create',
+                      id: detail,
+                    },
+                    artistIndex
+                  )}
+                on:connect={({ detail }) =>
+                  updateAlbumArtist(
+                    {
+                      action: 'connect',
+                      id: detail,
+                    },
+                    artistIndex
+                  )}
               />
               <IconButton
                 tooltip="Remove"
@@ -266,7 +284,7 @@
       on:consider={handleConsider}
       on:finalize={handleFinalize}
     >
-      {#each $form.tracks as track, i (track.id)}
+      {#each $form.tracks as track, trackIndex (track.id)}
         <div
           class="group/track flex items-center rounded bg-gray-900 p-4 pl-0"
           animate:flip={{ duration: dnd.defaults.flipDurationMs }}
@@ -283,59 +301,50 @@
             on:touchstart={startDrag}
             on:keydown={handleKeyDown}
           >
-            <span class="group-hover/track:hidden">{i + 1}</span>
+            <span class="group-hover/track:hidden">{trackIndex + 1}</span>
             <SelectorIcon class="hidden h-6 group-hover/track:block" />
           </button>
           <div class="flex-1 space-y-1">
             <Input
               bind:value={track.title}
-              errors={$errors.tracks?.[i]?.title}
+              errors={$errors.tracks?.[trackIndex]?.title}
               {...$constraints.tracks?.title}
             />
-            {#if $errors.tracks?.[i]?.title}
+            {#if $errors.tracks?.[trackIndex]?.title}
               <span class="text-error-500">
-                {$errors.tracks?.[i]?.title}
+                {$errors.tracks?.[trackIndex]?.title}
               </span>
             {/if}
 
             <div class="space-y-1">
-              {#each track.artists as artist, j}
+              {#each track.artists as artist, artistIndex}
                 <div class="flex gap-1">
                   <ArtistSelect
                     value={artist}
                     createArtists={$form.createArtists}
                     on:create={({ detail }) => {
-                      const oldArtist = artist
-
                       const id = $form.createArtists.size + 1
                       $form.createArtists.set(id, detail)
-                      $form.tracks[i].artists[j] = {
-                        action: 'create',
-                        id,
-                      }
-
-                      removeIfUnused(oldArtist)
+                      updateTrackArtist({ action: 'create', id }, trackIndex, artistIndex)
                     }}
-                    on:created={({ detail }) => {
-                      const oldArtist = artist
-
-                      $form.tracks[i].artists[j] = {
-                        action: 'create',
-                        id: detail,
-                      }
-
-                      removeIfUnused(oldArtist)
-                    }}
-                    on:connect={({ detail }) => {
-                      const oldArtist = artist
-
-                      $form.tracks[i].artists[j] = {
-                        action: 'connect',
-                        id: detail,
-                      }
-
-                      removeIfUnused(oldArtist)
-                    }}
+                    on:created={({ detail }) =>
+                      updateTrackArtist(
+                        {
+                          action: 'create',
+                          id: detail,
+                        },
+                        trackIndex,
+                        artistIndex
+                      )}
+                    on:connect={({ detail }) =>
+                      updateTrackArtist(
+                        {
+                          action: 'connect',
+                          id: detail,
+                        },
+                        trackIndex,
+                        artistIndex
+                      )}
                   />
                   <IconButton
                     tooltip="Remove"
