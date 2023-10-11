@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { distance } from 'fastest-levenshtein'
+  import type { Timeout } from 'utils'
 
   import SearchBar from '$lib/components/SearchBar.svelte'
   import { getContextClient } from '$lib/trpc'
@@ -79,19 +80,40 @@
 
   let kind: SearchResultType['kind'] | undefined = undefined
   const kinds: SearchResultType['kind'][] = ['track', 'release', 'artist', 'playlist', 'tag']
+
+  let timeout: Timeout | null = null
+
+  const updateSearchQuery = (value: string) => {
+    if (value.length > 0) {
+      void goto(`/search?q=${value}`)
+    } else {
+      void goto('/search')
+    }
+  }
+
+  const handleInput = (value: string) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    timeout = setTimeout(() => updateSearchQuery(value), 250)
+  }
+
+  const handleSearch = (value: string) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    updateSearchQuery(value)
+  }
 </script>
 
 <SearchBar
   layer={800}
   autofocus
   initialQuery={data.searchQuery}
-  on:input={(e) => {
-    if (e.detail.length > 0) {
-      void goto(`/search?q=${e.detail}`)
-    } else {
-      void goto('/search')
-    }
-  }}
+  on:input={(e) => handleInput(e.detail)}
+  on:search={(e) => handleSearch(e.detail)}
 />
 
 <div class="my-2 flex gap-1 overflow-x-auto">
