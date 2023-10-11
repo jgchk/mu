@@ -197,33 +197,43 @@
         {#if $errors.album?.title}<span class="text-error-500">{$errors.album.title}</span>{/if}
 
         <div class="space-y-1">
-          {#each $form.album.artists as artist}
+          {#each $form.album.artists as artist, i}
             <div class="flex gap-1">
               <ArtistSelect
                 value={artist}
                 createArtists={$form.createArtists}
                 on:create={({ detail }) => {
+                  const oldArtist = artist
+
                   const id = $form.createArtists.size + 1
                   $form.createArtists.set(id, detail)
-                  artist = {
+
+                  $form.album.artists[i] = {
                     action: 'create',
                     id,
                   }
-                  removeIfUnused(artist)
+
+                  removeIfUnused(oldArtist)
                 }}
                 on:created={({ detail }) => {
-                  artist = {
+                  const oldArtist = artist
+
+                  $form.album.artists[i] = {
                     action: 'create',
                     id: detail,
                   }
-                  removeIfUnused(artist)
+
+                  removeIfUnused(oldArtist)
                 }}
                 on:connect={({ detail }) => {
-                  artist = {
+                  const oldArtist = artist
+
+                  $form.album.artists[i] = {
                     action: 'connect',
                     id: detail,
                   }
-                  removeIfUnused(artist)
+
+                  removeIfUnused(oldArtist)
                 }}
               />
               <IconButton
@@ -289,33 +299,42 @@
             {/if}
 
             <div class="space-y-1">
-              {#each track.artists as artist}
+              {#each track.artists as artist, j}
                 <div class="flex gap-1">
                   <ArtistSelect
                     value={artist}
                     createArtists={$form.createArtists}
                     on:create={({ detail }) => {
+                      const oldArtist = artist
+
                       const id = $form.createArtists.size + 1
                       $form.createArtists.set(id, detail)
-                      artist = {
+                      $form.tracks[i].artists[j] = {
                         action: 'create',
                         id,
                       }
-                      removeIfUnused(artist)
+
+                      removeIfUnused(oldArtist)
                     }}
                     on:created={({ detail }) => {
-                      artist = {
+                      const oldArtist = artist
+
+                      $form.tracks[i].artists[j] = {
                         action: 'create',
                         id: detail,
                       }
-                      removeIfUnused(artist)
+
+                      removeIfUnused(oldArtist)
                     }}
                     on:connect={({ detail }) => {
-                      artist = {
+                      const oldArtist = artist
+
+                      $form.tracks[i].artists[j] = {
                         action: 'connect',
                         id: detail,
                       }
-                      removeIfUnused(artist)
+
+                      removeIfUnused(oldArtist)
                     }}
                   />
                   <IconButton
