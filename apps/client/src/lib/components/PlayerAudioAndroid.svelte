@@ -16,14 +16,14 @@
         if (!$player.track || $player.track.id !== e.detail.trackId) {
           $player.track = {
             id: e.detail.trackId,
-            currentTime: e.detail.progress / 1000,
-            duration: e.detail.duration,
+            currentTimeMs: e.detail.progress / 1000,
+            durationMs: e.detail.duration,
             startTime: new Date(),
           }
         } else {
           $player.track.id = e.detail.trackId
-          $player.track.currentTime = e.detail.progress / 1000
-          $player.track.duration = e.detail.duration
+          $player.track.currentTimeMs = e.detail.progress / 1000
+          $player.track.durationMs = e.detail.duration
         }
       }
     }

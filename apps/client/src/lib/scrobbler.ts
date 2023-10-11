@@ -1,37 +1,4 @@
-import { derived } from 'svelte/store'
-
 import type { PlayerState } from './now-playing'
-import { player } from './now-playing'
-
-export const createListenedDuration = () => {
-  let startTime: Date | undefined = undefined
-  let previousTime = 0
-  let listenedDuration = 0
-
-  return derived(player, (data) => {
-    if (!data.track) return 0
-
-    if (data.track.startTime !== startTime) {
-      // reset
-      previousTime = 0
-      listenedDuration = 0
-      startTime = data.track.startTime
-    }
-
-    if (data.track.currentTime === undefined) return 0
-
-    const timeDelta = data.track.currentTime - previousTime
-
-    // only count listened time if the user didn't manually skip
-    if (timeDelta > 0 && timeDelta < 2) {
-      listenedDuration += timeDelta
-    }
-
-    previousTime = data.track.currentTime
-
-    return listenedDuration
-  })
-}
 
 export const createNowPlayer = (
   onNowPlaying: (data: NonNullable<PlayerState['track']>) => void
@@ -39,64 +6,59 @@ export const createNowPlayer = (
   let startTime: Date | undefined = undefined
   let nowPlayingSent = false
 
-  const unsubscribe = player.subscribe((data) => {
-    if (!data.track) return
+  return {
+    update: (data: PlayerState['track']) => {
+      // console.log('UPDATE NOW PLAYER', data)
+      if (!data) {
+        return
+      }
 
-    if (data.track.startTime !== startTime) {
-      nowPlayingSent = false
-      startTime = data.track.startTime
-    }
+      if (data.startTime !== startTime) {
+        startTime = data.startTime
+        nowPlayingSent = false
+      }
 
-    if (!nowPlayingSent) {
-      // now playing
-      onNowPlaying(data.track)
-      nowPlayingSent = true
-    }
-  })
-
-  return unsubscribe
+      if (!nowPlayingSent) {
+        nowPlayingSent = true
+        onNowPlaying({ id: data.id, startTime: data.startTime })
+      }
+    },
+  }
 }
 
 export const createScrobbler = (
   onScrobble: (data: Pick<NonNullable<PlayerState['track']>, 'id' | 'startTime'>) => void
 ) => {
-  const startTime: Date | undefined = undefined
+  let startTime: Date | undefined = undefined
   let scrobbled = false
-  const listenedDuration = createListenedDuration()
 
-  const combined = derived([player, listenedDuration], ([np, ld]) => ({
-    id: np.track?.id,
-    startTime: np.track?.startTime,
-    duration: np.track?.duration,
-    listenedDuration: ld,
-  }))
+  return {
+    update: (data: PlayerState['track']) => {
+      if (!data) {
+        return
+      }
 
-  const unsubscribe = combined.subscribe((data) => {
-    if (data.startTime !== startTime) {
-      scrobbled = false
-    }
+      if (data.startTime !== startTime) {
+        startTime = data.startTime
+        scrobbled = false
+      }
 
-    if (
-      !scrobbled &&
-      data.duration !== undefined &&
-      data.id !== undefined &&
-      data.startTime !== undefined &&
-      shouldScrobble(data.duration, data.listenedDuration)
-    ) {
-      // scrobble
-      onScrobble({
-        id: data.id,
-        startTime: data.startTime,
-      })
-      scrobbled = true
-    }
-  })
+      console.log('SCROBBLER', data.durationMs, data.currentTimeMs ?? 0)
 
-  return unsubscribe
+      if (
+        !scrobbled &&
+        data.durationMs !== undefined &&
+        shouldScrobble(data.durationMs, data.currentTimeMs ?? 0)
+      ) {
+        scrobbled = true
+        onScrobble({ id: data.id, startTime: data.startTime })
+      }
+    },
+  }
 }
 
-function shouldScrobble(duration: number, listenedDuration: number) {
-  const halfDuration = duration / 2
-  const minimumPlayTime = Math.min(halfDuration, 240)
-  return listenedDuration >= minimumPlayTime
+function shouldScrobble(durationMs: number, listenedDurationMs: number) {
+  const halfDuration = durationMs / 2
+  const minimumPlayTime = Math.min(halfDuration, 4 * 60 * 1000)
+  return listenedDurationMs >= minimumPlayTime
 }
