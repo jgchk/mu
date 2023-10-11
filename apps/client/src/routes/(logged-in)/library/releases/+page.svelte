@@ -1,6 +1,8 @@
 <script lang="ts">
   import { makeImageUrl } from 'mutils'
+  import { inview } from 'svelte-inview'
 
+  import Button from '$lib/atoms/Button.svelte'
   import CommaList from '$lib/atoms/CommaList.svelte'
   import FlowGrid from '$lib/atoms/FlowGrid.svelte'
   import CoverArt from '$lib/components/CoverArt.svelte'
@@ -12,12 +14,22 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  const releasesQuery = trpc.releases.getAll.query({ title: data.searchQuery })
+  $: releasesQuery = trpc.releases.getAll.infiniteQuery(data.query, {
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+
+  let inView = false
+  $: {
+    if (inView && $releasesQuery.hasNextPage && !$releasesQuery.isFetchingNextPage) {
+      void $releasesQuery.fetchNextPage()
+    }
+  }
 </script>
 
 {#if $releasesQuery.data}
+  {@const releases = $releasesQuery.data.pages.flatMap((page) => page.items)}
   <FlowGrid>
-    {#each $releasesQuery.data as release (release.id)}
+    {#each releases as release (release.id)}
       <div class="w-full">
         <a href="/library/releases/{release.id}" class="w-full">
           <CoverArt
@@ -41,6 +53,18 @@
       </div>
     {/each}
   </FlowGrid>
+
+  {#if $releasesQuery.hasNextPage}
+    <div
+      class="m-1 flex justify-center"
+      use:inview
+      on:inview_change={(event) => (inView = event.detail.inView)}
+    >
+      <Button kind="outline" on:click={() => $releasesQuery.fetchNextPage()}>
+        {$releasesQuery.isFetchingNextPage ? 'Loading...' : 'Load More'}
+      </Button>
+    </div>
+  {/if}
 {:else if $releasesQuery.error}
   <div>{$releasesQuery.error.message}</div>
 {:else}
