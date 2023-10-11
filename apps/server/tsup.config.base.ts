@@ -42,6 +42,7 @@ const config: Options = {
     'context',
     'db',
     'downloader',
+    'duckduckgo',
     'env',
     'image-manager',
     'last-fm',
