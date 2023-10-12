@@ -17,7 +17,7 @@ export const load: PageLoad = async ({ parent, url }) => {
 
   const sort = getTracksSort(url)
 
-  const { trpc, searchQuery } = await parent()
+  const { searchQuery } = await parent()
 
   const query: RouterInput['tracks']['getAll'] = {
     title: searchQuery,
@@ -26,8 +26,6 @@ export const load: PageLoad = async ({ parent, url }) => {
     ...(tags !== undefined ? { tags: tags.text } : {}),
     ...(sort !== undefined ? { sort } : {}),
   }
-
-  await trpc.tracks.getAll.prefetchInfiniteQuery(query)
 
   return { favoritesOnly, tags, query }
 }

@@ -21,13 +21,9 @@ export const createSystemStatusQuery = (
         : false,
   })
 
-export const prefetchSystemStatusQuery = (trpc: TRPCClient) => trpc.system.status.prefetchQuery()
-
 export const fetchSystemStatusQuery = (trpc: TRPCClient) => trpc.system.status.fetchQuery()
 
 export const createConfigQuery = (trpc: TRPCClient) => trpc.system.config.query()
-
-export const prefetchConfigQuery = (trpc: TRPCClient) => trpc.system.config.prefetchQuery()
 
 export const fetchConfigQuery = (trpc: TRPCClient) => trpc.system.config.fetchQuery()
 

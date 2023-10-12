@@ -14,9 +14,10 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: releasesQuery = trpc.releases.getAll.infiniteQuery(data.query, {
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-  })
+  $: releasesQuery = trpc.releases.getAll.infiniteQuery(
+    { title: data.searchQuery, limit: 100 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor }
+  )
 
   let inView = false
   $: {

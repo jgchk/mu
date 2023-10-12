@@ -6,3 +6,5 @@ export const load: LayoutLoad = ({ fetch }) => {
   const trpc = createClient(fetch)
   return { trpc }
 }
+
+export const ssr = false
