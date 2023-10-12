@@ -36,12 +36,12 @@
   const toggleQueue = () => dispatch('toggleQueue')
 </script>
 
-<div class="relative flex items-center gap-4 rounded bg-black p-2 pb-[11px] md:pb-2">
+<div class="relative flex items-center justify-between rounded bg-black p-2 pb-[11px] md:pb-2">
   <PlayerCurrentTrack trackId={track.id} />
 
   <PlayerControls {track} />
 
-  <div class="hidden items-center justify-end gap-1 md:flex">
+  <div class="hidden w-[30%] min-w-[180px] items-center justify-end gap-1 md:flex">
     <IconButton
       kind="text"
       tooltip="Queue"

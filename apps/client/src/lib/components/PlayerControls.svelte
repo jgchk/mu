@@ -27,59 +27,57 @@
   }
 </script>
 
-<div class="ml-auto flex justify-center md:ml-[unset] md:flex-1 xl:flex-[4]">
-  <div class="w-full max-w-[722px]">
-    <div class="flex w-full items-center justify-center gap-3.5">
-      <button
-        type="button"
-        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
-        use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => player.previousTrack()}
-      >
-        <RewindIcon class="h-6 w-6" />
-      </button>
-      <button
-        type="button"
-        class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
-        on:click={togglePlaying}
-        use:tooltip={{
-          content: $player.paused ? 'Play' : 'Pause',
-          delay: [2000, TooltipDefaults.delay],
-        }}
-      >
-        {#if $player.paused}
-          <PlayIcon />
-        {:else}
-          <PauseIcon />
-        {/if}
-      </button>
-      <button
-        type="button"
-        class="sm:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
-        use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
-        on:click={() => player.nextTrack()}
-      >
-        <FastForwardIcon class="h-6 w-6" />
-      </button>
-    </div>
-    <div
-      class="absolute inset-x-2 -bottom-2 flex items-center gap-2 md:relative md:inset-x-[unset] md:bottom-[unset]"
+<div class="w-fit max-w-[722px] md:w-[40%]">
+  <div class="flex w-full items-center justify-center gap-3.5">
+    <button
+      type="button"
+      class="md:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
+      use:tooltip={{ content: 'Previous', delay: [2000, TooltipDefaults.delay] }}
+      on:click={() => player.previousTrack()}
     >
-      <div class="hidden text-right text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
-        {formattedCurrentTime}
-      </div>
-      <div class="flex-1">
-        <Range
-          bind:value={track.currentTimeMs}
-          min={0}
-          max={durationMs ?? 1000}
-          height="h-[3px]"
-          on:change={(e) => player.seek(e.detail)}
-        />
-      </div>
-      <div class="hidden text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
-        {formattedDuration}
-      </div>
+      <RewindIcon class="h-6 w-6" />
+    </button>
+    <button
+      type="button"
+      class="flex h-10 w-10 items-center justify-center transition-transform duration-[50] hover:scale-[1.06] hover:transform active:scale-[.99] active:transform active:transition-none"
+      on:click={togglePlaying}
+      use:tooltip={{
+        content: $player.paused ? 'Play' : 'Pause',
+        delay: [2000, TooltipDefaults.delay],
+      }}
+    >
+      {#if $player.paused}
+        <PlayIcon />
+      {:else}
+        <PauseIcon />
+      {/if}
+    </button>
+    <button
+      type="button"
+      class="md:center hidden h-8 w-8 text-gray-400 transition hover:text-white"
+      use:tooltip={{ content: 'Next', delay: [2000, TooltipDefaults.delay] }}
+      on:click={() => player.nextTrack()}
+    >
+      <FastForwardIcon class="h-6 w-6" />
+    </button>
+  </div>
+  <div
+    class="absolute inset-x-2 -bottom-2 flex items-center gap-2 md:relative md:inset-x-[unset] md:bottom-[unset]"
+  >
+    <div class="hidden text-right text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
+      {formattedCurrentTime}
+    </div>
+    <div class="flex-1">
+      <Range
+        bind:value={track.currentTimeMs}
+        min={0}
+        max={durationMs ?? 1000}
+        height="h-[3px]"
+        on:change={(e) => player.seek(e.detail)}
+      />
+    </div>
+    <div class="hidden text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
+      {formattedDuration}
     </div>
   </div>
 </div>

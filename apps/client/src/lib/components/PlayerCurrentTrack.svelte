@@ -17,7 +17,7 @@
   $: nowPlayingTrack = createTrackQuery(trpc, trackId)
 </script>
 
-<div class="flex min-w-[180px] flex-1 items-center gap-4 lg:flex-[3]">
+<div class="flex min-w-[180px] flex-1 items-center gap-4 md:w-[30%] md:flex-none">
   {#if $nowPlayingTrack.data}
     {@const track = $nowPlayingTrack.data}
     <a href="/library/releases/{track.releaseId}" class="w-10 shrink-0 md:w-16">
