@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { inview } from 'svelte-inview'
 
   import { cn, tw } from '$lib/utils/classes'
 
@@ -11,6 +12,7 @@
   export let hoverable = true
   export let selected = false
 
+  let inView = false
   let loaded = false
   let img: HTMLImageElement | undefined
 
@@ -30,8 +32,22 @@
   const dispatch = createEventDispatcher<{ error: undefined }>()
 </script>
 
-<div class={cn('relative w-full pt-[100%] shadow', rounding)}>
-  {#if src !== undefined}
+<div
+  use:inview={{ rootMargin: '50px', unobserveOnEnter: true }}
+  on:inview_change={(event) => (inView = event.detail.inView)}
+  class={cn('relative w-full pt-[100%] shadow', rounding)}
+>
+  {#if src === undefined}
+    <div
+      class={tw(
+        'center absolute left-0 top-0 h-full w-full bg-gray-800 italic text-gray-600',
+        rounding,
+        placeholderClass
+      )}
+    >
+      No cover art
+    </div>
+  {:else if inView}
     <img
       class={cn(
         'absolute left-0 top-0 h-full w-full object-cover transition',
@@ -51,19 +67,10 @@
         rounding
       )}
     />
-    <slot name="insert" />
-  {:else}
-    <div
-      class={tw(
-        'center absolute left-0 top-0 h-full w-full bg-gray-800 italic text-gray-600',
-        rounding,
-        placeholderClass
-      )}
-    >
-      No cover art
-    </div>
-    <slot name="insert" />
   {/if}
+
+  <slot name="insert" />
+
   <div
     class={tw(
       'center group absolute left-0 top-0 h-full w-full border border-white border-opacity-20 transition active:bg-opacity-80',
