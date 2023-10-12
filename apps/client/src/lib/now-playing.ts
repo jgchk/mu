@@ -7,8 +7,8 @@ export type PlayerState = {
   track?: {
     id: number
     startTime: Date
-    currentTime?: number
-    duration?: number
+    currentTimeMs?: number
+    durationMs?: number
   }
 
   paused: boolean
@@ -74,7 +74,7 @@ const createPlayerController = (): Writable<PlayerState> & {
             track: {
               id: nextTrackId,
               startTime: new Date(),
-              currentTime: 0,
+              currentTimeMs: 0,
             },
             paused: false,
             previousTracks: [...data.previousTracks, ...(data.track ? [data.track.id] : [])],
@@ -98,7 +98,7 @@ const createPlayerController = (): Writable<PlayerState> & {
             track: {
               id: previousTrackId,
               startTime: new Date(),
-              currentTime: 0,
+              currentTimeMs: 0,
             },
             paused: false,
             previousTracks: data.previousTracks.slice(0, data.previousTracks.length - 1),
@@ -112,7 +112,7 @@ const createPlayerController = (): Writable<PlayerState> & {
             track: {
               ...data.track,
               startTime: new Date(),
-              currentTime: 0,
+              currentTimeMs: 0,
             },
             paused: false,
           }

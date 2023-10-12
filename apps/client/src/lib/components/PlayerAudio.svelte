@@ -25,7 +25,7 @@
     }
 
     if ($player.track) {
-      $player.track.currentTime = audio.currentTime
+      $player.track.currentTimeMs = audio.currentTime * 1000
     }
   }
 
@@ -44,7 +44,7 @@
   on:durationchange={(e) => {
     const durationSec = e.currentTarget.duration
     if (durationSec !== Infinity && $player.track) {
-      $player.track.duration = durationSec * 1000
+      $player.track.durationMs = durationSec * 1000
     }
   }}
 />
@@ -55,5 +55,5 @@
   on:previousTrack={(e) => playTrack(e.detail.trackId)}
   on:play={() => void audio.play()}
   on:pause={() => audio.pause()}
-  on:seek={(e) => (audio.currentTime = e.detail.time)}
+  on:seek={(e) => (audio.currentTime = e.detail.time / 1000)}
 />

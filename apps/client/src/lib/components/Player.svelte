@@ -1,6 +1,6 @@
 <script lang="ts">
   import { makeImageUrl } from 'mutils'
-  import { onDestroy, onMount } from 'svelte'
+  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte/internal'
   import { formatMilliseconds, ifDefined, ifNotNull } from 'utils'
 
@@ -35,10 +35,10 @@
   $: trackId = track.id
   $: nowPlayingTrack = createTrackQuery(trpc, trackId)
 
-  $: durationMs = $player.track?.duration ?? $nowPlayingTrack.data?.duration
+  $: durationMs = $player.track?.durationMs ?? $nowPlayingTrack.data?.duration
   $: formattedDuration = formatMilliseconds(durationMs ?? 0)
 
-  $: formattedCurrentTime = formatMilliseconds((track.currentTime || 0) * 1000)
+  $: formattedCurrentTime = formatMilliseconds(track.currentTimeMs || 0)
   $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
 
   const volume = createLocalStorageJson('volume', 1)
@@ -58,16 +58,11 @@
   const scrobbleMutation = createScrobbleMutation(trpc)
   const { mutate: scrobble } = $scrobbleMutation
 
-  onMount(() => {
-    const unsubscribeScrobbler = createScrobbler((data) =>
-      scrobble({ id: data.id, timestamp: data.startTime })
-    )
-    const unsubscribeNowPlayer = createNowPlayer((data) => updateNowPlaying({ id: data.id }))
-    return () => {
-      unsubscribeScrobbler()
-      unsubscribeNowPlayer()
-    }
-  })
+  const scrobbler = createScrobbler((data) => scrobble({ id: data.id, timestamp: data.startTime }))
+  $: scrobbler.update($player.track)
+
+  const nowPlayer = createNowPlayer((data) => updateNowPlaying({ id: data.id }))
+  $: nowPlayer.update($player.track)
 
   export let queueOpen: boolean
   const dispatch = createEventDispatcher<{ toggleQueue: undefined }>()
@@ -115,7 +110,7 @@
 
   $: {
     const duration = ifDefined(durationMs, (duration) => duration / 1000)
-    const position = $player.track?.currentTime
+    const position = ifDefined($player.track?.currentTimeMs, (position) => position / 1000)
     if (duration !== undefined && position !== undefined) {
       navigator.mediaSession?.setPositionState({
         duration,
@@ -209,13 +204,11 @@
         </div>
         <div class="flex-1">
           <Range
-            bind:value={track.currentTime}
+            bind:value={track.currentTimeMs}
             min={0}
-            max={(durationMs ?? 1000) / 1000}
+            max={durationMs ?? 1000}
             height="h-[3px]"
-            on:change={(e) => {
-              player.seek(e.detail)
-            }}
+            on:change={(e) => player.seek(e.detail)}
           />
         </div>
         <div class="hidden text-xs text-gray-400 md:block" style:min-width={timeMinWidth}>
