@@ -12,6 +12,7 @@
     getTracksSort,
   } from '$lib/tracks-sort'
   import { cn } from '$lib/utils/classes'
+  import { useBreakpoint } from '$lib/utils/media-query'
 
   import type { Sort } from './TrackList'
 
@@ -35,6 +36,8 @@
         }
       })
     )
+
+  const isMedium = useBreakpoint('md')
 </script>
 
 <div
@@ -103,7 +106,7 @@
       >{' '}{/if}Length</a
   >
 
-  <div style:width="{numButtons * 32}px">
+  <div style:width="{($isMedium ? numButtons : 2) * 32}px">
     {#if favorites !== undefined}
       <a
         class="center block h-full w-8 text-gray-400 hover:text-white"
