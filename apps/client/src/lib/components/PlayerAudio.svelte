@@ -6,6 +6,7 @@
 
   import PlayerEvents from './PlayerEvents.svelte'
 
+  export let volume: number
   let audio: HTMLAudioElement
 
   const playTrack = (trackId: number) => {
@@ -38,7 +39,7 @@
   class="hidden"
   bind:this={audio}
   bind:paused={$player.paused}
-  bind:volume={$player.volume}
+  bind:volume
   on:ended={() => player.nextTrack()}
   on:timeupdate={() => handleTimeUpdate()}
   on:durationchange={(e) => {

@@ -12,7 +12,6 @@ export type PlayerState = {
   }
 
   paused: boolean
-  volume?: number
 
   previousTracks: number[]
   nextTracks: number[]

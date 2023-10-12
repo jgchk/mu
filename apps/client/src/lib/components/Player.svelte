@@ -17,7 +17,6 @@
   import RewindIcon from '$lib/icons/RewindIcon.svelte'
   import VolumeOffIcon from '$lib/icons/VolumeOffIcon.svelte'
   import VolumeOnIcon from '$lib/icons/VolumeOnIcon.svelte'
-  import { createLocalStorageJson } from '$lib/local-storage'
   import { player } from '$lib/now-playing'
   import type { PlayerState } from '$lib/now-playing'
   import { createNowPlayer, createScrobbler } from '$lib/scrobbler'
@@ -30,6 +29,7 @@
   import TrackOptions from './TrackOptions.svelte'
 
   export let track: NonNullable<PlayerState['track']>
+  export let volume: number
 
   const trpc = getContextClient()
   $: trackId = track.id
@@ -41,7 +41,6 @@
   $: formattedCurrentTime = formatMilliseconds(track.currentTimeMs || 0)
   $: timeMinWidth = `${Math.max(formattedCurrentTime.length, formattedDuration.length) * 7}px`
 
-  const volume = createLocalStorageJson('volume', 1)
   let previousVolume = 1
 
   const togglePlaying = () => {
@@ -231,17 +230,17 @@
     <IconButton
       kind="text"
       layer="black"
-      tooltip={$volume === 0 ? 'Unmute' : 'Mute'}
+      tooltip={volume === 0 ? 'Unmute' : 'Mute'}
       on:click={() => {
-        if ($volume === 0) {
-          $volume = previousVolume
+        if (volume === 0) {
+          volume = previousVolume
         } else {
-          previousVolume = $volume
-          $volume = 0
+          previousVolume = volume
+          volume = 0
         }
       }}
     >
-      {#if $volume === 0}
+      {#if volume === 0}
         <VolumeOffIcon />
       {:else}
         <VolumeOnIcon />
@@ -249,7 +248,7 @@
     </IconButton>
 
     <div class="mr-4 hidden w-[125px] lg:block">
-      <Range bind:value={$volume} min={0} max={1} />
+      <Range bind:value={volume} min={0} max={1} />
     </div>
   </div>
 </div>
