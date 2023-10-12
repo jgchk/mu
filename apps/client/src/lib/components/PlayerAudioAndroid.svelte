@@ -16,13 +16,13 @@
         if (!$player.track || $player.track.id !== e.detail.trackId) {
           $player.track = {
             id: e.detail.trackId,
-            currentTimeMs: e.detail.progress / 1000,
+            currentTimeMs: e.detail.progress,
             durationMs: e.detail.duration,
             startTime: new Date(),
           }
         } else {
           $player.track.id = e.detail.trackId
-          $player.track.currentTimeMs = e.detail.progress / 1000
+          $player.track.currentTimeMs = e.detail.progress
           $player.track.durationMs = e.detail.duration
         }
       }
@@ -47,5 +47,5 @@
   on:previousTrack={() => window.Android?.previousTrack()}
   on:play={() => window.Android?.play()}
   on:pause={() => window.Android?.pause()}
-  on:seek={(e) => window.Android?.seek(e.detail.time * 1000)}
+  on:seek={(e) => window.Android?.seek(e.detail.time)}
 />
