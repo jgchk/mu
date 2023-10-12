@@ -1,6 +1,5 @@
 <script lang="ts">
   import FullscreenLoader from '$lib/components/FullscreenLoader.svelte'
-  import { createPlaylistQuery } from '$lib/services/playlists'
   import { getContextClient } from '$lib/trpc'
 
   import type { PageData } from './$types'
@@ -9,19 +8,18 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: playlistQuery = createPlaylistQuery(trpc, data.id)
+  $: playlistQuery = trpc.playlists.get.query({ id: data.id })
   $: tracksQuery = trpc.tracks.getByPlaylistId.query({
     playlistId: data.id,
     filter: data.tracksQuery,
   })
+
+  $: playlist = $playlistQuery.data
+  $: tracks = $tracksQuery.data
 </script>
 
-{#if $playlistQuery.data && $tracksQuery.data}
-  <Playlist
-    playlist={$playlistQuery.data}
-    tracks={$tracksQuery.data}
-    tracksQuery={data.tracksQuery}
-  />
+{#if playlist && tracks}
+  <Playlist {playlist} {tracks} tracksQuery={data.tracksQuery} />
 {:else if $playlistQuery.error || $tracksQuery.error}
   Error: {$playlistQuery.error?.message || $tracksQuery.error?.message}
 {:else}
