@@ -50,7 +50,10 @@ export const TracksFilters = z.object({
 export type TracksOptions = z.infer<typeof TracksOptions>
 export const TracksOptions = TracksFilters.and(Pagination)
 
-const getAllTracks = (db: Database, input: TracksFilters & { skip?: number; limit?: number }) => {
+export const getAllTracks = (
+  db: Database,
+  input: TracksFilters & { skip?: number; limit?: number }
+) => {
   const where = []
 
   if (input.title) {
