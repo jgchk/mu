@@ -6,6 +6,7 @@
   import DotsVerticalIcon from '$lib/icons/DotsVerticalIcon.svelte'
   import { useBreakpoint } from '$lib/utils/media-query'
 
+  import FavoriteButton from './FavoriteButton.svelte'
   import type { TrackListTrack as TrackListTrackType } from './TrackList'
   import TrackOptionsInline from './TrackOptionsInline.svelte'
   import TrackOptionsMobile from './TrackOptionsMobile.svelte'
@@ -23,9 +24,13 @@
 {#if $isMedium}
   <TrackOptionsInline {track} {showDelete} on:delete={() => dispatch('delete')} />
 {:else}
-  <IconButton {layer} kind="text" tooltip="More options" on:click={() => (showMore = !showMore)}>
-    <DotsVerticalIcon />
-  </IconButton>
+  <div class="flex items-center">
+    <FavoriteButton {track} />
+
+    <IconButton {layer} kind="text" tooltip="More options" on:click={() => (showMore = !showMore)}>
+      <DotsVerticalIcon />
+    </IconButton>
+  </div>
 {/if}
 
 {#if showMore}

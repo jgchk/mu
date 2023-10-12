@@ -10,10 +10,10 @@
   export let data: PageData
 
   const trpc = getContextClient()
-  $: spotifyQuery = createSearchSpotifyQuery(trpc, data.query)
+  $: spotifyQuery = createSearchSpotifyQuery(trpc, data.searchQuery ?? '')
 </script>
 
-{#if data.hasQuery}
+{#if data.searchQuery?.length}
   {#if $spotifyQuery.data}
     <div class="p-4 pt-0">
       <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>

@@ -16,7 +16,7 @@
   import type { FromWorkerMessage, ToWorkerMessage } from './worker-communication'
 
   export let data: PageData
-  let oldQuery = data.query
+  let oldQuery = data.searchQuery ?? ''
 
   let soulseekData: SortedSoulseekResults = []
   let worker: Worker | undefined = undefined
@@ -43,18 +43,18 @@
   }
 
   const trpc = getContextClient()
-  $: soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
+  $: soulseekSubscription = createSearchSoulseekSubscription(trpc, data.searchQuery ?? '')
   onDestroy(() => {
     soulseekSubscription.unsubscribe()
   })
 
   $: {
-    if (oldQuery !== data.query) {
+    if (oldQuery !== (data.searchQuery ?? '')) {
       soulseekData = []
       sendWorkerMessage({ kind: 'reset' })
       soulseekSubscription.unsubscribe()
-      soulseekSubscription = createSearchSoulseekSubscription(trpc, data.query)
-      oldQuery = data.query
+      soulseekSubscription = createSearchSoulseekSubscription(trpc, data.searchQuery ?? '')
+      oldQuery = data.searchQuery ?? ''
     }
   }
 
@@ -86,8 +86,8 @@
   })
 </script>
 
-{#if data.hasQuery}
-  {#key data.query}
+{#if !data.searchQuery?.length}
+  {#key data.searchQuery}
     {#if soulseekData.length === 0}
       <Delay>
         <div class="flex h-full max-h-72 items-center justify-center" in:fade|local>

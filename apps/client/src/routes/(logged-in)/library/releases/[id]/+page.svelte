@@ -1,7 +1,7 @@
 <script lang="ts">
   import { makeImageUrl } from 'mutils'
 
-  import rymLogo from '$lib/assets/sonemic-128.png'
+  import rymLogo from '$lib/assets/sonemic-32.png'
   import Button from '$lib/atoms/Button.svelte'
   import CommaList from '$lib/atoms/CommaList.svelte'
   import LinkButton from '$lib/atoms/LinkButton.svelte'

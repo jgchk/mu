@@ -7,6 +7,3 @@ export const mutateReleaseWithTracksAndArtists = (
 
 export const createReleasesByTagQuery = (trpc: TRPCClient, tagId: number) =>
   trpc.releases.getByTag.query({ tagId })
-
-export const prefetchReleasesByTagQuery = (trpc: TRPCClient, tagId: number) =>
-  trpc.releases.getByTag.prefetchQuery({ tagId })
