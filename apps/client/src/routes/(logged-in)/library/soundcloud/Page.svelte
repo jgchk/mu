@@ -13,7 +13,7 @@
   $: soundcloudQuery = createSearchSoundcloudQuery(trpc, data.searchQuery ?? '')
 </script>
 
-{#if !data.searchQuery?.length}
+{#if data.searchQuery?.length}
   {#if $soundcloudQuery.data}
     <div class="p-4 pt-0">
       <h2 class="mb-4 mt-4 text-2xl font-bold">Albums</h2>

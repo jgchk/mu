@@ -86,7 +86,7 @@
   })
 </script>
 
-{#if !data.searchQuery?.length}
+{#if data.searchQuery?.length}
   {#key data.searchQuery}
     {#if soulseekData.length === 0}
       <Delay>
