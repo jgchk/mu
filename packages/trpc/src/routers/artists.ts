@@ -88,7 +88,7 @@ export const artistsRouter = router({
       .map(({ release }) => release.tracks.find((track) => track.imageId !== null)?.imageId ?? null)
       .filter(isNotNull)
 
-    return { ...artist, imageIds: [...releaseImageIds, ...trackImageIds] }
+    return { ...artist, imageIds: uniq([...releaseImageIds, ...trackImageIds]) }
   }),
 
   getAll: protectedProcedure

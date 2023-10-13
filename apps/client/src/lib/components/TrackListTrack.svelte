@@ -5,6 +5,8 @@
 
   import CommaList from '$lib/atoms/CommaList.svelte'
   import PlayIcon from '$lib/icons/PlayIcon.svelte'
+  import PlayingIcon from '$lib/icons/PlayingIcon.svelte'
+  import { player } from '$lib/now-playing'
   import { cn } from '$lib/utils/classes'
 
   import CoverArt from './CoverArt.svelte'
@@ -21,6 +23,8 @@
     delete: undefined
   }>()
   const play = () => dispatch('play')
+
+  $: isCurrentTrack = $player.track?.id === track.id
 </script>
 
 <div
@@ -33,7 +37,7 @@
   on:dblclick={() => play()}
 >
   {#if showCoverArt}
-    <button type="button" class="relative block h-11 w-11 shadow" on:click={() => play()}>
+    <button type="button" class="relative block h-11 w-11" on:click={() => play()}>
       <CoverArt
         src={track.imageId !== null ? makeImageUrl(track.imageId, { size: 80 }) : undefined}
         alt={track.title}
@@ -46,7 +50,18 @@
     </button>
   {:else}
     <div class="center relative h-11 w-8">
-      <div class="text-gray-400 group-hover/track:opacity-0">{i + 1}</div>
+      <div
+        class={cn(
+          'text-sm font-medium group-hover/track:opacity-0',
+          isCurrentTrack ? 'text-primary-500' : 'text-gray-400'
+        )}
+      >
+        {#if isCurrentTrack && !$player.paused}
+          <PlayingIcon class="h-5 w-5" />
+        {:else}
+          {i + 1}
+        {/if}
+      </div>
       <button
         type="button"
         class="hover:text-primary-500 absolute h-6 w-6 opacity-0 transition-colors group-hover/track:opacity-100"
@@ -58,7 +73,9 @@
   {/if}
 
   <div class="overflow-hidden">
-    <div class="truncate">{track.title || '[untitled]'}</div>
+    <div class={cn('truncate font-medium', isCurrentTrack && 'text-primary-500')}>
+      {track.title || '[untitled]'}
+    </div>
     <div class="truncate text-sm text-gray-400">
       <CommaList items={track.artists} let:item>
         <a class="hover:underline" href="/library/artists/{item.id}">{item.name}</a>

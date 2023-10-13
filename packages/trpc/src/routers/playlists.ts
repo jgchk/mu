@@ -1,9 +1,11 @@
 import { TRPCError } from '@trpc/server'
+import { decode } from 'bool-lang'
 import { and, asc, eq, isNotNull, isNull, playlistTracks, playlists, sql } from 'db'
-import { isNotNull as isNotNullUtil } from 'utils'
+import { isNotNull as isNotNullUtil, uniq } from 'utils'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../trpc'
+import { getAllTracks } from './tracks'
 
 export const playlistsRouter = router({
   new: protectedProcedure
@@ -217,10 +219,18 @@ export const playlistsRouter = router({
         },
       })
 
-      return results.map(({ playlistTracks, ...playlist }) => ({
-        ...playlist,
-        imageIds: playlistTracks.map(({ track }) => track.imageId).filter(isNotNullUtil),
-      }))
+      return results.map(({ playlistTracks: playlistTracks_, ...playlist }) => {
+        let playlistTracks = playlistTracks_.map((pt) => pt.track)
+        if (playlist.filter !== null) {
+          const tagsFilter = decode(playlist.filter)
+          playlistTracks = getAllTracks(ctx.sys().db, { tags: tagsFilter })
+        }
+
+        return {
+          ...playlist,
+          imageIds: uniq(playlistTracks.map((track) => track.imageId).filter(isNotNullUtil)),
+        }
+      })
     }),
 
   getAllHasTrack: protectedProcedure
@@ -265,13 +275,17 @@ export const playlistsRouter = router({
       })
     }
 
-    const { playlistTracks: playlistTracks_, ...playlist } = result
+    const { playlistTracks: playlistTracks__, ...playlist } = result
 
-    const imageIds = playlistTracks_.map(({ track }) => track.imageId).filter(isNotNullUtil)
+    let playlistTracks_ = playlistTracks__.map((pt) => pt.track)
+    if (playlist.filter !== null) {
+      const tagsFilter = decode(playlist.filter)
+      playlistTracks_ = getAllTracks(ctx.sys().db, { tags: tagsFilter })
+    }
 
     return {
       ...playlist,
-      imageIds,
+      imageIds: uniq(playlistTracks_.map((track) => track.imageId).filter(isNotNullUtil)),
     }
   }),
 

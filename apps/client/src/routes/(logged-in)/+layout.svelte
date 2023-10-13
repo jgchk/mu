@@ -11,6 +11,7 @@
   import PlayerAudioAndroid from '$lib/components/PlayerAudioAndroid.svelte'
   import Queue from '$lib/components/Queue.svelte'
   import Dialogs from '$lib/dialogs/Dialogs.svelte'
+  import { createLocalStorageJson } from '$lib/local-storage'
   import { player } from '$lib/now-playing'
   import Toaster from '$lib/toast/Toaster.svelte'
 
@@ -19,6 +20,8 @@
   export let data: LayoutData
 
   let showQueue = false
+
+  const volume = createLocalStorageJson('volume', 1)
 </script>
 
 <div class="flex h-full w-full gap-2 bg-gray-800 p-2 text-white">
@@ -48,6 +51,7 @@
           track={$player.track}
           on:toggleQueue={() => (showQueue = !showQueue)}
           queueOpen={showQueue}
+          bind:volume={$volume}
         />
       </div>
     {/if}
@@ -62,6 +66,6 @@
   {#if window.Android}
     <PlayerAudioAndroid />
   {:else}
-    <PlayerAudio />
+    <PlayerAudio volume={$volume} />
   {/if}
 {/if}
