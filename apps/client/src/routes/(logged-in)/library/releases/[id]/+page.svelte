@@ -27,7 +27,7 @@
   })
   $: tracks = $tracksQuery.data
 
-  $: rymLinksQuery = trpc.releases.getRymLinks.query({ id: data.id })
+  $: rymLinksQuery = trpc.releases.getRymLinks.query({ id: data.id }, { staleTime: Infinity })
 
   const makeQueueData = (tracks: RouterOutput['tracks']['getByReleaseId'], trackIndex: number) => ({
     previousTracks: tracks.slice(0, trackIndex).map((t) => t.id),
