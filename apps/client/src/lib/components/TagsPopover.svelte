@@ -38,7 +38,7 @@
 
   let filter = ''
   let filteredTags: RouterOutput['tags']['getAll'] | undefined = undefined
-  $: filteredTags = ifDefined($tagsQuery.data, (tags) => 
+  $: filteredTags = ifDefined($tagsQuery.data, (tags) =>
     sortObjectsBySimilarity(tags, (t) => t.name, filter)
   )
 
