@@ -134,4 +134,23 @@ export const artistsRouter = router({
         }
       })
     }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const artist = ctx.sys().db.artists.get(input.id)
+      console.log({ artist })
+      if (artist === undefined) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Artist not found',
+        })
+      }
+      const imageId = artist.imageId
+      ctx.sys().db.db.delete(artists).where(eq(artists.id, input.id)).run()
+      if (imageId !== null) {
+        await ctx.sys().img.cleanupImage(imageId)
+      }
+      return true
+    }),
 })

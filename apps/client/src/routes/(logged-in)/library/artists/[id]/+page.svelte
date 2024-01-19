@@ -65,9 +65,10 @@
       {/if}
     </svelte:fragment>
 
-    <Button kind="outline" on:click={() => dialogs.open('edit-artist', { artist })} slot="buttons">
-      Edit
-    </Button>
+    <svelte:fragment slot="buttons">
+      <Button kind="text" on:click={() => dialogs.open('delete-artist', { artist })}>Delete</Button>
+      <Button kind="outline" on:click={() => dialogs.open('edit-artist', { artist })}>Edit</Button>
+    </svelte:fragment>
   </Header>
 
   <h2 class="mb-4 mt-8 text-2xl font-bold">Releases</h2>

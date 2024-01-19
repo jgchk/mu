@@ -23,3 +23,15 @@ export const createEditArtistMutation = (
       ])
     },
   })
+
+export const deleteArtistMutation = (
+  trpc: TRPCClient,
+  options?: RouterOptions['artists']['delete']
+) =>
+  trpc.artists.delete.mutation({
+    ...options,
+    onSuccess: async (...args) => {
+      await trpc.artists.getAll.utils.invalidate()
+      options?.onSuccess?.(...args)
+    },
+  })
