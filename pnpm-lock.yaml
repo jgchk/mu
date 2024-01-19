@@ -145,6 +145,9 @@ importers:
       vite:
         specifier: ^4.3.8
         version: 4.3.8(@types/node@18.16.13)
+      vitest:
+        specifier: ^0.30.1
+        version: 0.30.1
 
   apps/server:
     dependencies:
@@ -2372,7 +2375,6 @@ packages:
     resolution: {integrity: sha512-F0SAmZ8iUtS//m8DmCTA0jlh6TDKkHQyK6xc6V4KDTyZKA9dnvX9/3sRTVQrWm79glUAZbnmmNcdYwUIHWVybw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-    dev: false
 
   /acorn@8.8.2:
     resolution: {integrity: sha512-xjIYgE8HBrkpd/sJqOGNspf8uHG+NOHGOw6a/Urj8taM2EXfdNAH2oFcPeIFfsv3+kz/mJrS5VuMqbNLjCa2vw==}
@@ -6873,7 +6875,7 @@ packages:
       '@vitest/snapshot': 0.30.1
       '@vitest/spy': 0.30.1
       '@vitest/utils': 0.30.1
-      acorn: 8.8.2
+      acorn: 8.10.0
       acorn-walk: 8.2.0
       cac: 6.7.14
       chai: 4.3.7

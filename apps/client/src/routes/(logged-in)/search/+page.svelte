@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { distance } from 'fastest-levenshtein'
   import type { Timeout } from 'utils'
 
   import SearchBar from '$lib/components/SearchBar.svelte'
   import { getContextClient } from '$lib/trpc'
+  import { sortObjectsBySimilarity } from '$lib/utils/string'
 
   import { NUM_RELEASES, NUM_TRACKS } from '../library/all/common'
   import type { PageData } from './$types'
@@ -66,12 +66,7 @@
       }
 
       if (data.searchQuery) {
-        const searchQuery = data.searchQuery.toLowerCase()
-        results = results.sort((a, b) => {
-          const aDist = distance(getTitle(a).toLowerCase(), searchQuery)
-          const bDist = distance(getTitle(b).toLowerCase(), searchQuery)
-          return aDist - bDist
-        })
+        results = sortObjectsBySimilarity(results, getTitle, data.searchQuery.toLowerCase())
       }
     } else {
       results = undefined

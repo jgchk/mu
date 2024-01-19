@@ -15,6 +15,7 @@
   import type { RouterOutput } from '$lib/trpc'
   import { getContextClient } from '$lib/trpc'
   import { tw } from '$lib/utils/classes'
+  import { sortObjectsBySimilarity } from '$lib/utils/string'
 
   export let selectedTagIds: number[]
   $: selectedTagIdsSet = new Set(selectedTagIds)
@@ -37,8 +38,8 @@
 
   let filter = ''
   let filteredTags: RouterOutput['tags']['getAll'] | undefined = undefined
-  $: filteredTags = ifDefined($tagsQuery.data, (tags) =>
-    tags.filter((p) => p.name.toLowerCase().includes(filter.toLowerCase()))
+  $: filteredTags = ifDefined($tagsQuery.data, (tags) => 
+    sortObjectsBySimilarity(tags, (t) => t.name, filter)
   )
 
   $: selectedFilteredTags = ifDefined(filteredTags, (tags) =>

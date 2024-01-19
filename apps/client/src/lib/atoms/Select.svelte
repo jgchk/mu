@@ -7,6 +7,7 @@
   import ChevronDownIcon from '$lib/icons/ChevronDownIcon.svelte'
   import { slide } from '$lib/transitions/slide'
   import { cn, tw } from '$lib/utils/classes'
+  import { sortObjectsBySimilarity } from '$lib/utils/string'
 
   import { getInputGroupErrors } from './InputGroup'
   import type { Option } from './Select'
@@ -39,10 +40,9 @@
     displayFilter = value?.label ?? ''
   }
 
-  $: filteredOptions =
-    virtual || filter.length === 0
-      ? options
-      : options.filter((option) => option.label.toLowerCase().includes(filter.toLowerCase()))
+  $: filteredOptions = virtual
+    ? options
+    : sortObjectsBySimilarity(options, (option) => option.label, filter)
 
   $: lastIndex = hasMore ? filteredOptions.length : filteredOptions.length - 1
 
