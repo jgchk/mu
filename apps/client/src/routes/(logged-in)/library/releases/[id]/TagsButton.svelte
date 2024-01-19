@@ -6,6 +6,7 @@
   import { createPopperAction } from '$lib/actions/popper'
   import IconButton from '$lib/atoms/IconButton.svelte'
   import TagIcon from '$lib/icons/TagIcon.svelte'
+  import TagOutlineIcon from '$lib/icons/TagOutlineIcon.svelte'
   import { createReleaseTagsQuery } from '$lib/services/tags'
   import { getContextClient } from '$lib/trpc'
   import { cn } from '$lib/utils/classes'
@@ -31,7 +32,11 @@
     tooltip="Edit tags"
     on:click={() => (showPopover = !showPopover)}
   >
-    <TagIcon />
+    {#if selectedTagIds.length > 0}
+      <TagIcon />
+    {:else}
+      <TagOutlineIcon />
+    {/if}
   </IconButton>
 
   {#if showPopover}
