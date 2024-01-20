@@ -53,8 +53,10 @@
 <div class={cn('mx-4 mt-4 max-w-4xl rounded bg-gray-900 p-4 text-gray-200', isLast && 'mb-4')}>
   <div class="files-grid items-center">
     <div class="contents">
-      <div class="mb-2 text-lg">{item.dirname}</div>
-      <div class="mb-2 whitespace-nowrap text-right text-lg">{formatSize(item.size)}</div>
+      <div class="mb-2 font-semibold tracking-wide text-gray-300">{item.dirname}</div>
+      <div class="mb-2 whitespace-nowrap text-right text-sm font-semibold text-gray-400">
+        {formatSize(item.size)}
+      </div>
       <button
         type="button"
         class="mb-2 h-5 w-5 text-right text-lg hover:text-white"
@@ -64,6 +66,7 @@
         <DownloadIcon />
       </button>
     </div>
+
     {#each item.files as file (file.basename)}
       <SoulseekResultFile {file} username={item.username} />
     {/each}
@@ -107,5 +110,6 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     column-gap: theme(spacing.4);
+    row-gap: theme(spacing.1);
   }
 </style>

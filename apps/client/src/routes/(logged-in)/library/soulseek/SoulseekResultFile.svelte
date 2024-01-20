@@ -33,9 +33,9 @@
   }
 </script>
 
-<div class="contents text-gray-400">
+<div class="contents text-sm font-medium text-gray-400">
   <div>{file.basename}</div>
-  <div class="whitespace-nowrap text-right">{formatSize(file.size)}</div>
+  <div class="whitespace-nowrap text-right text-gray-500">{formatSize(file.size)}</div>
   <button
     type="button"
     class="h-5 w-5 text-right hover:text-white"
