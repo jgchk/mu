@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte'
+  import { cn } from 'utils/browser'
 
   type T = $$Generic<unknown>
 
@@ -7,6 +8,8 @@
   export let items: T[]
   export let height: number | string = '100%'
   export let itemHeight: number | undefined = undefined
+  export let viewportClass = ''
+  export let contentsClass = ''
 
   // read-only, but visible to consumers via bind:start
   export let start = 0
@@ -137,14 +140,14 @@
 </script>
 
 <div
-  class="svelte-virtual-list-viewport"
+  class={cn('svelte-virtual-list-viewport', viewportClass)}
   bind:this={viewport}
   bind:offsetHeight={viewportHeight}
   on:scroll={handleScroll}
   style:height
 >
   <div
-    class="svelte-virtual-list-contents"
+    class={cn('svelte-virtual-list-contents', contentsClass)}
     bind:this={contents}
     style:padding-top="{top}px"
     style:padding-bottom="{bottom}px"
